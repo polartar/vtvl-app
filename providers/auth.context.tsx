@@ -11,12 +11,18 @@ import {
   signOut,
 } from "firebase/auth";
 
-const initialUser: any = null;
+export type AuthContextData = {
+  user: User | null;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  anonymousSignIn: () => Promise<void>;
+  loading: boolean;
+  logOut: () => Promise<void>;
+  error: string;
+};
 
-const AuthContext = createContext({
-  user: initialUser,
-  loading: true,
-});
+const AuthContext = createContext({} as AuthContextData);
 
 export function AuthContextProvider({ children }: any) {
   const [user, setUser] = useState<User | null>(null);

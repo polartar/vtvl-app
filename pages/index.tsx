@@ -1,9 +1,23 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import React, { useContext, useState } from "react";
 import styles from "../styles/Home.module.css";
+import AuthContext from "../providers/auth.context";
 
 const Home: NextPage = () => {
+  const {
+    user,
+    error,
+    signInWithEmail,
+    signInWithGoogle,
+    signUpWithEmail,
+    anonymousSignIn,
+    logOut,
+  } = useContext(AuthContext);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
     <div className={styles.container}>
       <Head>
@@ -21,6 +35,53 @@ const Home: NextPage = () => {
           Get started by editing{" "}
           <code className={styles.code}>pages/index.tsx</code>
         </p>
+
+        {user ? (
+          <>
+            <p>
+              Welcome <h3>{user.email}</h3>
+            </p>
+            <button onClick={() => logOut()}>Logout</button>
+          </>
+        ) : (
+          <>
+            <div>
+              {error ?? <b style={{ color: "red" }}>{error}</b>}
+              <p>email:</p>
+              <input
+                type="text"
+                onChange={(e: any) => setEmail(e?.target?.value)}
+              />
+              <p>password:</p>
+              <input
+                type="password"
+                onChange={(e: any) => setPassword(e?.target?.value)}
+              />
+            </div>
+            <div>
+              <br />
+              <button onClick={() => signInWithEmail(email, password)}>
+                {" "}
+                login with email
+              </button>
+              <br />
+              <button onClick={() => signUpWithEmail(email, password)}>
+                {" "}
+                sign up with email
+              </button>
+              <br />
+              <button onClick={() => signInWithGoogle()}>
+                {" "}
+                sign in with google
+              </button>
+              <br />
+              <button onClick={() => anonymousSignIn()}>
+                {" "}
+                sign in anonymously
+              </button>
+            </div>
+          </>
+        )}
 
         <div className={styles.grid}>
           <a href="https://nextjs.org/docs" className={styles.card}>
