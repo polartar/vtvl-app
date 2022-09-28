@@ -1,9 +1,11 @@
 import type { NextPage } from "next";
+import React, { useContext, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
-import React, { useContext, useState } from "react";
+import { useWeb3React } from "@web3-react/core";
 import styles from "../styles/Home.module.css";
 import AuthContext from "../providers/auth.context";
+import { injected, walletconnect } from "../connectors";
 
 const Home: NextPage = () => {
   const {
@@ -17,6 +19,7 @@ const Home: NextPage = () => {
   } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { active, activate, account, deactivate } = useWeb3React();
 
   return (
     <div className={styles.container}>
@@ -27,6 +30,36 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
+        {active ? (
+          <>
+            <p> your wallet {account} is connected</p>
+            <button onClick={() => deactivate()}> disconnect</button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() =>
+                activate(walletconnect, (err) =>
+                  console.log("error connecting ", err)
+                )
+              }
+            >
+              {" "}
+              Wallet connect
+            </button>
+            <button
+              onClick={() =>
+                activate(injected, (err) =>
+                  console.log("error connecting ", err)
+                )
+              }
+            >
+              {" "}
+              Metamask connect{" "}
+            </button>
+          </>
+        )}
+
         {user ? (
           <>
             <p>
