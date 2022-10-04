@@ -11,6 +11,9 @@
     "format:fix": "prettier --write --ignore-path .gitignore ."
   },
   "dependencies": {
+    "@gnosis.pm/safe-apps-react-sdk": "^4.6.2",
+    "@gnosis.pm/safe-core-sdk": "^3.0.0",
+    "@gnosis.pm/safe-ethers-lib": "^1.5.0",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
     "@web3-react/walletconnect-connector": "^6.2.13",

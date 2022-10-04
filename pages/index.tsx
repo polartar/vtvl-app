@@ -6,6 +6,7 @@ import { useWeb3React } from "@web3-react/core";
 import styles from "../styles/Home.module.css";
 import AuthContext from "../providers/auth.context";
 import { injected, walletconnect } from "../connectors";
+import MultiSigWallet from "../components/multisig";
 
 const Home: NextPage = () => {
   const {
@@ -30,10 +31,12 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
+  
         {active ? (
           <>
             <p> your wallet {account} is connected</p>
             <button onClick={() => deactivate()}> disconnect</button>
+            <MultiSigWallet />
           </>
         ) : (
           <>
