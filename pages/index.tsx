@@ -31,7 +31,6 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-  
         {active ? (
           <>
             <p> your wallet {account} is connected</p>
