@@ -1,9 +1,10 @@
+import React from "react";
 import { NextPage } from "next";
+import { useRouter } from "next/router";
 import { Avatar } from "../../components/global/Avatar";
 import { Radio } from "../../components/global/Radio";
 import { Input } from "../../components/global/Input";
 import { BackButton } from "../../components/global/BackButton";
-import React from "react";
 
 const AccountSetupPage: NextPage = () => {
   const [accountInfo, setAccountInfo] = React.useState({
@@ -81,7 +82,7 @@ const AccountSetupPage: NextPage = () => {
         </div>
         <button className="secondary small mb-5">Add more contributors</button>
         <div className="flex flex-row justify-between items-center">
-          <BackButton label="Return" href="/" />
+          <BackButton label="Return" href="/onboarding/select-user-type" />
           <button className="primary">Continue</button>
         </div>
       </div>

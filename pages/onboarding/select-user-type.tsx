@@ -1,4 +1,5 @@
 import { NextPage } from "next";
+import { useRouter } from "next/router";
 import { CardRadio } from "../../components/global/CardRadio";
 import styled from "@emotion/styled";
 import React from "react";
@@ -32,6 +33,7 @@ const userTypes = {
 
 const SelectUserTypePage: NextPage = () => {
   const [selected, setSelected] = React.useState("");
+  const router = useRouter();
   return (
     <Container>
       <h1>Tell us a little bit about yourself.</h1>
@@ -55,7 +57,12 @@ const SelectUserTypePage: NextPage = () => {
           ))}
         </div>
       </div>
-      <button className="secondary">Continue</button>
+      <button
+        className="secondary"
+        onClick={() => router.push("/onboarding/account-setup")}
+      >
+        Continue
+      </button>
     </Container>
   );
 };

@@ -6,74 +6,74 @@
   --gray-800: #1d2939;
   /* Neutral */
   --neutral-900: #101828;
-  --neutral-800: #1D2939;
+  --neutral-800: #1d2939;
   --neutral-700: #101828;
   --neutral-600: #475467;
   --neutral-500: #667085;
-  --neutral-400: #98A2B3;
-  --neutral-300: #D0D5DD;
-  --neutral-200: #EAECF0;
-  --neutral-100: #F2F4F7;
-  --neutral-50: #F9FAFB;
+  --neutral-400: #98a2b3;
+  --neutral-300: #d0d5dd;
+  --neutral-200: #eaecf0;
+  --neutral-100: #f2f4f7;
+  --neutral-50: #f9fafb;
   /* Primary */
-  --primary-900: #1B369A;
-  --primary-800: #324AA4;
+  --primary-900: #1b369a;
+  --primary-800: #324aa4;
   --primary-700: #495eae;
   --primary-600: #5f72b8;
   --primary-500: #7686c2;
   --primary-400: #8d9bcd;
   --primary-300: #a4afd7;
   --primary-200: #bbc3e1;
-  --primary-100: #D1D7EB;
+  --primary-100: #d1d7eb;
   --primary-50: #020202;
   /* Secondary */
-  --secondary-900: #F9623B;
-  --secondary-800: #FA724F;
-  --secondary-700: #FA8162;
-  --secondary-600: #FB9176;
-  --secondary-500: #FBA189;
-  --secondary-400: #FCB19D;
-  --secondary-300: #FDC0B1;
-  --secondary-200: #FDD0C4;
-  --secondary-100: #FEE0D8;
-  --secondary-50: #FEEFEB;
+  --secondary-900: #f9623b;
+  --secondary-800: #fa724f;
+  --secondary-700: #fa8162;
+  --secondary-600: #fb9176;
+  --secondary-500: #fba189;
+  --secondary-400: #fcb19d;
+  --secondary-300: #fdc0b1;
+  --secondary-200: #fdd0c4;
+  --secondary-100: #fee0d8;
+  --secondary-50: #feefeb;
   /* Success */
-  --success-900: #14532D;
+  --success-900: #14532d;
   --success-800: #166534;
-  --success-700: #15803D;
-  --success-600: #16A34A;
-  --success-500: #22C55E;
-  --success-400: #4ADE80;
-  --success-300: #86EFAC;
-  --success-200: #BBF7D0;
-  --success-100: #DCFCE7;
-  --success-50: #F0FDF4;
+  --success-700: #15803d;
+  --success-600: #16a34a;
+  --success-500: #22c55e;
+  --success-400: #4ade80;
+  --success-300: #86efac;
+  --success-200: #bbf7d0;
+  --success-100: #dcfce7;
+  --success-50: #f0fdf4;
   /* Warning */
-  --warning-900: #78350F;
-  --warning-800: #92400E;
-  --warning-700: #B45309;
-  --warning-600: #D97706;
-  --warning-500: #F59E0B;
-  --warning-400: #FBBF24;
-  --warning-300: #FCD34D;
-  --warning-200: #FDE68A;
-  --warning-100: #FEF3C7;
-  --warning-50: #FFFBEB;
+  --warning-900: #78350f;
+  --warning-800: #92400e;
+  --warning-700: #b45309;
+  --warning-600: #d97706;
+  --warning-500: #f59e0b;
+  --warning-400: #fbbf24;
+  --warning-300: #fcd34d;
+  --warning-200: #fde68a;
+  --warning-100: #fef3c7;
+  --warning-50: #fffbeb;
   /* Danger */
-  --danger-900: #7F1D1D;
-  --danger-800: #991B1B;
-  --danger-700: #B91C1C;
-  --danger-600: #DC2626;
-  --danger-500: #EF4444;
-  --danger-400: #F87171;
-  --danger-300: #FCA5A5;
-  --danger-200: #FECACA;
-  --danger-100: #FEE2E2;
-  --danger-50: #FEF2F2;
+  --danger-900: #7f1d1d;
+  --danger-800: #991b1b;
+  --danger-700: #b91c1c;
+  --danger-600: #dc2626;
+  --danger-500: #ef4444;
+  --danger-400: #f87171;
+  --danger-300: #fca5a5;
+  --danger-200: #fecaca;
+  --danger-100: #fee2e2;
+  --danger-50: #fef2f2;
 }
 
 /* @import url('https://fonts.googleapis.com/css2?family=Inter&family=Sora&display=swap'); */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -83,46 +83,70 @@
 @layer base {
   /* Button component */
   /* Defaults to primary */
-  button { @apply rounded-full inline-block text-base py-2.5 px-5 bg-neutral-100 transition-all; }
+  button {
+    @apply rounded-full inline-block text-base py-2.5 px-5 bg-neutral-100 transition-all;
+  }
   button:hover,
   button:focus-visible {
     @apply outline-8 outline-neutral-50;
   }
 
-  button.primary { @apply bg-primary-900 text-white; }
+  button.primary {
+    @apply bg-primary-900 text-white;
+  }
   button.primary:hover,
   button.primary:focus-visible {
     @apply outline-primary-400 bg-primary-900;
   }
 
   /* Other button styles */
-  button.secondary { @apply bg-secondary-900 text-white; }
+  button.secondary {
+    @apply bg-secondary-900 text-white;
+  }
   button.secondary:hover,
   button.secondary:focus-visible {
     @apply outline-secondary-400 bg-secondary-900;
   }
-  button.success { @apply bg-success-500 text-white; }
+  button.success {
+    @apply bg-success-500 text-white;
+  }
   button.success:hover,
   button.success:focus-visible {
     @apply outline-success-400 bg-success-500;
   }
-  button.warning { @apply bg-warning-500 text-white; }
+  button.warning {
+    @apply bg-warning-500 text-white;
+  }
   button.warning:hover,
   button.warning:focus-visible {
     @apply outline-warning-400 bg-warning-500;
   }
-  button.danger { @apply bg-danger-500 text-white; }
+  button.danger {
+    @apply bg-danger-500 text-white;
+  }
   button.danger:hover,
   button.danger:focus-visible {
     @apply outline-danger-400 bg-danger-500;
   }
 
-  button.line { @apply bg-white border border-neutral-300 text-neutral-600; }
-  button.line.primary { @apply border-primary-900 text-primary-900; }
-  button.line.secondary { @apply border-secondary-900 text-secondary-900; }
-  button.line.success { @apply border-success-500 text-success-500; }
-  button.line.warning { @apply border-warning-500 text-warning-500; }
-  button.line.danger { @apply border-danger-500 text-danger-500; }
+  button.line {
+    @apply bg-white border border-neutral-300 text-neutral-600;
+  }
+  button.line.primary {
+    @apply border-primary-900 text-primary-900;
+  }
+  button.line.secondary {
+    @apply border-secondary-900 text-secondary-900;
+  }
+  button.line.success {
+    @apply border-success-500 text-success-500;
+  }
+  button.line.warning {
+    @apply border-warning-500 text-warning-500;
+  }
+  button.line.danger {
+    @apply border-danger-500 text-danger-500;
+  }
   button.line:not(.primary, .secondary, .success, .danger, .warning):hover,
   button.line:not(.primary, .secondary, .success, .danger, .warning):focus-visible {
     @apply outline-neutral-100 bg-neutral-300;
@@ -132,17 +156,41 @@
     @apply text-white;
   }
 
-  button.small { @apply py-2.5 px-4 text-sm; }
-  button.large { @apply py-3 py-6 text-lg; }
+  button.small {
+    @apply py-2.5 px-4 text-sm;
+  }
+  button.large {
+    @apply py-3 py-6 text-lg;
+  }
 
   /* Typography */
-  .display { @apply text-5xl leading-relaxed; }
-  h1, .h1 { @apply text-h1 leading-relaxed; }
-  h2, .h2 { @apply text-h2 leading-relaxed; }
-  h3, .h3 { @apply text-h3 leading-relaxed; }
-  h4, .h4 { @apply text-h4 leading-relaxed; }
-  h5, .h5 { @apply text-h5 leading-relaxed; }
-  h6, .h6 { @apply text-h6 leading-relaxed; }
+  .display {
+    @apply text-5xl leading-relaxed;
+  }
+  h1,
+  .h1 {
+    @apply text-h1 leading-relaxed;
+  }
+  h2,
+  .h2 {
+    @apply text-h2 leading-relaxed;
+  }
+  h3,
+  .h3 {
+    @apply text-h3 leading-relaxed;
+  }
+  h4,
+  .h4 {
+    @apply text-h4 leading-relaxed;
+  }
+  h5,
+  .h5 {
+    @apply text-h5 leading-relaxed;
+  }
+  h6,
+  .h6 {
+    @apply text-h6 leading-relaxed;
+  }
   /* For paragraphs just use text-sm text-lg and text-base */
 
   /* Form controls */
@@ -157,7 +205,7 @@
 
   label.required > span:after,
   label.required .label:after {
-    content: '*';
+    content: "*";
     @apply text-danger-500;
   }
 
@@ -167,28 +215,45 @@
   }
 
   label > input:focus,
-  label > input:focus-visible { @apply outline outline-4 outline-gray-100; }
+  label > input:focus-visible {
+    @apply outline outline-4 outline-gray-100;
+  }
 
   /* Contents */
-  .panel { @apply p-6 rounded-3xl border border-gray-300; }
+  .panel {
+    @apply p-6 rounded-3xl border border-gray-300;
+  }
 }
 
 @layer components {
   /* Avatar component style */
   .avatar,
-  .avatar .text { @apply inline-flex items-center justify-center h-16 w-16 rounded-full relative overflow-hidden; }
-  
+  .avatar .text {
+    @apply inline-flex items-center justify-center h-16 w-16 rounded-full relative overflow-hidden;
+  }
+
   .avatar.default,
-  .avatar .text { @apply h-11 w-11; }
-  
+  .avatar .text {
+    @apply h-11 w-11;
+  }
+
   .avatar.small,
-  .avatar .text { @apply h-6 w-6; }
-  
-  .avatar.initials { @apply bg-gray-300 text-gray-400 text-xl; }
-  .avatar.initials.small { @apply text-xs; }
-  .avatar.initials.default { @apply text-lg; }
+  .avatar .text {
+    @apply h-6 w-6;
+  }
+
+  .avatar.initials {
+    @apply bg-gray-300 text-gray-400 text-xl;
+  }
+  .avatar.initials.small {
+    @apply text-xs;
+  }
+  .avatar.initials.default {
+    @apply text-lg;
+  }
 }
 
-*, html {
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+*,
+html {
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }

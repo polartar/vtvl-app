@@ -1,12 +1,13 @@
+import React from "react";
+import { NextPage } from "next";
+import { useRouter } from "next/router";
+import { useWeb3React } from "@web3-react/core";
+import { injected, walletconnect } from "../../connectors";
+import MultiSigWallet from "../../components/multisig";
 import { Carousel } from "../../components/global/Carousel";
 import { WalletButton } from "../../components/global/WalletButton";
 import { Chip } from "../../components/global/Chip";
 import styled from "@emotion/styled";
-import { NextPage } from "next";
-import React from "react";
-import { useWeb3React } from "@web3-react/core";
-import { injected, walletconnect } from "../../connectors";
-import MultiSigWallet from "../../components/multisig";
 
 const OnboardingContainer = styled.section`
   display: grid;
@@ -91,18 +92,28 @@ interface Wallet {
 const ConnectWalletPage: NextPage = () => {
   const { active, activate, account, deactivate } = useWeb3React();
   const [wallet, setWallet] = React.useState("");
+  const router = useRouter();
+
+  function metamaskActivate() {
+    activate(injected, (err) => console.log("error connecting ", err));
+    router.push("/onboarding/select-user-type");
+  }
+
+  function walletConnectActivate() {
+    activate(walletconnect, (err) => console.log("error connecting ", err));
+    router.push("/onboarding/select-user-type");
+  }
+
   const wallets = [
     {
       name: "MetaMask",
       image: "/icons/wallets/metamask.svg",
-      onClick: () =>
-        activate(injected, (err) => console.log("error connecting ", err)),
+      onClick: metamaskActivate,
     },
     {
       name: "Wallet Connect",
       image: "/icons/wallets/walletconnect.svg",
-      onClick: () =>
-        activate(walletconnect, (err) => console.log("error connecting ", err)),
+      onClick: walletConnectActivate,
     },
     {
       name: "Members Login",
