@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { Web3ReactProvider } from "@web3-react/core";
 import { ethers } from "ethers";
 import { AuthContextProvider } from "../providers/auth.context";
+import { DefaultLayout } from '../components/layout/DefaultLayout';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -12,7 +13,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       }
     >
       <AuthContextProvider>
-        <Component {...pageProps} />
+        <DefaultLayout>
+          <Component {...pageProps} />
+        </DefaultLayout>
       </AuthContextProvider>
     </Web3ReactProvider>
   );
