@@ -44,7 +44,7 @@ export const Header = ({
           </p>
         </div>
         <NetworkSelector />
-        <WalletConnect connected={connected} />
+        {connected ? <WalletConnect connected={connected} /> : null}
       </div>
     </header>
   );

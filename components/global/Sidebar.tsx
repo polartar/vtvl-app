@@ -1,9 +1,9 @@
-import styled from '@emotion/styled';
-import logoutImg from '/public/icons/logout.svg';
-import { IconText } from './IconText';
-import { SidebarItem } from './SidebarItem';
-import { User } from './User';
-import React from 'react';
+import { Colors } from "../CommonStyles";
+import { IconText } from "./IconText";
+import { SidebarItem } from "./SidebarItem";
+import { User } from "./User";
+import styled from "@emotion/styled";
+import React from "react";
 
 interface Props {
   collapsed?: boolean;
@@ -14,7 +14,13 @@ interface Props {
   role: string;
 }
 
-export const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
+export const Sidebar = ({
+  roleTitle,
+  menuList,
+  submenuList,
+  userName,
+  role,
+}: Props) => {
   const [selectedId, setSelectedId] = React.useState(0);
   return (
     <SidebarContainer>
@@ -25,20 +31,23 @@ export const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Pr
             key={index}
             selected={selectedId === index}
             hovered={false}
-            children={menu.title}
             onClick={() => setSelectedId(index)}
             icon={menu.icon}
             hoverIcon={menu.hoverIcon}
-          />
+          >
+            {menu.title}
+          </SidebarItem>
         ))}
       </div>
       <div>
         {submenuList.map((submenu, index) => (
-          <IconText key={index} sideIcon={submenu.icon} children={submenu.title} />
+          <IconText key={index} sideIcon={submenu.icon}>
+            {submenu.title}
+          </IconText>
         ))}
         <UserContainer>
           <User userName={userName} role={role} />
-          <LogoutImg src={logoutImg} alt="logoutImg" />
+          <LogoutImg src="/icons/logout.svg" alt="logoutImg" />
         </UserContainer>
       </div>
     </SidebarContainer>
@@ -48,20 +57,19 @@ export const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Pr
 const SidebarContainer = styled.div`
   width: 279px;
   min-height: calc(100vh - 82px);
-  border-right: 1px solid #EAECF0;
-  background: #f9fafb;
+  border-right: 1px solid ${Colors.border};
+  background: ${Colors.background};
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 32px 16px 16px;
 `;
 const RoleTitle = styled.span`
-  font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
   font-size: 14px;
   line-height: 24px;
-  color: #1d2939;
+  color: ${Colors.text};
   text-transform: uppercase;
   margin-left: 16px;
 `;
@@ -73,7 +81,7 @@ const UserContainer = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   padding-top: 24px;
-  border-top: 1px solid #EAECF0;
+  border-top: 1px solid ${Colors.border};
   margin: 0 auto;
 `;
 const LogoutImg = styled.img`

@@ -1,7 +1,5 @@
-import styled from '@emotion/styled';
-import sidebarItemImg2 from '/public/icons/s_dashboard2.svg';
-import sidebarItemImg from '/public/icons/s_dashboard.svg';
-import React, { useEffect, useRef } from 'react';
+import styled from "@emotion/styled";
+import React, { useEffect, useRef } from "react";
 
 interface Props {
   selected: boolean;
@@ -12,7 +10,14 @@ interface Props {
   hoverIcon: string;
 }
 
-export const SidebarItem = ({ selected, hovered, children, onClick, icon, hoverIcon }: Props) => {
+export const SidebarItem = ({
+  selected,
+  hovered,
+  children,
+  onClick,
+  icon,
+  hoverIcon,
+}: Props) => {
   // const itemRef = useRef(null);
   // const sItem: any = document.getElementsByClassName('sidebar-item');
   // const sIcon: any = document.getElementsByClassName('sidebar-item-icon');
@@ -35,26 +40,35 @@ export const SidebarItem = ({ selected, hovered, children, onClick, icon, hoverI
       // ref={itemRef}
       className="sidebar-item"
       icon={icon}
-      hoverIcon={hoverIcon}>
-      <IconArea className="sidebar-item-icon" icon={icon} selected={selected ? 1 : 0} hoverIcon={hoverIcon} />
+      hoverIcon={hoverIcon}
+    >
+      <IconArea
+        className="sidebar-item-icon"
+        icon={icon}
+        selected={selected ? 1 : 0}
+        hoverIcon={hoverIcon}
+      />
       {children}
     </SidebarItemContainer>
   );
 };
 
-const SidebarItemContainer = styled.div<{ selected: number; icon: string; hoverIcon: string }>`
+const SidebarItemContainer = styled.div<{
+  selected: number;
+  icon: string;
+  hoverIcon: string;
+}>`
   width: 247px;
   height: 48px;
-  border-radius: ${({ selected }) => (selected ? '24px' : '5px')};
-  background-color: ${({ selected }) => (selected ? '#1B369A' : 'transparent')};
+  border-radius: ${({ selected }) => (selected ? "24px" : "5px")};
+  background-color: ${({ selected }) => (selected ? "#1B369A" : "transparent")};
   display: flex;
   align-items: center;
   font-style: normal;
   font-size: 16px;
-  font-family: 'Inter';
   line-height: 24px;
   font-weight: ${({ selected }) => (selected ? 700 : 400)};
-  color: ${({ selected }) => (selected ? '#F9FAFB' : '#1D2939')};
+  color: ${({ selected }) => (selected ? "#F9FAFB" : "#1D2939")};
   margin: 6px auto;
   transition: all 0.3s ease-out;
 
@@ -66,16 +80,27 @@ const SidebarItemContainer = styled.div<{ selected: number; icon: string; hoverI
     font-weight: 700;
   }
   &:hover > .sidebar-item-icon {
-    background-image: url(${({ hoverIcon }) => (!hoverIcon ? sidebarItemImg2 : hoverIcon)});
+    background-image: url(${({ hoverIcon }) =>
+      !hoverIcon ? "/icons/s_dashboard2.svg" : hoverIcon});
   }
   img {
     margin: 0 12px;
   }
 `;
-const IconArea = styled.div<{ icon: string; selected: number; hoverIcon: string }>`
+const IconArea = styled.div<{
+  icon: string;
+  selected: number;
+  hoverIcon: string;
+}>`
   width: 24px;
   height: 24px;
   margin: 0 12px;
   background-image: url(${({ icon, selected, hoverIcon }) =>
-    !icon ? (selected ? sidebarItemImg2 : sidebarItemImg) : selected ? hoverIcon : icon});
+    !icon
+      ? selected
+        ? "/icons/s_dashboard2.svg"
+        : "/icons/s_dashboard.svg"
+      : selected
+      ? hoverIcon
+      : icon});
 `;

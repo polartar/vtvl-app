@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { Sidebar } from "@vtvl-admin/vtvl-v2-storybook";
 import { Header } from "../global/Header";
+import { Sidebar } from "../global/Sidebar";
 
 const Container = styled.section`
   min-width: 100vw;

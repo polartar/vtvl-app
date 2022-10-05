@@ -1,6 +1,5 @@
-import React from 'react';
-import styled from '@emotion/styled';
-import userImg from '/public/images/user.png';
+import React from "react";
+import styled from "@emotion/styled";
 
 interface Props {
   userName: string;
@@ -10,7 +9,7 @@ interface Props {
 export const User = ({ userName, role }: Props) => {
   return (
     <UserContainer>
-      <img src={userImg} alt="userImg" />
+      <img src="/images/user.png" alt="userImg" />
       <div>
         <p>{userName}</p>
         <p>{role}</p>
@@ -24,7 +23,7 @@ const UserContainer = styled.div`
   border-radius: 24px;
   display: flex;
   align-items: center;
-  font-family: 'Inter-Bold';
+  font-family: "Inter-Bold";
   font-style: normal;
   font-size: 16px;
   line-height: 24px;
