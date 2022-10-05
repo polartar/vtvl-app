@@ -4,6 +4,9 @@ import { Chip } from "../../components/global/Chip";
 import styled from "@emotion/styled";
 import { NextPage } from "next";
 import React from "react";
+import { useWeb3React } from "@web3-react/core";
+import { injected, walletconnect } from "../../connectors";
+import MultiSigWallet from "../../components/multisig";
 
 const OnboardingContainer = styled.section`
   display: grid;
@@ -82,18 +85,24 @@ interface Wallet {
   image: string;
   subLabel?: unknown;
   disabled?: boolean;
+  onClick?: () => void;
 }
 
 const ConnectWalletPage: NextPage = () => {
+  const { active, activate, account, deactivate } = useWeb3React();
   const [wallet, setWallet] = React.useState("");
   const wallets = [
     {
       name: "MetaMask",
       image: "/icons/wallets/metamask.svg",
+      onClick: () =>
+        activate(injected, (err) => console.log("error connecting ", err)),
     },
     {
       name: "Wallet Connect",
       image: "/icons/wallets/walletconnect.svg",
+      onClick: () =>
+        activate(walletconnect, (err) => console.log("error connecting ", err)),
     },
     {
       name: "Members Login",
@@ -182,7 +191,7 @@ const ConnectWalletPage: NextPage = () => {
           )
         }
         disabled={wallet.disabled}
-        onClick={() => {}}
+        onClick={wallet.onClick}
       />
     ));
   };
