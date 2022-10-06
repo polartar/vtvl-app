@@ -200,23 +200,73 @@
 
   label > span,
   label .label {
-    @apply font-medium text-sm text-gray-700 inline-flex gap-1 self-start mb-1.5 relative;
+    @apply font-medium text-sm text-neutral-800 inline-flex gap-1 self-start mb-1.5 relative;
   }
 
   label.required > span:after,
   label.required .label:after {
     content: '*';
-    @apply text-danger-500;
+    @apply text-secondary-900;
   }
 
-  label > input:not([type='radio']),
+  label > div > input:not([type='radio']),
   .radioButton {
-    @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-white border-gray-300 text-sm transition-all;
+    @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all duration-1000;
   }
 
-  label > input:focus,
-  label > input:focus-visible {
-    @apply outline outline-4 outline-gray-100;
+  label > div > input:focus,
+  label > div > input:focus-visible {
+    @apply outline-0 border-primary-400;
+  }
+
+  label > div {
+    @apply rounded-xl border border-transparent text-white p-1 transition-all duration-500;
+  }
+  label > div.error {
+    @apply bg-danger-100 border-danger-500 text-danger-700;
+  }
+  label > div.success {
+    @apply bg-success-100 border-success-200 text-success-600;
+    animation: fadeOutContainer 1s;
+    animation-delay: 2s;
+    animation-fill-mode: forwards;
+  }
+  label > div.error > input,
+  label > div.success > input {
+    @apply rounded-lg border-neutral-50;
+  }
+
+  label > div.success > input {
+    animation: fadeOutInputStyles 1s;
+    animation-delay: 2s;
+    animation-fill-mode: forwards;
+  }
+
+  label > div > p {
+    @apply text-xs mt-1 px-1 pb-1 h-5 overflow-hidden transition-all;
+  }
+
+  label > div.success > p {
+    animation: fadeOutMessage 1s;
+    animation-delay: 1.5s;
+    animation-fill-mode: forwards;
+  }
+
+  /* animation for success states on form input */
+  @keyframes fadeOutContainer {
+    to {
+      @apply border-transparent bg-transparent text-white;
+    }
+  }
+  @keyframes fadeOutInputStyles {
+    to {
+      @apply rounded-3xl border-neutral-300;
+    }
+  }
+  @keyframes fadeOutMessage {
+    to {
+      @apply opacity-0 h-0 mt-0 pb-0;
+    }
   }
 
   /* Contents */
