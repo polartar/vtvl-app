@@ -27,7 +27,7 @@ export const Avatar = ({
     .join("");
   return (
     <div className={`avatar ${placeholder} ${size}`}>
-      {loaded ? (
+      {loaded && src ? (
         <img src={src} alt={name} onError={() => setLoaded(false)} />
       ) : (
         <div className="text">{initials}</div>

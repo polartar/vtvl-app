@@ -12,11 +12,6 @@ import { Radio } from "../../components/global/Radio";
 import { Input } from "../../components/global/Input";
 import { BackButton } from "../../components/global/BackButton";
 
-enum userType {
-  individual = "individual",
-  organization = "organization",
-}
-
 interface Contributor {
   name: string;
   email: string;
@@ -24,7 +19,7 @@ interface Contributor {
 
 type AccountForm = {
   name: string;
-  type: userType;
+  type: string;
   company: string;
   companyEmail: string;
   contributors?: Contributor[];
@@ -138,7 +133,7 @@ const AccountSetupPage: NextPage = () => {
           </div>
         </div>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid md:grid-cols-2 py-5 gap-5 border-b border-neutral-200">
+          <div className="grid md:grid-cols-2 py-5 gap-5 border-b border-neutral-200 mb-5">
             <Controller
               name="type"
               control={control}
@@ -253,87 +248,85 @@ const AccountSetupPage: NextPage = () => {
               )}
             />
           </div>
-          <div className="grid md:grid-cols-2 py-5 gap-5">
-            {fields.map((contributor, contributorIndex) => (
-              <>
-                <Controller
-                  key={`name-${contributor.id}`}
-                  name={`contributors.${contributorIndex}.name`}
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Input
-                      label="Contributor's name"
-                      placeholder="Enter contributor's name"
-                      error={Boolean(
+          {fields.map((contributor, contributorIndex) => (
+            <div
+              key={`contributor-${contributor.id}`}
+              className="grid md:grid-cols-2 gap-5 mb-5"
+            >
+              <Controller
+                name={`contributors.${contributorIndex}.name`}
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Input
+                    label="Contributor's name"
+                    placeholder="Enter contributor's name"
+                    error={Boolean(
+                      getContributorState(contributorIndex).name.state.error
+                    )}
+                    success={
+                      !Boolean(
                         getContributorState(contributorIndex).name.state.error
-                      )}
-                      success={
-                        !Boolean(
-                          getContributorState(contributorIndex).name.state.error
-                        ) &&
-                        (getContributorState(contributorIndex).name.state
-                          .isTouched ||
-                          getContributorState(contributorIndex).name.state
-                            .isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        getContributorState(contributorIndex).name.state.error
-                          ? "Please enter contributor's name"
-                          : (getContributorState(contributorIndex).name.state
-                              .isTouched ||
-                              getContributorState(contributorIndex).name.state
-                                .isDirty) &&
-                            isSubmitted
-                          ? "Contributor's name is okay"
-                          : ""
-                      }
-                      {...field}
-                    />
-                  )}
-                />
-                <Controller
-                  key={`email-${contributor.id}`}
-                  name={`contributors.${contributorIndex}.email`}
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Input
-                      label="Contributor's email"
-                      placeholder="Enter contributor's email"
-                      error={Boolean(
+                      ) &&
+                      (getContributorState(contributorIndex).name.state
+                        .isTouched ||
+                        getContributorState(contributorIndex).name.state
+                          .isDirty) &&
+                      isSubmitted
+                    }
+                    message={
+                      getContributorState(contributorIndex).name.state.error
+                        ? "Please enter contributor's name"
+                        : (getContributorState(contributorIndex).name.state
+                            .isTouched ||
+                            getContributorState(contributorIndex).name.state
+                              .isDirty) &&
+                          isSubmitted
+                        ? "Contributor's name is okay"
+                        : ""
+                    }
+                    {...field}
+                  />
+                )}
+              />
+              <Controller
+                name={`contributors.${contributorIndex}.email`}
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Input
+                    label="Contributor's email"
+                    placeholder="Enter contributor's email"
+                    error={Boolean(
+                      getContributorState(contributorIndex).email.state.error
+                    )}
+                    success={
+                      !Boolean(
                         getContributorState(contributorIndex).email.state.error
-                      )}
-                      success={
-                        !Boolean(
-                          getContributorState(contributorIndex).email.state
-                            .error
-                        ) &&
-                        (getContributorState(contributorIndex).email.state
-                          .isTouched ||
-                          getContributorState(contributorIndex).email.state
-                            .isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        getContributorState(contributorIndex).email.state.error
-                          ? "Please enter contributor's email"
-                          : (getContributorState(contributorIndex).email.state
-                              .isTouched ||
-                              getContributorState(contributorIndex).email.state
-                                .isDirty) &&
-                            isSubmitted
-                          ? "Contributor's email is okay"
-                          : ""
-                      }
-                      {...field}
-                    />
-                  )}
-                />
-              </>
-            ))}
-          </div>
+                      ) &&
+                      (getContributorState(contributorIndex).email.state
+                        .isTouched ||
+                        getContributorState(contributorIndex).email.state
+                          .isDirty) &&
+                      isSubmitted
+                    }
+                    message={
+                      getContributorState(contributorIndex).email.state.error
+                        ? "Please enter contributor's email"
+                        : (getContributorState(contributorIndex).email.state
+                            .isTouched ||
+                            getContributorState(contributorIndex).email.state
+                              .isDirty) &&
+                          isSubmitted
+                        ? "Contributor's email is okay"
+                        : ""
+                    }
+                    {...field}
+                  />
+                )}
+              />
+            </div>
+          ))}
           <button
             type="button"
             className="secondary small mb-5"
