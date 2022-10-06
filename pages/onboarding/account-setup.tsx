@@ -150,7 +150,7 @@ const AccountSetupPage: NextPage = () => {
                   label="Your name"
                   placeholder="Enter your name"
                   error={Boolean(errors.name)}
-                  success={!Boolean(errors.name) && (userName.state.isTouched || userName.state.isDirty) && isSubmitted}
+                  success={!errors.name && (userName.state.isTouched || userName.state.isDirty) && isSubmitted}
                   message={
                     errors.name
                       ? 'Please enter your name'
@@ -172,11 +172,7 @@ const AccountSetupPage: NextPage = () => {
                   label="Company name"
                   placeholder="Enter your company name"
                   error={Boolean(errors.company)}
-                  success={
-                    !Boolean(errors.company) &&
-                    (userCompany.state.isTouched || userCompany.state.isDirty) &&
-                    isSubmitted
-                  }
+                  success={!errors.company && (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted}
                   message={
                     errors.company
                       ? 'Please enter your company name'
@@ -200,7 +196,7 @@ const AccountSetupPage: NextPage = () => {
                   className="md:col-span-2"
                   error={Boolean(errors.companyEmail)}
                   success={
-                    !Boolean(errors.companyEmail) &&
+                    !errors.companyEmail &&
                     (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) &&
                     isSubmitted
                   }
@@ -228,7 +224,7 @@ const AccountSetupPage: NextPage = () => {
                     placeholder="Enter contributor's name"
                     error={Boolean(getContributorState(contributorIndex).name.state.error)}
                     success={
-                      !Boolean(getContributorState(contributorIndex).name.state.error) &&
+                      !getContributorState(contributorIndex).name.state.error &&
                       (getContributorState(contributorIndex).name.state.isTouched ||
                         getContributorState(contributorIndex).name.state.isDirty) &&
                       isSubmitted
@@ -256,7 +252,7 @@ const AccountSetupPage: NextPage = () => {
                     placeholder="Enter contributor's email"
                     error={Boolean(getContributorState(contributorIndex).email.state.error)}
                     success={
-                      !Boolean(getContributorState(contributorIndex).email.state.error) &&
+                      !getContributorState(contributorIndex).email.state.error &&
                       (getContributorState(contributorIndex).email.state.isTouched ||
                         getContributorState(contributorIndex).email.state.isDirty) &&
                       isSubmitted
