@@ -1,15 +1,16 @@
-import React, { createContext, useEffect, useState, useMemo } from "react";
-import { auth } from "../services/auth/firebase";
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  User,
   GoogleAuthProvider,
+  User,
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   signInAnonymously,
+  signInWithEmailAndPassword,
   signInWithPopup,
-  signOut,
-} from "firebase/auth";
+  signOut
+} from 'firebase/auth';
+import React, { createContext, useEffect, useMemo, useState } from 'react';
+
+import { auth } from '../services/auth/firebase';
 
 export type AuthContextData = {
   user: User | null;
@@ -27,12 +28,10 @@ const AuthContext = createContext({} as AuthContextData);
 export function AuthContextProvider({ children }: any) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    let unsubscribe;
-
-    unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
@@ -55,11 +54,7 @@ export function AuthContextProvider({ children }: any) {
   const signInWithEmail = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const credential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const credential = await signInWithEmailAndPassword(auth, email, password);
       setUser(credential.user);
       setLoading(false);
     } catch (error: any) {
@@ -71,11 +66,7 @@ export function AuthContextProvider({ children }: any) {
   const signUpWithEmail = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const credential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
       setUser(credential.user);
       setLoading(false);
     } catch (error: any) {
@@ -107,14 +98,12 @@ export function AuthContextProvider({ children }: any) {
       anonymousSignIn,
       loading,
       logOut,
-      error,
+      error
     }),
     [user, loading, error]
   );
 
-  return (
-    <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;
 }
 
 export default AuthContext;

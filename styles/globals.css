@@ -73,7 +73,7 @@
 }
 
 /* @import url('https://fonts.googleapis.com/css2?family=Inter&family=Sora&display=swap'); */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -205,11 +205,11 @@
 
   label.required > span:after,
   label.required .label:after {
-    content: "*";
+    content: '*';
     @apply text-danger-500;
   }
 
-  label > input:not([type="radio"]),
+  label > input:not([type='radio']),
   .radioButton {
     @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-white border-gray-300 text-sm transition-all;
   }
@@ -255,5 +255,5 @@
 
 *,
 html {
-  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }

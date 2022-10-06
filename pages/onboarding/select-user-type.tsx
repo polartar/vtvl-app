@@ -1,8 +1,9 @@
-import { NextPage } from "next";
-import { useRouter } from "next/router";
-import { CardRadio } from "../../components/global/CardRadio";
-import styled from "@emotion/styled";
-import React from "react";
+import styled from '@emotion/styled';
+import { NextPage } from 'next';
+import { useRouter } from 'next/router';
+import React from 'react';
+
+import CardRadio from '../../components/atoms/CardRadio/CardRadio';
 
 const Container = styled.div`
   width: 100%;
@@ -13,39 +14,37 @@ const Container = styled.div`
 const userTypes = {
   options: [
     {
-      image: "/images/onboarding-user-type-employee.svg",
-      value: "employee",
-      label: "I'm an employee looking to check my assets",
+      image: '/images/onboarding-user-type-employee.svg',
+      value: 'employee',
+      label: "I'm an employee looking to check my assets"
     },
     {
-      image: "/images/onboarding-user-type-founder.svg",
-      value: "founder",
-      label: "I'm a founder who will setup the vesting schedule",
+      image: '/images/onboarding-user-type-founder.svg',
+      value: 'founder',
+      label: "I'm a founder who will setup the vesting schedule"
     },
     {
-      image: "/images/onboarding-user-type-investor.svg",
-      value: "investor",
-      label: "I'm an investor looking to check my assets",
-    },
+      image: '/images/onboarding-user-type-investor.svg',
+      value: 'investor',
+      label: "I'm an investor looking to check my assets"
+    }
   ],
-  name: "userType",
+  name: 'userType'
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const [selected, setSelected] = React.useState("");
   const router = useRouter();
+
+  const [selected, setSelected] = React.useState('');
+
   return (
     <Container>
       <h1>Tell us a little bit about yourself.</h1>
       <p className="text-sm">
-        Select the options that best describe your role. Don&apos;t worry, you
-        can explore other options later.
+        Select the options that best describe your role. Don&apos;t worry, you can explore other options later.
       </p>
       <div className="my-6">
-        <div
-          role="radiogroup"
-          className="flex flex-row items-center justify-center gap-5"
-        >
+        <div role="radiogroup" className="flex flex-row items-center justify-center gap-5">
           {userTypes.options.map((option, optionIndex) => (
             <CardRadio
               key={`card-radio-${option.value}-${optionIndex}`}
@@ -57,10 +56,7 @@ const SelectUserTypePage: NextPage = () => {
           ))}
         </div>
       </div>
-      <button
-        className="secondary"
-        onClick={() => router.push("/onboarding/account-setup")}
-      >
+      <button className="secondary" onClick={() => router.push('/onboarding/account-setup')}>
         Continue
       </button>
     </Container>

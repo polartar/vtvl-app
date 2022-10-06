@@ -1,5 +1,5 @@
-import React from "react";
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
+import React from 'react';
 
 interface Props {
   userName: string;
@@ -23,7 +23,7 @@ const UserContainer = styled.div`
   border-radius: 24px;
   display: flex;
   align-items: center;
-  font-family: "Inter-Bold";
+  font-family: 'Inter-Bold';
   font-style: normal;
   font-size: 16px;
   line-height: 24px;

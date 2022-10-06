@@ -1,0 +1,47 @@
+.chip {
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.875rem;
+
+  --primary: #1ea7fd;
+  --secondary: #f9623b;
+  --info: #eff8ff;
+  --danger: #ffefef;
+  --success: #ecfdf3;
+  --default: #eeeefb;
+  --gray: #333;
+  --gray-light: #d0d5dd;
+  --white: #fefefe;
+
+  border: 1px solid var(--gray-light);
+  background-color: var(--default);
+  color: var(--gray);
+}
+
+.chip-color--primary {
+  background-color: var(--primary);
+  color: var(--white);
+}
+.chip-color--secondary {
+  background-color: var(--secondary);
+  color: var(--white);
+}
+.chip-color--info {
+  background-color: var(--info);
+}
+.chip-color--danger {
+  background-color: var(--danger);
+}
+.chip-color--success {
+  background-color: var(--success);
+}
+
+.chip-size--small {
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.chip-size--large {
+  border-radius: 8px;
+  font-size: 1rem;
+}

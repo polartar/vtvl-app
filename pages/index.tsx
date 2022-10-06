@@ -1,25 +1,19 @@
-import type { NextPage } from "next";
-import React, { useContext, useState } from "react";
-import Head from "next/head";
-import Image from "next/image";
-import { useWeb3React } from "@web3-react/core";
-import styles from "../styles/Home.module.css";
-import AuthContext from "../providers/auth.context";
-import { injected, walletconnect } from "../connectors";
-import MultiSigWallet from "../components/multisig";
+import { useWeb3React } from '@web3-react/core';
+import type { NextPage } from 'next';
+import Head from 'next/head';
+import Image from 'next/image';
+import React, { useContext, useState } from 'react';
+
+import MultiSigWallet from '../components/multisig';
+import { injected, walletconnect } from '../connectors';
+import AuthContext from '../providers/auth.context';
+import styles from '../styles/Home.module.css';
 
 const Home: NextPage = () => {
-  const {
-    user,
-    error,
-    signInWithEmail,
-    signInWithGoogle,
-    signUpWithEmail,
-    anonymousSignIn,
-    logOut,
-  } = useContext(AuthContext);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { user, error, signInWithEmail, signInWithGoogle, signUpWithEmail, anonymousSignIn, logOut } =
+    useContext(AuthContext);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const { active, activate, account, deactivate } = useWeb3React();
 
   return (
@@ -39,25 +33,13 @@ const Home: NextPage = () => {
           </>
         ) : (
           <>
-            <button
-              onClick={() =>
-                activate(walletconnect, (err) =>
-                  console.log("error connecting ", err)
-                )
-              }
-            >
-              {" "}
+            <button onClick={() => activate(walletconnect, (err) => console.log('error connecting ', err))}>
+              {' '}
               Wallet connect
             </button>
-            <button
-              onClick={() =>
-                activate(injected, (err) =>
-                  console.log("error connecting ", err)
-                )
-              }
-            >
-              {" "}
-              Metamask connect{" "}
+            <button onClick={() => activate(injected, (err) => console.log('error connecting ', err))}>
+              {' '}
+              Metamask connect{' '}
             </button>
           </>
         )}
@@ -72,39 +54,21 @@ const Home: NextPage = () => {
         ) : (
           <>
             <div>
-              {error ?? <b style={{ color: "red" }}>{error}</b>}
+              {error ?? <b style={{ color: 'red' }}>{error}</b>}
               <p>email:</p>
-              <input
-                type="text"
-                onChange={(e: any) => setEmail(e?.target?.value)}
-              />
+              <input type="text" onChange={(e: any) => setEmail(e?.target?.value)} />
               <p>password:</p>
-              <input
-                type="password"
-                onChange={(e: any) => setPassword(e?.target?.value)}
-              />
+              <input type="password" onChange={(e: any) => setPassword(e?.target?.value)} />
             </div>
             <div>
               <br />
-              <button onClick={() => signInWithEmail(email, password)}>
-                {" "}
-                login with email
-              </button>
+              <button onClick={() => signInWithEmail(email, password)}> login with email</button>
               <br />
-              <button onClick={() => signUpWithEmail(email, password)}>
-                {" "}
-                sign up with email
-              </button>
+              <button onClick={() => signUpWithEmail(email, password)}> sign up with email</button>
               <br />
-              <button onClick={() => signInWithGoogle()}>
-                {" "}
-                sign in with google
-              </button>
+              <button onClick={() => signInWithGoogle()}> sign in with google</button>
               <br />
-              <button onClick={() => anonymousSignIn()}>
-                {" "}
-                sign in anonymously
-              </button>
+              <button onClick={() => anonymousSignIn()}> sign in anonymously</button>
             </div>
           </>
         )}
@@ -114,9 +78,8 @@ const Home: NextPage = () => {
         <a
           href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
           target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{" "}
+          rel="noopener noreferrer">
+          Powered by{' '}
           <span className={styles.logo}>
             <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
           </span>

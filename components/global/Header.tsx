@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 
-import { NetworkSelector } from "./NetworkSelector";
-import { SearchInput } from "./SearchInput";
-import { WalletConnect } from "./WalletConnect";
+import { NetworkSelector } from './NetworkSelector';
+import { WalletConnect } from './WalletConnect';
+import { SearchInput } from './form-controls/SearchInput';
 
 type User = {
   name: string;
@@ -16,22 +16,12 @@ interface HeaderProps {
   onCreateAccount?: () => void;
 }
 
-export const Header = ({
-  connected,
-  user,
-  onLogin,
-  onLogout,
-  onCreateAccount,
-}: HeaderProps) => {
+export const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: HeaderProps) => {
   return (
     <header className="w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
       <div className="flex flex-row items-center">
         <img src="/icons/vtvl-icon.svg" className="h-10 sm:hidden md:h-12" />
-        <img
-          src="/logo.svg"
-          className="hidden sm:block w-48 h-9 mr-5 cursor-pointer"
-          alt="VTVL"
-        />
+        <img src="/logo.svg" className="hidden sm:block w-48 h-9 mr-5 cursor-pointer" alt="VTVL" />
         <div className="hidden md:block">
           <SearchInput placeholder="Search" />
         </div>

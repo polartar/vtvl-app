@@ -1,18 +1,19 @@
-import { NextPage } from "next";
-import { Breadcrumb } from "../components/global/Breadcrumb";
-import { Radio } from "../components/global/Radio";
-import { Input } from "../components/global/Input";
-import { BackButton } from "../components/global/BackButton";
-import { useState } from "react";
+import { NextPage } from 'next';
+import { useState } from 'react';
+
+import { BackButton } from '../components/atoms/BackButton/BackButton';
+import { Breadcrumb } from '../components/atoms/Breadcrumb/Breadcrumb';
+import { Input } from '../components/atoms/Input';
+import { Radio } from '../components/atoms/Radio';
 
 const crumbSteps = [
-  { title: "Dashboard", route: "dashboard" },
-  { title: "Vesting summary", route: "vesting-summary" },
+  { title: 'Dashboard', route: 'dashboard' },
+  { title: 'Vesting summary', route: 'vesting-summary' }
 ];
 
 const ConfirmationImportedSafesPage: NextPage = () => {
   const [importedSafes, setImportedSafes] = useState({
-    type: "gnosis-safe",
+    type: 'gnosis-safe'
   });
 
   const radioHandler = (e: any) => {
@@ -75,7 +76,7 @@ const ConfirmationImportedSafesPage: NextPage = () => {
               name="type"
               value="gnosis-safe"
               variant="input-style"
-              checked={importedSafes.type === "gnosis-safe"}
+              checked={importedSafes.type === 'gnosis-safe'}
               onChange={radioHandler}
             />
             <Radio
@@ -83,14 +84,13 @@ const ConfirmationImportedSafesPage: NextPage = () => {
               name="type"
               value="individual"
               variant="input-style"
-              checked={importedSafes.type === "individual"}
+              checked={importedSafes.type === 'individual'}
               onChange={radioHandler}
             />
           </div>
           <h2 className="h5 font-semibold text-neutral-900 mt-5">Your safes</h2>
           <p className="text-sm text-neutral-500 mb-5">
-            You can natively create new, import or login to your existing gnisis
-            safe multisig.
+            You can natively create new, import or login to your existing gnisis safe multisig.
           </p>
           {/* Dynamic safes */}
           <div className="grid md:grid-cols-3 pb-5 gap-5 border-b border-neutral-200">
@@ -101,12 +101,7 @@ const ConfirmationImportedSafesPage: NextPage = () => {
               className="md:col-span-3"
             />
             <Input label="Owner name" required placeholder="Enter owner name" />
-            <Input
-              label="Owner address"
-              required
-              placeholder="Enter owner address"
-              className="md:col-span-2"
-            />
+            <Input label="Owner address" required placeholder="Enter owner address" className="md:col-span-2" />
             <div className="md:col-span-3">
               <button className="secondary small">+ Add more</button>
             </div>
@@ -120,7 +115,7 @@ const ConfirmationImportedSafesPage: NextPage = () => {
           <div className="flex flex-row justify-between items-center mt-6">
             <BackButton label="Return to summary" href="/" />
             <button className="flex flex-row items-center gap-2 primary">
-              Sign and Authorize{" "}
+              Sign and Authorize{' '}
               <img
                 src="/icons/arrow-small-left.svg"
                 alt="Sign and Authorize"

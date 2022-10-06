@@ -1,9 +1,10 @@
-import { Colors } from "../CommonStyles";
-import { IconText } from "./IconText";
-import { SidebarItem } from "./SidebarItem";
-import { User } from "./User";
-import styled from "@emotion/styled";
-import React from "react";
+import styled from '@emotion/styled';
+import React from 'react';
+
+import { Colors } from '../CommonStyles';
+import { IconText } from './IconText';
+import { SidebarItem } from './SidebarItem';
+import { User } from './User';
 
 interface Props {
   collapsed?: boolean;
@@ -14,13 +15,7 @@ interface Props {
   role: string;
 }
 
-export const Sidebar = ({
-  roleTitle,
-  menuList,
-  submenuList,
-  userName,
-  role,
-}: Props) => {
+export const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
   const [selectedId, setSelectedId] = React.useState(0);
   return (
     <SidebarContainer>
@@ -33,8 +28,7 @@ export const Sidebar = ({
             hovered={false}
             onClick={() => setSelectedId(index)}
             icon={menu.icon}
-            hoverIcon={menu.hoverIcon}
-          >
+            hoverIcon={menu.hoverIcon}>
             {menu.title}
           </SidebarItem>
         ))}

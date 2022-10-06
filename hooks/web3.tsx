@@ -1,9 +1,9 @@
-import { useMemo } from "react";
-import { useWeb3React } from "@web3-react/core";
-import { Contract } from "ethers";
-import { AddressZero } from "@ethersproject/constants";
-import { JsonRpcSigner, Web3Provider } from "@ethersproject/providers";
-import { getAddress } from "@ethersproject/address";
+import { getAddress } from '@ethersproject/address';
+import { AddressZero } from '@ethersproject/constants';
+import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
+import { useWeb3React } from '@web3-react/core';
+import { Contract } from 'ethers';
+import { useMemo } from 'react';
 
 export function isAddress(value: any): string | false {
   try {
@@ -13,27 +13,15 @@ export function isAddress(value: any): string | false {
   }
 }
 
-export function getContract(
-  address: string,
-  ABI: any,
-  library: Web3Provider,
-  account?: string
-): Contract {
+export function getContract(address: string, ABI: any, library: Web3Provider, account?: string): Contract {
   if (!isAddress(address) || address === AddressZero) {
     throw Error(`Invalid 'address' parameter '${address}'.`);
   }
 
-  return new Contract(
-    address,
-    ABI,
-    getProviderOrSigner(library, account) as any
-  );
+  return new Contract(address, ABI, getProviderOrSigner(library, account) as any);
 }
 
-function getProviderOrSigner(
-  library: Web3Provider,
-  account?: string
-): Web3Provider | JsonRpcSigner {
+function getProviderOrSigner(library: Web3Provider, account?: string): Web3Provider | JsonRpcSigner {
   return account ? library.getSigner(account).connectUnchecked() : library;
 }
 
@@ -47,26 +35,14 @@ export function useContract<T extends Contract = Contract>(
   return useMemo(() => {
     if (!addressOrAddressMap || !ABI || !library || !chainId) return null;
     let address: string | undefined;
-    if (typeof addressOrAddressMap === "string") address = addressOrAddressMap;
+    if (typeof addressOrAddressMap === 'string') address = addressOrAddressMap;
     else address = addressOrAddressMap[chainId];
     if (!address) return null;
     try {
-      return getContract(
-        address,
-        ABI,
-        library,
-        withSignerIfPossible && account ? account : undefined
-      );
+      return getContract(address, ABI, library, withSignerIfPossible && account ? account : undefined);
     } catch (error) {
-      console.error("Failed to get contract", error);
+      console.error('Failed to get contract', error);
       return null;
     }
-  }, [
-    addressOrAddressMap,
-    ABI,
-    library,
-    chainId,
-    withSignerIfPossible,
-    account,
-  ]) as T;
+  }, [addressOrAddressMap, ABI, library, chainId, withSignerIfPossible, account]) as T;
 }
