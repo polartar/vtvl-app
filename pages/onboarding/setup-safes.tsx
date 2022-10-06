@@ -28,7 +28,10 @@ const SetupSafesPage: NextPage = () => {
           <button className="line primary">Create New Safe</button>
         </div>
         <div className="flex flex-row justify-between items-center mt-6">
-          <BackButton label="Return to account setup" href="/" />
+          <BackButton
+            label="Return to account setup"
+            href="/onboarding/account-setup"
+          />
           <button className="flex flex-row items-center gap-2 primary">
             Proceed{" "}
             <img
