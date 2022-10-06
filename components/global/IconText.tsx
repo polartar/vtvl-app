@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
-import React from "react";
+import styled from '@emotion/styled';
+import React from 'react';
 
-import sidebarItemImg from "/public/icons/sidebarItem.svg";
+import sidebarItemImg from '/public/icons/sidebarItem.svg';
 
 interface Props {
   sideIcon?: string;

@@ -1,6 +1,7 @@
-import { InjectedConnector } from "@web3-react/injected-connector";
-import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
-import { SupportedChainId } from "../types/constants/supported-chains";
+import { InjectedConnector } from '@web3-react/injected-connector';
+import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
+
+import { SupportedChainId } from '../types/constants/supported-chains';
 
 export const injected = new InjectedConnector({
   supportedChainIds: [
@@ -8,12 +9,12 @@ export const injected = new InjectedConnector({
     SupportedChainId.ROPSTEN,
     SupportedChainId.RINKEBY,
     SupportedChainId.GOERLI,
-    SupportedChainId.KOVAN,
-  ],
+    SupportedChainId.KOVAN
+  ]
 });
 
 export const walletconnect = new WalletConnectConnector({
   rpc: { 1: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}` },
-  bridge: "https://bridge.walletconnect.org",
-  qrcode: true,
+  bridge: 'https://bridge.walletconnect.org',
+  qrcode: true
 });

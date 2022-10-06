@@ -1,0 +1,19 @@
+import { ComponentMeta, ComponentStory } from '@storybook/react';
+import React from 'react';
+
+import { BackButton } from './BackButton';
+
+// More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
+export default {
+  title: 'components/BackButton',
+  component: BackButton
+} as ComponentMeta<typeof BackButton>;
+
+// More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
+const Template: ComponentStory<typeof BackButton> = (args) => <BackButton {...args} />;
+
+export const FormUsage = Template.bind({});
+FormUsage.args = {
+  href: '/',
+  label: 'Return to account setup'
+};

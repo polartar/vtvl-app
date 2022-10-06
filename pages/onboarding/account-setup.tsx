@@ -1,17 +1,13 @@
-import React from "react";
-import {
-  useForm,
-  useFieldArray,
-  Controller,
-  SubmitHandler,
-} from "react-hook-form";
-import { NextPage } from "next";
-import Router from "next/router";
-import { Avatar } from "../../components/global/Avatar";
-import { Radio } from "../../components/global/Radio";
-import { Input } from "../../components/global/Input";
-import { BackButton } from "../../components/global/BackButton";
-import { emailPattern } from "../../types/constants/validation-patterns";
+import { NextPage } from 'next';
+import Router from 'next/router';
+import React from 'react';
+import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
+
+import { Avatar } from '../../components/atoms/Avatar/Avatar';
+import { BackButton } from '../../components/atoms/BackButton/BackButton';
+import { Input } from '../../components/atoms/FormControls/Input/Input';
+import { Radio } from '../../components/atoms/FormControls/Radio/Radio';
+import { emailPattern } from '../../types/constants/validation-patterns';
 
 interface Contributor {
   name: string;
@@ -34,38 +30,38 @@ const AccountSetupPage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
-    formState: { errors, isValid, isDirty, isSubmitted },
+    formState: { errors, isValid, isDirty, isSubmitted }
   } = useForm({
     defaultValues: {
-      name: "",
-      company: "",
-      companyEmail: "",
-      type: "organization",
+      name: '',
+      company: '',
+      companyEmail: '',
+      type: 'organization',
       contributors: [
         {
-          name: "",
-          email: "",
-        },
-      ],
-    },
+          name: '',
+          email: ''
+        }
+      ]
+    }
   });
 
   // Controls for the dynamic contributors
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "contributors",
+    name: 'contributors'
   });
 
   // Watch for these fields -- will later on be used to determine the checked state of the radio and other state checks
-  const userTypeRadio = { value: watch("type"), state: getFieldState("type") };
-  const userName = { value: watch("name"), state: getFieldState("name") };
+  const userTypeRadio = { value: watch('type'), state: getFieldState('type') };
+  const userName = { value: watch('name'), state: getFieldState('name') };
   const userCompany = {
-    value: watch("company"),
-    state: getFieldState("company"),
+    value: watch('company'),
+    state: getFieldState('company')
   };
   const userCompanyEmail = {
-    value: watch("companyEmail"),
-    state: getFieldState("companyEmail"),
+    value: watch('companyEmail'),
+    state: getFieldState('companyEmail')
   };
 
   // For the dynamic contributors list to get their individual states
@@ -73,33 +69,23 @@ const AccountSetupPage: NextPage = () => {
     return {
       name: {
         value: watch(`contributors.${index}.name`),
-        state: getFieldState(`contributors.${index}.name`),
+        state: getFieldState(`contributors.${index}.name`)
       },
       email: {
         value: watch(`contributors.${index}.email`),
-        state: getFieldState(`contributors.${index}.email`),
-      },
+        state: getFieldState(`contributors.${index}.email`)
+      }
     };
   };
 
-  console.log(
-    "Values",
-    userTypeRadio,
-    userName,
-    userCompany,
-    userCompanyEmail,
-    errors,
-    isValid,
-    isDirty,
-    isSubmitted
-  );
+  console.log('Values', userTypeRadio, userName, userCompany, userCompanyEmail, errors, isValid, isDirty, isSubmitted);
 
   // Add a contributor to the list
-  const addContributor = () => append({ name: "", email: "" });
+  const addContributor = () => append({ name: '', email: '' });
 
   const onSubmit: SubmitHandler<AccountForm> = (data) => {
-    console.log("Form Submitted", data, getValues());
-    Router.push("/onboarding/setup-safes");
+    console.log('Form Submitted', data, getValues());
+    Router.push('/onboarding/setup-safes');
   };
 
   // Recommended by React hook forms when using field array https://react-hook-form.com/api/usefieldarray
@@ -111,23 +97,15 @@ const AccountSetupPage: NextPage = () => {
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
       <h1 className="text-neutral-900">Setup your account</h1>
       <p className="text-sm max-w-xl text-center text-neutral-500">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae
-        iaculis nulla. Etiam eget rhoncus orci, ac vestibulum justo.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae iaculis nulla. Etiam eget rhoncus orci, ac
+        vestibulum justo.
       </p>
       <div className="w-full my-6 panel">
         <div className="flex flex-row items-center gap-3.5 pb-5 border-b border-neutral-200">
-          <Avatar
-            name={userName.value || "Your name"}
-            size="large"
-            placeholder="initials"
-          />
+          <Avatar name={userName.value || 'Your name'} size="large" placeholder="initials" />
           <div>
-            <h2 className="h6 text-neutral-900">
-              {userName.value || "Your name"}
-            </h2>
-            <p className="text-sm text-neutral-500">
-              {userCompany.value || "Company name"}
-            </p>
+            <h2 className="h6 text-neutral-900">{userName.value || 'Your name'}</h2>
+            <p className="text-sm text-neutral-500">{userCompany.value || 'Company name'}</p>
             {/* <p className="text-sm text-neutral-600">
               0x123126386ajdkhf8123923123laj
             </p> */}
@@ -143,7 +121,7 @@ const AccountSetupPage: NextPage = () => {
                 <Radio
                   label="Organization"
                   variant="input-style"
-                  checked={userTypeRadio.value === "organization"}
+                  checked={userTypeRadio.value === 'organization'}
                   {...field}
                   value="organization"
                 />
@@ -158,7 +136,7 @@ const AccountSetupPage: NextPage = () => {
                   label="Individual"
                   variant="input-style"
                   {...field}
-                  checked={userTypeRadio.value === "individual"}
+                  checked={userTypeRadio.value === 'individual'}
                   value="individual"
                 />
               )}
@@ -172,18 +150,13 @@ const AccountSetupPage: NextPage = () => {
                   label="Your name"
                   placeholder="Enter your name"
                   error={Boolean(errors.name)}
-                  success={
-                    !Boolean(errors.name) &&
-                    (userName.state.isTouched || userName.state.isDirty) &&
-                    isSubmitted
-                  }
+                  success={!Boolean(errors.name) && (userName.state.isTouched || userName.state.isDirty) && isSubmitted}
                   message={
                     errors.name
-                      ? "Please enter your name"
-                      : (userName.state.isTouched || userName.state.isDirty) &&
-                        isSubmitted
-                      ? "Name is okay"
-                      : ""
+                      ? 'Please enter your name'
+                      : (userName.state.isTouched || userName.state.isDirty) && isSubmitted
+                      ? 'Name is okay'
+                      : ''
                   }
                   {...field}
                 />
@@ -201,18 +174,15 @@ const AccountSetupPage: NextPage = () => {
                   error={Boolean(errors.company)}
                   success={
                     !Boolean(errors.company) &&
-                    (userCompany.state.isTouched ||
-                      userCompany.state.isDirty) &&
+                    (userCompany.state.isTouched || userCompany.state.isDirty) &&
                     isSubmitted
                   }
                   message={
                     errors.company
-                      ? "Please enter your company name"
-                      : (userCompany.state.isTouched ||
-                          userCompany.state.isDirty) &&
-                        isSubmitted
-                      ? "Company name is okay"
-                      : ""
+                      ? 'Please enter your company name'
+                      : (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted
+                      ? 'Company name is okay'
+                      : ''
                   }
                   {...field}
                 />
@@ -231,18 +201,15 @@ const AccountSetupPage: NextPage = () => {
                   error={Boolean(errors.companyEmail)}
                   success={
                     !Boolean(errors.companyEmail) &&
-                    (userCompanyEmail.state.isTouched ||
-                      userCompanyEmail.state.isDirty) &&
+                    (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) &&
                     isSubmitted
                   }
                   message={
                     errors.companyEmail
-                      ? "Please enter your company email"
-                      : (userCompanyEmail.state.isTouched ||
-                          userCompanyEmail.state.isDirty) &&
-                        isSubmitted
-                      ? "Company email is okay"
-                      : ""
+                      ? 'Please enter your company email'
+                      : (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) && isSubmitted
+                      ? 'Company email is okay'
+                      : ''
                   }
                   {...field}
                 />
@@ -250,10 +217,7 @@ const AccountSetupPage: NextPage = () => {
             />
           </div>
           {fields.map((contributor, contributorIndex) => (
-            <div
-              key={`contributor-${contributor.id}`}
-              className="grid md:grid-cols-2 gap-5 mb-5"
-            >
+            <div key={`contributor-${contributor.id}`} className="grid md:grid-cols-2 gap-5 mb-5">
               <Controller
                 name={`contributors.${contributorIndex}.name`}
                 control={control}
@@ -262,29 +226,21 @@ const AccountSetupPage: NextPage = () => {
                   <Input
                     label="Contributor's name"
                     placeholder="Enter contributor's name"
-                    error={Boolean(
-                      getContributorState(contributorIndex).name.state.error
-                    )}
+                    error={Boolean(getContributorState(contributorIndex).name.state.error)}
                     success={
-                      !Boolean(
-                        getContributorState(contributorIndex).name.state.error
-                      ) &&
-                      (getContributorState(contributorIndex).name.state
-                        .isTouched ||
-                        getContributorState(contributorIndex).name.state
-                          .isDirty) &&
+                      !Boolean(getContributorState(contributorIndex).name.state.error) &&
+                      (getContributorState(contributorIndex).name.state.isTouched ||
+                        getContributorState(contributorIndex).name.state.isDirty) &&
                       isSubmitted
                     }
                     message={
                       getContributorState(contributorIndex).name.state.error
                         ? "Please enter contributor's name"
-                        : (getContributorState(contributorIndex).name.state
-                            .isTouched ||
-                            getContributorState(contributorIndex).name.state
-                              .isDirty) &&
+                        : (getContributorState(contributorIndex).name.state.isTouched ||
+                            getContributorState(contributorIndex).name.state.isDirty) &&
                           isSubmitted
                         ? "Contributor's name is okay"
-                        : ""
+                        : ''
                     }
                     {...field}
                   />
@@ -298,29 +254,21 @@ const AccountSetupPage: NextPage = () => {
                   <Input
                     label="Contributor's email"
                     placeholder="Enter contributor's email"
-                    error={Boolean(
-                      getContributorState(contributorIndex).email.state.error
-                    )}
+                    error={Boolean(getContributorState(contributorIndex).email.state.error)}
                     success={
-                      !Boolean(
-                        getContributorState(contributorIndex).email.state.error
-                      ) &&
-                      (getContributorState(contributorIndex).email.state
-                        .isTouched ||
-                        getContributorState(contributorIndex).email.state
-                          .isDirty) &&
+                      !Boolean(getContributorState(contributorIndex).email.state.error) &&
+                      (getContributorState(contributorIndex).email.state.isTouched ||
+                        getContributorState(contributorIndex).email.state.isDirty) &&
                       isSubmitted
                     }
                     message={
                       getContributorState(contributorIndex).email.state.error
                         ? "Please enter contributor's email"
-                        : (getContributorState(contributorIndex).email.state
-                            .isTouched ||
-                            getContributorState(contributorIndex).email.state
-                              .isDirty) &&
+                        : (getContributorState(contributorIndex).email.state.isTouched ||
+                            getContributorState(contributorIndex).email.state.isDirty) &&
                           isSubmitted
                         ? "Contributor's email is okay"
-                        : ""
+                        : ''
                     }
                     {...field}
                   />
@@ -328,11 +276,7 @@ const AccountSetupPage: NextPage = () => {
               />
             </div>
           ))}
-          <button
-            type="button"
-            className="secondary small mb-5"
-            onClick={addContributor}
-          >
+          <button type="button" className="secondary small mb-5" onClick={addContributor}>
             Add more contributors
           </button>
           <div className="flex flex-row justify-between items-center">
