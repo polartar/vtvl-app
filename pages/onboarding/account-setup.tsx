@@ -11,6 +11,7 @@ import { Avatar } from "../../components/global/Avatar";
 import { Radio } from "../../components/global/Radio";
 import { Input } from "../../components/global/Input";
 import { BackButton } from "../../components/global/BackButton";
+import { emailPattern } from "../../types/constants/validation-patterns";
 
 interface Contributor {
   name: string;
@@ -221,7 +222,7 @@ const AccountSetupPage: NextPage = () => {
             <Controller
               name="companyEmail"
               control={control}
-              rules={{ required: true }}
+              rules={{ required: true, pattern: emailPattern }}
               render={({ field }) => (
                 <Input
                   label="Your company email"
@@ -292,7 +293,7 @@ const AccountSetupPage: NextPage = () => {
               <Controller
                 name={`contributors.${contributorIndex}.email`}
                 control={control}
-                rules={{ required: true }}
+                rules={{ required: true, pattern: emailPattern }}
                 render={({ field }) => (
                   <Input
                     label="Contributor's email"
