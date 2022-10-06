@@ -4,6 +4,9 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   required?: boolean;
   label?: string;
   className?: string;
+  message?: string | JSX.Element | JSX.Element[];
+  error?: boolean;
+  success?: boolean;
 }
 
 /**
@@ -11,7 +14,10 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
  * ```
  * <label className="required">
  *  <span>Organization name</span>
- *  <input type="text" />
+ *  <div>
+ *   <input type="text" />
+ *   <p>Optional message -- can also be used as error / success message.</p>
+ *  </div>
  * </label>
  * ```
  * This component mimics the default input and already contains the a11y and label.
@@ -21,12 +27,18 @@ export const Input = ({
   label = "",
   required = false,
   className = "",
+  message = "",
+  error = false,
+  success = false,
   ...props
 }: InputProps) => {
   return (
     <label className={`${required ? "required" : ""} ${className}`}>
       {label ? <span>{label}</span> : null}
-      <input type="text" {...props} />
+      <div className={`${success && "success"} ${error && "error"}`}>
+        <input type="text" {...props} />
+        {message ? <p>{message}</p> : null}
+      </div>
     </label>
   );
 };

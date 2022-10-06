@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefAttributes } from "react";
 
 interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   selected?: string;
@@ -13,6 +13,7 @@ export const Radio = ({
   variant = "default",
   description = "",
   label = "",
+  selected,
   ...props
 }: RadioProps) => {
   return (
