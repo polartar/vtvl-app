@@ -1,5 +1,3 @@
-import CloseSvg from '@assets/icons/close.svg';
-import UploadCloudSvg from '@assets/icons/upload-cloud.svg';
 import React, { useRef, useState } from 'react';
 
 const DEFAULT_MAX_FILE_SIZE_IN_BYTES = 500000;
@@ -116,7 +114,7 @@ const Uploader = ({
                 <div
                   className="absolute right-2 top-2 z-10 cursor-pointer p-1 flex items-center justify-center bg-neutral-100 rounded-full transition-all border-2 border-transparent hover:border-neutral-300"
                   onClick={() => removeFile(fileName)}>
-                  <img src={CloseSvg} alt={`Remove ${file.name}`} className="w-5 h-5" />
+                  <img src="/icons/close.svg" alt={`Remove ${file.name}`} className="w-5 h-5" />
                 </div>
               </div>
               {props.multiple ? (
@@ -151,7 +149,7 @@ const Uploader = ({
         ) : (
           <div className="relative flex items-center justify-center">
             <div className="relative z-10 flex items-center justify-center bg-gray-100 rounded-full p-3 border-[6px] border-gray-50">
-              <img src={UploadCloudSvg} alt={label} className="w-4 h-4" />
+              <img src="/icons/upload-cloud.svg" alt={label} className="w-4 h-4" />
             </div>
             <div
               className={`${

@@ -54,7 +54,7 @@ const SidebarItemContainer = styled.div<{
   font-style: normal;
   font-size: 16px;
   line-height: 24px;
-  font-weight: ${({ selected }) => (selected ? 700 : 400)};
+  font-weight: 400;
   color: ${({ selected }) => (selected ? '#F9FAFB' : '#1D2939')};
   margin: 6px auto;
   transition: all 0.3s ease-out;
@@ -64,7 +64,6 @@ const SidebarItemContainer = styled.div<{
     background-color: #1b369a;
     border-radius: 24px;
     color: #f9fafb;
-    font-weight: 700;
   }
   &:hover > .sidebar-item-icon {
     background-image: url(${({ hoverIcon }) => (!hoverIcon ? '/icons/s_dashboard2.svg' : hoverIcon)});

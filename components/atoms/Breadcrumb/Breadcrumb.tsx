@@ -1,4 +1,4 @@
-import { Colors } from '../../CommonStyles';
+import { Colors } from '@components/CommonStyles';
 import styled from '@emotion/styled';
 import React from 'react';
 

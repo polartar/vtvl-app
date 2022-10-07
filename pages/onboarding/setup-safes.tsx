@@ -55,7 +55,10 @@ const YourSafesPage: NextPage = () => {
 
         <div className="flex flex-row justify-between items-center mt-6">
           <BackButton label="Return to account setup" href="/onboarding/account-setup" />
-          <button className="flex flex-row items-center gap-2 primary group" type="button">
+          <button
+            className="flex flex-row items-center gap-2 primary group"
+            type="button"
+            onClick={() => Router.push('/dashboard')}>
             Skip{' '}
             <img
               src="/icons/arrow-small-right-white.svg"

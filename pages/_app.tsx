@@ -1,19 +1,31 @@
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { Web3ReactProvider } from '@web3-react/core';
 import { ethers } from 'ethers';
+import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
-import React from 'react';
+import React, { ReactElement, ReactNode } from 'react';
 
 import { AuthContextProvider } from '../providers/auth.context';
 import '../styles/globals.css';
 
-function MyApp({ Component, pageProps }: AppProps) {
+// Exporting a layout type for nested layouts
+export type NextPageWithLayout<P = Record<string, never>, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
+
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+  // Use the layout defined at the page level, if available
+  // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.
+  const getLayout = Component.getLayout ?? ((page) => page);
   return (
     <Web3ReactProvider getLibrary={(provider: any) => new ethers.providers.Web3Provider(provider)}>
       <AuthContextProvider>
-        <DefaultLayout>
-          <Component {...pageProps} />
-        </DefaultLayout>
+        {/* <DefaultLayout sidebar={true} connected={true}> */}
+        <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
       </AuthContextProvider>
     </Web3ReactProvider>
   );

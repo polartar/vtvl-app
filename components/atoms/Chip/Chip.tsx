@@ -41,7 +41,7 @@ const Chip = ({ size = 'default', color = 'default', label, rounded = false, ...
     danger: 'bg-danger-500 text-white'
   };
   return (
-    <label className={`border ${colors[color]} ${sizes[size]} ${rounded ? 'rounded-full' : ''}`} {...props}>
+    <label className={`w-auto border ${colors[color]} ${sizes[size]} ${rounded ? 'rounded-full' : ''}`} {...props}>
       {label}
     </label>
   );

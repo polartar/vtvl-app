@@ -34,7 +34,9 @@ const Radio = ({ variant = 'default', description = '', label = '', selected, ..
         <span className={`m-0 ${variant === 'input-style' ? 'text-gray-500' : 'text-sm text-neutral-700'} `}>
           {label || props.value}
         </span>
-        {variant === 'default' && description ? <span className="text-neutral-500 text-sm">{description}</span> : null}
+        {variant === 'default' && description ? (
+          <span className="text-neutral-500 text-sm mb-2">{description}</span>
+        ) : null}
       </div>
       <input type="radio" className="absolute opacity-0 -z-10" {...props} onChange={props.onChange} />
     </label>

@@ -1,5 +1,5 @@
 import Tick from '@assets/tick.svg';
-import { Colors } from '../../CommonStyles';
+import { Colors } from '@components/CommonStyles';
 import styled from '@emotion/styled';
 import React from 'react';
 
@@ -41,7 +41,6 @@ const StepItem = styled.div<{ isActive: boolean }>`
   flex-direction: column;
   align-items: center;
   div {
-    font-family: 'Inter';
     font-style: normal;
     font-size: 14px;
     line-height: 20px;

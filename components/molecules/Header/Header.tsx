@@ -1,8 +1,8 @@
+import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
+import NetworkSelector from '@components/atoms/NetworkSelector/NetworkSelector';
+import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
+import Router from 'next/router';
 import React from 'react';
-
-import NetworkSelector from '../../atoms/NetworkSelector/NetworkSelector';
-import SearchInput from '../../atoms/FormControls/SearchInput/SearchInput';
-import WalletConnect from '../../atoms/WalletConnect/WalletConnect';
 
 type User = {
   name: string;
@@ -18,10 +18,15 @@ interface HeaderProps {
 
 const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: HeaderProps) => {
   return (
-    <header className="w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
+    <header className="sticky top-0 z-50 w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
       <div className="flex flex-row items-center">
-        <img src="/icons/vtvl-icon.svg" className="h-10 sm:hidden md:h-12" />
-        <img src="/logo.svg" className="hidden sm:block w-48 h-9 mr-5 cursor-pointer" alt="VTVL" />
+        <img src="/icons/vtvl-icon.svg" className="h-10 sm:hidden md:h-12" onClick={() => Router.push('/onboarding')} />
+        <img
+          src="/logo.svg"
+          className="hidden sm:block w-48 h-9 mr-5 cursor-pointer"
+          alt="VTVL"
+          onClick={() => Router.push('/onboarding')}
+        />
         <div className="hidden md:block">
           <SearchInput placeholder="Search" />
         </div>

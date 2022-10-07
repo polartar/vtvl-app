@@ -28,7 +28,7 @@ const NetworkSelector = () => {
       code: 'AVAX'
     },
     { id: 5, icon: '/icons/chains/fantom.svg', title: 'Fantom', code: 'FTM' },
-    { id: 5, icon: '/icons/chains/cronos.svg', title: 'Cronos', code: 'CRO' }
+    { id: 6, icon: '/icons/chains/cronos.svg', title: 'Cronos', code: 'CRO' }
   ];
   const selectNetwork = (network: any) => {
     setShowNetworks(false);

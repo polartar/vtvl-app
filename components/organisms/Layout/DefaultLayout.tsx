@@ -1,8 +1,8 @@
+import Header from '@components/molecules/Header/Header';
+import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
+import Head from 'next/head';
 import React from 'react';
-
-import Header from '../../molecules/Header/Header';
-import Sidebar from '../../molecules/Sidebar/Sidebar';
 
 const Container = styled.section`
   min-width: 100vw;
@@ -79,6 +79,9 @@ const DefaultLayout = ({ sidebar = false, connected = false, ...props }: Default
   const [user, setUser] = React.useState<User>();
   return (
     <Container>
+      <Head>
+        <title>VTVL</title>
+      </Head>
       <Header
         connected={connected}
         user={user}
