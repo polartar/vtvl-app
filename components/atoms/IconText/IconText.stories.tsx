@@ -1,7 +1,6 @@
+import IconText from '@components/atoms/IconText/IconText';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { IconText } from './IconText';
 
 export default {
   title: 'components/IconText',

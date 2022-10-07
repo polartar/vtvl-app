@@ -6,7 +6,7 @@ interface EmptyStateProps extends React.BaseHTMLAttributes<HTMLDivElement> {
   description?: any;
 }
 
-export const EmptyState = ({ image = '', title = '', description = '', ...props }: EmptyStateProps) => {
+const EmptyState = ({ image = '', title = '', description = '', ...props }: EmptyStateProps) => {
   return (
     <div className="flex flex-col items-center justify-center gap-2 max-w-sm">
       {image ? <img src={image} alt={title} className="w-72" /> : null}
@@ -16,3 +16,5 @@ export const EmptyState = ({ image = '', title = '', description = '', ...props 
     </div>
   );
 };
+
+export default EmptyState;

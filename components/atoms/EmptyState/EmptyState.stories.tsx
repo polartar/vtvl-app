@@ -1,8 +1,6 @@
-import MyProjectImage from '@assets/images/cryptocurrency-trading-bot.gif';
+import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import { ComponentMeta } from '@storybook/react';
 import React from 'react';
-
-import { EmptyState } from './EmptyState';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {

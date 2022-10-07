@@ -1,7 +1,6 @@
+import User from '@components/atoms/User/User';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { User } from './User';
 
 export default {
   title: 'components/User',

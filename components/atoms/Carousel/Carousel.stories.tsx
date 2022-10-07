@@ -1,11 +1,6 @@
-import Image1 from '@assets/images/how-it-works/1.png';
-import Image2 from '@assets/images/how-it-works/2.png';
-import Image3 from '@assets/images/how-it-works/3.png';
-import Image4 from '@assets/images/how-it-works/4.png';
+import Carousel from '@components/atoms/Carousel/Carousel';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { Carousel } from './Carousel';
 
 export default {
   title: 'components/Carousel',

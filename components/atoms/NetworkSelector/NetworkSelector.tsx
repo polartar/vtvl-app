@@ -1,22 +1,34 @@
-import chevrondown from '@assets/chevron-down.svg';
-import avalanche from '@assets/icons/chains/avalanche.svg';
-import bsc from '@assets/icons/chains/bsc.svg';
-import cronos from '@assets/icons/chains/cronos.svg';
-import ethereum from '@assets/icons/chains/ethereum.svg';
-import fantom from '@assets/icons/chains/fantom.svg';
-import polygon from '@assets/icons/chains/polygon.svg';
 import React from 'react';
 
-export const NetworkSelector = () => {
+const NetworkSelector = () => {
   const [showNetworks, setShowNetworks] = React.useState(false);
-  const [selectedNetwork, setSelectedNetwork] = React.useState({ icon: ethereum, title: 'Ethereum', code: 'ETH' });
+  const [selectedNetwork, setSelectedNetwork] = React.useState({
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Ethereum',
+    code: 'ETH'
+  });
   const networkList = [
-    { id: 1, icon: ethereum, title: 'Ethereum', code: 'ETH' },
-    { id: 2, icon: bsc, title: 'BSC', code: 'BSC' },
-    { id: 3, icon: polygon, title: 'Polygon', code: 'MATIC' },
-    { id: 4, icon: avalanche, title: 'Avalanche', code: 'AVAX' },
-    { id: 5, icon: fantom, title: 'Fantom', code: 'FTM' },
-    { id: 5, icon: cronos, title: 'Cronos', code: 'CRO' }
+    {
+      id: 1,
+      icon: '/icons/chains/ethereum.svg',
+      title: 'Ethereum',
+      code: 'ETH'
+    },
+    { id: 2, icon: '/icons/chains/bsc.svg', title: 'BSC', code: 'BSC' },
+    {
+      id: 3,
+      icon: '/icons/chains/polygon.svg',
+      title: 'Polygon',
+      code: 'MATIC'
+    },
+    {
+      id: 4,
+      icon: '/icons/chains/avalanche.svg',
+      title: 'Avalanche',
+      code: 'AVAX'
+    },
+    { id: 5, icon: '/icons/chains/fantom.svg', title: 'Fantom', code: 'FTM' },
+    { id: 5, icon: '/icons/chains/cronos.svg', title: 'Cronos', code: 'CRO' }
   ];
   const selectNetwork = (network: any) => {
     setShowNetworks(false);
@@ -27,7 +39,7 @@ export const NetworkSelector = () => {
     });
   };
   return (
-    <div className="relative sm:w-32 lg:w-44 shrink-0">
+    <div className="relative sm:w-32 lg:w-44 shrink-0" tabIndex={0} onBlur={() => setShowNetworks(false)}>
       <div
         className="flex flex-row items-center justify-between sm:gap-1 md:gap-3 bg-gray-50 border border-gray-200 rounded-3xl px-2 sm:px-3"
         onClick={() => setShowNetworks(!showNetworks)}>
@@ -39,14 +51,17 @@ export const NetworkSelector = () => {
           </p>
         </div>
         <img
-          src={chevrondown}
+          src="/chevron-down.svg"
           alt="More"
           className="hidden sm:block sm:h-4"
-          style={{ rotate: showNetworks ? '180deg' : '0deg', transition: 'all 0.2s ease' }}
+          style={{
+            rotate: showNetworks ? '180deg' : '0deg',
+            transition: 'all 0.2s ease'
+          }}
         />
       </div>
       {showNetworks && (
-        <div className="absolute top-12 flex flex-col bg-gray-50 border border-gray-200 rounded-3xl w-full py-1 px-2 sm:px-3">
+        <div className="absolute z-10 top-12 flex flex-col bg-gray-50 border border-gray-200 rounded-3xl w-full py-1 px-2 sm:px-3">
           {networkList.map((network: any) => (
             <div
               key={network.id}
@@ -64,3 +79,5 @@ export const NetworkSelector = () => {
     </div>
   );
 };
+
+export default NetworkSelector;

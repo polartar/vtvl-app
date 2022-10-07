@@ -26,7 +26,7 @@ interface ChipProps {
 /**
  * Primary UI component for user interaction
  */
-export const Chip = ({ size = 'default', color = 'default', label, rounded = false, ...props }: ChipProps) => {
+const Chip = ({ size = 'default', color = 'default', label, rounded = false, ...props }: ChipProps) => {
   const sizes = {
     small: 'py-0 px-1 text-xs',
     default: 'py-0.5 px-2 text-sm',
@@ -46,3 +46,5 @@ export const Chip = ({ size = 'default', color = 'default', label, rounded = fal
     </label>
   );
 };
+
+export default Chip;

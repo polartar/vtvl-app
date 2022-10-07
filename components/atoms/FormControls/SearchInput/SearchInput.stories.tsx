@@ -1,7 +1,6 @@
+import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { SearchInput } from './SearchInput';
 
 export default {
   title: 'components/SearchInput',

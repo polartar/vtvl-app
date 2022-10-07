@@ -1,17 +1,15 @@
-import userImg from '@assets/user.png';
-import styled from '@emotion/styled';
-import Image from 'next/image';
 import React from 'react';
+import styled from '@emotion/styled';
 
 interface Props {
   userName: string;
   role: string;
 }
 
-export const User = ({ userName, role }: Props) => {
+const User = ({ userName, role }: Props) => {
   return (
     <UserContainer>
-      <Image src={userImg} alt="userImg" />
+      <img src="/images/user.png" alt="userImg" />
       <div>
         <p>{userName}</p>
         <p>{role}</p>
@@ -56,3 +54,5 @@ const UserContainer = styled.div`
     }
   }
 `;
+
+export default User;

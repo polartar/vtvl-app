@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import React from 'react';
 
 const ConnectButton = styled.button`
   display: flex;
@@ -20,14 +21,14 @@ const ConnectButton = styled.button`
     box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
   }
 `;
-interface WalletButtonProps {
+interface WalletButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   image: string;
   label: string;
   subLabel?: string | JSX.Element | JSX.Element[];
   disabled?: boolean;
   onClick?: () => void;
 }
-export const WalletButton = ({ image, label, subLabel, disabled = false, ...props }: WalletButtonProps) => {
+const WalletButton = ({ image, label, subLabel, disabled = false, ...props }: WalletButtonProps) => {
   return (
     <ConnectButton {...props} disabled={disabled} className={`${disabled ? 'grayscale opacity-50' : ''}`}>
       <img src={image} alt={label} className="mb-5" />
@@ -36,3 +37,5 @@ export const WalletButton = ({ image, label, subLabel, disabled = false, ...prop
     </ConnectButton>
   );
 };
+
+export default WalletButton;

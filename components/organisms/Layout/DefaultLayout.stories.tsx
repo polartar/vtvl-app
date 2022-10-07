@@ -1,19 +1,18 @@
+import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
 
-import { SelectUserTypePage } from './SelectUserTypePage';
-
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {
-  title: 'pages/onboarding/SelectUserType',
-  component: SelectUserTypePage,
+  title: 'layouts/DefaultLayout',
+  component: DefaultLayout,
   // More on argTypes: https://storybook.js.org/docs/react/api/argtypes
   parameters: {
     layout: 'fullscreen'
   }
-} as ComponentMeta<typeof SelectUserTypePage>;
+} as ComponentMeta<typeof DefaultLayout>;
 
 // More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
-const Template: ComponentStory<typeof SelectUserTypePage> = (args) => <SelectUserTypePage />;
+const Template: ComponentStory<typeof DefaultLayout> = (args) => <DefaultLayout {...args} />;
 
-export const Page = Template.bind({});
+export const Configuration = Template.bind({ sidebar: true });

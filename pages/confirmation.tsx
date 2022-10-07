@@ -1,10 +1,9 @@
+import BackButton from '@components/atoms/BackButton/BackButton';
+import Breadcrumb from '@components/atoms/Breadcrumb/Breadcrumb';
+import Input from '@components/atoms/FormControls/Input/Input';
+import Radio from '@components/atoms/FormControls/Radio/Radio';
 import { NextPage } from 'next';
 import { useState } from 'react';
-
-import { BackButton } from '../components/atoms/BackButton/BackButton';
-import { Breadcrumb } from '../components/atoms/Breadcrumb/Breadcrumb';
-import { Input } from '../components/atoms/Input';
-import { Radio } from '../components/atoms/Radio';
 
 const crumbSteps = [
   { title: 'Dashboard', route: 'dashboard' },

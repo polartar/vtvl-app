@@ -1,4 +1,3 @@
-import CheckSvg from '@assets/icons/check.svg';
 import styled from '@emotion/styled';
 import React, { useState } from 'react';
 
@@ -67,7 +66,7 @@ const CardRadio = ({ image, label, value, name, ...props }: CardRadioProps) => {
       <img src={image} alt={label} />
       {label}
       <Check className={props.checked ? 'selected' : ''}>
-        {props.checked ? <img src={CheckSvg} alt={`${value} selected`} /> : null}
+        {props.checked ? <img src="/icons/check.svg" alt={`${value} selected`} /> : null}
       </Check>
       <input
         type="radio"

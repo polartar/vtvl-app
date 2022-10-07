@@ -1,7 +1,6 @@
+import SidebarItem from '@components/atoms/SidebarItem/SidebarItem';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { SidebarItem } from './SidebarItem';
 
 export default {
   title: 'components/SidebarItem',

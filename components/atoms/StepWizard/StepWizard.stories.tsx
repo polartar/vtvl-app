@@ -1,7 +1,6 @@
+import StepWizard from '@components/atoms/StepWizard/StepWizard';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { StepWizard } from './StepWizard';
 
 export default {
   title: 'components/StepWizard',

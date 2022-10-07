@@ -1,7 +1,6 @@
+import Header from '@components/molecules/Header/Header';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { Header } from './Header';
 
 export default {
   title: 'components/Header',

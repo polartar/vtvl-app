@@ -1,35 +1,27 @@
-import capTableIcon from '@assets/s_capTable.svg';
-import dashboardIcon from '@assets/s_dashboard.svg';
-import tokenPerformanceIcon from '@assets/s_tokenPerformance.svg';
-import tokenomicsIcon from '@assets/s_tokenomics.svg';
-import transactionsIcon from '@assets/s_transactions.svg';
-import vestingScheduleIcon from '@assets/s_vestingSchedule.svg';
-import { Colors } from '@components/CommonStyles';
+import { Colors } from '../../CommonStyles';
 import styled from '@emotion/styled';
 import React from 'react';
-
-import chevrondown from '../../../assets/chevron-down.svg';
 
 interface Props {
   steps: { title: string; route: string }[];
 }
 
-export const Breadcrumb = ({ steps }: Props) => {
+const Breadcrumb = ({ steps }: Props) => {
   function getSrc(item: string) {
-    if (item === 'Dashboard') return dashboardIcon;
-    if (item === 'Vesting schedule') return vestingScheduleIcon;
-    if (item === 'Token performance') return tokenPerformanceIcon;
-    if (item === 'Cap table') return capTableIcon;
-    if (item === 'Tokenomics') return tokenomicsIcon;
-    if (item === 'Transactions') return transactionsIcon;
-    else return dashboardIcon;
+    if (item === 'Dashboard') return '/icons/s_dashboard.svg';
+    if (item === 'Vesting schedule') return '/icons/s_vestingSchedule.svg';
+    if (item === 'Token performance') return '/icons/s_tokenPerformance.svg';
+    if (item === 'Cap table') return '/icons/s_capTable.svg';
+    if (item === 'Tokenomics') return '/icons/s_tokenomics.svg';
+    if (item === 'Transactions') return '/icons/s_transactions.svg';
+    else return '/icons/s_dashboard.svg';
   }
   return (
     <BreadcrumbContainer>
       <img src={getSrc(steps[0].title)} alt="start-icon" />
       {steps.map((step: { title: string; route: string }, index: number) => (
         <>
-          <ChevronIcon src={chevrondown} alt="next" />
+          <ChevronIcon src="/icons/chevron-down.svg" alt="next" />
           <StepLabel lastRoute={steps.length === index + 1}>{step.title}</StepLabel>
         </>
       ))}
@@ -51,3 +43,5 @@ const StepLabel = styled.span<{ lastRoute: boolean }>`
   font-size: 14px;
   color: ${({ lastRoute }) => (lastRoute ? Colors.orange : Colors.grey)};
 `;
+
+export default Breadcrumb;

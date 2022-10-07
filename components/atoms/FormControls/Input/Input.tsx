@@ -14,13 +14,16 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
  * ```
  * <label className="required">
  *  <span>Organization name</span>
- *  <input type="text" />
+ *  <div>
+ *   <input type="text" />
+ *   <p>Optional message -- can also be used as error / success message.</p>
+ *  </div>
  * </label>
  * ```
  * This component mimics the default input and already contains the a11y and label.
  * To use, simply use the `<Input />` component as a regular `<input />` one.
  */
-export const Input = ({
+const Input = ({
   label = '',
   required = false,
   className = '',
@@ -39,3 +42,5 @@ export const Input = ({
     </label>
   );
 };
+
+export default Input;

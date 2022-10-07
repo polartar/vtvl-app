@@ -157,7 +157,7 @@
   }
 
   button.small {
-    @apply py-2.5 px-4 text-sm;
+    @apply py-0.5 px-3 text-sm;
   }
   button.large {
     @apply py-3 py-6 text-lg;

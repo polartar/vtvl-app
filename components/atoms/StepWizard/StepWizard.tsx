@@ -1,5 +1,5 @@
 import Tick from '@assets/tick.svg';
-import { Colors } from '@components/CommonStyles';
+import { Colors } from '../../CommonStyles';
 import styled from '@emotion/styled';
 import React from 'react';
 
@@ -8,7 +8,7 @@ interface Props {
   status: number;
 }
 
-export const StepWizard = ({ steps, status }: Props) => {
+const StepWizard = ({ steps, status }: Props) => {
   return (
     <StepContainer>
       {steps.map((step, stepIndex) => (
@@ -87,3 +87,5 @@ const Description = styled.div<{ isActive: boolean }>`
   font-weight: 400;
   color: ${({ isActive }) => (isActive ? Colors.primary : Colors.grey)};
 `;
+
+export default StepWizard;

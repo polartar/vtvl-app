@@ -1,12 +1,12 @@
+import Avatar from '@components/atoms/Avatar/Avatar';
+import BackButton from '@components/atoms/BackButton/BackButton';
+import Input from '@components/atoms/FormControls/Input/Input';
+import Radio from '@components/atoms/FormControls/Radio/Radio';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import React from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 
-import { Avatar } from '../../components/atoms/Avatar/Avatar';
-import { BackButton } from '../../components/atoms/BackButton/BackButton';
-import { Input } from '../../components/atoms/FormControls/Input/Input';
-import { Radio } from '../../components/atoms/FormControls/Radio/Radio';
 import { emailPattern } from '../../types/constants/validation-patterns';
 
 interface Contributor {
@@ -272,9 +272,11 @@ const AccountSetupPage: NextPage = () => {
               />
             </div>
           ))}
-          <button type="button" className="secondary small mb-5" onClick={addContributor}>
-            Add more contributors
-          </button>
+          {userTypeRadio.value === 'organization' ? (
+            <button type="button" className="secondary small mb-5" onClick={addContributor}>
+              Add more contributors
+            </button>
+          ) : null}
           <div className="flex flex-row justify-between items-center">
             <BackButton label="Return" href="/onboarding/select-user-type" />
             <button className="primary" type="submit">

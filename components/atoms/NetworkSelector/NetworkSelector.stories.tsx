@@ -1,7 +1,6 @@
+import NetworkSelector from '@components/atoms/NetworkSelector/NetworkSelector';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { NetworkSelector } from './NetworkSelector';
 
 export default {
   title: 'Components/NetworkSelector',

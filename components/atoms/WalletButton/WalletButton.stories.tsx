@@ -1,9 +1,8 @@
 import MetaMaskSvg from '@assets/icons/wallets/metamask.svg';
 import WalletConnectSvg from '@assets/icons/wallets/walletconnect.svg';
+import WalletButton from '@components/atoms/WalletButton/WalletButton';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { WalletButton } from './WalletButton';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {

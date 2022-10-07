@@ -1,7 +1,6 @@
+import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { WalletConnect } from './WalletConnect';
 
 export default {
   title: 'Components/WalletConnect',

@@ -1,4 +1,3 @@
-import sidebarItemImg from '@assets/sidebarItem.svg';
 import styled from '@emotion/styled';
 import React from 'react';
 
@@ -7,10 +6,10 @@ interface Props {
   children: string;
 }
 
-export const IconText = ({ sideIcon, children }: Props) => {
+const IconText = ({ sideIcon, children }: Props) => {
   return (
     <IconTextContainer>
-      <img src={sideIcon ? sideIcon : sidebarItemImg} alt="sideIcon" />
+      <img src={sideIcon ? sideIcon : '/icons/sidebarItem.svg'} alt="sideIcon" />
       {children}
     </IconTextContainer>
   );
@@ -35,3 +34,5 @@ const IconTextContainer = styled.div`
     margin: 0 12px;
   }
 `;
+
+export default IconText;

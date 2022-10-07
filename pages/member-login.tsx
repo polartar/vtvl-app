@@ -1,6 +1,5 @@
+import Input from '@components/atoms/FormControls/Input/Input';
 import { NextPage } from 'next';
-
-import { Input } from '../components/atoms/Input';
 
 const MemberLoginPage: NextPage = () => {
   return (

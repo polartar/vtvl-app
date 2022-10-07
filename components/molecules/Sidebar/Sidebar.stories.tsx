@@ -13,10 +13,9 @@ import vestingScheduleIcon2 from '@assets/s_vestingSchedule2.svg';
 import vestingScheduleIcon from '@assets/s_vestingSchedule.svg';
 import supportIcon from '@assets/support.svg';
 import switchUserIcon from '@assets/switchUser.svg';
+import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { Sidebar } from './Sidebar';
 
 export default {
   title: 'components/Sidebar',

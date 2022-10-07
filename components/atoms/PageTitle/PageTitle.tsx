@@ -1,4 +1,4 @@
-import { Colors } from '@components/CommonStyles';
+import { Colors } from '../../CommonStyles';
 import styled from '@emotion/styled';
 import React from 'react';
 
@@ -6,7 +6,7 @@ interface Props {
   title: string;
 }
 
-export const PageTitle = ({ title }: Props) => {
+const PageTitle = ({ title }: Props) => {
   return <Title>{title}</Title>;
 };
 
@@ -19,3 +19,5 @@ const Title = styled.div`
   text-align: center;
   color: ${Colors.pageTitle};
 `;
+
+export default PageTitle;

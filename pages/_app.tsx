@@ -1,9 +1,9 @@
+import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { Web3ReactProvider } from '@web3-react/core';
 import { ethers } from 'ethers';
 import type { AppProps } from 'next/app';
 import React from 'react';
 
-import { DefaultLayout } from '../components/layout/DefaultLayout';
 import { AuthContextProvider } from '../providers/auth.context';
 import '../styles/globals.css';
 

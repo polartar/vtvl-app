@@ -1,7 +1,6 @@
+import BackButton from '@components/atoms/BackButton/BackButton';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { BackButton } from './BackButton';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {

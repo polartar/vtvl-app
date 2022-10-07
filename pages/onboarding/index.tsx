@@ -4,9 +4,9 @@ import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
 
-import { Carousel } from '../../components/atoms/Carousel/Carousel';
-import { Chip } from '../../components/atoms/Chip/Chip';
-import { WalletButton } from '../../components/atoms/WalletButton/WalletButton';
+import Carousel from '../../components/atoms/Carousel/Carousel';
+import Chip from '../../components/atoms/Chip/Chip';
+import WalletButton from '../../components/atoms/WalletButton/WalletButton';
 import MultiSigWallet from '../../components/multisig';
 import { injected, walletconnect } from '../../connectors';
 

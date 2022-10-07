@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { NetworkSelector } from './NetworkSelector';
-import { WalletConnect } from './WalletConnect';
-import { SearchInput } from './form-controls/SearchInput';
+import NetworkSelector from '../../atoms/NetworkSelector/NetworkSelector';
+import SearchInput from '../../atoms/FormControls/SearchInput/SearchInput';
+import WalletConnect from '../../atoms/WalletConnect/WalletConnect';
 
 type User = {
   name: string;
@@ -16,7 +16,7 @@ interface HeaderProps {
   onCreateAccount?: () => void;
 }
 
-export const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: HeaderProps) => {
+const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: HeaderProps) => {
   return (
     <header className="w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
       <div className="flex flex-row items-center">
@@ -39,3 +39,5 @@ export const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: 
     </header>
   );
 };
+
+export default Header;

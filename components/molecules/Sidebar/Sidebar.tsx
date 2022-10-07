@@ -1,10 +1,9 @@
+import { Colors } from '../../CommonStyles';
+import IconText from '../../atoms/IconText/IconText';
+import SidebarItem from '../../atoms/SidebarItem/SidebarItem';
+import User from '../../atoms/User/User';
 import styled from '@emotion/styled';
 import React from 'react';
-
-import { Colors } from '../CommonStyles';
-import { IconText } from './IconText';
-import { SidebarItem } from './SidebarItem';
-import { User } from './User';
 
 interface Props {
   collapsed?: boolean;
@@ -15,7 +14,7 @@ interface Props {
   role: string;
 }
 
-export const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
+const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
   const [selectedId, setSelectedId] = React.useState(0);
   return (
     <SidebarContainer>
@@ -85,3 +84,5 @@ const LogoutImg = styled.img`
     scale: 1.1;
   }
 `;
+
+export default Sidebar;

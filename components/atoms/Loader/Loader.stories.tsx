@@ -1,7 +1,6 @@
+import Loader from '@components/atoms/Loader/Loader';
 import { ComponentMeta } from '@storybook/react';
 import React, { useState } from 'react';
-
-import { Loader } from './Loader';
 
 /**
  * Refer to https://klendi.github.io/react-top-loading-bar/ for the LoadingBar component usage

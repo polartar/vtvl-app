@@ -1,7 +1,6 @@
+import Uploader from '@components/atoms/Uploader/Uploader';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React, { useState } from 'react';
-
-import { Uploader } from './Uploader';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {

@@ -1,15 +1,14 @@
 import styled from '@emotion/styled';
-import searchIcon from 'public/icons/search.svg';
 import React from 'react';
 
 interface InputProps {
   size?: string;
   placeholder?: string;
 }
-export const SearchInput = (props: InputProps) => {
+const SearchInput = (props: InputProps) => {
   const { size = 'medium', ...rest } = props;
   return (
-    <InputWrapper size={size}>
+    <InputWrapper size={size} className="bg-white">
       <img src="/icons/search.svg" alt="searchIcon" />
       <input {...rest} />
     </InputWrapper>
@@ -45,3 +44,5 @@ const InputWrapper = styled.div<{ size?: string }>`
     font-family: 'Inter', sans-serif;
   }
 `;
+
+export default SearchInput;

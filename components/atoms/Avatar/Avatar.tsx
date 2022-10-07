@@ -12,7 +12,7 @@ interface AvatarProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   /** Any other `<img />` attributes */
 }
 
-export const Avatar = ({ src = '', name = '', placeholder = 'initials', size = 'default', ...props }: AvatarProps) => {
+const Avatar = ({ src = '', name = '', placeholder = 'initials', size = 'default', ...props }: AvatarProps) => {
   const [loaded, setLoaded] = React.useState(true);
   const initials = name
     .trim()
@@ -29,3 +29,5 @@ export const Avatar = ({ src = '', name = '', placeholder = 'initials', size = '
     </div>
   );
 };
+
+export default Avatar;

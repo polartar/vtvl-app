@@ -1,7 +1,6 @@
+import Chip from '@components/atoms/Chip/Chip';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { Chip } from './Chip';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {

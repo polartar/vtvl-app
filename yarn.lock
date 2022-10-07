@@ -11230,7 +11230,7 @@ react-slick@^0.29.0:
 
 react-top-loading-bar@^2.3.1:
   version "2.3.1"
-  resolved "https://registry.yarnpkg.com/react-top-loading-bar/-/react-top-loading-bar-2.3.1.tgz#d727eb6aaa412eae52a990e5de9f33e9136ac714"
+  resolved "https://registry.npmjs.org/react-top-loading-bar/-/react-top-loading-bar-2.3.1.tgz#d727eb6aaa412eae52a990e5de9f33e9136ac714"
   integrity sha512-rQk2Nm+TOBrM1C4E3e6KwT65iXyRSgBHjCkr2FNja1S51WaPulRA5nKj/xazuQ3x89wDDdGsrqkqy0RBIfd0xg==
 
 react@18.2.0:

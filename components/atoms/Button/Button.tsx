@@ -46,7 +46,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
  * e.g., `<button className="primary large">` is the same as `<Button primary large>`.
  * `<Button label="My Button" />` is the same as `<Button>My Button</Button>`
  */
-export const Button = (props: ButtonProps) => {
+const Button = (props: ButtonProps) => {
   const { primary, secondary, outline, danger, success, warning, size, label } = props;
   const getClassNames = () => {
     let className = '';
@@ -65,3 +65,5 @@ export const Button = (props: ButtonProps) => {
     </button>
   );
 };
+
+export default Button;

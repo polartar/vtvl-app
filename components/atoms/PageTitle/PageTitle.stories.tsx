@@ -1,7 +1,6 @@
+import PageTitle from '@components/atoms/PageTitle/PageTitle';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-
-import { PageTitle } from './PageTitle';
 
 export default {
   title: 'components/PageTitle',

@@ -31,7 +31,7 @@ interface UploadProps extends React.InputHTMLAttributes<HTMLInputElement> {
  * For enhancements:
  * - Support different modes of upload i.e, Drag&Drop area style (OK), Button only style -- import csv style.
  */
-export const Uploader = ({
+const Uploader = ({
   mode = 'area',
   buttonLabel = 'Browse File',
   label = '',
@@ -182,3 +182,5 @@ export const Uploader = ({
     </div>
   );
 };
+
+export default Uploader;

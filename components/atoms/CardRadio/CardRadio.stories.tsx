@@ -1,10 +1,9 @@
 import EmployeeSvg from '@assets/images/onboarding-user-type-employee.svg';
 import FounderSvg from '@assets/images/onboarding-user-type-founder.svg';
 import InvestorSvg from '@assets/images/onboarding-user-type-investor.svg';
+import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React, { useState } from 'react';
-
-import CardRadio from './CardRadio';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {

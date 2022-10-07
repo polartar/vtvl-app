@@ -1,7 +1,6 @@
+import Radio from '@components/atoms/FormControls/Radio/Radio';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React, { useState } from 'react';
-
-import { Radio } from './Radio';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 export default {

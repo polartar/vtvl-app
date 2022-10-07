@@ -10,7 +10,7 @@ interface LoaderProps {
 /**
  * Refer to https://klendi.github.io/react-top-loading-bar/ for the LoadingBar component usage
  */
-export const Loader = ({
+const Loader = ({
   progress = 0,
   color = 'primary',
   onComplete = () => {
@@ -29,3 +29,5 @@ export const Loader = ({
     <LoadingBar {...props} progress={progress} color={colors[color] || colors.primary} onLoaderFinished={onComplete} />
   );
 };
+
+export default Loader;

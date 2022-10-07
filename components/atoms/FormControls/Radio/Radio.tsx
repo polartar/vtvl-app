@@ -1,4 +1,3 @@
-import CheckSvg from '@assets/icons/check.svg';
 import React from 'react';
 
 interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,7 +9,7 @@ interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   variant?: 'default' | 'input-style';
 }
 
-export const Radio = ({ variant = 'default', description = '', label = '', selected, ...props }: RadioProps) => {
+const Radio = ({ variant = 'default', description = '', label = '', selected, ...props }: RadioProps) => {
   return (
     <label
       className={`flex-row cursor-pointer ${
@@ -28,7 +27,7 @@ export const Radio = ({ variant = 'default', description = '', label = '', selec
             ? 'bg-secondary-50 border-secondary-900'
             : 'bg-white'
         }`}>
-        {props.checked && variant === 'input-style' ? <img src={CheckSvg} alt={label} /> : null}
+        {props.checked && variant === 'input-style' ? <img src="/icons/check.svg" alt={label} /> : null}
         {props.checked && variant === 'default' ? <div className="w-2 h-2 bg-secondary-900 rounded-full"></div> : null}
       </div>
       <div className="flex flex-col gap-1 justify-start">
@@ -41,3 +40,5 @@ export const Radio = ({ variant = 'default', description = '', label = '', selec
     </label>
   );
 };
+
+export default Radio;
