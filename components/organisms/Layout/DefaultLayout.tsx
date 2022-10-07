@@ -1,5 +1,6 @@
-import React from 'react';
 import styled from '@emotion/styled';
+import React from 'react';
+
 import Header from '../../molecules/Header/Header';
 import Sidebar from '../../molecules/Sidebar/Sidebar';
 
@@ -87,7 +88,7 @@ const DefaultLayout = ({ sidebar = false, connected = false, ...props }: Default
       />
       <Layout>
         {connected && sidebar ? <Sidebar {...SidebarProps} /> : null}
-        <div className="flex flex-col items-center grow p-8">{props.children}</div>
+        <div className="flex flex-col items-center flex-grow p-8">{props.children}</div>
       </Layout>
     </Container>
   );
