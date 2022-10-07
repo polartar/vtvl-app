@@ -1,0 +1,308 @@
+/* Setup global variables */
+:root {
+  /* Color Scheme */
+  --gray-25: #fcfcfd;
+  --gray-100: #d0d5dd;
+  --gray-800: #1d2939;
+  /* Neutral */
+  --neutral-900: #101828;
+  --neutral-800: #1d2939;
+  --neutral-700: #101828;
+  --neutral-600: #475467;
+  --neutral-500: #667085;
+  --neutral-400: #98a2b3;
+  --neutral-300: #d0d5dd;
+  --neutral-200: #eaecf0;
+  --neutral-100: #f2f4f7;
+  --neutral-50: #f9fafb;
+  /* Primary */
+  --primary-900: #1b369a;
+  --primary-800: #324aa4;
+  --primary-700: #495eae;
+  --primary-600: #5f72b8;
+  --primary-500: #7686c2;
+  --primary-400: #8d9bcd;
+  --primary-300: #a4afd7;
+  --primary-200: #bbc3e1;
+  --primary-100: #d1d7eb;
+  --primary-50: #020202;
+  /* Secondary */
+  --secondary-900: #f9623b;
+  --secondary-800: #fa724f;
+  --secondary-700: #fa8162;
+  --secondary-600: #fb9176;
+  --secondary-500: #fba189;
+  --secondary-400: #fcb19d;
+  --secondary-300: #fdc0b1;
+  --secondary-200: #fdd0c4;
+  --secondary-100: #fee0d8;
+  --secondary-50: #feefeb;
+  /* Success */
+  --success-900: #14532d;
+  --success-800: #166534;
+  --success-700: #15803d;
+  --success-600: #16a34a;
+  --success-500: #22c55e;
+  --success-400: #4ade80;
+  --success-300: #86efac;
+  --success-200: #bbf7d0;
+  --success-100: #dcfce7;
+  --success-50: #f0fdf4;
+  /* Warning */
+  --warning-900: #78350f;
+  --warning-800: #92400e;
+  --warning-700: #b45309;
+  --warning-600: #d97706;
+  --warning-500: #f59e0b;
+  --warning-400: #fbbf24;
+  --warning-300: #fcd34d;
+  --warning-200: #fde68a;
+  --warning-100: #fef3c7;
+  --warning-50: #fffbeb;
+  /* Danger */
+  --danger-900: #7f1d1d;
+  --danger-800: #991b1b;
+  --danger-700: #b91c1c;
+  --danger-600: #dc2626;
+  --danger-500: #ef4444;
+  --danger-400: #f87171;
+  --danger-300: #fca5a5;
+  --danger-200: #fecaca;
+  --danger-100: #fee2e2;
+  --danger-50: #fef2f2;
+}
+
+/* @import url('https://fonts.googleapis.com/css2?family=Inter&family=Sora&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global base styles */
+@layer base {
+  /* Button component */
+  /* Defaults to primary */
+  button {
+    @apply rounded-full inline-block text-base py-2.5 px-5 bg-neutral-100 transition-all;
+  }
+  button:hover,
+  button:focus-visible {
+  }
+
+  button.primary {
+    @apply bg-primary-900 text-white;
+  }
+  button.primary:hover,
+  button.primary:focus-visible {
+    @apply bg-primary-900;
+  }
+
+  /* Other button styles */
+  button.secondary {
+    @apply bg-secondary-900 text-white;
+  }
+  button.secondary:hover,
+  button.secondary:focus-visible {
+    @apply bg-secondary-900;
+  }
+  button.success {
+    @apply bg-success-500 text-white;
+  }
+  button.success:hover,
+  button.success:focus-visible {
+    @apply bg-success-500;
+  }
+  button.warning {
+    @apply bg-warning-500 text-white;
+  }
+  button.warning:hover,
+  button.warning:focus-visible {
+    @apply bg-warning-500;
+  }
+  button.danger {
+    @apply bg-danger-500 text-white;
+  }
+  button.danger:hover,
+  button.danger:focus-visible {
+    @apply bg-danger-500;
+  }
+
+  button.line {
+    @apply bg-white border border-neutral-300 text-neutral-600;
+  }
+  button.line.primary {
+    @apply border-primary-900 text-primary-900;
+  }
+  button.line.secondary {
+    @apply border-secondary-900 text-secondary-900;
+  }
+  button.line.success {
+    @apply border-success-500 text-success-500;
+  }
+  button.line.warning {
+    @apply border-warning-500 text-warning-500;
+  }
+  button.line.danger {
+    @apply border-danger-500 text-danger-500;
+  }
+  button.line:not(.primary, .secondary, .success, .danger, .warning):hover,
+  button.line:not(.primary, .secondary, .success, .danger, .warning):focus-visible {
+    @apply bg-neutral-300;
+  }
+  button.line:is(.primary, .secondary, .success, .danger, .warning):hover,
+  button.line:is(.primary, .secondary, .success, .danger, .warning):focus-visible {
+    @apply text-white;
+  }
+
+  button.small {
+    @apply py-0.5 px-3 text-sm;
+  }
+  button.large {
+    @apply py-3 py-6 text-lg;
+  }
+
+  /* Typography */
+  .display {
+    @apply text-5xl leading-relaxed;
+  }
+  h1,
+  .h1 {
+    @apply text-h1 leading-relaxed;
+  }
+  h2,
+  .h2 {
+    @apply text-h2 leading-relaxed;
+  }
+  h3,
+  .h3 {
+    @apply text-h3 leading-relaxed;
+  }
+  h4,
+  .h4 {
+    @apply text-h4 leading-relaxed;
+  }
+  h5,
+  .h5 {
+    @apply text-h5 leading-relaxed;
+  }
+  h6,
+  .h6 {
+    @apply text-h6 leading-relaxed;
+  }
+  /* For paragraphs just use text-sm text-lg and text-base */
+
+  /* Form controls */
+  label {
+    @apply flex flex-col w-full;
+  }
+
+  label > span,
+  label .label {
+    @apply font-medium text-sm text-neutral-800 inline-flex gap-1 self-start mb-1.5 relative;
+  }
+
+  label.required > span:after,
+  label.required .label:after {
+    content: '*';
+    @apply text-secondary-900;
+  }
+
+  label > div > input:not([type='radio']),
+  .radioButton {
+    @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all duration-1000;
+  }
+
+  label > div > input:focus,
+  label > div > input:focus-visible {
+    @apply border-primary-400;
+  }
+
+  label > div {
+    @apply rounded-xl border border-transparent text-white p-1 transition-all duration-500;
+  }
+  label > div.error {
+    @apply bg-danger-100 border-danger-500 text-danger-700;
+  }
+  label > div.success {
+    @apply bg-success-100 border-success-200 text-success-600;
+    animation: fadeOutContainer 1s;
+    animation-delay: 2s;
+    animation-fill-mode: forwards;
+  }
+  label > div.error > input,
+  label > div.success > input {
+    @apply rounded-lg border-neutral-50;
+  }
+
+  label > div.success > input {
+    animation: fadeOutInputStyles 1s;
+    animation-delay: 2s;
+    animation-fill-mode: forwards;
+  }
+
+  label > div > p {
+    @apply text-xs mt-1 px-1 pb-1 h-5 overflow-hidden transition-all;
+  }
+
+  label > div.success > p {
+    animation: fadeOutMessage 1s;
+    animation-delay: 1.5s;
+    animation-fill-mode: forwards;
+  }
+
+  /* animation for success states on form input */
+  @keyframes fadeOutContainer {
+    to {
+      @apply border-transparent bg-transparent text-white;
+    }
+  }
+  @keyframes fadeOutInputStyles {
+    to {
+      @apply rounded-3xl border-neutral-300;
+    }
+  }
+  @keyframes fadeOutMessage {
+    to {
+      @apply opacity-0 h-0 mt-0 pb-0;
+    }
+  }
+
+  /* Contents */
+  .panel {
+    @apply p-6 rounded-3xl border border-gray-300;
+  }
+}
+
+@layer components {
+  /* Avatar component style */
+  .avatar,
+  .avatar .text {
+    @apply inline-flex items-center justify-center h-16 w-16 rounded-full relative overflow-hidden;
+  }
+
+  .avatar.default,
+  .avatar .text {
+    @apply h-11 w-11;
+  }
+
+  .avatar.small,
+  .avatar .text {
+    @apply h-6 w-6;
+  }
+
+  .avatar.initials {
+    @apply bg-gray-300 text-gray-400 text-xl;
+  }
+  .avatar.initials.small {
+    @apply text-xs;
+  }
+  .avatar.initials.default {
+    @apply text-lg;
+  }
+}
+
+*,
+html {
+  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
