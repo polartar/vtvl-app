@@ -2,6 +2,7 @@ import CollapsibleContent from '@components/atoms/CollapsibleContent/Collapsible
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import Uploader from '@components/atoms/Uploader/Uploader';
+import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -23,6 +24,7 @@ const MintingToken: NextPageWithLayout = () => {
     watch,
     getFieldState,
     getValues,
+    setValue,
     formState: { errors, isSubmitted }
   } = useForm({
     defaultValues: {
@@ -30,7 +32,8 @@ const MintingToken: NextPageWithLayout = () => {
       tokenSymbol: '',
       tokenLogo: '',
       supplyCap: 'unlimited',
-      amountToMint: 500000
+      amountToMint: 500000,
+      initialSupply: 1
     }
   });
 
@@ -39,7 +42,18 @@ const MintingToken: NextPageWithLayout = () => {
   const tokenSymbol = { value: watch('tokenSymbol'), state: getFieldState('tokenSymbol') };
   const tokenLogo = { value: watch('tokenSymbol'), state: getFieldState('tokenLogo') };
   const supplyCap = { value: watch('supplyCap'), state: getFieldState('supplyCap') };
-  const amountToMint = { value: watch('supplyCap'), state: getFieldState('amountToMint') };
+  const amountToMint = { value: watch('amountToMint'), state: getFieldState('amountToMint') };
+  const initialSupply = { value: watch('initialSupply'), state: getFieldState('initialSupply') };
+
+  const handleMinChange = (e: any) => {
+    console.log('Min changed', e.target.value);
+    setValue('initialSupply', e.target.value);
+  };
+
+  const handleMaxChange = (e: any) => {
+    console.log('Max changed', e.target.value);
+    setValue('amountToMint', e.target.value);
+  };
 
   // Handle the submit of the form
   const onSubmit: SubmitHandler<FormTypes> = (data) => {
@@ -157,32 +171,44 @@ const MintingToken: NextPageWithLayout = () => {
               />
             </div>
             <div className="border-t border-neutral-200 py-5">
-              <Controller
-                name="amountToMint"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Input
-                    label="Amount to mint"
-                    placeholder="500000"
-                    type="number"
-                    error={Boolean(errors.amountToMint)}
-                    success={
-                      !errors.amountToMint &&
-                      (amountToMint.state.isTouched || amountToMint.state.isDirty) &&
-                      isSubmitted
-                    }
-                    message={
-                      errors.amountToMint
-                        ? 'Please enter amount to mint'
-                        : (amountToMint.state.isTouched || amountToMint.state.isDirty) && isSubmitted
-                        ? 'Amount to min is okay'
-                        : ''
-                    }
-                    {...field}
-                  />
-                )}
-              />
+              {supplyCap.value === 'limited' ? (
+                <LimitedSupply
+                  label="Amount to mint"
+                  required
+                  initial={initialSupply.value}
+                  maximum={amountToMint.value}
+                  onMinChange={handleMinChange}
+                  onMaxChange={handleMaxChange}
+                  onUseMax={() => setValue('initialSupply', amountToMint.value)}
+                />
+              ) : (
+                <Controller
+                  name="amountToMint"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Input
+                      label="Amount to mint"
+                      placeholder="500000"
+                      type="number"
+                      error={Boolean(errors.amountToMint)}
+                      success={
+                        !errors.amountToMint &&
+                        (amountToMint.state.isTouched || amountToMint.state.isDirty) &&
+                        isSubmitted
+                      }
+                      message={
+                        errors.amountToMint
+                          ? 'Please enter amount to mint'
+                          : (amountToMint.state.isTouched || amountToMint.state.isDirty) && isSubmitted
+                          ? 'Amount to min is okay'
+                          : ''
+                      }
+                      {...field}
+                    />
+                  )}
+                />
+              )}
             </div>
             <div className="flex flex-row justify-end items-center border-t border-neutral-200 pt-5">
               <button className="primary" type="submit">

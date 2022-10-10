@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface ChipProps {
+interface ChipProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   /**
    * Label of chip
    */
@@ -17,10 +17,6 @@ interface ChipProps {
    * How large should the chip be?
    */
   rounded?: boolean;
-  /**
-   * Optional click handler
-   */
-  onClick?: () => void;
 }
 
 /**
@@ -30,7 +26,7 @@ const Chip = ({ size = 'default', color = 'default', label, rounded = false, ...
   const sizes = {
     small: 'py-0 px-1 text-xs',
     default: 'py-0.5 px-2 text-sm',
-    large: 'text-base'
+    large: 'text-base px-2 py-1'
   };
   const colors = {
     default: 'bg-neutral-50 text-neutral-800',
@@ -41,7 +37,11 @@ const Chip = ({ size = 'default', color = 'default', label, rounded = false, ...
     danger: 'bg-danger-500 text-white'
   };
   return (
-    <label className={`w-auto border ${colors[color]} ${sizes[size]} ${rounded ? 'rounded-full' : ''}`} {...props}>
+    <label
+      className={`inline-flex flex-row items-center w-auto border ${colors[color]} ${sizes[size]} ${
+        rounded ? 'rounded-full' : 'rounded-md'
+      }`}
+      {...props}>
       {label}
     </label>
   );
