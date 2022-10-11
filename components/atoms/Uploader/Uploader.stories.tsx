@@ -19,35 +19,17 @@ SingleImage.args = {
   accept: 'image/*'
 };
 
-export const MultipleImage = Template.bind({});
-MultipleImage.args = {
-  label: 'Banners',
-  required: true,
-  accept: 'image/*',
-  multiple: true
-};
-
 export const OnForm = () => {
-  const [mintTokenData, setMintTokenData] = useState({
-    tokenLogo: []
-  });
+  const [logoUrl, setLogoUrl] = useState('');
 
-  const updateUploadedFiles = (files: any) => {
-    setMintTokenData({ ...mintTokenData, tokenLogo: files });
-    console.log('These are the files', files);
+  const updateUploadedFiles = (url: string) => {
+    setLogoUrl(url);
   };
 
   return (
     <form>
-      <Uploader label="Token logo" required onFilesUpdate={updateUploadedFiles} />
-      {mintTokenData.tokenLogo.length
-        ? mintTokenData.tokenLogo.map((logo: File) => (
-            <>
-              <div>Filename: {logo.name}</div>
-              <div>Filesize:{logo.size}</div>
-            </>
-          ))
-        : null}
+      <Uploader label="Token logo" required onUpload={updateUploadedFiles} />
+      Uploaded: {logoUrl}
     </form>
   );
 };

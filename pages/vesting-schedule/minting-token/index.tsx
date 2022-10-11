@@ -40,7 +40,6 @@ const MintingToken: NextPageWithLayout = () => {
   // Watch for data changes from the input fields
   const tokenName = { value: watch('tokenName'), state: getFieldState('tokenName') };
   const tokenSymbol = { value: watch('tokenSymbol'), state: getFieldState('tokenSymbol') };
-  const tokenLogo = { value: watch('tokenSymbol'), state: getFieldState('tokenLogo') };
   const supplyCap = { value: watch('supplyCap'), state: getFieldState('supplyCap') };
   const amountToMint = { value: watch('amountToMint'), state: getFieldState('amountToMint') };
   const initialSupply = { value: watch('initialSupply'), state: getFieldState('initialSupply') };
@@ -53,6 +52,10 @@ const MintingToken: NextPageWithLayout = () => {
   const handleMaxChange = (e: any) => {
     console.log('Max changed', e.target.value);
     setValue('amountToMint', e.target.value);
+  };
+
+  const handleUpload = (url: string) => {
+    setValue('tokenLogo', url);
   };
 
   // Handle the submit of the form
@@ -93,6 +96,7 @@ const MintingToken: NextPageWithLayout = () => {
                   <Input
                     label="Token name"
                     placeholder="Enter token name"
+                    required
                     error={Boolean(errors.tokenName)}
                     success={!errors.tokenName && (tokenName.state.isTouched || tokenName.state.isDirty) && isSubmitted}
                     message={
@@ -114,6 +118,7 @@ const MintingToken: NextPageWithLayout = () => {
                   <Input
                     label="Token symbol"
                     placeholder="Enter token symbol"
+                    required
                     error={Boolean(errors.tokenSymbol)}
                     success={
                       !errors.tokenSymbol && (tokenSymbol.state.isTouched || tokenSymbol.state.isDirty) && isSubmitted
@@ -134,7 +139,8 @@ const MintingToken: NextPageWithLayout = () => {
               <Controller
                 name="tokenLogo"
                 control={control}
-                render={({ field }) => <Uploader label="Token logo" {...field} />}
+                rules={{ required: true }}
+                render={({ field }) => <Uploader label="Token logo" onUpload={handleUpload} />}
               />
             </div>
             <div className="border-t border-neutral-200 py-5">
