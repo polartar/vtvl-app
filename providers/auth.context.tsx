@@ -10,10 +10,10 @@ import {
 } from 'firebase/auth';
 import React, { createContext, useEffect, useMemo, useState } from 'react';
 
-import { auth } from '../services/auth/firebase';
+import { auth } from '../services/auth/firebaseInit';
 
 export type AuthContextData = {
-  user: User | null;
+  user: User | undefined;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -26,13 +26,13 @@ export type AuthContextData = {
 const AuthContext = createContext({} as AuthContextData);
 
 export function AuthContextProvider({ children }: any) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+      if (user) setUser(user);
       setLoading(false);
     });
 

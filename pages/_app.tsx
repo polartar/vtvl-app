@@ -1,11 +1,11 @@
-import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
-import { Web3ReactProvider } from '@web3-react/core';
-import { ethers } from 'ethers';
+import React, { ReactElement, ReactNode } from 'react';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
-import React, { ReactElement, ReactNode } from 'react';
-
+import { ethers } from 'ethers';
+import { Web3ReactProvider } from '@web3-react/core';
 import { AuthContextProvider } from '../providers/auth.context';
+import { OnboardingContextProvider } from '../providers/onboarding.context';
+import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import '../styles/globals.css';
 
 // Exporting a layout type for nested layouts
@@ -24,8 +24,10 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <Web3ReactProvider getLibrary={(provider: any) => new ethers.providers.Web3Provider(provider)}>
       <AuthContextProvider>
-        {/* <DefaultLayout sidebar={true} connected={true}> */}
-        <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+        <OnboardingContextProvider>
+          {/* <DefaultLayout sidebar={true} connected={true}> */}
+          <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+        </OnboardingContextProvider>
       </AuthContextProvider>
     </Web3ReactProvider>
   );

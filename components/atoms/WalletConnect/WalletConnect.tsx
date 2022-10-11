@@ -1,21 +1,25 @@
-import Image from 'next/image';
 import React from 'react';
+import Image from 'next/image';
+import Router from 'next/router';
+import { truncateAddress } from 'utils/web3';
 
 interface Props {
-  connected?: boolean;
+  account?: string;
+  connected: boolean;
+  connectWallet?: Function;
 }
 
-const WalletConnect = ({ connected = true }: Props) => {
+const WalletConnect = ({ account, connected, connectWallet }: Props) => {
   return (
     <div className="h-10 shrink-0 flex flex-row items-center gap-2 bg-primary-900 rounded-3xl px-2 sm:px-3 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125">
       <img src="/icons/wallet.svg" className={`w-5 ${connected ? 'hidden md:block' : ''}`} alt="e-wallet" />
-      {connected ? (
+      {connected && account ? (
         <>
-          <p className="hidden lg:inline">0x1abc...123a</p>
+          <p className="hidden lg:inline">{truncateAddress(account)}</p>
           <img className="w-6" src="/icons/avatar.svg" alt="More" />
         </>
       ) : (
-        <p className="hidden md:inline">Connect Wallet</p>
+        <p className="hidden md:inline" onClick={()=>Router.push('/onboarding')}>Connect Wallet</p>
       )}
     </div>
   );

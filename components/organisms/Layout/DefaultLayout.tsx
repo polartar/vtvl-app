@@ -1,8 +1,10 @@
+import React, { useContext, useState } from 'react';
+import Head from 'next/head';
+import { useWeb3React } from '@web3-react/core';
+import AuthContext from '../../../providers/auth.context';
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
-import Head from 'next/head';
-import React from 'react';
 
 const Container = styled.section`
   min-width: 100vw;
@@ -61,10 +63,6 @@ const SidebarProps = {
   role: 'Founder'
 };
 
-interface User {
-  name: string;
-}
-
 interface DefaultLayoutProps {
   sidebar?: boolean;
   connected?: boolean;
@@ -75,22 +73,23 @@ interface DefaultLayoutProps {
  *  The purpose of this is to scaffold everything into this layout.
  *  This has a sidebar prop to determine if the Sidebar component should be shown or not.
  */
-const DefaultLayout = ({ sidebar = false, connected = false, ...props }: DefaultLayoutProps) => {
-  const [user, setUser] = React.useState<User>();
+const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
+  const { user, error, logOut } = useContext(AuthContext);
+  const { active } = useWeb3React();
   return (
     <Container>
       <Head>
         <title>VTVL</title>
       </Head>
       <Header
-        connected={connected}
+        connected={active}
         user={user}
-        onLogin={() => setUser({ name: 'Jane Doe' })}
-        onLogout={() => setUser(undefined)}
-        onCreateAccount={() => setUser({ name: 'Jane Doe' })}
+        onLogout={() => logOut()}
+        // onLogin={() => setUser({ name: 'Jane Doe' })}
+        // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout>
-        {connected && sidebar ? <Sidebar {...SidebarProps} /> : null}
+        {active && sidebar ? <Sidebar {...SidebarProps} /> : null}
         <div className="flex flex-col items-center flex-grow p-8">{props.children}</div>
       </Layout>
     </Container>

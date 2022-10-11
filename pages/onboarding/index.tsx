@@ -3,7 +3,6 @@ import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
-
 import Carousel from '../../components/atoms/Carousel/Carousel';
 import Chip from '../../components/atoms/Chip/Chip';
 import WalletButton from '../../components/atoms/WalletButton/WalletButton';
@@ -95,13 +94,13 @@ const ConnectWalletPage: NextPage = () => {
   const [wallet, setWallet] = React.useState('');
   const router = useRouter();
 
-  function metamaskActivate() {
-    activate(injected, (err) => console.log('error connecting ', err));
+  async function metamaskActivate() {
+    await activate(injected, (err) => console.log('error connecting ', err));
     router.push('/onboarding/select-user-type');
   }
 
-  function walletConnectActivate() {
-    activate(walletconnect, (err) => console.log('error connecting ', err));
+  async function walletConnectActivate() {
+    await activate(walletconnect, (err) => console.log('error connecting ', err));
     router.push('/onboarding/select-user-type');
   }
 

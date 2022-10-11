@@ -1,12 +1,10 @@
+import React from 'react';
+import Router from 'next/router';
+import { useWeb3React } from '@web3-react/core';
 import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
 import NetworkSelector from '@components/atoms/NetworkSelector/NetworkSelector';
 import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
-import Router from 'next/router';
-import React from 'react';
-
-type User = {
-  name: string;
-};
+import { User } from 'firebase/auth';
 
 interface HeaderProps {
   connected: boolean;
@@ -17,6 +15,7 @@ interface HeaderProps {
 }
 
 const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: HeaderProps) => {
+  const { account, activate } = useWeb3React();
   return (
     <header className="sticky top-0 z-50 w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
       <div className="flex flex-row items-center">
@@ -38,8 +37,8 @@ const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: HeaderP
             9 <span className="hidden sm:inline">gwei</span>
           </p>
         </div>
-        <NetworkSelector />
-        {connected ? <WalletConnect connected={connected} /> : null}
+        <WalletConnect connected={connected} account={account || ''} />
+        {connected ? <NetworkSelector />  : null}
       </div>
     </header>
   );
