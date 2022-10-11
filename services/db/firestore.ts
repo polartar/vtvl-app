@@ -1,5 +1,5 @@
 import { getFirestore, CollectionReference, collection, DocumentData } from 'firebase/firestore';
-import type { User, Organization, Safe } from 'types/models';
+import type { User, Organization, Safe, Member } from 'types/models';
 
 const firestore = getFirestore()
 const getCollection = <T = DocumentData>(collectionName: string) => {
@@ -7,5 +7,6 @@ const getCollection = <T = DocumentData>(collectionName: string) => {
 }
 
 export const userCollection = getCollection<User>('users')
+export const memberCollection = getCollection<Member>('members')
 export const orgCollection = getCollection<Organization>('organizations')
 export const safeCollection = getCollection<Safe>('safes')

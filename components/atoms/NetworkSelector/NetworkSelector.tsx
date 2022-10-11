@@ -7,7 +7,8 @@ const NetworkSelector = () => {
   const {
     library,
     account,
-    active
+    active,
+    chainId
   } = useWeb3React();
   const [showNetworks, setShowNetworks] = React.useState(false);
   const [selectedNetwork, setSelectedNetwork] = React.useState({
@@ -20,7 +21,14 @@ const NetworkSelector = () => {
     console.log("active is ", active)
     console.log("account is ", account)
     if(!active) setShowNetworks(false)
-  },[active])
+    if(chainId) {
+      setSelectedNetwork({
+        icon: SupportedChains[chainId as SupportedChainId].icon,
+        title: SupportedChains[chainId as SupportedChainId].title,
+        code: SupportedChains[chainId as SupportedChainId].code
+      })
+    }
+  },[active,chainId])
 
 
   const selectNetwork = async (network: any) => {

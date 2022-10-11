@@ -34,7 +34,6 @@ const userTypes = {
 
 const SelectUserTypePage: NextPage = () => {
   const router = useRouter();
-
   const [selected, setSelected] = React.useState('');
 
   return (

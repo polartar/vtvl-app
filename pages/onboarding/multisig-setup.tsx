@@ -5,6 +5,8 @@ import { NextPage } from 'next';
 import Router from 'next/router';
 import React, { useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
+import { orgCollection } from 'services/db/firestore';
+import { doc, setDoc } from '@firebase/firestore'
 
 interface Owner {
   name: string;
@@ -77,10 +79,26 @@ const ConfirmationPage: NextPage = () => {
     append({ name: '', address: '' });
   };
 
-  const onSubmit: SubmitHandler<ConfirmationForm> = (data) => {
+  const onSubmit: SubmitHandler<ConfirmationForm> = async (data) => {
     console.log('Form Submitted', data, getValues());
-    Router.push('/dashboard');
+
+    await newOrganization()
+   // Router.push('/dashboard');
   };
+
+  const newOrganization = async () => {
+    console.log("creating new org")
+    try {
+      const orgRef = doc(orgCollection)
+      const resp = await setDoc(orgRef, {
+        name: 'new org',
+        email: 'Jamie'
+      })
+      console.log("resp from creation here ", resp)
+    } catch (error) {
+      console.log("error creating new org", error)
+    }
+  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">

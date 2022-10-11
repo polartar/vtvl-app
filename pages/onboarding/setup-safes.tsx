@@ -1,19 +1,28 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { NextPage } from 'next';
 import Router from 'next/router';
+import { useWeb3React } from '@web3-react/core';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
 import OnboardingContext from 'providers/onboarding.context';
+import { fetchSafes } from 'services/gnosois';
+
 
 const YourSafesPage: NextPage = () => {
   // Comment/uncomment to see the two states
   // const safes: string[] = [];
-  const { safe, error, safes } = useContext(OnboardingContext);
+  const { account, library } = useWeb3React();
+  const [safes, setSafes] = useState<string[]>();
 
   useEffect(()=>{
-    console.log("ssafes here is ", safes)
-  },[])
+    if(account && library) {
+      (async () => {
+        const resp = await fetchSafes(library, account)
+        setSafes(resp?.safes)
+      })()
+    }
+  },[account])
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
@@ -21,7 +30,7 @@ const YourSafesPage: NextPage = () => {
       <div className="w-full my-6 panel">
         <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
         <p className="text-sm text-neutral-500">
-          You can natively create new, import or login to your existing gnisis safe multisig.
+          You can natively create new, import or login to your existing gnosis safe multisig.
         </p>
         <div className="mt-5">
           <p className="text-sm text-neutral-500">List of {safes?.length} safes</p>
@@ -44,7 +53,7 @@ const YourSafesPage: NextPage = () => {
                   title="No safes found"
                   description={[
                     'Setup a new multi-signature wallet. Get started by clicking on "',
-                    <strong onClick={()=> Router.push('')}>Create New Safe</strong>,
+                    <strong onClick={()=> Router.push('/onboarding/confirmation')}>Create New Safe</strong>,
                     '".'
                   ]}
                 />

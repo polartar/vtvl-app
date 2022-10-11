@@ -9,5 +9,10 @@ export interface Member {
     fullName: string
     email: string
     wallet?: [Address]
-    type: 'founder' | 'employee' | 'investor'
-  }
+    type: 'founder' | 'employee' | 'investor',
+    status: 'invited' | 'signedUp'
+}
+
+export interface User {
+    id: string
+}

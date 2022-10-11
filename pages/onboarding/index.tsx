@@ -6,7 +6,6 @@ import React from 'react';
 import Carousel from '../../components/atoms/Carousel/Carousel';
 import Chip from '../../components/atoms/Chip/Chip';
 import WalletButton from '../../components/atoms/WalletButton/WalletButton';
-import MultiSigWallet from '../../components/multisig';
 import { injected, walletconnect } from '../../connectors';
 
 const OnboardingContainer = styled.section`
@@ -90,8 +89,7 @@ interface Wallet {
 }
 
 const ConnectWalletPage: NextPage = () => {
-  const { active, activate, account, deactivate } = useWeb3React();
-  const [wallet, setWallet] = React.useState('');
+  const { activate } = useWeb3React();
   const router = useRouter();
 
   async function metamaskActivate() {
