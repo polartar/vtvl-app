@@ -207,13 +207,17 @@
     @apply text-secondary-900;
   }
 
-  label > div > input:not([type='radio']),
-  .radioButton {
+  label > div > input:not([type='radio']):not([type='range']):not(.minMaxInput input),
+  label > div > select,
+  .radioButton,
+  .minMaxInput {
     @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all duration-1000;
   }
 
   label > div > input:focus,
-  label > div > input:focus-visible {
+  label > div > input:focus-visible,
+  label > div > select:focus,
+  label > div > select:focus-visible  {
     @apply border-primary-400;
   }
 
