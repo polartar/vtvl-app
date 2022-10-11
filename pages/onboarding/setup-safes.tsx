@@ -27,7 +27,7 @@ const YourSafesPage: NextPage = () => {
                 <SafesListItem
                   key={`safe-${safe}-${safeIndex}`}
                   label={safe}
-                  onClick={() => Router.push('/onboarding/setup-safes')}
+                  onClick={() => Router.push('/onboarding/confirmation')}
                 />
               ))}
             </div>
@@ -45,7 +45,7 @@ const YourSafesPage: NextPage = () => {
                 />
               </div>
               <div className="border-t border-b border-neutral-200 p-3 flex items-center justify-center">
-                <button className="line primary" type="button" onClick={() => Router.push('/onboarding/setup-safes')}>
+                <button className="line primary" type="button" onClick={() => Router.push('/onboarding/confirmation')}>
                   Create New Safe
                 </button>
               </div>

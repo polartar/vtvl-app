@@ -273,7 +273,7 @@ const AccountSetupPage: NextPage = () => {
             </div>
           ))}
           {userTypeRadio.value === 'organization' ? (
-            <button type="button" className="secondary small mb-5" onClick={addContributor}>
+            <button type="button" className="secondary mb-5" onClick={addContributor}>
               Add more contributors
             </button>
           ) : null}
