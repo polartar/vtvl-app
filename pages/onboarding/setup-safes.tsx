@@ -13,6 +13,7 @@ const YourSafesPage: NextPage = () => {
   // Comment/uncomment to see the two states
   // const safes: string[] = [];
   const { account, library } = useWeb3React();
+  const { onPrevious } = useContext(OnboardingContext);
   const [safes, setSafes] = useState<string[]>();
 
   useEffect(()=>{
@@ -41,7 +42,7 @@ const YourSafesPage: NextPage = () => {
                 <SafesListItem
                   key={`safe-${safe}-${safeIndex}`}
                   label={safe}
-                  onClick={() => Router.push('/onboarding/confirmation')}
+                  onClick={() => Router.push('/onboarding/new-safe')}
                 />
               ))}
             </div>
@@ -53,7 +54,7 @@ const YourSafesPage: NextPage = () => {
                   title="No safes found"
                   description={[
                     'Setup a new multi-signature wallet. Get started by clicking on "',
-                    <strong onClick={()=> Router.push('/onboarding/confirmation')}>Create New Safe</strong>,
+                    <strong onClick={()=> Router.push('/onboarding/new-safe')}>Create New Safe</strong>,
                     '".'
                   ]}
                 />
@@ -68,7 +69,7 @@ const YourSafesPage: NextPage = () => {
         </div>
 
         <div className="flex flex-row justify-between items-center mt-6">
-          <BackButton label="Return to account setup" href="/onboarding/account-setup" />
+          <BackButton label="Return to account setup" onClick={()=>onPrevious()} />
           <button
             className="flex flex-row items-center gap-2 primary group"
             type="button"

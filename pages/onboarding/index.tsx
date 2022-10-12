@@ -2,7 +2,9 @@ import styled from '@emotion/styled';
 import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import React from 'react';
+import AuthContext from 'providers/auth.context';
+import OnboardingContext from 'providers/onboarding.context';
+import React, { useContext } from 'react';
 import Carousel from '../../components/atoms/Carousel/Carousel';
 import Chip from '../../components/atoms/Chip/Chip';
 import WalletButton from '../../components/atoms/WalletButton/WalletButton';
@@ -89,17 +91,26 @@ interface Wallet {
 }
 
 const ConnectWalletPage: NextPage = () => {
-  const { activate } = useWeb3React();
-  const router = useRouter();
+  const { activate, account, chainId, library} = useWeb3React();
+  const { user } = useContext(AuthContext);
+  const { onCompleteStep } = useContext(OnboardingContext);
+  const router = useRouter()
 
   async function metamaskActivate() {
-    await activate(injected, (err) => console.log('error connecting ', err));
-    router.push('/onboarding/select-user-type');
+    console.log("provider is ", JSON.stringify(library?.provider))
+    try {
+      await activate(injected);
+      onCompleteStep({ chainId: chainId, address: account || '' })
+      router.push(user ? '/dashboard' : '/member-login')
+    } catch (error) {
+      console.log("connection error ", error)
+    }
   }
 
   async function walletConnectActivate() {
     await activate(walletconnect, (err) => console.log('error connecting ', err));
-    router.push('/onboarding/select-user-type');
+    onCompleteStep({ chainId: chainId, address: account || '' })
+    router.push(user ? '/dashboard' : '/member-login')
   }
 
   const wallets = [

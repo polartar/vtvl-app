@@ -1,14 +1,13 @@
-import Link from 'next/link';
 import React from 'react';
 
 interface BackButtonProps {
   label: string;
-  href: string;
+  onClick?: () => void;
 }
 
-const BackButton = ({ label, href }: BackButtonProps) => {
+const BackButton = ({ label, onClick }: BackButtonProps) => {
   return (
-    <Link href={href}>
+    <div onClick={onClick}>
       <span className="inline-flex flex-row items-center gap-2 text-neutral-500 cursor-pointer group">
         <img
           src="/icons/arrow-small-left.svg"
@@ -17,7 +16,7 @@ const BackButton = ({ label, href }: BackButtonProps) => {
         />
         {label}
       </span>
-    </Link>
+    </div>
   );
 };
 

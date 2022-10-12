@@ -8,6 +8,6 @@ export interface Owner {
 export interface Safe {
     address: string
     chainId: number
-    owners: [Owner]
+    owners: string[]
     threshold: number
 }

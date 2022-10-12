@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import React from 'react';
-
+import React, {useContext} from 'react';
+import OnboardingContext from 'providers/onboarding.context';
 import CardRadio from '../../components/atoms/CardRadio/CardRadio';
 
 const Container = styled.div`
@@ -33,7 +33,8 @@ const userTypes = {
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const router = useRouter();
+
+  const { onCompleteStep } = useContext(OnboardingContext);
   const [selected, setSelected] = React.useState('');
 
   return (
@@ -55,7 +56,7 @@ const SelectUserTypePage: NextPage = () => {
           ))}
         </div>
       </div>
-      <button className="secondary" onClick={() => router.push('/onboarding/account-setup')}>
+      <button className="secondary" onClick={() => { onCompleteStep({accountType: selected});}}>
         Continue
       </button>
     </Container>

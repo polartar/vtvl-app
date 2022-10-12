@@ -5,12 +5,12 @@ export interface Address {
 }
 
 export interface Member {
-    userId: string
-    fullName: string
+    userId?: string
+    orgId: string
+    name: string
     email: string
     wallet?: [Address]
-    type: 'founder' | 'employee' | 'investor',
-    status: 'invited' | 'signedUp'
+    type: string
 }
 
 export interface User {

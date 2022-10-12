@@ -6,18 +6,24 @@ import {
   signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signOut
+  signOut,
+  getAdditionalUserInfo
 } from 'firebase/auth';
 import React, { createContext, useEffect, useMemo, useState } from 'react';
 
-import { auth } from '../services/auth/firebaseInit';
+import { auth } from '../services/auth/firebase';
+
+export type NewLogin = {
+  isFirstLogin: boolean
+  uuid: string
+}
 
 export type AuthContextData = {
   user: User | undefined;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  anonymousSignIn: () => Promise<void>;
+  signInWithGoogle: () => Promise<NewLogin | undefined>;
+  anonymousSignIn: () => Promise<NewLogin | undefined>;
   loading: boolean;
   logOut: () => Promise<void>;
   error: string;
@@ -28,6 +34,7 @@ const AuthContext = createContext({} as AuthContextData);
 export function AuthContextProvider({ children }: any) {
   const [user, setUser] = useState<User | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
+  const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -39,12 +46,17 @@ export function AuthContextProvider({ children }: any) {
     return unsubscribe;
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (): Promise<NewLogin | undefined> => {
     try {
       setLoading(true);
       const credential = await signInWithPopup(auth, new GoogleAuthProvider());
+      const additionalInfo = getAdditionalUserInfo(credential);
+      console.log("---- is this a new user ===>>> ", additionalInfo?.isNewUser)
+  
       setUser(credential.user);
       setLoading(false);
+      if(additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+      return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid }
     } catch (error: any) {
       setLoading(false);
       setError(error.message);
@@ -75,12 +87,15 @@ export function AuthContextProvider({ children }: any) {
     }
   };
 
-  const anonymousSignIn = async () => {
+  const anonymousSignIn = async (): Promise<NewLogin | undefined> => {
     try {
       setLoading(true);
       const credential = await signInAnonymously(auth);
+      const additionalInfo = getAdditionalUserInfo(credential);
       setUser(credential.user);
       setLoading(false);
+      if(additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+      return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid }
     } catch (error: any) {
       setLoading(false);
       setError(error.message);
@@ -97,6 +112,7 @@ export function AuthContextProvider({ children }: any) {
       signInWithGoogle,
       anonymousSignIn,
       loading,
+      isNewUser,
       logOut,
       error
     }),

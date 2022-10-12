@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import Head from 'next/head';
 import { useWeb3React } from '@web3-react/core';
 import AuthContext from '../../../providers/auth.context';

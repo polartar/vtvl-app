@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc } from '@firebase/firestore';
+import { doc, addDoc, setDoc, getDoc } from '@firebase/firestore';
 import { orgCollection } from 'services/db/firestore';
 import { Organization } from 'types/models';
 
@@ -13,7 +13,7 @@ export const updateOrg = async (org: Organization, id: string) : Promise<void> =
     await setDoc(orgRef, org)
 }
 
-export const createOrg = async (org: Organization) : Promise<void> => {
-    const orgRef = doc(orgCollection)
-    await setDoc(orgRef, org)
+export const createOrg = async (org: Organization) : Promise<string> => {
+    const orgRef = await addDoc(orgCollection, org)
+    return orgRef.id;
 }

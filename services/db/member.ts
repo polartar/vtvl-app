@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc } from '@firebase/firestore';
+import { doc, addDoc, setDoc, getDoc } from '@firebase/firestore';
 import { memberCollection } from 'services/db/firestore';
 import { Member } from 'types/models';
 
@@ -8,12 +8,12 @@ export const fetchMember = async (id: string) : Promise<Member | undefined> => {
     return member.data();
 }
 
-export const updateMember = async (org: Member, id: string) : Promise<void> => {
+export const updateMember = async (member: Member, id: string) : Promise<void> => {
     const memberRef = doc(memberCollection, id)
-    await setDoc(memberRef, org)
+    await setDoc(memberRef, member)
 }
 
-export const createMember = async (member: Member) : Promise<void> => {
-    const memberRef = doc(memberCollection)
-    await setDoc(memberRef, member)
+export const createMember = async (member: Member) : Promise<string> => {
+    const memberRef = await addDoc(memberCollection, member)
+    return memberRef.id;
 }

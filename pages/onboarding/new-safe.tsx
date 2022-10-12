@@ -3,10 +3,13 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import Select from '@components/atoms/FormControls/Select/Select';
 import { NextPage } from 'next';
 import Router from 'next/router';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { orgCollection } from 'services/db/firestore';
-import { doc, setDoc } from '@firebase/firestore'
+import OnboardingContext from 'providers/onboarding.context';
+import { createOrg } from 'services/db/organization';
+import { createSafe } from 'services/db/safe';
+import { deploySafe } from 'services/gnosois';
+import { useWeb3React } from '@web3-react/core';
 
 interface Owner {
   name: string;
@@ -19,6 +22,9 @@ type ConfirmationForm = {
 };
 
 const ConfirmationPage: NextPage = () => {
+  const { active, library, chainId } = useWeb3React();
+  const { onCompleteStep, onPrevious } = useContext(OnboardingContext);
+
   // Get to use the react-hook-form and set default values
   const {
     control,
@@ -81,24 +87,14 @@ const ConfirmationPage: NextPage = () => {
 
   const onSubmit: SubmitHandler<ConfirmationForm> = async (data) => {
     console.log('Form Submitted', data, getValues());
-
-    await newOrganization()
-   // Router.push('/dashboard');
+    const values = getValues();
+    const owners = values.owners.map((o)=> o.address)
+    if(!active) {console.log("Please login with metamask to create safe"); return}
+    const newsafe = await deploySafe(library, owners, values.authorizedUsers)
+    const storedSafeId = await createSafe({address: newsafe.getAddress(), chainId: chainId || 0, owners, threshold: values.authorizedUsers})
+    onCompleteStep({ safeId:storedSafeId })
   };
 
-  const newOrganization = async () => {
-    console.log("creating new org")
-    try {
-      const orgRef = doc(orgCollection)
-      const resp = await setDoc(orgRef, {
-        name: 'new org',
-        email: 'Jamie'
-      })
-      console.log("resp from creation here ", resp)
-    } catch (error) {
-      console.log("error creating new org", error)
-    }
-  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
@@ -235,7 +231,7 @@ const ConfirmationPage: NextPage = () => {
             </div>
           ) : null}
           <div className="flex flex-row justify-between items-center">
-            <BackButton label="Return" href="/onboarding/setup-safes" />
+            <BackButton label="Return" onClick={()=>onPrevious()} />
             <button className="primary flex flex-row items-center gap-2 group" type="submit">
               Sign and Authorize
               <img

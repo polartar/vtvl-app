@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Router from 'next/router';
 import { useWeb3React } from '@web3-react/core';
 import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
@@ -15,7 +15,11 @@ interface HeaderProps {
 }
 
 const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: HeaderProps) => {
-  const { account, activate } = useWeb3React();
+  const { active, account } = useWeb3React();
+
+  useEffect(() => {
+    console.log("is web3 header active ", active)
+  },[])
   return (
     <header className="sticky top-0 z-50 w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
       <div className="flex flex-row items-center">
@@ -37,8 +41,8 @@ const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: HeaderP
             9 <span className="hidden sm:inline">gwei</span>
           </p>
         </div>
-        <WalletConnect connected={connected} account={account || ''} />
-        {connected ? <NetworkSelector />  : null}
+        <WalletConnect connected={active} account={account || ''} />
+        {active ? <NetworkSelector />  : null}
       </div>
     </header>
   );

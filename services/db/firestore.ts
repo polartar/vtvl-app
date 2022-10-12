@@ -1,9 +1,11 @@
 import { getFirestore, CollectionReference, collection, DocumentData } from 'firebase/firestore';
+import firebase from 'services/auth/firebase';
 import type { User, Organization, Safe, Member } from 'types/models';
 
-const firestore = getFirestore()
+export const db = getFirestore(firebase)
+
 const getCollection = <T = DocumentData>(collectionName: string) => {
-    return collection(firestore, collectionName) as CollectionReference<T>
+    return collection(db, collectionName) as CollectionReference<T>
 }
 
 export const userCollection = getCollection<User>('users')

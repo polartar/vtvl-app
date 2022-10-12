@@ -22,7 +22,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.
   const getLayout = Component.getLayout ?? ((page) => page);
   return (
-    <Web3ReactProvider getLibrary={(provider: any) => new ethers.providers.Web3Provider(provider)}>
+    <Web3ReactProvider getLibrary={(provider: any) => provider ? provider : new ethers.providers.Web3Provider(provider)}>
       <AuthContextProvider>
         <OnboardingContextProvider>
           {/* <DefaultLayout sidebar={true} connected={true}> */}
