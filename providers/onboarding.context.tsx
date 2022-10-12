@@ -5,8 +5,6 @@ import { useWeb3React } from '@web3-react/core';
 import { fetchSafes } from 'services/gnosois';
 
   interface OnboardingInfo {
-    address?: string,
-    chainId?: number,
     userId?: string,
     accountType?: string,
     accountId?: string,
@@ -20,6 +18,7 @@ import { fetchSafes } from 'services/gnosois';
     onNext: () => void;
     setInfo: (info: OnboardingInfo) => void;
     onCompleteStep: (info: OnboardingInfo) => void;
+    setCurrentStep: (step: Step) => void;
     inProgress: boolean;
     loading: boolean;
     error: string;
@@ -58,16 +57,15 @@ import { fetchSafes } from 'services/gnosois';
     },
   }
 
-  const initialStep = Step.ChainSetup;
 
   export function OnboardingContextProvider({ children }: any) {
     const [info, setInfo] = useState<OnboardingInfo | undefined>();
-    const [currentStep, setCurrentStep] = useState<Step>(initialStep);
+    const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
     const [inProgress, setInProgress] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState('');
     const router = useRouter()
-    const { account, library } = useWeb3React();
+    const { account, library, chainId } = useWeb3React();
 
 
     useEffect(() => {
@@ -106,8 +104,6 @@ import { fetchSafes } from 'services/gnosois';
       switch (currentStep) {
 
         case Step.ChainSetup:
-          if(!data.chainId || !data.address) throw Error("incomplete step")
-          setInfo({...info, chainId: data.chainId, address: data.address})
           setInProgress(true)
           await onNext()
           break;
@@ -149,6 +145,7 @@ import { fetchSafes } from 'services/gnosois';
         onNext,
         setInfo,
         onCompleteStep,
+        setCurrentStep,
         loading,
         inProgress,
         error

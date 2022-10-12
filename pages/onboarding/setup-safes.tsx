@@ -60,7 +60,7 @@ const YourSafesPage: NextPage = () => {
                 />
               </div>
               <div className="border-t border-b border-neutral-200 p-3 flex items-center justify-center">
-                <button className="line primary" type="button" onClick={() => Router.push('/onboarding/confirmation')}>
+                <button className="line primary" type="button" onClick={() => Router.push('/onboarding/new-safe')}>
                   Create New Safe
                 </button>
               </div>

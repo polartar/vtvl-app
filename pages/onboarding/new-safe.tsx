@@ -35,15 +35,11 @@ const ConfirmationPage: NextPage = () => {
     formState: { errors, isValid, isDirty, isSubmitted }
   } = useForm({
     defaultValues: {
-      organizationName: 'VTVL',
+      organizationName: '',
       owners: [
         {
-          name: 'Danny',
-          address: '0x0123ADFhchadf7i12#ADSfjadf'
-        },
-        {
-          name: 'Ada',
-          address: '0x32131ADFhchadf7i12#ADSfjadf'
+          name: '',
+          address: ''
         }
       ],
       authorizedUsers: 0

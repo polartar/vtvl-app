@@ -3,8 +3,8 @@ import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import AuthContext from 'providers/auth.context';
-import OnboardingContext from 'providers/onboarding.context';
-import React, { useContext } from 'react';
+import OnboardingContext, { Step } from 'providers/onboarding.context';
+import React, { useContext, useEffect } from 'react';
 import Carousel from '../../components/atoms/Carousel/Carousel';
 import Chip from '../../components/atoms/Chip/Chip';
 import WalletButton from '../../components/atoms/WalletButton/WalletButton';
@@ -93,8 +93,12 @@ interface Wallet {
 const ConnectWalletPage: NextPage = () => {
   const { activate, account, chainId, library} = useWeb3React();
   const { user } = useContext(AuthContext);
-  const { onCompleteStep } = useContext(OnboardingContext);
+  const { onCompleteStep, setCurrentStep } = useContext(OnboardingContext);
   const router = useRouter()
+
+  useEffect(() => {
+    setCurrentStep(Step.ChainSetup)
+  }, [])
 
   async function metamaskActivate() {
     console.log("provider is ", JSON.stringify(library?.provider))
@@ -108,9 +112,13 @@ const ConnectWalletPage: NextPage = () => {
   }
 
   async function walletConnectActivate() {
-    await activate(walletconnect, (err) => console.log('error connecting ', err));
-    onCompleteStep({ chainId: chainId, address: account || '' })
-    router.push(user ? '/dashboard' : '/member-login')
+    try {
+      await activate(walletconnect);
+      onCompleteStep({ chainId: chainId, address: account || '' })
+      router.push(user ? '/dashboard' : '/member-login')
+    } catch (error) {
+      console.log("connection error ", error)
+    }
   }
 
   const wallets = [
