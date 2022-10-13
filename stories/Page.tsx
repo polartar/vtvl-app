@@ -1,11 +1,11 @@
 import React from 'react';
-
+import { User } from 'firebase/auth';
 import Header from '../components/molecules/Header/Header';
 import './page.css';
 
-type User = {
-  name: string;
-};
+// type User = {
+//   name: string;
+// };
 
 export const Page: React.VFC = () => {
   const [user, setUser] = React.useState<User>();
@@ -15,9 +15,9 @@ export const Page: React.VFC = () => {
       <Header
         connected={true}
         user={user}
-        onLogin={() => setUser({ name: 'Jane Doe' })}
+        onLogin={() => setUser(undefined)}
         onLogout={() => setUser(undefined)}
-        onCreateAccount={() => setUser({ name: 'Jane Doe' })}
+        onCreateAccount={() => setUser(undefined)}
       />
 
       <section>

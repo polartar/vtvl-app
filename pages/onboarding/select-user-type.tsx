@@ -33,7 +33,7 @@ const userTypes = {
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const { onCompleteStep } = useContext(OnboardingContext);
+  const { onNext } = useContext(OnboardingContext);
   const [selected, setSelected] = React.useState('');
 
   return (
@@ -58,7 +58,7 @@ const SelectUserTypePage: NextPage = () => {
       <button
         className="secondary"
         onClick={async () => {
-          await onCompleteStep({ accountType: selected });
+          await onNext({ accountType: selected });
         }}>
         Continue
       </button>

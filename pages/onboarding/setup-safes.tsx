@@ -23,12 +23,12 @@ const YourSafesPage: NextPage = () => {
   ]);
 
   useEffect(() => {
-    // if(account && library) {
-    //   (async () => {
-    //     const resp = await fetchSafes(library, account)
-    //     setSafes(resp?.safes)
-    //   })()
-    // }
+    if (account && library) {
+      (async () => {
+        const resp = await fetchSafes(library, account);
+        if(resp) setSafes(resp.safes);
+      })();
+    }
   }, [account]);
 
   const importSafe = async (address: string) => {

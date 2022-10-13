@@ -15,7 +15,7 @@ type LoginForm = {
 
 const MemberLoginPage: NextPage = () => {
   const { signInWithEmail, signInWithGoogle, anonymousSignIn } = useContext(AuthContext);
-  const { onCompleteStep } = useContext(OnboardingContext);
+  const { onNext } = useContext(OnboardingContext);
 
   const {
     control,
@@ -56,7 +56,7 @@ const MemberLoginPage: NextPage = () => {
     const newLogin = await signInWithGoogle();
     console.log('is this a new user???....', newLogin?.isFirstLogin);
     console.log('completing setup');
-    await onCompleteStep({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
+    await onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   return (

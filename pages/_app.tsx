@@ -1,5 +1,4 @@
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
-import { Web3Provider } from '@ethersproject/providers';
 import { Web3ReactProvider } from '@web3-react/core';
 import { ethers } from 'ethers';
 import { NextPage } from 'next';

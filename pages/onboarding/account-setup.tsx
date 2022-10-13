@@ -29,7 +29,7 @@ type AccountForm = {
 
 const AccountSetupPage: NextPage = () => {
   const { signUpWithEmail, user } = useContext(AuthContext);
-  const { onPrevious, onCompleteStep, info } = useContext(OnboardingContext);
+  const { onPrevious, onNext, info } = useContext(OnboardingContext);
   // Get to use the react-hook-form and set default values
   const {
     control,
@@ -107,7 +107,7 @@ const AccountSetupPage: NextPage = () => {
         await createMember({ name: contributor.name, email: contributor.email, orgId: orgId, type: 'employee' });
       });
     }
-    onCompleteStep({ accountId: memberId });
+    onNext({ accountId: memberId });
   };
 
   // Recommended by React hook forms when using field array https://react-hook-form.com/api/usefieldarray

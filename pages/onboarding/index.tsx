@@ -2,7 +2,6 @@ import styled from '@emotion/styled';
 import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import AuthContext from 'providers/auth.context';
 import OnboardingContext, { Step } from 'providers/onboarding.context';
 import React, { useContext, useEffect } from 'react';
 
@@ -92,10 +91,8 @@ interface Wallet {
 }
 
 const ConnectWalletPage: NextPage = () => {
-  const { activate, account, chainId, library } = useWeb3React();
-  const { user } = useContext(AuthContext);
+  const { activate } = useWeb3React();
   const { onNext, setCurrentStep } = useContext(OnboardingContext);
-  const router = useRouter();
 
   useEffect(() => {
     setCurrentStep(Step.ChainSetup);
