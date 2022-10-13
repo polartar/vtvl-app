@@ -4,6 +4,8 @@ import { ethers } from 'ethers';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import React, { ReactElement, ReactNode } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { AuthContextProvider } from '../providers/auth.context';
 import '../styles/globals.css';
@@ -26,6 +28,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       <AuthContextProvider>
         {/* <DefaultLayout sidebar={true} connected={true}> */}
         <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+        {/* As per react-toastify documentation https://fkhadra.github.io/react-toastify/installation we should render the ToastContainer once in the tree. */}
+        <ToastContainer />
       </AuthContextProvider>
     </Web3ReactProvider>
   );

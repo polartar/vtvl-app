@@ -70,6 +70,60 @@
   --danger-200: #fecaca;
   --danger-100: #fee2e2;
   --danger-50: #fef2f2;
+
+}
+
+.app-toast {
+  /* Toastify overrides */
+  --toastify-color-light: var(--neutral-50);
+  --toastify-color-dark: var(--neutral-800);
+  --toastify-color-info: var(--primary-700);
+  --toastify-color-success: var(--success-500);
+  --toastify-color-warning: var(--warning-400);
+  --toastify-color-error: var(--danger-500);
+  --toastify-color-transparent: rgba(255, 255, 255, 0.7);
+
+  --toastify-icon-color-info: var(--toastify-color-info);
+  --toastify-icon-color-success: var(--toastify-color-success);
+  --toastify-icon-color-warning: var(--toastify-color-warning);
+  --toastify-icon-color-error: var(--toastify-color-error);
+
+  --toastify-toast-width: 320px;
+  --toastify-toast-background: #fff;
+  --toastify-toast-min-height: 64px;
+  --toastify-toast-max-height: 800px;
+  --toastify-font-family: sans-serif;
+  --toastify-z-index: 9999;
+
+  --toastify-text-color-light: var(--neutral-500);
+  --toastify-text-color-dark: var(--neutral-50);
+
+  /* Used only for colored theme */
+  --toastify-text-color-info: #fff;
+  --toastify-text-color-success: #fff;
+  --toastify-text-color-warning: #fff;
+  --toastify-text-color-error: #fff;
+
+  --toastify-spinner-color: var(--neutral-500);
+  --toastify-spinner-color-empty-area: var(--neutral-200);
+
+  /* Used when no type is provided */
+  /* toast("**hello**") */
+  --toastify-color-progress-light: linear-gradient(
+    to right,
+    #4cd964,
+    #5ac8fa,
+    #007aff,
+    #34aadc,
+    #5856d6,
+    #ff2d55
+  );
+  /* Used when no type is provided */
+  --toastify-color-progress-dark: var(--secondary-700);
+  --toastify-color-progress-info: var(--toastify-color-info);
+  --toastify-color-progress-success: var(--toastify-color-success);
+  --toastify-color-progress-warning: var(--toastify-color-warning);
+  --toastify-color-progress-error: var(--toastify-color-error);
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter&family=Sora&display=swap');
