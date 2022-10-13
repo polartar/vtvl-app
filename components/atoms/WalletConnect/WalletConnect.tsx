@@ -1,6 +1,6 @@
-import React from 'react';
 import Image from 'next/image';
 import Router from 'next/router';
+import React from 'react';
 import { truncateAddress } from 'utils/web3';
 
 interface Props {
@@ -19,7 +19,9 @@ const WalletConnect = ({ account, connected, connectWallet }: Props) => {
           <img className="w-6" src="/icons/avatar.svg" alt="More" />
         </>
       ) : (
-        <p className="hidden md:inline" onClick={()=>Router.push('/onboarding')}>Connect Wallet</p>
+        <p className="hidden md:inline" onClick={() => Router.push('/onboarding')}>
+          Connect Wallet
+        </p>
       )}
     </div>
   );

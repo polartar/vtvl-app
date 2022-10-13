@@ -1,6 +1,7 @@
-import { Colors } from '../../CommonStyles';
 import styled from '@emotion/styled';
 import React from 'react';
+
+import { Colors } from '../../CommonStyles';
 
 interface Props {
   title: string;

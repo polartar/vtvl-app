@@ -1,16 +1,16 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Select from '@components/atoms/FormControls/Select/Select';
+import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
-import Router from 'next/router';
+import AuthContext from 'providers/auth.context';
+import OnboardingContext from 'providers/onboarding.context';
 import React, { useContext, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import OnboardingContext from 'providers/onboarding.context';
-import { createOrg } from 'services/db/organization';
 import { createSafe } from 'services/db/safe';
 import { deploySafe } from 'services/gnosois';
-import { useWeb3React } from '@web3-react/core';
 
+import useEagerConnect from '../../hooks/useEagerConnect';
 import TrashIcon from '../../public/icons/trash.svg';
 
 interface Owner {
@@ -24,8 +24,10 @@ type ConfirmationForm = {
 };
 
 const ConfirmationPage: NextPage = () => {
+  const triedToEagerConnect = useEagerConnect();
   const { active, library, chainId } = useWeb3React();
-  const { onCompleteStep, onPrevious } = useContext(OnboardingContext);
+  const { user } = useContext(AuthContext);
+  const { onNext, onPrevious } = useContext(OnboardingContext);
 
   // Get to use the react-hook-form and set default values
   const {
@@ -85,14 +87,26 @@ const ConfirmationPage: NextPage = () => {
 
   const onSubmit: SubmitHandler<ConfirmationForm> = async (data) => {
     console.log('Form Submitted', data, getValues());
-    const values = getValues();
-    const owners = values.owners.map((o)=> o.address)
-    if(!active) {console.log("Please login with metamask to create safe"); return}
-    const newsafe = await deploySafe(library, owners, values.authorizedUsers)
-    const storedSafeId = await createSafe({address: newsafe.getAddress(), chainId: chainId || 0, owners, threshold: values.authorizedUsers})
-    onCompleteStep({ safeId:storedSafeId })
+    try {
+      const values = getValues();
+      const owners = values.owners.map((o) => o.address);
+      if (!active) {
+        console.log('Please login with metamask to create safe');
+        return;
+      }
+      const newsafe = await deploySafe(library, owners, values.authorizedUsers);
+      const storedSafeId = await createSafe({
+        userId: user?.uid,
+        address: newsafe.getAddress(),
+        chainId: chainId || 0,
+        owners,
+        threshold: values.authorizedUsers
+      });
+      onNext({ safeId: storedSafeId });
+    } catch (error) {
+      console.log('error getting safe info ', error);
+    }
   };
-
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
@@ -235,7 +249,7 @@ const ConfirmationPage: NextPage = () => {
             </div>
           ) : null}
           <div className="flex flex-row justify-between items-center">
-            <BackButton label="Return" onClick={()=>onPrevious()} />
+            <BackButton label="Return" onClick={() => onPrevious()} />
             <button className="primary flex flex-row items-center gap-2 group" type="submit">
               Sign and Authorize
               <img

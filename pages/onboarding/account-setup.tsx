@@ -28,8 +28,8 @@ type AccountForm = {
 };
 
 const AccountSetupPage: NextPage = () => {
-  const { signUpWithEmail, user } = useContext(AuthContext)
-  const { onPrevious, onCompleteStep, info } = useContext(OnboardingContext)
+  const { signUpWithEmail, user } = useContext(AuthContext);
+  const { onPrevious, onCompleteStep, info } = useContext(OnboardingContext);
   // Get to use the react-hook-form and set default values
   const {
     control,
@@ -94,15 +94,20 @@ const AccountSetupPage: NextPage = () => {
     console.log('Form Submitted', data, getValues());
     const values = getValues();
 
-    const orgId = await createOrg({name: values.company , email: values.companyEmail, founderId: user?.uid });
-    const memberId = await createMember({name: values.name, email: values.companyEmail, orgId: orgId, type: info?.accountType || '', })
+    const orgId = await createOrg({ name: values.company, email: values.companyEmail, founderId: user?.uid });
+    const memberId = await createMember({
+      name: values.name,
+      email: values.companyEmail,
+      orgId: orgId,
+      type: info?.accountType || ''
+    });
 
-    if(values.contributors && values.contributors.length > 0){
-      values.contributors.map(async(contributor)=>{
-        await createMember({name: contributor.name, email: contributor.email, orgId: orgId, type: 'employee', })
-      })
+    if (values.contributors && values.contributors.length > 0) {
+      values.contributors.map(async (contributor) => {
+        await createMember({ name: contributor.name, email: contributor.email, orgId: orgId, type: 'employee' });
+      });
     }
-    onCompleteStep({accountId: memberId})
+    onCompleteStep({ accountId: memberId });
   };
 
   // Recommended by React hook forms when using field array https://react-hook-form.com/api/usefieldarray
@@ -301,7 +306,7 @@ const AccountSetupPage: NextPage = () => {
             </button>
           ) : null}
           <div className="flex flex-row justify-between items-center">
-            <BackButton label="Return" onClick={()=>onPrevious()} />
+            <BackButton label="Return" onClick={() => onPrevious()} />
             <button className="primary" type="submit">
               Continue
             </button>

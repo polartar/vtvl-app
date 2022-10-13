@@ -1,9 +1,10 @@
+import styled from '@emotion/styled';
+import React from 'react';
+
 import { Colors } from '../../CommonStyles';
 import IconText from '../../atoms/IconText/IconText';
 import SidebarItem from '../../atoms/SidebarItem/SidebarItem';
 import User from '../../atoms/User/User';
-import styled from '@emotion/styled';
-import React from 'react';
 
 interface Props {
   collapsed?: boolean;

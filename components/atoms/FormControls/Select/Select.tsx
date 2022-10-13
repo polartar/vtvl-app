@@ -53,8 +53,10 @@ const Select = ({
       {label ? <span>{label}</span> : null}
       <div className={`${success && 'success'} ${error && 'error'}`}>
         <SelectInput {...props} className="appearance-none">
-          {options.map((option,idx) => (
-            <option value={option.value} key={idx}>{option.label}</option>
+          {options.map((option, idx) => (
+            <option value={option.value} key={idx}>
+              {option.label}
+            </option>
           ))}
         </SelectInput>
         {message ? <p>{message}</p> : null}

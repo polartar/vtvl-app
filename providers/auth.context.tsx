@@ -2,21 +2,21 @@ import {
   GoogleAuthProvider,
   User,
   createUserWithEmailAndPassword,
+  getAdditionalUserInfo,
   onAuthStateChanged,
   signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signOut,
-  getAdditionalUserInfo
+  signOut
 } from 'firebase/auth';
 import React, { createContext, useEffect, useMemo, useState } from 'react';
 
 import { auth } from '../services/auth/firebase';
 
 export type NewLogin = {
-  isFirstLogin: boolean
-  uuid: string
-}
+  isFirstLogin: boolean;
+  uuid: string;
+};
 
 export type AuthContextData = {
   user: User | undefined;
@@ -51,12 +51,11 @@ export function AuthContextProvider({ children }: any) {
       setLoading(true);
       const credential = await signInWithPopup(auth, new GoogleAuthProvider());
       const additionalInfo = getAdditionalUserInfo(credential);
-      console.log("---- is this a new user ===>>> ", additionalInfo?.isNewUser)
-  
+
       setUser(credential.user);
       setLoading(false);
-      if(additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
-      return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid }
+      if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+      return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
     } catch (error: any) {
       setLoading(false);
       setError(error.message);
@@ -94,8 +93,8 @@ export function AuthContextProvider({ children }: any) {
       const additionalInfo = getAdditionalUserInfo(credential);
       setUser(credential.user);
       setLoading(false);
-      if(additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
-      return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid }
+      if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+      return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
     } catch (error: any) {
       setLoading(false);
       setError(error.message);

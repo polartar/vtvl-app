@@ -13,6 +13,6 @@ const Template: ComponentStory<typeof BackButton> = (args) => <BackButton {...ar
 
 export const FormUsage = Template.bind({});
 FormUsage.args = {
-  onClick: ()=>{},
+  onClick: () => {},
   label: 'Return to account setup'
 };

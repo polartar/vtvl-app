@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
-import Head from 'next/head';
-import { useWeb3React } from '@web3-react/core';
-import AuthContext from '../../../providers/auth.context';
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
+import { useWeb3React } from '@web3-react/core';
+import Head from 'next/head';
+import React, { useContext } from 'react';
+
+import AuthContext from '../../../providers/auth.context';
 
 const Container = styled.section`
   min-width: 100vw;

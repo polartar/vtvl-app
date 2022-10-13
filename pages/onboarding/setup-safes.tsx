@@ -1,29 +1,59 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { NextPage } from 'next';
-import Router from 'next/router';
-import { useWeb3React } from '@web3-react/core';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
+import { useWeb3React } from '@web3-react/core';
+import { NextPage } from 'next';
+import Router from 'next/router';
+import AuthContext from 'providers/auth.context';
 import OnboardingContext from 'providers/onboarding.context';
-import { fetchSafes } from 'services/gnosois';
+import React, { useContext, useEffect, useState } from 'react';
+import { createSafe } from 'services/db/safe';
+import { fetchSafes, getSafeInfo } from 'services/gnosois';
 
+import useEagerConnect from '../../hooks/useEagerConnect';
 
 const YourSafesPage: NextPage = () => {
-  // Comment/uncomment to see the two states
-  // const safes: string[] = [];
-  const { account, library } = useWeb3React();
-  const { onPrevious } = useContext(OnboardingContext);
-  const [safes, setSafes] = useState<string[]>();
+  const triedToEagerConnect = useEagerConnect();
+  const { active, account, chainId, library } = useWeb3React();
+  const { user } = useContext(AuthContext);
+  const { onPrevious, onNext } = useContext(OnboardingContext);
+  const [safes, setSafes] = useState<string[]>([
+    '0xF6F193B066039DE07df05bb31Afe36524C15fd5F',
+    '0x82B647063A076d08c862058c2c114ac20d522653'
+  ]);
 
-  useEffect(()=>{
-    if(account && library) {
-      (async () => {
-        const resp = await fetchSafes(library, account)
-        setSafes(resp?.safes)
-      })()
+  useEffect(() => {
+    // if(account && library) {
+    //   (async () => {
+    //     const resp = await fetchSafes(library, account)
+    //     setSafes(resp?.safes)
+    //   })()
+    // }
+  }, [account]);
+
+  const importSafe = async (address: string) => {
+    if (!active || !chainId || !library) {
+      console.log('Please login with metamask to create safe');
+      return;
     }
-  },[account])
+    console.log('trying import ');
+    try {
+      const safe = await getSafeInfo(library, address);
+      if (!safe) {
+        console.log(
+          "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
+        );
+        return;
+      }
+
+      const owners = await safe.getOwners();
+      const threshold = await safe.getThreshold();
+      const storedSafeId = await createSafe({ userId: user?.uid, address, chainId: chainId, owners, threshold });
+      onNext({ safeId: storedSafeId });
+    } catch (error) {
+      console.log('error importing safe ', error);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
@@ -42,7 +72,7 @@ const YourSafesPage: NextPage = () => {
                 <SafesListItem
                   key={`safe-${safe}-${safeIndex}`}
                   label={safe}
-                  onClick={() => Router.push('/onboarding/new-safe')}
+                  onClick={async () => await importSafe(safe)}
                 />
               ))}
             </div>
@@ -54,7 +84,7 @@ const YourSafesPage: NextPage = () => {
                   title="No safes found"
                   description={[
                     'Setup a new multi-signature wallet. Get started by clicking on "',
-                    <strong onClick={()=> Router.push('/onboarding/new-safe')}>Create New Safe</strong>,
+                    <strong onClick={() => Router.push('/onboarding/new-safe')}>Create New Safe</strong>,
                     '".'
                   ]}
                 />
@@ -69,11 +99,8 @@ const YourSafesPage: NextPage = () => {
         </div>
 
         <div className="flex flex-row justify-between items-center mt-6">
-          <BackButton label="Return to account setup" onClick={()=>onPrevious()} />
-          <button
-            className="flex flex-row items-center gap-2 primary group"
-            type="button"
-            onClick={() => Router.push('/dashboard')}>
+          <BackButton label="Return to account setup" onClick={() => onPrevious()} />
+          <button className="flex flex-row items-center gap-2 primary group" type="button" onClick={() => onNext({})}>
             Skip{' '}
             <img
               src="/icons/arrow-small-right-white.svg"

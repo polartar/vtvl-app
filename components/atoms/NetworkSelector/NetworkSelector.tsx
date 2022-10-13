@@ -1,15 +1,10 @@
+import { useWeb3React } from '@web3-react/core';
 import React, { useEffect } from 'react';
-import { useWeb3React } from "@web3-react/core";
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { toHex } from 'utils/web3';
 
 const NetworkSelector = () => {
-  const {
-    library,
-    account,
-    active,
-    chainId
-  } = useWeb3React();
+  const { library, account, active, chainId } = useWeb3React();
   const [showNetworks, setShowNetworks] = React.useState(false);
   const [selectedNetwork, setSelectedNetwork] = React.useState({
     icon: '/icons/chains/ethereum.svg',
@@ -17,29 +12,28 @@ const NetworkSelector = () => {
     code: 'ETH'
   });
 
-  useEffect(()=>{
-    console.log("active is ", active)
-    console.log("account is ", account)
-    if(!active) setShowNetworks(false)
-    if(chainId) {
+  useEffect(() => {
+    console.log('active is ', active);
+    console.log('account is ', account);
+    if (!active) setShowNetworks(false);
+    if (chainId) {
       setSelectedNetwork({
         icon: SupportedChains[chainId as SupportedChainId].icon,
         title: SupportedChains[chainId as SupportedChainId].title,
         code: SupportedChains[chainId as SupportedChainId].code
-      })
+      });
     }
-  },[active,chainId])
-
+  }, [active, chainId]);
 
   const selectNetwork = async (network: any) => {
     setShowNetworks(false);
-    console.log("we have network here ",network)
+    console.log('we have network here ', network);
     try {
       await library.provider.request({
-        method: "wallet_switchEthereumChain",
+        method: 'wallet_switchEthereumChain',
         params: [{ chainId: toHex(network.id) }]
       });
-      console.log("switched success ")
+      console.log('switched success ');
       setSelectedNetwork({
         icon: network.icon,
         title: network.title,
@@ -49,8 +43,8 @@ const NetworkSelector = () => {
       if (switchError.code === 4902) {
         try {
           await library.provider.request({
-            method: "wallet_addEthereumChain",
-            params: [{chainId: toHex(network.id), chainName: network.title, rpcUrls: [network.rpc]}]
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: toHex(network.id), chainName: network.title, rpcUrls: [network.rpc] }]
           });
           setSelectedNetwork({
             icon: network.icon,
@@ -88,12 +82,15 @@ const NetworkSelector = () => {
       </div>
       {showNetworks && (
         <div className="absolute z-10 top-12 flex flex-col bg-gray-50 border border-gray-200 rounded-3xl w-full py-1 px-2 sm:px-3">
-          {Object.keys(SupportedChains).map((key: any, idx:number) => (
+          {Object.keys(SupportedChains).map((key: any, idx: number) => (
             <div
               key={key}
               className="h-10 flex flex-row items-center sm:gap-2 cursor-pointer transition-all hover:translate-x-1"
               onClick={async () => await selectNetwork(SupportedChains[key as SupportedChainId])}>
-              <img src={SupportedChains[key as SupportedChainId].icon} alt={SupportedChains[key as SupportedChainId].title} />
+              <img
+                src={SupportedChains[key as SupportedChainId].icon}
+                alt={SupportedChains[key as SupportedChainId].title}
+              />
               <p className="text-sm text-primary-900 font-medium">
                 <span className="hidden sm:block lg:hidden">{SupportedChains[key as SupportedChainId].code}</span>
                 <span className="hidden lg:block">{SupportedChains[key as SupportedChainId].title}</span>

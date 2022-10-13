@@ -1,6 +1,6 @@
 export interface Organization {
-    name: string
-    email: string
-    founderId?: string
-    safeId?: number
-  }
+  name: string;
+  email: string;
+  founderId?: string;
+  safeId?: number;
+}

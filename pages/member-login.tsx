@@ -1,11 +1,12 @@
-import { useContext } from 'react';
-import { NextPage } from 'next';
-import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import Input from '@components/atoms/FormControls/Input/Input';
-import { emailPattern } from '../types/constants/validation-patterns';
-import AuthContext from 'providers/auth.context';
+import { NextPage } from 'next';
 import Router from 'next/router';
+import AuthContext from 'providers/auth.context';
 import OnboardingContext from 'providers/onboarding.context';
+import { useContext } from 'react';
+import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
+
+import { emailPattern } from '../types/constants/validation-patterns';
 
 type LoginForm = {
   userEmail: string;
@@ -26,7 +27,7 @@ const MemberLoginPage: NextPage = () => {
   } = useForm({
     defaultValues: {
       userEmail: '',
-      userPassword: '',
+      userPassword: ''
     }
   });
 
@@ -47,15 +48,15 @@ const MemberLoginPage: NextPage = () => {
   };
 
   const skipSignIn = async () => {
-    const newLogin = await anonymousSignIn();
-    Router.push('/dashboard')
+    await anonymousSignIn();
+    Router.push('/dashboard');
   };
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    console.log("is this a new user???....", newLogin?.isFirstLogin)
-    console.log("completing setup")
-    await onCompleteStep({userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin})
+    console.log('is this a new user???....', newLogin?.isFirstLogin);
+    console.log('completing setup');
+    await onCompleteStep({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   return (
@@ -65,7 +66,9 @@ const MemberLoginPage: NextPage = () => {
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae iaculis nulla.
       </p>
       <div className="w-full my-6 panel flex flex-col items-center">
-        <button onClick={async ()=> await googleSignIn()} className="line flex flex-row items-center justify-center gap-2.5 w-full">
+        <button
+          onClick={async () => await googleSignIn()}
+          className="line flex flex-row items-center justify-center gap-2.5 w-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign in with Google
         </button>
@@ -77,62 +80,60 @@ const MemberLoginPage: NextPage = () => {
         <div className="w-full my-6">
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
-                  name="userEmail"
-                  control={control}
-                  rules={{ required: true, pattern: emailPattern }}
-                  render={({ field }) => (
-                    <Input
-                      label="Your company email"
-                      placeholder="Enter your company email address"
-                      className="md:col-span-2"
-                      error={Boolean(errors.userEmail)}
-                      success={
-                        !errors.userEmail &&
-                        (userEmail.state.isTouched || userEmail.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        errors.userEmail
-                          ? 'Please enter your company email'
-                          : (userEmail.state.isTouched || userEmail.state.isDirty) && isSubmitted
-                          ? 'Company email is okay'
-                          : ''
-                      }
-                      {...field}
-                    />
-                  )}
+              name="userEmail"
+              control={control}
+              rules={{ required: true, pattern: emailPattern }}
+              render={({ field }) => (
+                <Input
+                  label="Your company email"
+                  placeholder="Enter your company email address"
+                  className="md:col-span-2"
+                  error={Boolean(errors.userEmail)}
+                  success={!errors.userEmail && (userEmail.state.isTouched || userEmail.state.isDirty) && isSubmitted}
+                  message={
+                    errors.userEmail
+                      ? 'Please enter your company email'
+                      : (userEmail.state.isTouched || userEmail.state.isDirty) && isSubmitted
+                      ? 'Company email is okay'
+                      : ''
+                  }
+                  {...field}
                 />
+              )}
+            />
             <Controller
-                  name="userPassword"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Input
-                      label="Your password"
-                      placeholder="Enter your password"
-                      className="md:col-span-2"
-                      type={'password'}
-                      error={Boolean(errors.userPassword)}
-                      success={
-                        !errors.userPassword &&
-                        (userPassword.state.isTouched || userPassword.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        errors.userPassword
-                          ? 'Please enter your password'
-                          : (userPassword.state.isTouched || userPassword.state.isDirty) && isSubmitted
-                          ? 'Password is okay'
-                          : ''
-                      }
-                      {...field}
-                    />
-                  )}
+              name="userPassword"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  label="Your password"
+                  placeholder="Enter your password"
+                  className="md:col-span-2"
+                  type={'password'}
+                  error={Boolean(errors.userPassword)}
+                  success={
+                    !errors.userPassword && (userPassword.state.isTouched || userPassword.state.isDirty) && isSubmitted
+                  }
+                  message={
+                    errors.userPassword
+                      ? 'Please enter your password'
+                      : (userPassword.state.isTouched || userPassword.state.isDirty) && isSubmitted
+                      ? 'Password is okay'
+                      : ''
+                  }
+                  {...field}
                 />
-            <button className="secondary mt-5" type="submit">Login</button>
+              )}
+            />
+            <button className="secondary mt-5" type="submit">
+              Login
+            </button>
           </form>
         </div>
-        <button className="outlined mt-5" onClick={async ()=> await skipSignIn()} >Skip</button>
+        <button className="outlined mt-5" onClick={async () => await skipSignIn()}>
+          Skip
+        </button>
         <hr className="border-t border-neutral-200 w-full my-5" />
         <span className="font-medium text-xs text-neutral-800">
           Can&apos;t find your access code? <span className="text-primary-900">Send a new code</span>

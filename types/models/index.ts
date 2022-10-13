@@ -1,12 +1,5 @@
-import { Organization } from "./organization";
-import { Safe, Owner } from "./safe";
-import { Member, Address, User } from "./member";
+import { Address, Member, User } from './member';
+import { Organization } from './organization';
+import { Owner, Safe } from './safe';
 
-export type {
-    Organization,
-    Safe,
-    Owner,
-    Member,
-    User,
-    Address
-}
+export type { Organization, Safe, Owner, Member, User, Address };
