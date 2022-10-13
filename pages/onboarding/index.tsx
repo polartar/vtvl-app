@@ -97,15 +97,14 @@ const ConnectWalletPage: NextPage = () => {
   const router = useRouter()
 
   useEffect(() => {
-    setCurrentStep(Step.ChainSetup)
+    setCurrentStep(1)
   }, [])
 
   async function metamaskActivate() {
     console.log("provider is ", JSON.stringify(library?.provider))
     try {
       await activate(injected);
-      onCompleteStep({ chainId: chainId, address: account || '' })
-      router.push(user ? '/dashboard' : '/member-login')
+      await onCompleteStep({});
     } catch (error) {
       console.log("connection error ", error)
     }
@@ -114,8 +113,7 @@ const ConnectWalletPage: NextPage = () => {
   async function walletConnectActivate() {
     try {
       await activate(walletconnect);
-      onCompleteStep({ chainId: chainId, address: account || '' })
-      router.push(user ? '/dashboard' : '/member-login')
+      await onCompleteStep({});
     } catch (error) {
       console.log("connection error ", error)
     }

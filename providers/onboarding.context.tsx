@@ -5,6 +5,7 @@ import { useWeb3React } from '@web3-react/core';
 import { fetchSafes } from 'services/gnosois';
 
   interface OnboardingInfo {
+    isFirstTimeUser?: boolean,
     userId?: string,
     accountType?: string,
     accountId?: string,
@@ -60,7 +61,7 @@ import { fetchSafes } from 'services/gnosois';
 
   export function OnboardingContextProvider({ children }: any) {
     const [info, setInfo] = useState<OnboardingInfo | undefined>();
-    const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
+    const [currentStep, setCurrentStep] = useState<Step>(1);
     const [inProgress, setInProgress] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState('');
@@ -69,7 +70,7 @@ import { fetchSafes } from 'services/gnosois';
 
 
     useEffect(() => {
-
+      console.log("onboarding contest current step is ", currentStep)
     }, []);
 
 
@@ -82,22 +83,34 @@ import { fetchSafes } from 'services/gnosois';
     }
 
     const onNext = async () => {
-      const nextstep = currentStep != Step.SafeSetup ? currentStep + 1: currentStep;
+      console.log("current stap is ", Number(currentStep))
+      const nextstep =  Number(currentStep) + 1;
+      console.log("onboarding context nextstep == ", nextstep)
       if (!States[nextstep as Step].route) return;
+      console.log("onboarding context valid route")
       setCurrentStep(nextstep);
 
+      if (nextstep == Step.Login){
+        await router.push(info?.isFirstTimeUser ? States[nextstep as Step].route : '/dashboard')
+        return
+      }
+
       if (nextstep == Step.SafeSetup){
+        console.log("onboarding context setting up safe")
         if (!account) throw new Error('Please login with metamask to proceed');
         const resp = await fetchSafes(library, account);
-        resp?.safes && resp?.safes.length > 0 ?  router.replace('/onboarding/import-safes') :  router.replace(States[nextstep as Step].route)
+        await router.push(resp?.safes && resp?.safes.length > 0 ?  '/onboarding/import-safes' : States[nextstep as Step].route)
+        return
       }
 
       if (nextstep > Step.SafeSetup){
+        console.log("onboarding context ending onboarding")
         setInProgress(false)
-        router.push('/dashboard')
+        await router.push('/dashboard')
+        return
       }
-
-      router.replace(States[nextstep as Step].route)
+      console.log("onboarding context valid route aboutt to replace route")
+      await router.push(States[nextstep as Step].route)
     }
 
     const onCompleteStep = async ( data : OnboardingInfo) => {
@@ -105,11 +118,11 @@ import { fetchSafes } from 'services/gnosois';
 
         case Step.ChainSetup:
           setInProgress(true)
-          await onNext()
+          await onNext();
           break;
 
         case Step.Login:
-          if(!data.userId) throw Error("incomplete step")
+          if(!data.userId || !data.isFirstTimeUser) throw Error("incomplete step")
           setInfo({...info, userId: data.userId})
           await onNext();
           break;
