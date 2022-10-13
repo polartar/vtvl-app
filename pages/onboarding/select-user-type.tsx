@@ -1,6 +1,5 @@
 import styled from '@emotion/styled';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
 import React, {useContext} from 'react';
 import OnboardingContext from 'providers/onboarding.context';
 import CardRadio from '../../components/atoms/CardRadio/CardRadio';
@@ -56,7 +55,7 @@ const SelectUserTypePage: NextPage = () => {
           ))}
         </div>
       </div>
-      <button className="secondary" onClick={() => { onCompleteStep({accountType: selected});}}>
+      <button className="secondary" onClick={async () => { await onCompleteStep({accountType: selected});}}>
         Continue
       </button>
     </Container>

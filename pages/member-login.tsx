@@ -48,18 +48,14 @@ const MemberLoginPage: NextPage = () => {
 
   const skipSignIn = async () => {
     const newLogin = await anonymousSignIn();
-    if(newLogin && newLogin.isFirstLogin){
-      onCompleteStep({userId: newLogin?.uuid})
-    } else {
-      Router.push('/dashboard')
-    }
+    Router.push('/dashboard')
   };
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
     console.log("is this a new user???....", newLogin?.isFirstLogin)
     console.log("completing setup")
-    onCompleteStep({userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin})
+    await onCompleteStep({userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin})
   };
 
   return (

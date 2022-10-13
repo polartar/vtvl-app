@@ -60,41 +60,51 @@ import { fetchSafes } from 'services/gnosois';
 
 
   export function OnboardingContextProvider({ children }: any) {
+    const { account, library } = useWeb3React();
     const [info, setInfo] = useState<OnboardingInfo | undefined>();
-    const [currentStep, setCurrentStep] = useState<Step>(1);
+    const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
     const [inProgress, setInProgress] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState('');
-    const router = useRouter()
-    const { account, library, chainId } = useWeb3React();
+    const router = useRouter();
 
 
     useEffect(() => {
       console.log("onboarding contest current step is ", currentStep)
-    }, []);
+      console.log("onboarding in progress ?? ", inProgress)
+      router.beforePopState(({ as }) => {
+        if (as !== router.asPath && inProgress) {
+            onPrevious()
+        }
+        return true;
+      });
+    }, [router]);
 
 
     const onPrevious = () => {
+      if (!currentStep) throw new Error("invalid route onboarding context");
       const prevstep = currentStep == Step.ChainSetup ? currentStep: currentStep - 1;
-      console.log("what is this ", States[prevstep as Step])
+      if (!States[prevstep as Step].route) throw new Error("invalid route onboarding context");
       if (!States[prevstep as Step].route) return;
       setCurrentStep(prevstep)
       router.replace(States[prevstep as Step].route);
     }
 
     const onNext = async () => {
-      console.log("current stap is ", Number(currentStep))
       const nextstep =  Number(currentStep) + 1;
+      console.log("current step is ", Number(currentStep))
       console.log("onboarding context nextstep == ", nextstep)
-      if (!States[nextstep as Step].route) return;
+
+      if (!States[nextstep as Step].route || !currentStep) throw new Error("invalid route onboarding context");
       console.log("onboarding context valid route")
       setCurrentStep(nextstep);
+
+      if (currentStep === Step.ChainSetup) setInProgress(true);
 
       if (nextstep == Step.Login){
         await router.push(info?.isFirstTimeUser ? States[nextstep as Step].route : '/dashboard')
         return
       }
-
       if (nextstep == Step.SafeSetup){
         console.log("onboarding context setting up safe")
         if (!account) throw new Error('Please login with metamask to proceed');
@@ -102,18 +112,18 @@ import { fetchSafes } from 'services/gnosois';
         await router.push(resp?.safes && resp?.safes.length > 0 ?  '/onboarding/import-safes' : States[nextstep as Step].route)
         return
       }
-
       if (nextstep > Step.SafeSetup){
         console.log("onboarding context ending onboarding")
         setInProgress(false)
         await router.push('/dashboard')
         return
       }
-      console.log("onboarding context valid route aboutt to replace route")
+      console.log("onboarding context valid route aboutt to replace route ", States[nextstep as Step].route)
       await router.push(States[nextstep as Step].route)
     }
 
     const onCompleteStep = async ( data : OnboardingInfo) => {
+      console.log("currentStep is ", currentStep)
       switch (currentStep) {
 
         case Step.ChainSetup:
@@ -122,7 +132,7 @@ import { fetchSafes } from 'services/gnosois';
           break;
 
         case Step.Login:
-          if(!data.userId || !data.isFirstTimeUser) throw Error("incomplete step")
+          if(!data.userId || data.isFirstTimeUser == undefined) throw Error("incomplete step")
           setInfo({...info, userId: data.userId})
           await onNext();
           break;
@@ -163,7 +173,7 @@ import { fetchSafes } from 'services/gnosois';
         inProgress,
         error
       }),
-      [info, loading, error]
+      [info, loading, error, currentStep]
     );
 
     return <OnboardingContext.Provider value={memoedValue}>{children}</OnboardingContext.Provider>;

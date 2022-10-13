@@ -97,7 +97,7 @@ const ConnectWalletPage: NextPage = () => {
   const router = useRouter()
 
   useEffect(() => {
-    setCurrentStep(1)
+    setCurrentStep(Step.ChainSetup)
   }, [])
 
   async function metamaskActivate() {
