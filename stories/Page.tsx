@@ -1,5 +1,6 @@
-import React from 'react';
 import { User } from 'firebase/auth';
+import React from 'react';
+
 import Header from '../components/molecules/Header/Header';
 import './page.css';
 

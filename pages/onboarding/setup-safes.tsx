@@ -17,16 +17,13 @@ const YourSafesPage: NextPage = () => {
   const { active, account, chainId, library } = useWeb3React();
   const { user } = useContext(AuthContext);
   const { onPrevious, onNext } = useContext(OnboardingContext);
-  const [safes, setSafes] = useState<string[]>([
-    '0xF6F193B066039DE07df05bb31Afe36524C15fd5F',
-    '0x82B647063A076d08c862058c2c114ac20d522653'
-  ]);
+  const [safes, setSafes] = useState<string[]>();
 
   useEffect(() => {
     if (account && library) {
       (async () => {
         const resp = await fetchSafes(library, account);
-        if(resp) setSafes(resp.safes);
+        if (resp) setSafes(resp.safes);
       })();
     }
   }, [account]);
