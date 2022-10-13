@@ -11,6 +11,8 @@ import { createSafe } from 'services/db/safe';
 import { deploySafe } from 'services/gnosois';
 import { useWeb3React } from '@web3-react/core';
 
+import TrashIcon from '../../public/icons/trash.svg';
+
 interface Owner {
   name: string;
   address: string;
@@ -47,7 +49,7 @@ const ConfirmationPage: NextPage = () => {
   });
 
   // Controls for the dynamic contributors
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: 'owners'
   });
@@ -130,62 +132,68 @@ const ConfirmationPage: NextPage = () => {
             />
           </div>
           {fields.map((owner, ownerIndex) => (
-            <div key={`owner-${owner.id}`} className="grid md:grid-cols-2 gap-5 mb-5">
-              <Controller
-                name={`owners.${ownerIndex}.name`}
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Input
-                    label="Owner's name"
-                    placeholder="Enter owner's name"
-                    error={Boolean(getOwnersState(ownerIndex).name.state.error)}
-                    success={
-                      !getOwnersState(ownerIndex).name.state.error &&
-                      (getOwnersState(ownerIndex).name.state.isTouched ||
-                        getOwnersState(ownerIndex).name.state.isDirty) &&
-                      isSubmitted
-                    }
-                    message={
-                      getOwnersState(ownerIndex).name.state.error
-                        ? "Please enter owner's name"
-                        : (getOwnersState(ownerIndex).name.state.isTouched ||
-                            getOwnersState(ownerIndex).name.state.isDirty) &&
-                          isSubmitted
-                        ? "Owner's name is okay"
-                        : ''
-                    }
-                    {...field}
-                  />
-                )}
-              />
-              <Controller
-                name={`owners.${ownerIndex}.address`}
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Input
-                    label="Owner's address"
-                    placeholder="Enter owner's address"
-                    error={Boolean(getOwnersState(ownerIndex).address.state.error)}
-                    success={
-                      !getOwnersState(ownerIndex).address.state.error &&
-                      (getOwnersState(ownerIndex).address.state.isTouched ||
-                        getOwnersState(ownerIndex).address.state.isDirty) &&
-                      isSubmitted
-                    }
-                    message={
-                      getOwnersState(ownerIndex).address.state.error
-                        ? "Please enter owner's address"
-                        : (getOwnersState(ownerIndex).address.state.isTouched ||
-                            getOwnersState(ownerIndex).address.state.isDirty) &&
-                          isSubmitted
-                        ? "Owner's address is okay"
-                        : ''
-                    }
-                    {...field}
-                  />
-                )}
+            <div key={`owner-${owner.id}`} className="flex flex-row md:items-center gap-5 mb-5">
+              <div className="grid md:grid-cols-2 gap-5 grow w-full">
+                <Controller
+                  name={`owners.${ownerIndex}.name`}
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Input
+                      label="Owner's name"
+                      placeholder="Enter owner's name"
+                      error={Boolean(getOwnersState(ownerIndex).name.state.error)}
+                      success={
+                        !getOwnersState(ownerIndex).name.state.error &&
+                        (getOwnersState(ownerIndex).name.state.isTouched ||
+                          getOwnersState(ownerIndex).name.state.isDirty) &&
+                        isSubmitted
+                      }
+                      message={
+                        getOwnersState(ownerIndex).name.state.error
+                          ? "Please enter owner's name"
+                          : (getOwnersState(ownerIndex).name.state.isTouched ||
+                              getOwnersState(ownerIndex).name.state.isDirty) &&
+                            isSubmitted
+                          ? "Owner's name is okay"
+                          : ''
+                      }
+                      {...field}
+                    />
+                  )}
+                />
+                <Controller
+                  name={`owners.${ownerIndex}.address`}
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Input
+                      label="Owner's address"
+                      placeholder="Enter owner's address"
+                      error={Boolean(getOwnersState(ownerIndex).address.state.error)}
+                      success={
+                        !getOwnersState(ownerIndex).address.state.error &&
+                        (getOwnersState(ownerIndex).address.state.isTouched ||
+                          getOwnersState(ownerIndex).address.state.isDirty) &&
+                        isSubmitted
+                      }
+                      message={
+                        getOwnersState(ownerIndex).address.state.error
+                          ? "Please enter owner's address"
+                          : (getOwnersState(ownerIndex).address.state.isTouched ||
+                              getOwnersState(ownerIndex).address.state.isDirty) &&
+                            isSubmitted
+                          ? "Owner's address is okay"
+                          : ''
+                      }
+                      {...field}
+                    />
+                  )}
+                />
+              </div>
+              <TrashIcon
+                className="stroke-current text-neutral-700 w-5 h-5 cursor-pointer transition-all transform-gpu hover:-translate-y-0.5"
+                onClick={() => remove(ownerIndex)}
               />
             </div>
           ))}
