@@ -2,7 +2,7 @@ import React from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   required?: boolean;
-  label?: string;
+  label?: string | React.ReactNode;
   className?: string;
   message?: string | JSX.Element | JSX.Element[];
   error?: boolean;

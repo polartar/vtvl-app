@@ -17,12 +17,14 @@ interface ChipProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
    * How large should the chip be?
    */
   rounded?: boolean;
+
+  className?: string;
 }
 
 /**
  * Primary UI component for user interaction
  */
-const Chip = ({ size = 'default', color = 'default', label, rounded = false, ...props }: ChipProps) => {
+const Chip = ({ size = 'default', color = 'default', label, rounded = false, className = '', ...props }: ChipProps) => {
   const sizes = {
     small: 'py-0 px-1 text-xs',
     default: 'py-0.5 px-2 text-sm',
@@ -38,9 +40,9 @@ const Chip = ({ size = 'default', color = 'default', label, rounded = false, ...
   };
   return (
     <label
-      className={`inline-flex flex-row items-center w-auto border ${colors[color]} ${sizes[size]} ${
+      className={`inline-flex flex-row items-center w-auto border cursor-pointer ${colors[color]} ${sizes[size]} ${
         rounded ? 'rounded-full' : 'rounded-md'
-      }`}
+      } ${className}`}
       {...props}>
       {label}
     </label>

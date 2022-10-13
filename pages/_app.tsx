@@ -4,6 +4,7 @@ import { Web3ReactProvider } from '@web3-react/core';
 import { ethers } from 'ethers';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
+import { MintContextProvider } from 'providers/mint.context';
 import React, { ReactElement, ReactNode } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -29,10 +30,11 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     <Web3ReactProvider getLibrary={(provider: any) => new ethers.providers.Web3Provider(provider)}>
       <AuthContextProvider>
         <OnboardingContextProvider>
-          {/* <DefaultLayout sidebar={true} connected={true}> */}
-          <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-          {/* As per react-toastify documentation https://fkhadra.github.io/react-toastify/installation we should render the ToastContainer once in the tree. */}
-          <ToastContainer />
+          <MintContextProvider>
+            {/* <DefaultLayout sidebar={true} connected={true}> */}
+            <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+            <ToastContainer />
+          </MintContextProvider>
         </OnboardingContextProvider>
       </AuthContextProvider>
     </Web3ReactProvider>
