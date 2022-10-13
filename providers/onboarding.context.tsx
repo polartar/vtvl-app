@@ -53,7 +53,8 @@ export const States = {
     error: 'Please setup your account to continue'
   },
   [Step.SafeSetup]: {
-    route: '/onboarding/setup-safes'
+    route: '/onboarding/setup-safes',
+    error: 'Please setup your safe id if you are not skipping'
   }
 };
 
@@ -136,25 +137,25 @@ export function OnboardingContextProvider({ children }: any) {
         break;
 
       case Step.Login:
-        if (!data.userId || data.isFirstTimeUser == undefined) throw Error('incomplete step');
+        if (!data.userId || data.isFirstTimeUser == undefined) throw Error(States[currentStep].error);
         setInfo({ ...info, userId: data.userId });
         await setRoute(data.isFirstTimeUser);
         break;
 
       case Step.UserTypeSetup:
-        if (!data.accountType) throw Error('incomplete step');
+        if (!data.accountType) throw Error(States[currentStep].error);
         setInfo({ ...info, accountType: data.accountType });
         await setRoute();
         break;
 
       case Step.AccountSetup:
-        if (!data.accountId) throw Error('incomplete step');
+        if (!data.accountId) throw Error(States[currentStep].error);
         setInfo({ ...info, accountId: data.accountId });
         await setRoute();
         break;
 
       case Step.SafeSetup:
-        if (!data.skipSafe && !data.safeId) throw Error('incomplete step');
+        if (!data.skipSafe && !data.safeId) throw Error(States[currentStep].error);
         setInfo({ ...info, safeId: data.safeId });
         await setRoute();
         break;
