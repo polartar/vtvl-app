@@ -72,6 +72,73 @@
   --danger-50: #fef2f2;
 }
 
+.loader-dot1,
+.loader-dot2,
+.loader-dot3 {
+  width: 8px;
+  height: 8px;
+  border: solid;
+  border-radius: 50%;
+  margin: 3px;
+}
+.loader-dot1 {
+  animation: jump 1.6s -0.32s linear infinite;
+}
+.loader-dot2 {
+  animation: jump 1.6s -0.16s linear infinite;
+}
+.loader-dot3 {
+  animation: jump 1.6s linear infinite;
+}
+
+.loader-dot1.primary,
+.loader-dot2.primary,
+.loader-dot3.primary {
+  background-color: var(--primary-200);
+  border-color: var(--primary-200);
+}
+
+.loader-dot1.secondary,
+.loader-dot2.secondary,
+.loader-dot3.secondary {
+  background-color: var(--secondary-50);
+  border-color: var(--secondary-50);
+}
+
+.loader-dot1.outlined,
+.loader-dot2.outlined,
+.loader-dot3.outlined {
+  background-color: var(--primary-800);
+  border-color: var(--primary-800);
+}
+
+.loader-dot1.disabled,
+.loader-dot2.disabled,
+.loader-dot3.disabled {
+  background-color: var(--primary-400);
+  border-color: var(--primary-400);
+}
+
+/* .loader-dot1.blank,
+.loader-dot2.blank,
+.loader-dot3.blank {
+  background-color: var(--sha);
+  border-color: var(--sha);
+} */
+
+@keyframes jump {
+  0%,
+  80%,
+  100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+  40% {
+    -webkit-transform: scale(1.5);
+    transform: scale(1.5);
+  }
+}
+
 .app-toast {
   /* Toastify overrides */
   --toastify-color-light: var(--neutral-50);

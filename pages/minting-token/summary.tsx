@@ -1,4 +1,5 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
+import DotLoader from '@components/atoms/DotLoader/DotLoader';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useWeb3React } from '@web3-react/core';
@@ -12,6 +13,7 @@ import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useMintContext } from 'providers/mint.context';
 import { ReactElement } from 'react';
+import { useState } from 'react';
 import { db } from 'services/auth/firebase';
 import { parseTokenAmount } from 'utils/token';
 
@@ -21,11 +23,14 @@ const Summary: NextPageWithLayout = () => {
 
   const { tokenName, tokenSymbol, tokenLogo, decimals, mintAmount, supplyCap, initialSupply } = mintFormState;
 
+  const [loading, setLoading] = useState(false);
+
   const handleCreateToken = async () => {
     try {
       if (!library) {
         activate(injected);
       } else {
+        setLoading(true);
         const tokenTemplate = supplyCap === 'LIMITED' ? VariableSupplyERC20Token : FullPremintERC20Token;
         const TokenFactory = new ethers.ContractFactory(tokenTemplate.abi, tokenTemplate.bytecode, library.getSigner());
 
@@ -51,6 +56,7 @@ const Summary: NextPageWithLayout = () => {
 
         console.log('Deployed an ERC Token for testing.');
         console.log('Address:', tokenContract.address);
+        setLoading(false);
         Router.push('/minting-token/complete');
       }
     } catch (err) {
@@ -91,7 +97,7 @@ const Summary: NextPageWithLayout = () => {
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
         <BackButton label="Return to details" onClick={() => Router.push('/vesting-schedule/minting-token')} />
         <button className="primary" type="button" onClick={handleCreateToken}>
-          Create token
+          {loading ? <DotLoader className="primary" /> : 'Create token'}
         </button>
       </div>
     </div>
