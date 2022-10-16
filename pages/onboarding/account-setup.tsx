@@ -2,17 +2,15 @@ import Avatar from '@components/atoms/Avatar/Avatar';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext from '@providers/onboarding.context';
 import { NextPage } from 'next';
-import Router from 'next/router';
-import AuthContext from 'providers/auth.context';
-import OnboardingContext from 'providers/onboarding.context';
+import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { createMember } from 'services/db/member';
 import { createOrg } from 'services/db/organization';
-
-import TrashIcon from '../../public/icons/trash.svg';
-import { emailPattern } from '../../types/constants/validation-patterns';
+import { emailPattern } from 'types/constants/validation-patterns';
 
 interface Contributor {
   name: string;

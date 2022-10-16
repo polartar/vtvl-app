@@ -1,14 +1,12 @@
+import Carousel from '@components/atoms/Carousel/Carousel';
+import Chip from '@components/atoms/Chip/Chip';
+import WalletButton from '@components/atoms/WalletButton/WalletButton';
 import styled from '@emotion/styled';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
+import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
-import OnboardingContext, { Step } from 'providers/onboarding.context';
 import React, { useContext, useEffect } from 'react';
-
-import Carousel from '../../components/atoms/Carousel/Carousel';
-import Chip from '../../components/atoms/Chip/Chip';
-import WalletButton from '../../components/atoms/WalletButton/WalletButton';
-import { injected, walletconnect } from '../../connectors';
 
 const OnboardingContainer = styled.section`
   display: grid;

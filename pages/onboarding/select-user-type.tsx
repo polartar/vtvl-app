@@ -1,9 +1,8 @@
+import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import styled from '@emotion/styled';
+import OnboardingContext from '@providers/onboarding.context';
 import { NextPage } from 'next';
-import OnboardingContext from 'providers/onboarding.context';
 import React, { useContext } from 'react';
-
-import CardRadio from '../../components/atoms/CardRadio/CardRadio';
 
 const Container = styled.div`
   width: 100%;

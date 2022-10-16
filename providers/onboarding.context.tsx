@@ -1,8 +1,6 @@
-import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import React, { createContext, useEffect, useMemo, useState } from 'react';
-
-import useEagerConnect from '../hooks/useEagerConnect';
+import useEagerConnect from 'hooks/useEagerConnect';
 
 interface OnboardingInfo {
   isFirstTimeUser?: boolean;
@@ -60,7 +58,6 @@ export const States = {
 
 export function OnboardingContextProvider({ children }: any) {
   const triedToEagerConnect = useEagerConnect();
-  const { account, library } = useWeb3React();
   const [info, setInfo] = useState<OnboardingInfo | undefined>();
   const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
   const [inProgress, setInProgress] = useState<boolean>(false);
@@ -98,6 +95,13 @@ export function OnboardingContextProvider({ children }: any) {
     console.log('current step is ', Number(currentStep));
     console.log('onboarding context nextstep == ', nextstep);
 
+    if (nextstep > Step.SafeSetup) {
+      console.log('onboarding context ending onboarding');
+      setInProgress(false);
+      await router.replace('/dashboard');
+      return;
+    }
+
     if (!States[nextstep as Step].route || !currentStep) throw new Error('invalid route onboarding context');
     console.log('onboarding context valid route');
     setCurrentStep(nextstep);
@@ -106,7 +110,7 @@ export function OnboardingContextProvider({ children }: any) {
 
     if (nextstep == Step.UserTypeSetup) {
       console.log('is this a first time user -- contest -- ', isFirstTimeUser);
-      await router.push(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
+      await router.replace(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
       return;
     }
 
@@ -114,18 +118,12 @@ export function OnboardingContextProvider({ children }: any) {
     //   console.log("onboarding context setting up safe")
     //   if (!account) throw new Error('Please login with metamask to proceed');
     //   const resp = await fetchSafes(library, account);
-    //   await router.push(resp?.safes && resp?.safes.length > 0 ?  '/onboarding/import-safes' : States[nextstep as Step].route)
+    //   await router.replace(resp?.safes && resp?.safes.length > 0 ?  '/onboarding/import-safes' : States[nextstep as Step].route)
     //   return
     // }
 
-    if (nextstep > Step.SafeSetup) {
-      console.log('onboarding context ending onboarding');
-      setInProgress(false);
-      await router.push('/dashboard');
-      return;
-    }
     console.log('onboarding context valid route aboutt to replace route ', States[nextstep as Step].route);
-    await router.push(States[nextstep as Step].route);
+    await router.replace(States[nextstep as Step].route);
   };
 
   const onNext = async (data: OnboardingInfo) => {
@@ -155,7 +153,7 @@ export function OnboardingContextProvider({ children }: any) {
         break;
 
       case Step.SafeSetup:
-        if (!data.skipSafe && !data.safeId) throw Error(States[currentStep].error);
+        if (data.skipSafe == false && !data.safeId) throw Error(States[currentStep].error);
         setInfo({ ...info, safeId: data.safeId });
         await setRoute();
         break;

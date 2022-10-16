@@ -1,16 +1,15 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
+import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
 import Router from 'next/router';
-import AuthContext from 'providers/auth.context';
-import OnboardingContext from 'providers/onboarding.context';
 import React, { useContext, useEffect, useState } from 'react';
 import { createSafe } from 'services/db/safe';
 import { fetchSafes, getSafeInfo } from 'services/gnosois';
-
-import useEagerConnect from '../../hooks/useEagerConnect';
 
 const YourSafesPage: NextPage = () => {
   const triedToEagerConnect = useEagerConnect();

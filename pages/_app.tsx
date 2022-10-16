@@ -1,16 +1,15 @@
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
+import { AuthContextProvider } from '@providers/auth.context';
+import { MintContextProvider } from '@providers/mint.context';
+import { OnboardingContextProvider } from '@providers/onboarding.context';
 import { Web3ReactProvider } from '@web3-react/core';
 import { ethers } from 'ethers';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
-import { MintContextProvider } from 'providers/mint.context';
 import React, { ReactElement, ReactNode } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-import { AuthContextProvider } from '../providers/auth.context';
-import { OnboardingContextProvider } from '../providers/onboarding.context';
-import '../styles/globals.css';
+import 'styles/globals.css';
 
 // Exporting a layout type for nested layouts
 export type NextPageWithLayout<P = Record<string, never>, IP = P> = NextPage<P, IP> & {

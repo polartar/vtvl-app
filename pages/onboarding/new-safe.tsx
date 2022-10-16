@@ -1,17 +1,16 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Select from '@components/atoms/FormControls/Select/Select';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
+import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
-import AuthContext from 'providers/auth.context';
-import OnboardingContext from 'providers/onboarding.context';
+import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { createSafe } from 'services/db/safe';
 import { deploySafe } from 'services/gnosois';
-
-import useEagerConnect from '../../hooks/useEagerConnect';
-import TrashIcon from '../../public/icons/trash.svg';
 
 interface Owner {
   name: string;

@@ -10,8 +10,7 @@ import {
   signOut
 } from 'firebase/auth';
 import React, { createContext, useEffect, useMemo, useState } from 'react';
-
-import { auth } from '../services/auth/firebase';
+import { auth } from 'services/auth/firebase';
 
 export type NewLogin = {
   isFirstLogin: boolean;

@@ -1,12 +1,11 @@
 import Input from '@components/atoms/FormControls/Input/Input';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import Router from 'next/router';
-import AuthContext from 'providers/auth.context';
-import OnboardingContext from 'providers/onboarding.context';
 import { useContext } from 'react';
-import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-
-import { emailPattern } from '../types/constants/validation-patterns';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { emailPattern } from 'types/constants/validation-patterns';
 
 type LoginForm = {
   userEmail: string;

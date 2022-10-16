@@ -41,8 +41,8 @@ const Header = ({ connected, user, onLogin, onLogout, onCreateAccount }: HeaderP
             9 <span className="hidden sm:inline">gwei</span>
           </p>
         </div>
-        <WalletConnect connected={active} account={account || ''} />
         {active ? <NetworkSelector /> : null}
+        <WalletConnect connected={active} account={account || ''} />
       </div>
     </header>
   );

@@ -1,7 +1,6 @@
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
-
-import { SupportedChainId } from '../types/constants/supported-chains';
+import { SupportedChainId } from 'types/constants/supported-chains';
 
 export const injected = new InjectedConnector({
   supportedChainIds: [

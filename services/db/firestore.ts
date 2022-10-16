@@ -1,6 +1,7 @@
 import { CollectionReference, DocumentData, collection, getFirestore } from 'firebase/firestore';
-import firebase from 'services/auth/firebase';
 import type { Member, Organization, Safe, User } from 'types/models';
+
+import firebase from '../auth/firebase';
 
 export const db = getFirestore(firebase);
 
