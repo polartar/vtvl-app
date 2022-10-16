@@ -1,4 +1,4 @@
-export interface Organization {
+export interface IOrganization {
   name: string;
   email: string;
   founderId?: string;

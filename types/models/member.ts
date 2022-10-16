@@ -1,17 +1,17 @@
-export interface Address {
+export interface IAddress {
   walletAddress: string;
   chainId: number;
 }
 
-export interface Member {
+export interface IMember {
   userId?: string;
   orgId: string;
   name: string;
   email: string;
-  wallet?: [Address];
+  wallets?: [IAddress];
   type: string;
 }
 
-export interface User {
+export interface IUser {
   id: string;
 }

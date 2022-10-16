@@ -1,11 +1,11 @@
-export interface Owner {
+export interface IOwner {
   name: string;
   walletAddress: string;
   chainId?: number;
   email?: string;
 }
 
-export interface Safe {
+export interface ISafe {
   userId?: string;
   address: string;
   chainId: number;
