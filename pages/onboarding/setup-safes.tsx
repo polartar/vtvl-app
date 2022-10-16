@@ -1,14 +1,55 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext from '@providers/onboarding.context';
+import { useWeb3React } from '@web3-react/core';
+import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
 import Router from 'next/router';
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { createSafe } from 'services/db/safe';
+import { fetchSafes, getSafeInfo } from 'services/gnosois';
 
 const YourSafesPage: NextPage = () => {
-  // Comment/uncomment to see the two states
-  // const safes: string[] = [];
-  const safes = ['239kadf987a8df798a7f98a09f7a9fa', '07234nh123ahdkjfaiuueiuy8123121'];
+  const triedToEagerConnect = useEagerConnect();
+  const { active, account, chainId, library } = useWeb3React();
+  const { user } = useContext(AuthContext);
+  const { onPrevious, onNext } = useContext(OnboardingContext);
+  const [safes, setSafes] = useState<string[]>();
+
+  useEffect(() => {
+    if (account && library) {
+      (async () => {
+        const resp = await fetchSafes(library, account);
+        if (resp) setSafes(resp.safes);
+      })();
+    }
+  }, [account]);
+
+  const importSafe = async (address: string) => {
+    if (!active || !chainId || !library) {
+      console.log('Please login with metamask to create safe');
+      return;
+    }
+    console.log('trying import ');
+    try {
+      const safe = await getSafeInfo(library, address);
+      if (!safe) {
+        console.log(
+          "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
+        );
+        return;
+      }
+
+      const owners = await safe.getOwners();
+      const threshold = await safe.getThreshold();
+      const storedSafeId = await createSafe({ userId: user?.uid, address, chainId: chainId, owners, threshold });
+      onNext({ safeId: storedSafeId });
+    } catch (error) {
+      console.log('error importing safe ', error);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
@@ -16,18 +57,18 @@ const YourSafesPage: NextPage = () => {
       <div className="w-full my-6 panel">
         <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
         <p className="text-sm text-neutral-500">
-          You can natively create new, import or login to your existing gnisis safe multisig.
+          You can natively create new, import or login to your existing gnosis safe multisig.
         </p>
         <div className="mt-5">
-          <p className="text-sm text-neutral-500">List of {safes.length} safes</p>
-          {safes.length ? (
+          <p className="text-sm text-neutral-500">List of {safes?.length} safes</p>
+          {safes?.length ? (
             /* Display all safes to import */
             <div className="flex flex-col gap-5 mt-5">
               {safes.map((safe, safeIndex) => (
                 <SafesListItem
                   key={`safe-${safe}-${safeIndex}`}
                   label={safe}
-                  onClick={() => Router.push('/onboarding/confirmation')}
+                  onClick={async () => await importSafe(safe)}
                 />
               ))}
             </div>
@@ -39,13 +80,13 @@ const YourSafesPage: NextPage = () => {
                   title="No safes found"
                   description={[
                     'Setup a new multi-signature wallet. Get started by clicking on "',
-                    <strong>Create New Safe</strong>,
+                    <strong onClick={() => Router.push('/onboarding/new-safe')}>Create New Safe</strong>,
                     '".'
                   ]}
                 />
               </div>
               <div className="border-t border-b border-neutral-200 p-3 flex items-center justify-center">
-                <button className="line primary" type="button" onClick={() => Router.push('/onboarding/confirmation')}>
+                <button className="line primary" type="button" onClick={() => Router.push('/onboarding/new-safe')}>
                   Create New Safe
                 </button>
               </div>
@@ -54,11 +95,8 @@ const YourSafesPage: NextPage = () => {
         </div>
 
         <div className="flex flex-row justify-between items-center mt-6">
-          <BackButton label="Return to account setup" href="/onboarding/account-setup" />
-          <button
-            className="flex flex-row items-center gap-2 primary group"
-            type="button"
-            onClick={() => Router.push('/dashboard')}>
+          <BackButton label="Return to account setup" onClick={() => onPrevious()} />
+          <button className="flex flex-row items-center gap-2 primary group" type="button" onClick={() => onNext({})}>
             Skip{' '}
             <img
               src="/icons/arrow-small-right-white.svg"

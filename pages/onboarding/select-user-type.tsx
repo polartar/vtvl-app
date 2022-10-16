@@ -1,9 +1,8 @@
+import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import styled from '@emotion/styled';
+import OnboardingContext from '@providers/onboarding.context';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
-import React from 'react';
-
-import CardRadio from '../../components/atoms/CardRadio/CardRadio';
+import React, { useContext } from 'react';
 
 const Container = styled.div`
   width: 100%;
@@ -33,8 +32,7 @@ const userTypes = {
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const router = useRouter();
-
+  const { onNext } = useContext(OnboardingContext);
   const [selected, setSelected] = React.useState('');
 
   return (
@@ -56,7 +54,11 @@ const SelectUserTypePage: NextPage = () => {
           ))}
         </div>
       </div>
-      <button className="secondary" onClick={() => router.push('/onboarding/account-setup')}>
+      <button
+        className="secondary"
+        onClick={async () => {
+          await onNext({ accountType: selected });
+        }}>
         Continue
       </button>
     </Container>

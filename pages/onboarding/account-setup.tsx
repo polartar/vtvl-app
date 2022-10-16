@@ -2,13 +2,15 @@ import Avatar from '@components/atoms/Avatar/Avatar';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext from '@providers/onboarding.context';
 import { NextPage } from 'next';
-import Router from 'next/router';
-import React from 'react';
+import TrashIcon from 'public/icons/trash.svg';
+import React, { useContext } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-
-import TrashIcon from '../../public/icons/trash.svg';
-import { emailPattern } from '../../types/constants/validation-patterns';
+import { createMember } from 'services/db/member';
+import { createOrg } from 'services/db/organization';
+import { emailPattern } from 'types/constants/validation-patterns';
 
 interface Contributor {
   name: string;
@@ -24,6 +26,8 @@ type AccountForm = {
 };
 
 const AccountSetupPage: NextPage = () => {
+  const { signUpWithEmail, user } = useContext(AuthContext);
+  const { onPrevious, onNext, info } = useContext(OnboardingContext);
   // Get to use the react-hook-form and set default values
   const {
     control,
@@ -84,9 +88,24 @@ const AccountSetupPage: NextPage = () => {
   // Add a contributor to the list
   const addContributor = () => append({ name: '', email: '' });
 
-  const onSubmit: SubmitHandler<AccountForm> = (data) => {
+  const onSubmit: SubmitHandler<AccountForm> = async (data) => {
     console.log('Form Submitted', data, getValues());
-    Router.push('/onboarding/setup-safes');
+    const values = getValues();
+
+    const orgId = await createOrg({ name: values.company, email: values.companyEmail, founderId: user?.uid });
+    const memberId = await createMember({
+      name: values.name,
+      email: values.companyEmail,
+      orgId: orgId,
+      type: info?.accountType || ''
+    });
+
+    if (values.contributors && values.contributors.length > 0) {
+      values.contributors.map(async (contributor) => {
+        await createMember({ name: contributor.name, email: contributor.email, orgId: orgId, type: 'employee' });
+      });
+    }
+    onNext({ accountId: memberId });
   };
 
   // Recommended by React hook forms when using field array https://react-hook-form.com/api/usefieldarray
@@ -285,7 +304,7 @@ const AccountSetupPage: NextPage = () => {
             </button>
           ) : null}
           <div className="flex flex-row justify-between items-center">
-            <BackButton label="Return" href="/onboarding/select-user-type" />
+            <BackButton label="Return" onClick={() => onPrevious()} />
             <button className="primary" type="submit">
               Continue
             </button>

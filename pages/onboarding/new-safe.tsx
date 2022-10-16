@@ -1,12 +1,16 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Select from '@components/atoms/FormControls/Select/Select';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext from '@providers/onboarding.context';
+import { useWeb3React } from '@web3-react/core';
+import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
-import Router from 'next/router';
-import React, { useState } from 'react';
+import TrashIcon from 'public/icons/trash.svg';
+import React, { useContext, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-
-import TrashIcon from '../../public/icons/trash.svg';
+import { createSafe } from 'services/db/safe';
+import { deploySafe } from 'services/gnosois';
 
 interface Owner {
   name: string;
@@ -19,6 +23,11 @@ type ConfirmationForm = {
 };
 
 const ConfirmationPage: NextPage = () => {
+  const triedToEagerConnect = useEagerConnect();
+  const { active, library, chainId } = useWeb3React();
+  const { user } = useContext(AuthContext);
+  const { onNext, onPrevious } = useContext(OnboardingContext);
+
   // Get to use the react-hook-form and set default values
   const {
     control,
@@ -29,15 +38,11 @@ const ConfirmationPage: NextPage = () => {
     formState: { errors, isValid, isDirty, isSubmitted }
   } = useForm({
     defaultValues: {
-      organizationName: 'VTVL',
+      organizationName: '',
       owners: [
         {
-          name: 'Danny',
-          address: '0x0123ADFhchadf7i12#ADSfjadf'
-        },
-        {
-          name: 'Ada',
-          address: '0x32131ADFhchadf7i12#ADSfjadf'
+          name: '',
+          address: ''
         }
       ],
       authorizedUsers: 0
@@ -79,9 +84,27 @@ const ConfirmationPage: NextPage = () => {
     append({ name: '', address: '' });
   };
 
-  const onSubmit: SubmitHandler<ConfirmationForm> = (data) => {
+  const onSubmit: SubmitHandler<ConfirmationForm> = async (data) => {
     console.log('Form Submitted', data, getValues());
-    Router.push('/dashboard');
+    try {
+      const values = getValues();
+      const owners = values.owners.map((o) => o.address);
+      if (!active) {
+        console.log('Please login with metamask to create safe');
+        return;
+      }
+      const newsafe = await deploySafe(library, owners, values.authorizedUsers);
+      const storedSafeId = await createSafe({
+        userId: user?.uid,
+        address: newsafe.getAddress(),
+        chainId: chainId || 0,
+        owners,
+        threshold: values.authorizedUsers
+      });
+      onNext({ safeId: storedSafeId });
+    } catch (error) {
+      console.log('error getting safe info ', error);
+    }
   };
 
   return (
@@ -225,7 +248,7 @@ const ConfirmationPage: NextPage = () => {
             </div>
           ) : null}
           <div className="flex flex-row justify-between items-center">
-            <BackButton label="Return" href="/onboarding/setup-safes" />
+            <BackButton label="Return" onClick={() => onPrevious()} />
             <button className="primary flex flex-row items-center gap-2 group" type="submit">
               Sign and Authorize
               <img

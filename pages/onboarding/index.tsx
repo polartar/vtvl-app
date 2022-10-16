@@ -1,14 +1,12 @@
+import Carousel from '@components/atoms/Carousel/Carousel';
+import Chip from '@components/atoms/Chip/Chip';
+import WalletButton from '@components/atoms/WalletButton/WalletButton';
 import styled from '@emotion/styled';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
+import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
-import React from 'react';
-
-import Carousel from '../../components/atoms/Carousel/Carousel';
-import Chip from '../../components/atoms/Chip/Chip';
-import WalletButton from '../../components/atoms/WalletButton/WalletButton';
-import MultiSigWallet from '../../components/multisig';
-import { injected, walletconnect } from '../../connectors';
+import React, { useContext, useEffect } from 'react';
 
 const OnboardingContainer = styled.section`
   display: grid;
@@ -91,18 +89,29 @@ interface Wallet {
 }
 
 const ConnectWalletPage: NextPage = () => {
-  const { active, activate, account, deactivate } = useWeb3React();
-  const [wallet, setWallet] = React.useState('');
-  const router = useRouter();
+  const { activate } = useWeb3React();
+  const { onNext, setCurrentStep } = useContext(OnboardingContext);
 
-  function metamaskActivate() {
-    activate(injected, (err) => console.log('error connecting ', err));
-    router.push('/onboarding/select-user-type');
+  useEffect(() => {
+    setCurrentStep(Step.ChainSetup);
+  }, []);
+
+  async function metamaskActivate() {
+    try {
+      await activate(injected);
+      await onNext({});
+    } catch (error) {
+      console.log('connection error ', error);
+    }
   }
 
-  function walletConnectActivate() {
-    activate(walletconnect, (err) => console.log('error connecting ', err));
-    router.push('/onboarding/select-user-type');
+  async function walletConnectActivate() {
+    try {
+      await activate(walletconnect);
+      await onNext({});
+    } catch (error) {
+      console.log('connection error ', error);
+    }
   }
 
   const wallets = [
