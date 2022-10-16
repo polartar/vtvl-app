@@ -1,6 +1,6 @@
+import useEagerConnect from 'hooks/useEagerConnect';
 import { useRouter } from 'next/router';
 import React, { createContext, useEffect, useMemo, useState } from 'react';
-import useEagerConnect from 'hooks/useEagerConnect';
 
 interface OnboardingInfo {
   isFirstTimeUser?: boolean;
