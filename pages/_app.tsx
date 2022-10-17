@@ -2,7 +2,7 @@ import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { AuthContextProvider } from '@providers/auth.context';
 import { MintContextProvider } from '@providers/mint.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
-import { Web3ReactProvider } from '@web3-react/core';
+import { Web3ReactProvider, createWeb3ReactRoot } from '@web3-react/core';
 import { ethers } from 'ethers';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
@@ -25,7 +25,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.
   const getLayout = Component.getLayout ?? ((page) => page);
   return (
-    <Web3ReactProvider getLibrary={(provider: any) => new ethers.providers.Web3Provider(provider)}>
+    <Web3ReactProvider getLibrary={(provider: any, connector: any) => new ethers.providers.Web3Provider(provider)}>
       <AuthContextProvider>
         <OnboardingContextProvider>
           <MintContextProvider>
