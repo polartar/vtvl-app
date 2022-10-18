@@ -26,7 +26,7 @@ type AccountForm = {
 };
 
 const AccountSetupPage: NextPage = () => {
-  const { signUpWithEmail, user } = useContext(AuthContext);
+  const { sendTeammateInvite, user } = useContext(AuthContext);
   const { onPrevious, onNext, info } = useContext(OnboardingContext);
   // Get to use the react-hook-form and set default values
   const {
@@ -92,17 +92,28 @@ const AccountSetupPage: NextPage = () => {
     console.log('Form Submitted', data, getValues());
     const values = getValues();
 
-    const orgId = await createOrg({ name: values.company, email: values.companyEmail, founderId: user?.uid });
+    if (!user) {
+      console.log('');
+      return;
+    }
+
+    const orgId = await createOrg({ name: values.company, email: values.companyEmail, user_id: user?.uid });
     const memberId = await createMember({
       name: values.name,
       email: values.companyEmail,
-      orgId: orgId,
+      org_id: orgId,
       type: info?.accountType || ''
     });
 
     if (values.contributors && values.contributors.length > 0) {
       values.contributors.map(async (contributor) => {
-        await createMember({ name: contributor.name, email: contributor.email, orgId: orgId, type: 'employee' });
+        const memberId = await createMember({
+          name: contributor.name,
+          email: contributor.email,
+          org_id: orgId,
+          type: 'employee'
+        });
+        await sendTeammateInvite(contributor.email, memberId);
       });
     }
     onNext({ accountId: memberId });

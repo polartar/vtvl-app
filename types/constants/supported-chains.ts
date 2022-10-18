@@ -17,7 +17,8 @@ export const SupportedChains = {
     title: 'Ethereum',
     code: 'ETH',
     rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://etherscan.io'
+    explorer: 'https://etherscan.io',
+    multisigTxUrl: 'https://safe-transaction.mainnet.gnosis.io'
   },
   [SupportedChainId.ROPSTEN]: {
     id: 3,
@@ -25,7 +26,8 @@ export const SupportedChains = {
     title: 'Ropsten',
     code: 'ETH',
     rpc: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://ropsten.etherscan.io'
+    explorer: 'https://ropsten.etherscan.io',
+    multisigTxUrl: ''
   },
   [SupportedChainId.GOERLI]: {
     id: 5,
@@ -33,7 +35,8 @@ export const SupportedChains = {
     title: 'Goerli',
     code: 'ETH',
     rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://goerli.etherscan.io'
+    explorer: 'https://goerli.etherscan.io',
+    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
   },
   [SupportedChainId.KOVAN]: {
     id: 42,
@@ -41,7 +44,8 @@ export const SupportedChains = {
     title: 'Kovan',
     code: 'ETH',
     rpc: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://kovan.etherscan.io'
+    explorer: 'https://kovan.etherscan.io',
+    multisigTxUrl: ''
   },
   [SupportedChainId.BINANCE]: {
     id: 56,
@@ -49,7 +53,8 @@ export const SupportedChains = {
     title: 'Binance Smart Chain',
     code: 'BSC',
     rpc: 'https://bsc-dataseed.binance.org/',
-    explorer: 'https://bscscan.com'
+    explorer: 'https://bscscan.com',
+    multisigTxUrl: 'https://safe-transaction-bsc.safe.global'
   },
   [SupportedChainId.POLYGON]: {
     id: 137,
@@ -57,7 +62,8 @@ export const SupportedChains = {
     title: 'Polygon',
     code: 'MATIC',
     rpc: 'https://polygon-rpc.com',
-    explorer: 'https://polygonscan.com/'
+    explorer: 'https://polygonscan.com/',
+    multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
   },
   [SupportedChainId.AVALANCHE]: {
     id: 43114,
@@ -65,7 +71,8 @@ export const SupportedChains = {
     title: 'Avalanche',
     code: 'AVAX',
     rpc: 'https://api.avax.network/ext/bc/C/rpc',
-    explorer: ' https://snowtrace.io'
+    explorer: ' https://snowtrace.io',
+    multisigTxUrl: 'https://safe-transaction-avalanche.safe.global'
   },
   [SupportedChainId.FANTOM]: {
     id: 250,
@@ -73,7 +80,8 @@ export const SupportedChains = {
     title: 'Fantom',
     code: 'FTM',
     rpc: 'https://rpc.ftm.tools',
-    explorer: 'https://ftmscan.com/'
+    explorer: 'https://ftmscan.com/',
+    multisigTxUrl: ''
   },
   [SupportedChainId.CRONOS]: {
     id: 25,
@@ -81,6 +89,7 @@ export const SupportedChains = {
     title: 'Cronos',
     code: 'CRO',
     rpc: 'https://evm.cronos.org',
-    explorer: 'https://cronos.crypto.org/explorer/'
+    explorer: 'https://cronos.crypto.org/explorer',
+    multisigTxUrl: ''
   }
 };
