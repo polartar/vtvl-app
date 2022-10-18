@@ -93,9 +93,13 @@ const ConfirmationPage: NextPage = () => {
         console.log('Please login with metamask to create safe');
         return;
       }
+      if (!user) {
+        console.log('Please sign up to deploy a safe');
+        return;
+      }
       const newsafe = await deploySafe(library, owners, values.authorizedUsers);
       const storedSafeId = await createSafe({
-        userId: user?.uid,
+        user_id: user?.uid,
         address: newsafe.getAddress(),
         chainId: chainId || 0,
         owners,

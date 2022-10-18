@@ -4,8 +4,8 @@ export interface IAddress {
 }
 
 export interface IMember {
-  userId?: string;
-  orgId: string;
+  user_id?: string;
+  org_id: string;
   name: string;
   email: string;
   wallets?: [IAddress];

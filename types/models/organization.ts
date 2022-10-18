@@ -1,6 +1,6 @@
 export interface IOrganization {
   name: string;
   email: string;
-  founderId?: string;
-  safeId?: number;
+  user_id?: string;
+  safe_id?: number;
 }

@@ -6,7 +6,7 @@ export interface IOwner {
 }
 
 export interface ISafe {
-  userId?: string;
+  user_id?: string;
   address: string;
   chainId: number;
   owners: string[];

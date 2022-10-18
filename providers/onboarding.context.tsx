@@ -39,7 +39,7 @@ export const States = {
     error: 'Please login with web3 wallet to continue'
   },
   [Step.Login]: {
-    route: '/member-login',
+    route: '/login',
     error: 'Please login to continue'
   },
   [Step.UserTypeSetup]: {

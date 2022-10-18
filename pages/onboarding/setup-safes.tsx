@@ -44,7 +44,7 @@ const YourSafesPage: NextPage = () => {
 
       const owners = await safe.getOwners();
       const threshold = await safe.getThreshold();
-      const storedSafeId = await createSafe({ userId: user?.uid, address, chainId: chainId, owners, threshold });
+      const storedSafeId = await createSafe({ user_id: user?.uid, address, chainId: chainId, owners, threshold });
       onNext({ safeId: storedSafeId });
     } catch (error) {
       console.log('error importing safe ', error);
