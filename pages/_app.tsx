@@ -1,9 +1,9 @@
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
+import { Web3Provider } from '@ethersproject/providers';
 import { AuthContextProvider } from '@providers/auth.context';
 import { MintContextProvider } from '@providers/mint.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
 import { Web3ReactProvider } from '@web3-react/core';
-import { ethers } from 'ethers';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import React, { ReactElement, ReactNode } from 'react';
@@ -20,12 +20,21 @@ type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
 
+function getLibrary(provider: any): Web3Provider {
+  const library = new Web3Provider(provider, 'any');
+  library.pollingInterval = 15000;
+  return library;
+}
+
+// const Web3ReactProviderReloaded = createWeb3ReactRoot('network')
+
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   // Use the layout defined at the page level, if available
   // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.
   const getLayout = Component.getLayout ?? ((page) => page);
   return (
-    <Web3ReactProvider getLibrary={(provider: any) => new ethers.providers.Web3Provider(provider)}>
+    <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
+      {/* <Web3ReactProviderReloaded getLibrary={getLibrary}> */}
       <AuthContextProvider>
         <OnboardingContextProvider>
           <MintContextProvider>
@@ -35,6 +44,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           </MintContextProvider>
         </OnboardingContextProvider>
       </AuthContextProvider>
+      {/* </Web3ReactProviderReloaded> */}
     </Web3ReactProvider>
   );
 }

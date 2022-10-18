@@ -236,6 +236,7 @@ const Uploader = ({
             className="absolute top-0 bottom-0 left-0 right-0 block opacity-0 focus:outline-0"
             title=""
             value=""
+            accept={accept}
             onChange={handleNewFileUpload}
             {...props}
           />
