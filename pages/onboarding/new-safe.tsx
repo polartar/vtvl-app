@@ -1,16 +1,18 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Select from '@components/atoms/FormControls/Select/Select';
+import Safe from '@gnosis.pm/safe-core-sdk';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
+import { useRouter } from 'next/router';
 import TrashIcon from 'public/icons/trash.svg';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { createSafe } from 'services/db/safe';
-import { deploySafe } from 'services/gnosois';
+import { deploySafe, getSafeInfo } from 'services/gnosois';
 
 interface Owner {
   name: string;
@@ -22,12 +24,59 @@ type ConfirmationForm = {
   owners?: Owner[];
 };
 
-const ConfirmationPage: NextPage = () => {
-  const triedToEagerConnect = useEagerConnect();
+const NewSafePage: NextPage = () => {
   const { active, library, chainId } = useWeb3React();
   const { user } = useContext(AuthContext);
   const { onNext, onPrevious } = useContext(OnboardingContext);
+  const { query } = useRouter();
+  const [isImported, setIsImported] = useState(false);
+  const [importedSafeAddress, setImportedSafeAddress] = useState('');
+  const [importedSafe, setImportedSafe] = useState<Safe>();
+  const [owners, setOwners] = useState<{ name: string; address: string }[]>([{ name: '', address: '' }]);
+  const [threshold, setThreshold] = useState(0);
+  // const { safeAddress } = router.params
+  console.log('routed query here pls ', query.safeAddress);
 
+  useEffect(() => {
+    if (query.safeAddress) {
+      setImportedSafeAddress(query.safeAddress?.toString());
+      (async () => {
+        await getSafeDetails(importedSafeAddress);
+      })();
+    }
+  }, []);
+
+  const getSafeDetails = async (safeAddress: string) => {
+    if (!active || !chainId || !library) {
+      console.log('Please login with metamask to create safe');
+      return;
+    }
+    console.log('getting safe details ');
+    if (!user) {
+      console.log('Please login to import safe');
+      return;
+    }
+    try {
+      const safe = await getSafeInfo(library, safeAddress);
+      if (!safe) {
+        console.log(
+          "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
+        );
+        return;
+      }
+      console.log('we have gotten safe dtails her ', safe);
+      setImportedSafe(safe);
+      const o = (await safe.getOwners()).map((o) => {
+        return { name: '', address: o };
+      });
+      setOwners(o);
+      const t = await safe.getThreshold();
+      setThreshold(t);
+      setIsImported(true);
+    } catch (error: any) {
+      console.log('error importing safe ', error);
+    }
+  };
   // Get to use the react-hook-form and set default values
   const {
     control,
@@ -39,13 +88,8 @@ const ConfirmationPage: NextPage = () => {
   } = useForm({
     defaultValues: {
       organizationName: '',
-      owners: [
-        {
-          name: '',
-          address: ''
-        }
-      ],
-      authorizedUsers: 0
+      owners: owners,
+      authorizedUsers: threshold
     }
   });
 
@@ -97,12 +141,18 @@ const ConfirmationPage: NextPage = () => {
         console.log('Please sign up to deploy a safe');
         return;
       }
-      const newsafe = await deploySafe(library, owners, values.authorizedUsers);
+
+      const safe = isImported ? importedSafe : await deploySafe(library, owners, values.authorizedUsers);
+
+      if (!safe) {
+        console.log('invalid safe configurations ');
+        return;
+      }
       const storedSafeId = await createSafe({
         user_id: user?.uid,
-        address: newsafe.getAddress(),
+        address: safe.getAddress(),
         chainId: chainId || 0,
-        owners,
+        owners: values.owners,
         threshold: values.authorizedUsers
       });
       onNext({ safeId: storedSafeId });
@@ -187,6 +237,7 @@ const ConfirmationPage: NextPage = () => {
                     <Input
                       label="Owner's address"
                       placeholder="Enter owner's address"
+                      disabled={isImported && field.value ? true : false}
                       error={Boolean(getOwnersState(ownerIndex).address.state.error)}
                       success={
                         !getOwnersState(ownerIndex).address.state.error &&
@@ -232,6 +283,7 @@ const ConfirmationPage: NextPage = () => {
                       return { label: num, value: num };
                     })}
                     required
+                    disabled={isImported && field.value ? true : false}
                     error={Boolean(errors.authorizedUsers)}
                     success={
                       !errors.authorizedUsers &&
@@ -268,4 +320,4 @@ const ConfirmationPage: NextPage = () => {
   );
 };
 
-export default ConfirmationPage;
+export default NewSafePage;

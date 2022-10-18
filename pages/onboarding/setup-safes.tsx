@@ -19,9 +19,10 @@ const YourSafesPage: NextPage = () => {
   const [safes, setSafes] = useState<string[]>();
 
   useEffect(() => {
-    if (account && library) {
+    if (account && library && chainId) {
       (async () => {
-        const resp = await fetchSafes(library, account);
+        const resp = await fetchSafes(library, account, chainId);
+        console.log('fetched safes here ', resp);
         if (resp) setSafes(resp.safes);
       })();
     }
@@ -33,6 +34,10 @@ const YourSafesPage: NextPage = () => {
       return;
     }
     console.log('trying import ');
+    if (!user) {
+      console.log('Please login to import safe');
+      return;
+    }
     try {
       const safe = await getSafeInfo(library, address);
       if (!safe) {
@@ -44,8 +49,20 @@ const YourSafesPage: NextPage = () => {
 
       const owners = await safe.getOwners();
       const threshold = await safe.getThreshold();
-      const storedSafeId = await createSafe({ user_id: user?.uid, address, chainId: chainId, owners, threshold });
+      const storedSafeId = await createSafe({
+        user_id: user?.uid,
+        address,
+        chainId: chainId,
+        owners: owners.map((o) => {
+          return { name: '', address: o };
+        }),
+        threshold
+      });
       onNext({ safeId: storedSafeId });
+      // Router.push({
+      //   pathname: '/onboarding/new-safe',
+      //   query: { safeAddress: address }
+      // })
     } catch (error) {
       console.log('error importing safe ', error);
     }

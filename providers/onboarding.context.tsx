@@ -39,7 +39,7 @@ export const States = {
     error: 'Please login with web3 wallet to continue'
   },
   [Step.Login]: {
-    route: '/login',
+    route: '/member-login',
     error: 'Please login to continue'
   },
   [Step.UserTypeSetup]: {
@@ -70,7 +70,8 @@ export function OnboardingContextProvider({ children }: any) {
     console.log('onboarding in progress ?? ', inProgress);
     router.beforePopState(({ as }) => {
       if (as !== router.asPath && inProgress) {
-        onPrevious();
+        const prevstep = currentStep == Step.ChainSetup ? currentStep : currentStep - 1;
+        setCurrentStep(prevstep);
       }
       return true;
     });

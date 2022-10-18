@@ -2165,9 +2165,9 @@
   dependencies:
     semver "^7.3.7"
 
-"@gnosis.pm/safe-ethers-lib@^1.5.0":
+"@gnosis.pm/safe-ethers-lib@^1.6.1":
   version "1.6.1"
-  resolved "https://registry.npmjs.org/@gnosis.pm/safe-ethers-lib/-/safe-ethers-lib-1.6.1.tgz"
+  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-ethers-lib/-/safe-ethers-lib-1.6.1.tgz#2fe88464faa348d4dbe58e93199c419976a5da88"
   integrity sha512-rUv2Dwi3whTmcgx6EejI5llMDnxhwyTX/8j01K6fWBfOAFaUV78gbtPcwmdr1WCVVcXSdKszyarus5fyZTKNfA==
   dependencies:
     "@gnosis.pm/safe-core-sdk-types" "^1.6.1"

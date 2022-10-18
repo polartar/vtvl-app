@@ -1,6 +1,6 @@
 export interface IOwner {
   name: string;
-  walletAddress: string;
+  address: string;
   chainId?: number;
   email?: string;
 }
@@ -9,6 +9,6 @@ export interface ISafe {
   user_id?: string;
   address: string;
   chainId: number;
-  owners: string[];
+  owners: IOwner[];
   threshold: number;
 }
