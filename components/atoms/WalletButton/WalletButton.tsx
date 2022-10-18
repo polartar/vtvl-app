@@ -8,7 +8,7 @@ const ConnectButton = styled.button`
   align-items: center;
   background: #ffffff;
   border-radius: 8px;
-  width: 192px;
+  width: 100%;
   height: 120px;
   outline: none;
   border: 1px solid transparent;
