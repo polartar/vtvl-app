@@ -1,6 +1,8 @@
 import Carousel from '@components/atoms/Carousel/Carousel';
 import Chip from '@components/atoms/Chip/Chip';
 import WalletButton from '@components/atoms/WalletButton/WalletButton';
+import Consent from '@components/molecules/Consent/Consent';
+import Wallets from '@components/molecules/Wallets/Wallets';
 import styled from '@emotion/styled';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
@@ -38,17 +40,6 @@ const Description = styled.p`
   font-size: 0.875rem;
 `;
 
-const Text = styled.span`
-  font-size: 0.75rem;
-`;
-
-const Link = styled.a`
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: #1b369a;
-  text-decoration: none;
-`;
-
 const CTAContainer = styled.div`
   width: 100%;
   padding: 14px;
@@ -70,23 +61,6 @@ const CTAContainer = styled.div`
 const WalletContainer = styled.div`
   width: 100%;
 `;
-
-const Wallets = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-`;
-
-interface Wallet {
-  name: string;
-  image: string;
-  subLabel?: unknown;
-  disabled?: boolean;
-  onClick?: () => void;
-}
 
 const ConnectWalletPage: NextPage = () => {
   const { activate } = useWeb3React();
@@ -176,20 +150,6 @@ const ConnectWalletPage: NextPage = () => {
     }
   ];
 
-  const renderWallets = (wallets: Array<Wallet>) => {
-    return wallets.map((wallet: Wallet, walletIndex: number) => (
-      <WalletButton
-        key={`wallet-button-${wallet.name}-${walletIndex}`}
-        label={wallet.name}
-        image={wallet.image}
-        subLabel={
-          wallet.subLabel ? <Chip size="small" color="primary" rounded={true} label={wallet.subLabel as string} /> : ''
-        }
-        disabled={wallet.disabled}
-        onClick={wallet.onClick}
-      />
-    ));
-  };
   return (
     <OnboardingContainer>
       <Signing>
@@ -198,26 +158,14 @@ const ConnectWalletPage: NextPage = () => {
           <p className="text-sm text-neutral-500">Please select a wallet to connect to this app</p>
         </div>
         <WalletContainer>
-          <Wallets>{renderWallets(wallets)}</Wallets>
+          <Wallets wallets={wallets} />
           <div className="my-5 text-xs text-neutral-600 font-medium">
             <span>Can&apos;t find your wallet?</span>&nbsp;
             <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
               Suggest Wallet
             </a>
           </div>
-          <div className="text-xs text-neutral-600 font-medium leading-5">
-            <Text>
-              By connecting a wallet, you agree to VTVL{' '}
-              <Link href="/" className="font-bold text-primary-900 no-underline">
-                Terms of Service
-              </Link>{' '}
-              and acknowledge that you have read and understand the{' '}
-              <Link href="/" className="font-bold text-primary-900 no-underline">
-                Privacy Policy
-              </Link>
-              .
-            </Text>
-          </div>
+          <Consent />
         </WalletContainer>
       </Signing>
       <Vesting className="flex flex-col items-center justify-start pt-24 pb-14">
