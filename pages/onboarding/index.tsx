@@ -1,6 +1,4 @@
 import Carousel from '@components/atoms/Carousel/Carousel';
-import Chip from '@components/atoms/Chip/Chip';
-import WalletButton from '@components/atoms/WalletButton/WalletButton';
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
 import styled from '@emotion/styled';
@@ -34,28 +32,6 @@ const Signing = styled.div`
 const Vesting = styled.div`
   border-radius: 0 26px 26px 0;
   background: url('/images/background.png');
-`;
-
-const Description = styled.p`
-  font-size: 0.875rem;
-`;
-
-const CTAContainer = styled.div`
-  width: 100%;
-  padding: 14px;
-
-  &.split {
-    margin-top: 32px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  &:not(.no-border) {
-    border-top: 1px solid #d0d5dd;
-    border-bottom: 1px solid #d0d5dd;
-  }
 `;
 
 const WalletContainer = styled.div`

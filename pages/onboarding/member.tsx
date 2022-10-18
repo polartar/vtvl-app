@@ -1,51 +1,10 @@
-import Carousel from '@components/atoms/Carousel/Carousel';
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
-import styled from '@emotion/styled';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
 import React, { useContext, useEffect } from 'react';
-
-const OnboardingContainer = styled.section`
-  display: flex;
-  border-radius: 26px;
-  box-shadow: 0 10px 20px -15px rgba(56, 56, 56, 0.6);
-  max-width: 1200px;
-  font-weight: medium;
-`;
-
-const Vesting = styled.div`
-  border-radius: 0 26px 26px 0;
-  background: url('/images/background.png');
-`;
-
-const Description = styled.p`
-  font-size: 0.875rem;
-`;
-
-const CTAContainer = styled.div`
-  width: 100%;
-  padding: 14px;
-
-  &.split {
-    margin-top: 32px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  &:not(.no-border) {
-    border-top: 1px solid #d0d5dd;
-    border-bottom: 1px solid #d0d5dd;
-  }
-`;
-
-const WalletContainer = styled.div`
-  width: 100%;
-`;
 
 const MemberWalletPage: NextPage = () => {
   const { activate } = useWeb3React();
