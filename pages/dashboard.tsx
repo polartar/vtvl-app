@@ -22,7 +22,7 @@ const Dashboard: NextPage = () => {
           <button
             type="button"
             className="primary flex flex-row gap-2 items-center"
-            onClick={() => router.push('/vesting-schedule/minting-token')}>
+            onClick={() => router.push('/minting-token')}>
             <img src="/icons/plus.svg" className="w-5 h-5" />
             Mint new token
           </button>
