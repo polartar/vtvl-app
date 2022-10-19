@@ -97,7 +97,7 @@ const Summary: NextPageWithLayout = () => {
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
         <BackButton label="Return to details" onClick={() => Router.push('/vesting-schedule/minting-token')} />
         <button className="primary" type="button" onClick={handleCreateToken}>
-          {loading ? <DotLoader className="primary" /> : 'Create token'}
+          {loading ? <DotLoader className="primary" /> : 'Create transaction'}
         </button>
       </div>
     </div>

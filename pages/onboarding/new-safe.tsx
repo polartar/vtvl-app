@@ -163,7 +163,7 @@ const NewSafePage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
-      <h1 className="text-neutral-900">Setup your safe</h1>
+      <h1 className="text-neutral-900">Setup your multi-sig safe</h1>
       <div className="w-full my-6 panel">
         <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
         <p className="text-sm text-neutral-500">
@@ -181,6 +181,7 @@ const NewSafePage: NextPage = () => {
                   placeholder="Enter your organization name"
                   className="md:col-span-2"
                   error={Boolean(errors.organizationName)}
+                  required
                   success={
                     !errors.organizationName &&
                     (organizationName.state.isTouched || organizationName.state.isDirty) &&
@@ -209,6 +210,7 @@ const NewSafePage: NextPage = () => {
                     <Input
                       label="Owner's name"
                       placeholder="Enter owner's name"
+                      required
                       error={Boolean(getOwnersState(ownerIndex).name.state.error)}
                       success={
                         !getOwnersState(ownerIndex).name.state.error &&
@@ -237,6 +239,7 @@ const NewSafePage: NextPage = () => {
                     <Input
                       label="Owner's address"
                       placeholder="Enter owner's address"
+                      required
                       disabled={isImported && field.value ? true : false}
                       error={Boolean(getOwnersState(ownerIndex).address.state.error)}
                       success={
@@ -265,8 +268,9 @@ const NewSafePage: NextPage = () => {
               />
             </div>
           ))}
-          <button type="button" className="secondary mb-5" onClick={addOwner}>
-            Add more owners
+          <button type="button" className="secondary mb-5 flex flex-row items-center gap-2 py-1.5" onClick={addOwner}>
+            <img src="/icons/plus.svg" alt="Add more members" aria-hidden="true" />
+            Add more
           </button>
           {options > 0 ? (
             <div className="border-t border-b border-neutral-300 py-5 mb-5 ">
@@ -304,7 +308,7 @@ const NewSafePage: NextPage = () => {
             </div>
           ) : null}
           <div className="flex flex-row justify-between items-center">
-            <BackButton label="Return" onClick={() => onPrevious()} />
+            <BackButton label="Return to safes" onClick={() => onPrevious()} />
             <button className="primary flex flex-row items-center gap-2 group" type="submit">
               Sign and Authorize
               <img

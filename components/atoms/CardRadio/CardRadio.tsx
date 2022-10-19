@@ -52,7 +52,7 @@ interface CardRadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   image: string;
   value: string;
   name: string;
-  label: string;
+  label: string | string[] | JSX.Element | JSX.Element[];
   onClick?: () => void;
 }
 
@@ -63,8 +63,8 @@ const CardRadio = ({ image, label, value, name, ...props }: CardRadioProps) => {
   // const [selected, setSelected] = useState('');
   return (
     <Label>
-      <img src={image} alt={label} />
-      {label}
+      <img src={image} alt={name} aria-hidden="true" />
+      <p className="font-semibold">{label}</p>
       <Check className={props.checked ? 'selected' : ''}>
         {props.checked ? <img src="/icons/check.svg" alt={`${value} selected`} /> : null}
       </Check>

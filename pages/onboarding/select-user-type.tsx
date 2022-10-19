@@ -15,12 +15,20 @@ const userTypes = {
     {
       image: '/images/onboarding-user-type-founder.svg',
       value: 'founder',
-      label: "I'm a founder who will setup the vesting schedule"
+      label: (
+        <>
+          I'm a <span className="text-secondary-900">founder</span> who will setup the vesting schedule
+        </>
+      )
     },
     {
       image: '/images/onboarding-user-type-investor.svg',
       value: 'investor',
-      label: "I'm an investor looking to check my assets"
+      label: (
+        <>
+          I'm an <span className="text-secondary-900">investor</span> looking to check my assets
+        </>
+      )
     }
   ],
   name: 'userType'
@@ -32,11 +40,11 @@ const SelectUserTypePage: NextPage = () => {
 
   return (
     <Container>
-      <h1>Tell us a little bit about yourself.</h1>
-      <p className="text-sm">
+      <h1 className="text-neutral-900 mb-3">Tell us a little bit about yourself.</h1>
+      <p className="text-sm text-neutral-500">
         Select the options that best describe your role. Don&apos;t worry, you can explore other options later.
       </p>
-      <div className="my-6">
+      <div className="mt-10 mb-6">
         <div role="radiogroup" className="flex flex-row items-center justify-center gap-5">
           {userTypes.options.map((option, optionIndex) => (
             <CardRadio

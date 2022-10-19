@@ -125,11 +125,10 @@ const AccountSetupPage: NextPage = () => {
   }, [remove]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
-      <h1 className="text-neutral-900">Setup your account</h1>
+    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
+      <h1 className="text-neutral-900">Hey there, Welcome to VTVL</h1>
       <p className="text-sm max-w-xl text-center text-neutral-500">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae iaculis nulla. Etiam eget rhoncus orci, ac
-        vestibulum justo.
+        Let's get to know you so you can start setting up your account.
       </p>
       <div className="w-full my-6 panel">
         <div className="flex flex-row items-center gap-3.5 pb-5 border-b border-neutral-200">
@@ -180,6 +179,7 @@ const AccountSetupPage: NextPage = () => {
                 <Input
                   label="Your name"
                   placeholder="Enter your name"
+                  required
                   error={Boolean(errors.name)}
                   success={!errors.name && (userName.state.isTouched || userName.state.isDirty) && isSubmitted}
                   message={
@@ -202,6 +202,7 @@ const AccountSetupPage: NextPage = () => {
                 <Input
                   label="Company name"
                   placeholder="Enter your company name"
+                  required
                   error={Boolean(errors.company)}
                   success={!errors.company && (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted}
                   message={
@@ -225,6 +226,7 @@ const AccountSetupPage: NextPage = () => {
                   label="Your company email"
                   placeholder="Enter your company email address"
                   className="md:col-span-2"
+                  required
                   error={Boolean(errors.companyEmail)}
                   success={
                     !errors.companyEmail &&
@@ -243,76 +245,88 @@ const AccountSetupPage: NextPage = () => {
               )}
             />
           </div>
-          {fields.map((contributor, contributorIndex) => (
-            <div key={`contributor-${contributor.id}`} className="flex flex-row md:items-center gap-5 mb-5">
-              <div className="grid md:grid-cols-2 gap-5 grow w-full">
-                <Controller
-                  name={`contributors.${contributorIndex}.name`}
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Input
-                      label="Contributor's name"
-                      placeholder="Enter contributor's name"
-                      error={Boolean(getContributorState(contributorIndex).name.state.error)}
-                      success={
-                        !getContributorState(contributorIndex).name.state.error &&
-                        (getContributorState(contributorIndex).name.state.isTouched ||
-                          getContributorState(contributorIndex).name.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        getContributorState(contributorIndex).name.state.error
-                          ? "Please enter contributor's name"
-                          : (getContributorState(contributorIndex).name.state.isTouched ||
+          {userTypeRadio.value === 'organization' ? (
+            <>
+              <label className="mb-3">
+                <span>Invite team members to your organization</span>
+              </label>
+              {fields.map((contributor, contributorIndex) => (
+                <div key={`contributor-${contributor.id}`} className="flex flex-row md:items-center gap-5 mb-5">
+                  <div className="grid md:grid-cols-2 gap-5 grow w-full">
+                    <Controller
+                      name={`contributors.${contributorIndex}.name`}
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <Input
+                          label="Contributor's name"
+                          placeholder="Enter contributor's name"
+                          required
+                          error={Boolean(getContributorState(contributorIndex).name.state.error)}
+                          success={
+                            !getContributorState(contributorIndex).name.state.error &&
+                            (getContributorState(contributorIndex).name.state.isTouched ||
                               getContributorState(contributorIndex).name.state.isDirty) &&
                             isSubmitted
-                          ? "Contributor's name is okay"
-                          : ''
-                      }
-                      {...field}
+                          }
+                          message={
+                            getContributorState(contributorIndex).name.state.error
+                              ? "Please enter contributor's name"
+                              : (getContributorState(contributorIndex).name.state.isTouched ||
+                                  getContributorState(contributorIndex).name.state.isDirty) &&
+                                isSubmitted
+                              ? "Contributor's name is okay"
+                              : ''
+                          }
+                          {...field}
+                        />
+                      )}
                     />
-                  )}
-                />
-                <Controller
-                  name={`contributors.${contributorIndex}.email`}
-                  control={control}
-                  rules={{ required: true, pattern: emailPattern }}
-                  render={({ field }) => (
-                    <Input
-                      label="Contributor's email"
-                      placeholder="Enter contributor's email"
-                      error={Boolean(getContributorState(contributorIndex).email.state.error)}
-                      success={
-                        !getContributorState(contributorIndex).email.state.error &&
-                        (getContributorState(contributorIndex).email.state.isTouched ||
-                          getContributorState(contributorIndex).email.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        getContributorState(contributorIndex).email.state.error
-                          ? "Please enter contributor's email"
-                          : (getContributorState(contributorIndex).email.state.isTouched ||
+                    <Controller
+                      name={`contributors.${contributorIndex}.email`}
+                      control={control}
+                      rules={{ required: true, pattern: emailPattern }}
+                      render={({ field }) => (
+                        <Input
+                          label="Contributor's email"
+                          placeholder="Enter contributor's email"
+                          required
+                          error={Boolean(getContributorState(contributorIndex).email.state.error)}
+                          success={
+                            !getContributorState(contributorIndex).email.state.error &&
+                            (getContributorState(contributorIndex).email.state.isTouched ||
                               getContributorState(contributorIndex).email.state.isDirty) &&
                             isSubmitted
-                          ? "Contributor's email is okay"
-                          : ''
-                      }
-                      {...field}
+                          }
+                          message={
+                            getContributorState(contributorIndex).email.state.error
+                              ? "Please enter contributor's email"
+                              : (getContributorState(contributorIndex).email.state.isTouched ||
+                                  getContributorState(contributorIndex).email.state.isDirty) &&
+                                isSubmitted
+                              ? "Contributor's email is okay"
+                              : ''
+                          }
+                          {...field}
+                        />
+                      )}
                     />
-                  )}
-                />
-              </div>
-              <TrashIcon
-                className="flex stroke-current w-5 h-5 text-neutral-700 grow-0 shrink-0 cursor-pointer transition-all transform-gpu hover:-translate-y-0.5"
-                onClick={() => remove(contributorIndex)}
-              />
-            </div>
-          ))}
-          {userTypeRadio.value === 'organization' ? (
-            <button type="button" className="secondary mb-5" onClick={addContributor}>
-              Add more contributors
-            </button>
+                  </div>
+                  <TrashIcon
+                    className="flex stroke-current w-5 h-5 text-neutral-700 grow-0 shrink-0 cursor-pointer transition-all transform-gpu hover:-translate-y-0.5"
+                    onClick={() => remove(contributorIndex)}
+                  />
+                </div>
+              ))}
+
+              <button
+                type="button"
+                className="secondary mb-5 flex flex-row items-center gap-2 py-1.5"
+                onClick={addContributor}>
+                <img src="/icons/plus.svg" alt="Add more members" aria-hidden="true" />
+                Add more members
+              </button>
+            </>
           ) : null}
           <div className="flex flex-row justify-between items-center">
             <BackButton label="Return" onClick={() => onPrevious()} />

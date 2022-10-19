@@ -63,18 +63,30 @@ const MintingToken: NextPageWithLayout = () => {
   const collapsibleContents = [
     {
       title: "What's the difference between an unlimited and limited supply cap?",
-      description:
-        "Unlimited supply cap indicates that there isn't a cap on the total token supply. Whereas a fixed supply cap is a fixed number of total tokens that have been (or will be) created."
+      description: (
+        <>
+          <strong>Unlimited supply cap</strong> indicates that there isn't a cap on the total token supply. Whereas a
+          fixed supply cap is a fixed number of total tokens that have been (or will be) created.
+        </>
+      )
     },
     {
       title: 'What is the maximum character length of token symbol?',
-      description:
-        "Unlimited supply cap indicates that there isn't a cap on the total token supply. Whereas a fixed supply cap is a fixed number of total tokens that have been (or will be) created."
+      description: (
+        <>
+          <strong>Unlimited supply cap</strong> indicates that there isn't a cap on the total token supply. Whereas a
+          fixed supply cap is a fixed number of total tokens that have been (or will be) created.
+        </>
+      )
     },
     {
       title: 'What is supply type?',
-      description:
-        "Unlimited supply cap indicates that there isn't a cap on the total token supply. Whereas a fixed supply cap is a fixed number of total tokens that have been (or will be) created."
+      description: (
+        <>
+          <strong>Unlimited supply cap</strong> indicates that there isn't a cap on the total token supply. Whereas a
+          fixed supply cap is a fixed number of total tokens that have been (or will be) created.
+        </>
+      )
     }
   ];
 
@@ -149,7 +161,7 @@ const MintingToken: NextPageWithLayout = () => {
                 render={({ field }) => (
                   <Radio
                     label="Unlimited"
-                    description="No limit in the amount of tokens in circulation"
+                    description="No limit on the amount of tokens in circulation"
                     checked={supplyCap.value === 'UNLIMITED'}
                     {...field}
                     value="UNLIMITED"
@@ -179,6 +191,7 @@ const MintingToken: NextPageWithLayout = () => {
                   rules={{ required: true }}
                   render={({ field }) => (
                     <Input
+                      className="mb-5"
                       label={
                         <label className="required">
                           <span>Maximum amount of tokens</span>
@@ -204,7 +217,7 @@ const MintingToken: NextPageWithLayout = () => {
                   )}
                 />
               ) : null}
-              <div className="mt-5 relative">
+              <div className="relative">
                 <Controller
                   name="mintAmount"
                   control={control}

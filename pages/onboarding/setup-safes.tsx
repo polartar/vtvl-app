@@ -7,6 +7,7 @@ import { useWeb3React } from '@web3-react/core';
 import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
 import Router from 'next/router';
+import ArrowIcon from 'public/icons/arrow-small-left.svg';
 import React, { useContext, useEffect, useState } from 'react';
 import { createSafe } from 'services/db/safe';
 import { fetchSafes, getSafeInfo } from 'services/gnosois';
@@ -70,7 +71,7 @@ const YourSafesPage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
-      <h1 className="text-neutral-900">Setup your safe</h1>
+      <h1 className="text-neutral-900">Setup your multi-sig safe</h1>
       <div className="w-full my-6 panel">
         <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
         <p className="text-sm text-neutral-500">
@@ -93,17 +94,10 @@ const YourSafesPage: NextPage = () => {
             /* Else, display empty */
             <>
               <div className="flex items-center justify-center mt-12 mb-6">
-                <EmptyState
-                  title="No safes found"
-                  description={[
-                    'Setup a new multi-signature wallet. Get started by clicking on "',
-                    <strong onClick={() => Router.push('/onboarding/new-safe')}>Create New Safe</strong>,
-                    '".'
-                  ]}
-                />
+                <EmptyState title="No safes found" />
               </div>
-              <div className="border-t border-b border-neutral-200 p-3 flex items-center justify-center">
-                <button className="line primary" type="button" onClick={() => Router.push('/onboarding/new-safe')}>
+              <div className="border-b border-neutral-200 pb-5 flex items-center justify-center">
+                <button className="primary" type="button" onClick={() => Router.push('/onboarding/new-safe')}>
                   Create New Safe
                 </button>
               </div>
@@ -113,12 +107,14 @@ const YourSafesPage: NextPage = () => {
 
         <div className="flex flex-row justify-between items-center mt-6">
           <BackButton label="Return to account setup" onClick={() => onPrevious()} />
-          <button className="flex flex-row items-center gap-2 primary group" type="button" onClick={() => onNext({})}>
-            Skip{' '}
-            <img
-              src="/icons/arrow-small-right-white.svg"
+          <button
+            className="flex flex-row items-center gap-2 primary line group transition-all transform"
+            type="button"
+            onClick={() => onNext({})}>
+            I'm good without multi-sig{' '}
+            <ArrowIcon
               alt="Proceed"
-              className="transition-all w-6 h-6 group-hover:translate-x-1 fill-current text-white"
+              className="rotate-180 transform transition-all w-3 h-3 group-hover:translate-x-1 fill-current stroke-current text-primary-900 group-hover:text-white"
             />
           </button>
         </div>
