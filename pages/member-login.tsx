@@ -47,10 +47,10 @@ const MemberLoginPage: NextPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
-      <h1 className="text-neutral-900">Welcome to VTVL</h1>
-      <p className="text-sm max-w-xl text-center text-neutral-500">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae iaculis nulla.
+    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
+      <h1 className="text-neutral-900">Login to VTVL</h1>
+      <p className="text-sm text-center text-neutral-500">
+        Only registered team members are allowed to access this site.
       </p>
       <div className="w-full my-6 panel flex flex-col items-center">
         <button
@@ -59,13 +59,15 @@ const MemberLoginPage: NextPage = () => {
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign in with Google
         </button>
-        <div className="flex flex-row items-center justify-center gap-1 my-5">
-          <hr className="border-t border-neutral-200 w-full grow" />
-          <span className="shrink-0 grow text-xs font-medium text-neutral-400">Or signin with your email</span>
-          <hr className="border-t border-neutral-200 w-full grow" />
+        <div className="flex flex-row items-center justify-center gap-3 my-5 w-full">
+          <hr className="border-t border-neutral-200 w-1/4 sm:w-1/3" />
+          <span className="block text-xs w-1/2 sm:w-1/3 font-medium text-center text-neutral-400">
+            Or signin with your email
+          </span>
+          <hr className="border-t border-neutral-200 w-1/4 sm:w-1/3" />
         </div>
-        <div className="w-full my-6">
-          <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="w-full mb-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-center">
             <Controller
               name="memberEmail"
               control={control}
@@ -76,6 +78,7 @@ const MemberLoginPage: NextPage = () => {
                   placeholder="Enter your company email address"
                   className="md:col-span-2"
                   error={Boolean(errors.memberEmail)}
+                  required
                   success={
                     !errors.memberEmail && (memberEmail.state.isTouched || memberEmail.state.isDirty) && isSubmitted
                   }
@@ -95,7 +98,7 @@ const MemberLoginPage: NextPage = () => {
             </button>
           </form>
         </div>
-        <hr className="border-t border-neutral-200 w-full my-5" />
+        <hr className="border-t border-neutral-200 w-full mb-5" />
         <span className="font-medium text-xs text-neutral-800">
           Can&apos;t find your access code? <span className="text-primary-900">Send a new code</span>
         </span>
