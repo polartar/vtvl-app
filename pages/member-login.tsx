@@ -78,10 +78,7 @@ const MemberLoginPage: NextPage = () => {
                   placeholder="Enter your company email address"
                   className="md:col-span-2"
                   error={Boolean(errors.memberEmail)}
-<<<<<<< HEAD
-=======
                   required
->>>>>>> develop
                   success={
                     !errors.memberEmail && (memberEmail.state.isTouched || memberEmail.state.isDirty) && isSubmitted
                   }
@@ -101,11 +98,7 @@ const MemberLoginPage: NextPage = () => {
             </button>
           </form>
         </div>
-<<<<<<< HEAD
-        <hr className="border-t border-neutral-200 w-full my-5" />
-=======
         <hr className="border-t border-neutral-200 w-full mb-5" />
->>>>>>> develop
         <span className="font-medium text-xs text-neutral-800">
           Can&apos;t find your access code? <span className="text-primary-900">Send a new code</span>
         </span>
