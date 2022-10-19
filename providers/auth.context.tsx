@@ -120,9 +120,9 @@ export function AuthContextProvider({ children }: any) {
     try {
       setLoading(true);
       const actionCodeSettings = {
-        url: `https://www.example.com/member-login?id=${teammateId}`,
-        handleCodeInApp: true,
-        dynamicLinkDomain: 'example.page.link'
+        url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/member-login?id=${teammateId}`,
+        handleCodeInApp: true
+        // dynamicLinkDomain: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}`
       };
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
       setLoading(false);

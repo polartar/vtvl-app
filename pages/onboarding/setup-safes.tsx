@@ -12,7 +12,6 @@ import { createSafe } from 'services/db/safe';
 import { fetchSafes, getSafeInfo } from 'services/gnosois';
 
 const YourSafesPage: NextPage = () => {
-  const triedToEagerConnect = useEagerConnect();
   const { active, account, chainId, library } = useWeb3React();
   const { user } = useContext(AuthContext);
   const { onPrevious, onNext } = useContext(OnboardingContext);

@@ -1,10 +1,12 @@
 import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
+import { sendSignInLinkToEmail } from 'firebase/auth';
 import { NextPage } from 'next';
-import Router from 'next/router';
+import { useRouter } from 'next/router';
 import { useContext } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { auth } from 'services/auth/firebase';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 type LoginForm = {
@@ -14,6 +16,7 @@ type LoginForm = {
 const MemberLoginPage: NextPage = () => {
   const { teammateSignIn, signInWithGoogle } = useContext(AuthContext);
   const { onNext } = useContext(OnboardingContext);
+  const router = useRouter();
 
   const {
     control,
@@ -35,15 +38,20 @@ const MemberLoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    console.log('is this a new user???....', newLogin?.isFirstLogin);
-    console.log('completing setup');
     await onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     const values = getValues();
-    await teammateSignIn(values.memberEmail, Router.locale || '');
-    Router.push('/dashboard');
+    await teammateSignIn(values.memberEmail, router.locale || '');
+    router.push('/onboarding/member');
+
+    // const actionCodeSettings = {
+    //     url: `http://localhost:3000/member-login?id=${523343312344}`,
+    //     handleCodeInApp: true,
+    //  //   dynamicLinkDomain: `localhost`
+    //   };
+    //   await sendSignInLinkToEmail(auth, values.memberEmail, actionCodeSettings);
   };
 
   return (
