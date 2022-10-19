@@ -2,6 +2,7 @@ import Safe, { SafeAccountConfig, SafeFactory } from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient, { OwnerResponse } from '@gnosis.pm/safe-service-client';
 import { ethers } from 'ethers';
+import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 export const getSafeInfo = async (provider: any, safeAddress: string): Promise<Safe | undefined> => {
   if (!provider || !safeAddress) return;
@@ -15,8 +16,13 @@ export const getSafeInfo = async (provider: any, safeAddress: string): Promise<S
   return safe;
 };
 
-export const fetchSafes = async (provider: any, address: string): Promise<OwnerResponse | undefined> => {
+export const fetchSafes = async (
+  provider: any,
+  address: string,
+  chainId: SupportedChainId
+): Promise<OwnerResponse | undefined> => {
   if (!provider || !address) return;
+  if (!SupportedChains[chainId].multisigTxUrl) throw new Error('multisig not supported on this chain');
 
   const ethAdapter = new EthersAdapter({
     ethers: ethers,
@@ -24,9 +30,10 @@ export const fetchSafes = async (provider: any, address: string): Promise<OwnerR
   });
 
   const safeService = new SafeServiceClient({
-    txServiceUrl: 'https://safe-transaction.gnosis.io',
+    txServiceUrl: SupportedChains[chainId].multisigTxUrl,
     ethAdapter
   });
+
   const safes: OwnerResponse = await safeService.getSafesByOwner(address);
   return safes;
 };
@@ -38,12 +45,9 @@ export const deploySafe = async (provider: any, owners: string[], threshold: num
   });
 
   const safeFactory = await SafeFactory.create({ ethAdapter });
-  // const owners = ['0xF6F193B066039DE07df05bb31Afe36524C15fd5F', '0x82B647063A076d08c862058c2c114ac20d522653'];
-  // const threshold = 2;
   const safeAccountConfig: SafeAccountConfig = {
     owners,
     threshold
-    // ...
   };
 
   const newSafe: Safe = await safeFactory.deploySafe({ safeAccountConfig });

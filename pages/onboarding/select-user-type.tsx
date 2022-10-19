@@ -13,11 +13,6 @@ const Container = styled.div`
 const userTypes = {
   options: [
     {
-      image: '/images/onboarding-user-type-employee.svg',
-      value: 'employee',
-      label: "I'm an employee looking to check my assets"
-    },
-    {
       image: '/images/onboarding-user-type-founder.svg',
       value: 'founder',
       label: "I'm a founder who will setup the vesting schedule"

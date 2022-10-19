@@ -70,7 +70,8 @@ export function OnboardingContextProvider({ children }: any) {
     console.log('onboarding in progress ?? ', inProgress);
     router.beforePopState(({ as }) => {
       if (as !== router.asPath && inProgress) {
-        onPrevious();
+        const prevstep = currentStep == Step.ChainSetup ? currentStep : currentStep - 1;
+        setCurrentStep(prevstep);
       }
       return true;
     });
