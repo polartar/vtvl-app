@@ -1,12 +1,14 @@
 import Avatar from '@components/atoms/Avatar/Avatar';
 import BackButton from '@components/atoms/BackButton/BackButton';
+import Button from '@components/atoms/Button/Button';
+import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import TrashIcon from 'public/icons/trash.svg';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { createMember } from 'services/db/member';
 import { createOrg } from 'services/db/organization';
@@ -28,6 +30,9 @@ type AccountForm = {
 const AccountSetupPage: NextPage = () => {
   const { sendTeammateInvite, user } = useContext(AuthContext);
   const { onPrevious, onNext, info } = useContext(OnboardingContext);
+  const [formMessage, setFormMessage] = useState('');
+  const [formError, setFormError] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
   // Get to use the react-hook-form and set default values
   const {
     control,
@@ -35,7 +40,7 @@ const AccountSetupPage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
-    formState: { errors, isValid, isDirty, isSubmitted }
+    formState: { errors, isValid, isDirty, isSubmitting, isSubmitted }
   } = useForm({
     defaultValues: {
       name: '',
@@ -83,17 +88,34 @@ const AccountSetupPage: NextPage = () => {
     };
   };
 
-  console.log('Values', userTypeRadio, userName, userCompany, userCompanyEmail, errors, isValid, isDirty, isSubmitted);
+  console.log(
+    'Values',
+    userTypeRadio,
+    userName,
+    userCompany,
+    userCompanyEmail,
+    errors,
+    isValid,
+    isDirty,
+    isSubmitted,
+    isSubmitting
+  );
 
   // Add a contributor to the list
   const addContributor = () => append({ name: '', email: '' });
 
+  // Should always return a promise to resolve in order to make the isSubmitting work
   const onSubmit: SubmitHandler<AccountForm> = async (data) => {
     console.log('Form Submitted', data, getValues());
     const values = getValues();
+    setFormSuccess(false);
+    setFormError(false);
+    setFormMessage('');
 
     if (!user) {
       console.log('');
+      setFormError(true);
+      setFormMessage('Oh no! something went wrong!');
       return;
     }
 
@@ -116,7 +138,7 @@ const AccountSetupPage: NextPage = () => {
         await sendTeammateInvite(contributor.email, memberId);
       });
     }
-    onNext({ accountId: memberId });
+    return await onNext({ accountId: memberId });
   };
 
   // Recommended by React hook forms when using field array https://react-hook-form.com/api/usefieldarray
@@ -125,13 +147,18 @@ const AccountSetupPage: NextPage = () => {
   }, [remove]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
-      <h1 className="text-neutral-900">Setup your account</h1>
+    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
+      <h1 className="text-neutral-900">Hey there, Welcome to VTVL</h1>
       <p className="text-sm max-w-xl text-center text-neutral-500">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae iaculis nulla. Etiam eget rhoncus orci, ac
-        vestibulum justo.
+        Let's get to know you so you can start setting up your account.
       </p>
-      <div className="w-full my-6 panel">
+      <Form
+        isSubmitting={isSubmitting}
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full my-6"
+        error={formError}
+        success={formSuccess}
+        message={formMessage}>
         <div className="flex flex-row items-center gap-3.5 pb-5 border-b border-neutral-200">
           <Avatar name={userName.value || 'Your name'} size="large" placeholder="initials" />
           <div>
@@ -142,186 +169,199 @@ const AccountSetupPage: NextPage = () => {
             </p> */}
           </div>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid md:grid-cols-2 py-5 gap-5 border-b border-neutral-200 mb-5">
-            <Controller
-              name="type"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Radio
-                  label="Organization"
-                  variant="input-style"
-                  checked={userTypeRadio.value === 'organization'}
-                  {...field}
-                  value="organization"
-                />
-              )}
-            />
-            <Controller
-              name="type"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Radio
-                  label="Individual"
-                  variant="input-style"
-                  {...field}
-                  checked={userTypeRadio.value === 'individual'}
-                  value="individual"
-                />
-              )}
-            />
-            <Controller
-              name="name"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input
-                  label="Your name"
-                  placeholder="Enter your name"
-                  error={Boolean(errors.name)}
-                  success={!errors.name && (userName.state.isTouched || userName.state.isDirty) && isSubmitted}
-                  message={
-                    errors.name
-                      ? 'Please enter your name'
-                      : (userName.state.isTouched || userName.state.isDirty) && isSubmitted
-                      ? 'Name is okay'
-                      : ''
-                  }
-                  {...field}
-                />
-              )}
-            />
+        <div className="grid md:grid-cols-2 py-5 gap-5 border-b border-neutral-200 mb-5">
+          <Controller
+            name="type"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Radio
+                label="Organization"
+                variant="input-style"
+                checked={userTypeRadio.value === 'organization'}
+                {...field}
+                value="organization"
+              />
+            )}
+          />
+          <Controller
+            name="type"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Radio
+                label="Individual"
+                variant="input-style"
+                {...field}
+                checked={userTypeRadio.value === 'individual'}
+                value="individual"
+              />
+            )}
+          />
+          <Controller
+            name="name"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Input
+                label="Your name"
+                placeholder="Enter your name"
+                required
+                error={Boolean(errors.name)}
+                success={!errors.name && (userName.state.isTouched || userName.state.isDirty) && isSubmitted}
+                message={
+                  errors.name
+                    ? 'Please enter your name'
+                    : (userName.state.isTouched || userName.state.isDirty) && isSubmitted
+                    ? 'Name is okay'
+                    : ''
+                }
+                {...field}
+              />
+            )}
+          />
 
-            <Controller
-              name="company"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input
-                  label="Company name"
-                  placeholder="Enter your company name"
-                  error={Boolean(errors.company)}
-                  success={!errors.company && (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted}
-                  message={
-                    errors.company
-                      ? 'Please enter your company name'
-                      : (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted
-                      ? 'Company name is okay'
-                      : ''
-                  }
-                  {...field}
-                />
-              )}
-            />
+          <Controller
+            name="company"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Input
+                label="Company name"
+                placeholder="Enter your company name"
+                required
+                error={Boolean(errors.company)}
+                success={!errors.company && (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted}
+                message={
+                  errors.company
+                    ? 'Please enter your company name'
+                    : (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted
+                    ? 'Company name is okay'
+                    : ''
+                }
+                {...field}
+              />
+            )}
+          />
 
-            <Controller
-              name="companyEmail"
-              control={control}
-              rules={{ required: true, pattern: emailPattern }}
-              render={({ field }) => (
-                <Input
-                  label="Your company email"
-                  placeholder="Enter your company email address"
-                  className="md:col-span-2"
-                  error={Boolean(errors.companyEmail)}
-                  success={
-                    !errors.companyEmail &&
-                    (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) &&
-                    isSubmitted
-                  }
-                  message={
-                    errors.companyEmail
-                      ? 'Please enter your company email'
-                      : (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) && isSubmitted
-                      ? 'Company email is okay'
-                      : ''
-                  }
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          {fields.map((contributor, contributorIndex) => (
-            <div key={`contributor-${contributor.id}`} className="flex flex-row md:items-center gap-5 mb-5">
-              <div className="grid md:grid-cols-2 gap-5 grow w-full">
-                <Controller
-                  name={`contributors.${contributorIndex}.name`}
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Input
-                      label="Contributor's name"
-                      placeholder="Enter contributor's name"
-                      error={Boolean(getContributorState(contributorIndex).name.state.error)}
-                      success={
-                        !getContributorState(contributorIndex).name.state.error &&
-                        (getContributorState(contributorIndex).name.state.isTouched ||
-                          getContributorState(contributorIndex).name.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        getContributorState(contributorIndex).name.state.error
-                          ? "Please enter contributor's name"
-                          : (getContributorState(contributorIndex).name.state.isTouched ||
-                              getContributorState(contributorIndex).name.state.isDirty) &&
-                            isSubmitted
-                          ? "Contributor's name is okay"
-                          : ''
-                      }
-                      {...field}
-                    />
-                  )}
-                />
-                <Controller
-                  name={`contributors.${contributorIndex}.email`}
-                  control={control}
-                  rules={{ required: true, pattern: emailPattern }}
-                  render={({ field }) => (
-                    <Input
-                      label="Contributor's email"
-                      placeholder="Enter contributor's email"
-                      error={Boolean(getContributorState(contributorIndex).email.state.error)}
-                      success={
-                        !getContributorState(contributorIndex).email.state.error &&
-                        (getContributorState(contributorIndex).email.state.isTouched ||
-                          getContributorState(contributorIndex).email.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        getContributorState(contributorIndex).email.state.error
-                          ? "Please enter contributor's email"
-                          : (getContributorState(contributorIndex).email.state.isTouched ||
-                              getContributorState(contributorIndex).email.state.isDirty) &&
-                            isSubmitted
-                          ? "Contributor's email is okay"
-                          : ''
-                      }
-                      {...field}
-                    />
-                  )}
+          <Controller
+            name="companyEmail"
+            control={control}
+            rules={{ required: true, pattern: emailPattern }}
+            render={({ field }) => (
+              <Input
+                label="Your company email"
+                placeholder="Enter your company email address"
+                className="md:col-span-2"
+                required
+                error={Boolean(errors.companyEmail)}
+                success={
+                  !errors.companyEmail &&
+                  (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) &&
+                  isSubmitted
+                }
+                message={
+                  errors.companyEmail
+                    ? 'Please enter your company email'
+                    : (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) && isSubmitted
+                    ? 'Company email is okay'
+                    : ''
+                }
+                {...field}
+              />
+            )}
+          />
+        </div>
+        {userTypeRadio.value === 'organization' ? (
+          <>
+            <label className="mb-3">
+              <span>Invite team members to your organization</span>
+            </label>
+            {fields.map((contributor, contributorIndex) => (
+              <div key={`contributor-${contributor.id}`} className="flex flex-row md:items-center gap-5 mb-5">
+                <div className="grid md:grid-cols-2 gap-5 grow w-full">
+                  <Controller
+                    name={`contributors.${contributorIndex}.name`}
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Input
+                        label="Contributor's name"
+                        placeholder="Enter contributor's name"
+                        required
+                        error={Boolean(getContributorState(contributorIndex).name.state.error)}
+                        success={
+                          !getContributorState(contributorIndex).name.state.error &&
+                          (getContributorState(contributorIndex).name.state.isTouched ||
+                            getContributorState(contributorIndex).name.state.isDirty) &&
+                          isSubmitted
+                        }
+                        message={
+                          getContributorState(contributorIndex).name.state.error
+                            ? "Please enter contributor's name"
+                            : (getContributorState(contributorIndex).name.state.isTouched ||
+                                getContributorState(contributorIndex).name.state.isDirty) &&
+                              isSubmitted
+                            ? "Contributor's name is okay"
+                            : ''
+                        }
+                        {...field}
+                      />
+                    )}
+                  />
+                  <Controller
+                    name={`contributors.${contributorIndex}.email`}
+                    control={control}
+                    rules={{ required: true, pattern: emailPattern }}
+                    render={({ field }) => (
+                      <Input
+                        label="Contributor's email"
+                        placeholder="Enter contributor's email"
+                        required
+                        error={Boolean(getContributorState(contributorIndex).email.state.error)}
+                        success={
+                          !getContributorState(contributorIndex).email.state.error &&
+                          (getContributorState(contributorIndex).email.state.isTouched ||
+                            getContributorState(contributorIndex).email.state.isDirty) &&
+                          isSubmitted
+                        }
+                        message={
+                          getContributorState(contributorIndex).email.state.error
+                            ? "Please enter contributor's email"
+                            : (getContributorState(contributorIndex).email.state.isTouched ||
+                                getContributorState(contributorIndex).email.state.isDirty) &&
+                              isSubmitted
+                            ? "Contributor's email is okay"
+                            : ''
+                        }
+                        {...field}
+                      />
+                    )}
+                  />
+                </div>
+                <TrashIcon
+                  className="flex stroke-current w-5 h-5 text-neutral-700 grow-0 shrink-0 cursor-pointer transition-all transform-gpu hover:-translate-y-0.5"
+                  onClick={() => remove(contributorIndex)}
                 />
               </div>
-              <TrashIcon
-                className="flex stroke-current w-5 h-5 text-neutral-700 grow-0 shrink-0 cursor-pointer transition-all transform-gpu hover:-translate-y-0.5"
-                onClick={() => remove(contributorIndex)}
-              />
-            </div>
-          ))}
-          {userTypeRadio.value === 'organization' ? (
-            <button type="button" className="secondary mb-5" onClick={addContributor}>
-              Add more contributors
+            ))}
+
+            <button
+              type="button"
+              className="secondary mb-5 flex flex-row items-center gap-2 py-1.5"
+              onClick={addContributor}>
+              <img src="/icons/plus.svg" alt="Add more members" aria-hidden="true" />
+              Add more members
             </button>
-          ) : null}
-          <div className="flex flex-row justify-between items-center">
-            <BackButton label="Return" onClick={() => onPrevious()} />
-            <button className="primary" type="submit">
-              Continue
-            </button>
-          </div>
-        </form>
-      </div>
+          </>
+        ) : null}
+        <div className="flex flex-row justify-between items-center">
+          <BackButton label="Return" onClick={() => onPrevious()} />
+          <Button className="primary" type="submit" loading={isSubmitting}>
+            Continue
+          </Button>
+        </div>
+      </Form>
     </div>
   );
 };

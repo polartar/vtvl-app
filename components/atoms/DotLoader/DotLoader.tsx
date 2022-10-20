@@ -6,7 +6,7 @@ interface IDotLoaderProps {
 
 const DotLoader: React.FC<IDotLoaderProps> = ({ className }) => {
   return (
-    <div className="inline-flex items-center">
+    <div aria-hidden="true" className="inline-flex items-center">
       <div className={`loader-dot1 ${className}`} />
       <div className={`loader-dot2 ${className}`} />
       <div className={`loader-dot3 ${className}`} />
