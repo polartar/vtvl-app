@@ -329,6 +329,11 @@
     @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all duration-1000;
   }
 
+  :disabled,
+  [disabled] {
+    @apply opacity-80;
+  }
+
   label > div > input:focus,
   label > div > input:focus-visible,
   label > div > select:focus,
@@ -336,18 +341,33 @@
     @apply border-primary-400;
   }
 
-  label > div {
+  /* Form and form control styles for error and success states */
+  label > div,
+  .form {
     @apply rounded-xl border border-transparent text-white transition-all duration-500;
   }
-  label > div.error {
+
+  .form {
+    @apply p-1 rounded-3xl border border-gray-300;
+  }
+  
+  label > div.error,
+  .form-error {
     @apply p-1 bg-danger-100 border-danger-500 text-danger-700;
   }
-  label > div.success {
+
+  label > div.success,
+  .form-success {
     @apply p-1 bg-success-100 border-success-200 text-success-600;
     animation: fadeOutContainer 1s;
     animation-delay: 2s;
     animation-fill-mode: forwards;
   }
+
+  .form > fieldset {
+    @apply bg-white p-6 rounded-3xl;
+  }
+
   label > div.error > input,
   label > div.success > input {
     @apply rounded-lg border-neutral-50;
@@ -363,7 +383,8 @@
     @apply text-xs mt-1 px-1 pb-1 h-5 overflow-hidden transition-all;
   }
 
-  label > div.success > p {
+  label > div.success > p,
+  .form-success .form-message {
     animation: fadeOutMessage 1s;
     animation-delay: 1.5s;
     animation-fill-mode: forwards;

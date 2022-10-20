@@ -1,5 +1,6 @@
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useMintContext } from '@providers/mint.context';
+import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
 import { ReactElement } from 'react';
@@ -23,10 +24,10 @@ const Complete: NextPageWithLayout = () => {
       <h3 className="font-bold h4 uppercase mb-6">{tokenName}</h3>
       <p className="text-sm text-neutral-500 mb-6">{contractAddress}</p>
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-        <button className="primary" type="button">
+        <button className="primary" type="button" onClick={() => Router.push('/vesting-schedule/configure')}>
           Create vesting contract
         </button>
-        <a href="" className="flex flex-row items-center gap-3 text-neutral-500">
+        <a href="/dashboard" className="flex flex-row items-center gap-3 text-neutral-500">
           Continue later
           <ArrowIcon className="fill-current transform rotate-180" />
         </a>

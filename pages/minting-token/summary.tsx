@@ -1,4 +1,5 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
+import Button from '@components/atoms/Button/Button';
 import DotLoader from '@components/atoms/DotLoader/DotLoader';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
@@ -95,10 +96,10 @@ const Summary: NextPageWithLayout = () => {
         </label>
       </div>
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-        <BackButton label="Return to details" onClick={() => Router.push('/vesting-schedule/minting-token')} />
-        <button className="primary" type="button" onClick={handleCreateToken}>
-          {loading ? <DotLoader className="primary" /> : 'Create transaction'}
-        </button>
+        <BackButton label="Return to details" onClick={() => Router.push('/minting-token')} />
+        <Button className="primary" type="button" onClick={handleCreateToken} loading={loading}>
+          Create transaction
+        </Button>
       </div>
     </div>
   );
