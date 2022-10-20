@@ -1,5 +1,7 @@
+import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import CollapsibleContent from '@components/atoms/CollapsibleContent/CollapsibleContent';
+import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
@@ -8,7 +10,7 @@ import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useMintContext } from 'providers/mint.context';
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 interface FormTypes {
@@ -21,6 +23,9 @@ interface FormTypes {
 
 const MintingToken: NextPageWithLayout = () => {
   const { mintFormState, updateMintFormState } = useMintContext();
+  const [formMessage, setFormMessage] = useState('');
+  const [formError, setFormError] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
   const {
     control,
     handleSubmit,
@@ -28,7 +33,7 @@ const MintingToken: NextPageWithLayout = () => {
     getFieldState,
     getValues,
     setValue,
-    formState: { errors, isSubmitted }
+    formState: { errors, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
       ...mintFormState
@@ -56,25 +61,47 @@ const MintingToken: NextPageWithLayout = () => {
 
   // Handle the submit of the form
   const onSubmit: SubmitHandler<FormTypes> = (data) => {
+    setFormSuccess(false);
+    setFormError(false);
+    setFormMessage('');
+
+    // If at some point here something went wrong
+    // setFormMessage('Oh no! Something went wrong!!');
+    // setFormError(true);
+    // return;
+
     updateMintFormState({ ...mintFormState, ...data });
     Router.push('/minting-token/summary');
+    return;
   };
 
   const collapsibleContents = [
     {
       title: "What's the difference between an unlimited and limited supply cap?",
-      description:
-        "Unlimited supply cap indicates that there isn't a cap on the total token supply. Whereas a fixed supply cap is a fixed number of total tokens that have been (or will be) created."
+      description: (
+        <>
+          <strong>Unlimited supply cap</strong> indicates that there isn't a cap on the total token supply. Whereas a
+          fixed supply cap is a fixed number of total tokens that have been (or will be) created.
+        </>
+      )
     },
     {
       title: 'What is the maximum character length of token symbol?',
-      description:
-        "Unlimited supply cap indicates that there isn't a cap on the total token supply. Whereas a fixed supply cap is a fixed number of total tokens that have been (or will be) created."
+      description: (
+        <>
+          <strong>Unlimited supply cap</strong> indicates that there isn't a cap on the total token supply. Whereas a
+          fixed supply cap is a fixed number of total tokens that have been (or will be) created.
+        </>
+      )
     },
     {
       title: 'What is supply type?',
-      description:
-        "Unlimited supply cap indicates that there isn't a cap on the total token supply. Whereas a fixed supply cap is a fixed number of total tokens that have been (or will be) created."
+      description: (
+        <>
+          <strong>Unlimited supply cap</strong> indicates that there isn't a cap on the total token supply. Whereas a
+          fixed supply cap is a fixed number of total tokens that have been (or will be) created.
+        </>
+      )
     }
   ];
 
@@ -82,7 +109,13 @@ const MintingToken: NextPageWithLayout = () => {
     <>
       <div className="grid md:grid-cols-12 w-full gap-3.5 mt-14">
         <div className="md:col-span-7">
-          <form className="w-full mb-6 panel" onSubmit={handleSubmit(onSubmit)}>
+          <Form
+            className="w-full mb-6"
+            isSubmitting={isSubmitting}
+            onSubmit={handleSubmit(onSubmit)}
+            error={formError}
+            success={formSuccess}
+            message={formMessage}>
             <div className="grid md:grid-cols-2 gap-5 mb-5">
               <Controller
                 name="tokenName"
@@ -149,7 +182,7 @@ const MintingToken: NextPageWithLayout = () => {
                 render={({ field }) => (
                   <Radio
                     label="Unlimited"
-                    description="No limit in the amount of tokens in circulation"
+                    description="No limit on the amount of tokens in circulation"
                     checked={supplyCap.value === 'UNLIMITED'}
                     {...field}
                     value="UNLIMITED"
@@ -179,6 +212,7 @@ const MintingToken: NextPageWithLayout = () => {
                   rules={{ required: true }}
                   render={({ field }) => (
                     <Input
+                      className="mb-5"
                       label={
                         <label className="required">
                           <span>Maximum amount of tokens</span>
@@ -204,7 +238,7 @@ const MintingToken: NextPageWithLayout = () => {
                   )}
                 />
               ) : null}
-              <div className="mt-5 relative">
+              <div className="relative">
                 <Controller
                   name="mintAmount"
                   control={control}
@@ -259,11 +293,11 @@ const MintingToken: NextPageWithLayout = () => {
               ) : null}
             </div>
             <div className="flex flex-row justify-end items-center border-t border-neutral-200 pt-5">
-              <button className="primary" type="submit">
+              <Button className="primary" type="submit" loading={isSubmitting}>
                 Continue
-              </button>
+              </Button>
             </div>
-          </form>
+          </Form>
         </div>
         <div className="md:col-span-5">
           <label className="text-sm font-semibold text-secondary-900 mb-3">Support</label>

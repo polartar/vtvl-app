@@ -1,6 +1,8 @@
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useMintContext } from '@providers/mint.context';
+import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
+import ArrowIcon from 'public/icons/arrow-small-left.svg';
 import { ReactElement } from 'react';
 
 const Complete: NextPageWithLayout = () => {
@@ -15,13 +17,20 @@ const Complete: NextPageWithLayout = () => {
       <p className="text-gray-500 text-sm mb-9">
         Your delegated employee will received a notification and can proceed to create the vesting schedules.
       </p>
+      {/* <p className="text-gray-500 text-sm mb-9">
+        The token creation is still in progress. In order to complete this step, 2 out of 3 owners are required to confirm this transaction.
+      </p> */}
       {tokenLogo ? <img src={tokenLogo} className="w-22 h-22 mb-4 mx-auto" /> : null}
       <h3 className="font-bold h4 uppercase mb-6">{tokenName}</h3>
       <p className="text-sm text-neutral-500 mb-6">{contractAddress}</p>
-      <div className="flex flex-row justify-center items-center border-t border-neutral-200 pt-5">
-        <button className="primary" type="button">
+      <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
+        <button className="primary" type="button" onClick={() => Router.push('/vesting-schedule/configure')}>
           Create vesting contract
         </button>
+        <a href="/dashboard" className="flex flex-row items-center gap-3 text-neutral-500">
+          Continue later
+          <ArrowIcon className="fill-current transform rotate-180" />
+        </a>
       </div>
     </div>
   );

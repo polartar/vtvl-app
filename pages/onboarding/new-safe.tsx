@@ -1,4 +1,6 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
+import Button from '@components/atoms/Button/Button';
+import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Select from '@components/atoms/FormControls/Select/Select';
 import Safe from '@gnosis.pm/safe-core-sdk';
@@ -34,6 +36,9 @@ const NewSafePage: NextPage = () => {
   const [importedSafe, setImportedSafe] = useState<Safe>();
   const [owners, setOwners] = useState<{ name: string; address: string }[]>([{ name: '', address: '' }]);
   const [threshold, setThreshold] = useState(0);
+  const [formMessage, setFormMessage] = useState('');
+  const [formError, setFormError] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
   // const { safeAddress } = router.params
   console.log('routed query here pls ', query.safeAddress);
 
@@ -84,7 +89,7 @@ const NewSafePage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
-    formState: { errors, isValid, isDirty, isSubmitted }
+    formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
       organizationName: '',
@@ -130,15 +135,23 @@ const NewSafePage: NextPage = () => {
 
   const onSubmit: SubmitHandler<ConfirmationForm> = async (data) => {
     console.log('Form Submitted', data, getValues());
+    setFormSuccess(false);
+    setFormError(false);
+    setFormMessage('');
+
     try {
       const values = getValues();
       const owners = values.owners.map((o) => o.address);
       if (!active) {
         console.log('Please login with metamask to create safe');
+        setFormMessage('Please login with metamask to create safe');
+        setFormError(true);
         return;
       }
       if (!user) {
         console.log('Please sign up to deploy a safe');
+        setFormMessage('Please sign up to deploy a safe');
+        setFormError(true);
         return;
       }
 
@@ -146,6 +159,8 @@ const NewSafePage: NextPage = () => {
 
       if (!safe) {
         console.log('invalid safe configurations ');
+        setFormMessage('Invalid safe configurations');
+        setFormError(true);
         return;
       }
       const storedSafeId = await createSafe({
@@ -155,146 +170,114 @@ const NewSafePage: NextPage = () => {
         owners: values.owners,
         threshold: values.authorizedUsers
       });
-      onNext({ safeId: storedSafeId });
+      return await onNext({ safeId: storedSafeId });
     } catch (error) {
       console.log('error getting safe info ', error);
+      setFormMessage('Error getting safe info');
+      setFormError(true);
+      return;
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
-      <h1 className="text-neutral-900">Setup your safe</h1>
-      <div className="w-full my-6 panel">
+      <h1 className="text-neutral-900">Setup your multi-sig safe</h1>
+      <Form
+        className="w-full my-6"
+        isSubmitting={isSubmitting}
+        onSubmit={handleSubmit(onSubmit)}
+        error={formError}
+        success={formSuccess}
+        message={formMessage}>
         <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
         <p className="text-sm text-neutral-500">
           You can natively create new, import or login to your existing gnisis safe multisig.
         </p>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid md:grid-cols-2 py-5 gap-5 border-b border-neutral-200 mb-5">
-            <Controller
-              name="organizationName"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input
-                  label="Your organization name"
-                  placeholder="Enter your organization name"
-                  className="md:col-span-2"
-                  error={Boolean(errors.organizationName)}
-                  success={
-                    !errors.organizationName &&
-                    (organizationName.state.isTouched || organizationName.state.isDirty) &&
-                    isSubmitted
-                  }
-                  message={
-                    errors.organizationName
-                      ? 'Please enter your organization name'
-                      : (organizationName.state.isTouched || organizationName.state.isDirty) && isSubmitted
-                      ? 'Organization name is okay'
-                      : ''
-                  }
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          {fields.map((owner, ownerIndex) => (
-            <div key={`owner-${owner.id}`} className="flex flex-row md:items-center gap-5 mb-5">
-              <div className="grid md:grid-cols-2 gap-5 grow w-full">
-                <Controller
-                  name={`owners.${ownerIndex}.name`}
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Input
-                      label="Owner's name"
-                      placeholder="Enter owner's name"
-                      error={Boolean(getOwnersState(ownerIndex).name.state.error)}
-                      success={
-                        !getOwnersState(ownerIndex).name.state.error &&
-                        (getOwnersState(ownerIndex).name.state.isTouched ||
-                          getOwnersState(ownerIndex).name.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        getOwnersState(ownerIndex).name.state.error
-                          ? "Please enter owner's name"
-                          : (getOwnersState(ownerIndex).name.state.isTouched ||
-                              getOwnersState(ownerIndex).name.state.isDirty) &&
-                            isSubmitted
-                          ? "Owner's name is okay"
-                          : ''
-                      }
-                      {...field}
-                    />
-                  )}
-                />
-                <Controller
-                  name={`owners.${ownerIndex}.address`}
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Input
-                      label="Owner's address"
-                      placeholder="Enter owner's address"
-                      disabled={isImported && field.value ? true : false}
-                      error={Boolean(getOwnersState(ownerIndex).address.state.error)}
-                      success={
-                        !getOwnersState(ownerIndex).address.state.error &&
-                        (getOwnersState(ownerIndex).address.state.isTouched ||
-                          getOwnersState(ownerIndex).address.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        getOwnersState(ownerIndex).address.state.error
-                          ? "Please enter owner's address"
-                          : (getOwnersState(ownerIndex).address.state.isTouched ||
-                              getOwnersState(ownerIndex).address.state.isDirty) &&
-                            isSubmitted
-                          ? "Owner's address is okay"
-                          : ''
-                      }
-                      {...field}
-                    />
-                  )}
-                />
-              </div>
-              <TrashIcon
-                className="stroke-current text-neutral-700 w-5 h-5 cursor-pointer transition-all transform-gpu hover:-translate-y-0.5"
-                onClick={() => remove(ownerIndex)}
+        <div className="grid md:grid-cols-2 py-5 gap-5 border-b border-neutral-200 mb-5">
+          <Controller
+            name="organizationName"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Input
+                label="Your organization name"
+                placeholder="Enter your organization name"
+                className="md:col-span-2"
+                error={Boolean(errors.organizationName)}
+                required
+                success={
+                  !errors.organizationName &&
+                  (organizationName.state.isTouched || organizationName.state.isDirty) &&
+                  isSubmitted
+                }
+                message={
+                  errors.organizationName
+                    ? 'Please enter your organization name'
+                    : (organizationName.state.isTouched || organizationName.state.isDirty) && isSubmitted
+                    ? 'Organization name is okay'
+                    : ''
+                }
+                {...field}
               />
-            </div>
-          ))}
-          <button type="button" className="secondary mb-5" onClick={addOwner}>
-            Add more owners
-          </button>
-          {options > 0 ? (
-            <div className="border-t border-b border-neutral-300 py-5 mb-5 ">
+            )}
+          />
+        </div>
+        {fields.map((owner, ownerIndex) => (
+          <div key={`owner-${owner.id}`} className="flex flex-row md:items-center gap-5 mb-5">
+            <div className="grid md:grid-cols-2 gap-5 grow w-full">
               <Controller
-                name="authorizedUsers"
+                name={`owners.${ownerIndex}.name`}
                 control={control}
                 rules={{ required: true }}
                 render={({ field }) => (
-                  <Select
-                    label="How many people should authorize this transaction"
-                    placeholder="Select how many"
-                    className="md:col-span-2"
-                    options={Array.from(Array(options).keys()).map((num) => {
-                      return { label: num, value: num };
-                    })}
+                  <Input
+                    label="Owner's name"
+                    placeholder="Enter owner's name"
                     required
-                    disabled={isImported && field.value ? true : false}
-                    error={Boolean(errors.authorizedUsers)}
+                    error={Boolean(getOwnersState(ownerIndex).name.state.error)}
                     success={
-                      !errors.authorizedUsers &&
-                      (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) &&
+                      !getOwnersState(ownerIndex).name.state.error &&
+                      (getOwnersState(ownerIndex).name.state.isTouched ||
+                        getOwnersState(ownerIndex).name.state.isDirty) &&
                       isSubmitted
                     }
                     message={
-                      errors.authorizedUsers
-                        ? 'Please select how many'
-                        : (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) && isSubmitted
-                        ? 'Authorized people'
+                      getOwnersState(ownerIndex).name.state.error
+                        ? "Please enter owner's name"
+                        : (getOwnersState(ownerIndex).name.state.isTouched ||
+                            getOwnersState(ownerIndex).name.state.isDirty) &&
+                          isSubmitted
+                        ? "Owner's name is okay"
+                        : ''
+                    }
+                    {...field}
+                  />
+                )}
+              />
+              <Controller
+                name={`owners.${ownerIndex}.address`}
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Input
+                    label="Owner's address"
+                    placeholder="Enter owner's address"
+                    required
+                    disabled={isImported && field.value ? true : false}
+                    error={Boolean(getOwnersState(ownerIndex).address.state.error)}
+                    success={
+                      !getOwnersState(ownerIndex).address.state.error &&
+                      (getOwnersState(ownerIndex).address.state.isTouched ||
+                        getOwnersState(ownerIndex).address.state.isDirty) &&
+                      isSubmitted
+                    }
+                    message={
+                      getOwnersState(ownerIndex).address.state.error
+                        ? "Please enter owner's address"
+                        : (getOwnersState(ownerIndex).address.state.isTouched ||
+                            getOwnersState(ownerIndex).address.state.isDirty) &&
+                          isSubmitted
+                        ? "Owner's address is okay"
                         : ''
                     }
                     {...field}
@@ -302,20 +285,66 @@ const NewSafePage: NextPage = () => {
                 )}
               />
             </div>
-          ) : null}
-          <div className="flex flex-row justify-between items-center">
-            <BackButton label="Return" onClick={() => onPrevious()} />
-            <button className="primary flex flex-row items-center gap-2 group" type="submit">
+            <TrashIcon
+              className="stroke-current text-neutral-700 w-5 h-5 cursor-pointer transition-all transform-gpu hover:-translate-y-0.5"
+              onClick={() => remove(ownerIndex)}
+            />
+          </div>
+        ))}
+        <button type="button" className="secondary mb-5 flex flex-row items-center gap-2 py-1.5" onClick={addOwner}>
+          <img src="/icons/plus.svg" alt="Add more members" aria-hidden="true" />
+          Add more
+        </button>
+        {options > 0 ? (
+          <div className="border-t border-b border-neutral-300 py-5 mb-5 ">
+            <Controller
+              name="authorizedUsers"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select
+                  label="How many people should authorize this transaction"
+                  placeholder="Select how many"
+                  className="md:col-span-2"
+                  options={Array.from(Array(options).keys()).map((num) => {
+                    return { label: num, value: num };
+                  })}
+                  required
+                  disabled={isImported && field.value ? true : false}
+                  error={Boolean(errors.authorizedUsers)}
+                  success={
+                    !errors.authorizedUsers &&
+                    (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) &&
+                    isSubmitted
+                  }
+                  message={
+                    errors.authorizedUsers
+                      ? 'Please select how many'
+                      : (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) && isSubmitted
+                      ? 'Authorized people'
+                      : ''
+                  }
+                  {...field}
+                />
+              )}
+            />
+          </div>
+        ) : null}
+        <div className="flex flex-row justify-between items-center">
+          <BackButton label="Return" onClick={() => onPrevious()} />
+          <Button className="primary group" type="submit" loading={isSubmitting}>
+            <span className="flex flex-row items-center gap-2 ">
               Sign and Authorize
               <img
+                aria-hidden="true"
                 src="/icons/arrow-small-right-white.svg"
                 alt="Proceed"
                 className="transition-all w-6 h-6 group-hover:translate-x-1 fill-current text-white"
               />
-            </button>
-          </div>
-        </form>
-      </div>
+            </span>
+          </Button>
+        </div>
+      </Form>
     </div>
   );
 };
