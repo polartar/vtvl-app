@@ -1,12 +1,14 @@
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
+import AuthContext from '@providers/auth.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useContext } from 'react';
 
 const MemberWalletPage: NextPage = () => {
+  const { user } = useContext(AuthContext);
   const { activate } = useWeb3React();
   const router = useRouter();
 
@@ -62,7 +64,7 @@ const MemberWalletPage: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-8 max-w-2xl px-9 py-10 text-center">
       <div>
-        <h1 className="font-medium mb-4">Hey Satoshi</h1>
+        <h1 className="font-medium mb-4">Hey {user?.memberInfo?.name}</h1>
         <p className="text-sm text-neutral-500">
           We're glad to have you onboard.
           <br />

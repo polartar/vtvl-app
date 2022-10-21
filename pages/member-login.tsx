@@ -1,12 +1,10 @@
 import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
-import { sendSignInLinkToEmail } from 'firebase/auth';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useContext } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { auth } from 'services/auth/firebase';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 type LoginForm = {
@@ -43,15 +41,12 @@ const MemberLoginPage: NextPage = () => {
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     const values = getValues();
-    await teammateSignIn(values.memberEmail, router.locale || '');
-    router.push('/onboarding/member');
-
-    // const actionCodeSettings = {
-    //     url: `http://localhost:3000/member-login?id=${523343312344}`,
-    //     handleCodeInApp: true,
-    //  //   dynamicLinkDomain: `localhost`
-    //   };
-    //   await sendSignInLinkToEmail(auth, values.memberEmail, actionCodeSettings);
+    try {
+      await teammateSignIn(values.memberEmail, window.location.toString());
+      router.push('/onboarding/member');
+    } catch (error) {
+      console.log(' invalid member signin ', error);
+    }
   };
 
   return (

@@ -7,7 +7,6 @@ import Safe from '@gnosis.pm/safe-core-sdk';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
-import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import TrashIcon from 'public/icons/trash.svg';
@@ -143,13 +142,11 @@ const NewSafePage: NextPage = () => {
       const values = getValues();
       const owners = values.owners.map((o) => o.address);
       if (!active) {
-        console.log('Please login with metamask to create safe');
         setFormMessage('Please login with metamask to create safe');
         setFormError(true);
         return;
       }
       if (!user) {
-        console.log('Please sign up to deploy a safe');
         setFormMessage('Please sign up to deploy a safe');
         setFormError(true);
         return;

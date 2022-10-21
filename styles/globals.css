@@ -274,7 +274,19 @@
   }
 
   /* Typography */
-  .display, h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+  .display,
+  h1,
+  .h1,
+  h2,
+  .h2,
+  h3,
+  .h3,
+  h4,
+  .h4,
+  h5,
+  .h5,
+  h6,
+  .h6 {
     font-family: 'Sora', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   }
   .display {
@@ -350,7 +362,7 @@
   .form {
     @apply p-1 rounded-3xl border border-gray-300;
   }
-  
+
   label > div.error,
   .form-error {
     @apply p-1 bg-danger-100 border-danger-500 text-danger-700;

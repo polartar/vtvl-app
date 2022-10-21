@@ -4,7 +4,6 @@ import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
-import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
