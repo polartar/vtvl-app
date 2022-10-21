@@ -33,17 +33,27 @@ Collapsed.args = {
   collapsed: false,
   roleTitle: 'Founder',
   menuList: [
-    { title: 'Dashboard', icon: dashboardIcon, hoverIcon: dashboardIcon2 },
-    { title: 'Vesting schedule', icon: vestingScheduleIcon, hoverIcon: vestingScheduleIcon2 },
-    { title: 'Token performance', icon: tokenPerformanceIcon, hoverIcon: tokenPerformanceIcon2 },
-    { title: 'Cap table', icon: capTableIcon, hoverIcon: capTableIcon2 },
-    { title: 'Tokenomics', icon: tokenomicsIcon, hoverIcon: tokenomicsIcon2 },
-    { title: 'Transactions', icon: transactionsIcon, hoverIcon: transactionsIcon2 }
+    { title: 'Dashboard', icon: dashboardIcon, hoverIcon: dashboardIcon, route: '/dashboard' },
+    {
+      title: 'Vesting schedule',
+      icon: vestingScheduleIcon,
+      hoverIcon: vestingScheduleIcon2,
+      route: '/vesting-schedule'
+    },
+    {
+      title: 'Token performance',
+      icon: tokenPerformanceIcon,
+      hoverIcon: tokenPerformanceIcon2,
+      route: '/token-performance'
+    },
+    { title: 'Cap table', icon: capTableIcon, hoverIcon: capTableIcon2, route: '/cap-table' },
+    { title: 'Tokenomics', icon: tokenomicsIcon, hoverIcon: tokenomicsIcon2, route: '/tokenomics' },
+    { title: 'Transactions', icon: transactionsIcon, hoverIcon: transactionsIcon2, route: 'transactions' }
   ],
   submenuList: [
-    { title: 'Notifications', icon: notificationsIcon },
-    { title: 'Support', icon: supportIcon },
-    { title: 'Switch to investor', icon: switchUserIcon }
+    { title: 'Notifications', icon: notificationsIcon, route: '/notifications' },
+    { title: 'Support', icon: supportIcon, route: '/support' },
+    { title: 'Switch to investor', icon: switchUserIcon, route: '/switch-account' }
   ],
   userName: 'John Doe',
   role: 'Founder'

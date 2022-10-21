@@ -2,7 +2,7 @@ import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
-import Select from '@components/atoms/FormControls/Select/Select';
+import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
@@ -302,7 +302,7 @@ const NewSafePage: NextPage = () => {
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <Select
+                <SelectInput
                   label="How many people should authorize this transaction"
                   placeholder="Select how many"
                   className="md:col-span-2"

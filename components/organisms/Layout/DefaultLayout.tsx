@@ -27,38 +27,44 @@ const SidebarProps = {
     {
       title: 'Dashboard',
       icon: '/icons/s_dashboard.svg',
-      hoverIcon: '/icons/s_dashboard2.svg'
+      hoverIcon: '/icons/s_dashboard2.svg',
+      route: '/dashboard'
     },
     {
       title: 'Vesting schedule',
       icon: '/icons/s_vestingSchedule.svg',
-      hoverIcon: '/icons/s_vestingSchedule2.svg'
+      hoverIcon: '/icons/s_vestingSchedule2.svg',
+      route: '/vesting-schedule'
     },
     {
       title: 'Token performance',
       icon: '/icons/s_tokenPerformance.svg',
-      hoverIcon: '/icons/s_tokenPerformance2.svg'
+      hoverIcon: '/icons/s_tokenPerformance2.svg',
+      route: '/token-performance'
     },
     {
       title: 'Cap table',
       icon: '/icons/s_capTable.svg',
-      hoverIcon: '/icons/s_capTable2.svg'
+      hoverIcon: '/icons/s_capTable2.svg',
+      route: '/cap-table'
     },
     {
       title: 'Tokenomics',
       icon: '/icons/s_tokenomics.svg',
-      hoverIcon: '/icons/s_tokenomics2.svg'
+      hoverIcon: '/icons/s_tokenomics2.svg',
+      route: '/tokenomics'
     },
     {
       title: 'Transactions',
       icon: '/icons/s_transactions.svg',
-      hoverIcon: '/icons/s_transactions2.svg'
+      hoverIcon: '/icons/s_transactions2.svg',
+      route: '/transactions'
     }
   ],
   submenuList: [
-    { title: 'Notifications', icon: '/icons/notifications.svg' },
-    { title: 'Support', icon: '/icons/support.svg' },
-    { title: 'Switch to investor', icon: '/icons/switchUser.svg' }
+    { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
+    { title: 'Support', icon: '/icons/support.svg', route: '/support' },
+    { title: 'Switch to investor', icon: '/icons/switchUser.svg', route: '/switch-account' }
   ],
   userName: 'John Doe',
   role: 'Founder'
@@ -75,7 +81,7 @@ interface DefaultLayoutProps {
  *  This has a sidebar prop to determine if the Sidebar component should be shown or not.
  */
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
-  const { user, error, logOut } = useContext(AuthContext);
+  const { user, error, logOut, showSideBar, toggleSideBar } = useContext(AuthContext);
   const { active } = useWeb3React();
   return (
     <Container>
@@ -86,11 +92,12 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         connected={active}
         user={user}
         onLogout={() => logOut()}
+        toggleSideBar={toggleSideBar}
         // onLogin={() => setUser({ name: 'Jane Doe' })}
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout>
-        {active && sidebar ? <Sidebar {...SidebarProps} /> : null}
+        {(active && sidebar) || showSideBar ? <Sidebar {...SidebarProps} /> : null}
         <div className="flex flex-col items-center flex-grow p-8">{props.children}</div>
       </Layout>
     </Container>

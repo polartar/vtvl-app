@@ -12,7 +12,6 @@ import {
   signInWithPopup,
   signOut
 } from 'firebase/auth';
-import { useRouter } from 'next/router';
 import React, { createContext, useEffect, useMemo, useState } from 'react';
 import { auth } from 'services/auth/firebase';
 import { fetchMemberByEmail } from 'services/db/member';
@@ -33,6 +32,8 @@ export type AuthContextData = {
   loading: boolean;
   logOut: () => Promise<void>;
   error: string;
+  showSideBar: boolean;
+  toggleSideBar: () => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -42,7 +43,8 @@ export function AuthContextProvider({ children }: any) {
   const [loading, setLoading] = useState<boolean>(true);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const [error, setError] = useState('');
-  const router = useRouter();
+  // Remove after implementing context to show/hide the sidebar
+  const [showSideBar, setShowSideBar] = useState<boolean>(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -149,6 +151,9 @@ export function AuthContextProvider({ children }: any) {
 
   const logOut = () => signOut(auth);
 
+  // Remove after implementing context to show/hide the sidebar
+  const toggleSideBar = () => setShowSideBar((prev) => !prev);
+
   const memoedValue = useMemo(
     () => ({
       user,
@@ -161,9 +166,12 @@ export function AuthContextProvider({ children }: any) {
       loading,
       isNewUser,
       logOut,
-      error
+      error,
+      // Remove after implementing context to show/hide the sidebar
+      showSideBar,
+      toggleSideBar
     }),
-    [user, loading, error]
+    [user, loading, error, showSideBar]
   );
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;

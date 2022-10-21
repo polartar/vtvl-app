@@ -10,7 +10,7 @@ const Label = styled.label`
   text-align: center;
   gap: 30px;
 
-  max-width: 275px;
+  width: 275px;
   padding: 60px 25px 25px 25px;
   border-radius: 26px;
   border: 2px solid transparent;
@@ -48,6 +48,10 @@ const Check = styled.div`
   }
 `;
 
+const RadioImage = styled.img`
+  max-height: 156px;
+`;
+
 interface CardRadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   image: string;
   value: string;
@@ -63,8 +67,8 @@ const CardRadio = ({ image, label, value, name, ...props }: CardRadioProps) => {
   // const [selected, setSelected] = useState('');
   return (
     <Label>
-      <img src={image} alt={name} aria-hidden="true" />
-      <p className="font-semibold">{label}</p>
+      <RadioImage src={image} alt={name} aria-hidden="true" />
+      <p className="font-semibold h-11">{label}</p>
       <Check className={props.checked ? 'selected' : ''}>
         {props.checked ? <img src="/icons/check.svg" alt={`${value} selected`} /> : null}
       </Check>
