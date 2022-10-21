@@ -7,3 +7,13 @@ export interface IVesting {
   recipients: MultiValue<IRecipient>;
   owner: string;
 }
+
+export interface IScheduleOverviewProps {
+  name: string;
+  beneficiaries: number;
+  startDate: string;
+  endDate: string;
+  cliff: string;
+  linearRelease: string;
+  totalAllocated: string;
+}

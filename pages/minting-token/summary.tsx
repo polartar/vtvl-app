@@ -82,17 +82,15 @@ const Summary: NextPageWithLayout = () => {
       <div className="border-y border-gray-300 mt-5 py-5 grid md:grid-cols-3">
         <label>
           <span>Supply cap</span>
-          <p className="text-sm font-medium text-neutral-500 capitalize">{supplyCap.toLowerCase()}</p>
+          <p className="paragraphy-small-medium capitalize">{supplyCap.toLowerCase()}</p>
         </label>
         <label>
           <span>Amount to mint</span>
-          <p className="text-sm font-medium text-neutral-500">{mintAmount}</p>
+          <p className="paragraphy-small-medium">{mintAmount}</p>
         </label>
         <label>
           <span>Maximum supply</span>
-          <p className="text-sm font-medium text-neutral-500">
-            {supplyCap === 'LIMITED' ? initialSupply : 'Unlimited'}
-          </p>
+          <p className="paragraphy-small-medium">{supplyCap === 'LIMITED' ? initialSupply : 'Unlimited'}</p>
         </label>
       </div>
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">

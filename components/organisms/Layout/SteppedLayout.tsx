@@ -24,7 +24,7 @@ const SteppedLayout = ({ steps = [], currentStep = -1, ...props }: SteppedLayout
       <div className="text-left mb-5">
         <Breadcrumb steps={props.crumbs} />
       </div>
-      <div className="flex flex-col items-center justify-center gap-4 max-w-6xl mx-auto">
+      <div className="flex flex-col items-center justify-center gap-4 mx-auto">
         {steps?.length && currentStep > -1 ? (
           <>
             <h1 className="h2 text-neutral-900 mb-10">{props.title}</h1>

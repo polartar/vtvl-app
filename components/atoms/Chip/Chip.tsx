@@ -1,15 +1,16 @@
 import randomColor from 'randomcolor';
 import React from 'react';
+import { CommonLabelType } from 'types/shared';
 
 interface ChipProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   /**
    * Label of chip
    */
-  label: string | number;
+  label: CommonLabelType;
   /**
    * What background color to use
    */
-  color?: 'primary' | 'secondary' | 'danger' | 'success' | 'default' | 'gray' | 'random';
+  color?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'default' | 'gray' | 'random';
   /**
    * How large should the chip be?
    */
@@ -32,13 +33,13 @@ const Chip = ({ size = 'default', color = 'default', label, rounded = false, cla
     large: 'text-base px-2 py-1'
   };
   const colors = {
-    default: 'bg-neutral-50 text-neutral-800',
-    primary: 'bg-primary-900 text-white',
-    secondary: 'bg-secondary-900 text-white',
-    warning: 'bg-warning-500 text-white',
-    success: 'bg-success-500 text-white',
-    danger: 'bg-danger-500 text-white',
-    gray: 'bg-neutral-200 text-neutral-500'
+    default: 'bg-neutral-50 text-neutral-800 border-neutral-50',
+    primary: 'bg-primary-900 text-white border-primary-900',
+    secondary: 'bg-secondary-900 text-white border-secondary-900',
+    warning: 'bg-warning-100 text-warning-500 border-warning-200',
+    success: 'bg-success-100 text-success-500 border-success-200',
+    danger: 'bg-danger-100 text-danger-500 border-danger-200',
+    gray: 'bg-neutral-200 text-neutral-500 border-neutral-200'
   };
   return (
     <label

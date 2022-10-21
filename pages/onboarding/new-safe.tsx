@@ -10,6 +10,7 @@ import { useWeb3React } from '@web3-react/core';
 import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
+import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
@@ -292,7 +293,7 @@ const NewSafePage: NextPage = () => {
           </div>
         ))}
         <button type="button" className="secondary mb-5 flex flex-row items-center gap-2 py-1.5" onClick={addOwner}>
-          <img src="/icons/plus.svg" alt="Add more members" aria-hidden="true" />
+          <PlusIcon alt="Add more members" aria-hidden="true" />
           Add more
         </button>
         {options > 0 ? (

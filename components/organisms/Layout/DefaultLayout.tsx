@@ -97,7 +97,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout>
-        {(active && sidebar) || showSideBar ? <Sidebar {...SidebarProps} /> : null}
+        {active || sidebar || showSideBar ? <Sidebar {...SidebarProps} /> : null}
         <div className="flex flex-col items-center flex-grow p-8">{props.children}</div>
       </Layout>
     </Container>
