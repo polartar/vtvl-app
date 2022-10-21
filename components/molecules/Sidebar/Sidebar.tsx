@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import Router, { useRouter } from 'next/router';
 import React from 'react';
 
 import { Colors } from '../../CommonStyles';
@@ -6,17 +7,32 @@ import IconText from '../../atoms/IconText/IconText';
 import SidebarItem from '../../atoms/SidebarItem/SidebarItem';
 import User from '../../atoms/User/User';
 
+interface SubMenuItemProps {
+  title: string;
+  icon: string;
+  route: string;
+}
+
+interface MenuItemProps extends SubMenuItemProps {
+  hoverIcon: string;
+}
+
 interface Props {
   collapsed?: boolean;
   roleTitle: string;
-  menuList: { title: string; icon: string; hoverIcon: string }[];
-  submenuList: { title: string; icon: string }[];
+  menuList: MenuItemProps[];
+  submenuList: SubMenuItemProps[];
   userName: string;
   role: string;
 }
 
 const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
-  const [selectedId, setSelectedId] = React.useState(0);
+  const currentRoute = useRouter();
+  const [selectedRoute, setSelectedRoute] = React.useState(currentRoute.pathname || '');
+  const handleMenuClick = (route: string) => {
+    setSelectedRoute(route);
+    Router.push(route);
+  };
   return (
     <SidebarContainer>
       <div>
@@ -24,9 +40,9 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
         {menuList.map((menu: any, index: number) => (
           <SidebarItem
             key={index}
-            selected={selectedId === index}
+            selected={selectedRoute.includes(menu.route)}
             hovered={false}
-            onClick={() => setSelectedId(index)}
+            onClick={() => handleMenuClick(menu.route)}
             icon={menu.icon}
             hoverIcon={menu.hoverIcon}>
             {menu.title}

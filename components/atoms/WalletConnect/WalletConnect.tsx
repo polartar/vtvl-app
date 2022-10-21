@@ -1,3 +1,5 @@
+import { useWeb3React } from '@web3-react/core';
+import { injected } from 'connectors';
 import Image from 'next/image';
 import Router from 'next/router';
 import React from 'react';
@@ -10,6 +12,8 @@ interface Props {
 }
 
 const WalletConnect = ({ account, connected }: Props) => {
+  const { activate } = useWeb3React();
+
   return (
     <div className="h-10 shrink-0 flex flex-row items-center gap-2 bg-primary-900 rounded-3xl px-2 sm:px-3 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125">
       <img src="/icons/wallet.svg" className={`w-5 ${connected ? 'hidden md:block' : ''}`} alt="e-wallet" />
@@ -19,7 +23,7 @@ const WalletConnect = ({ account, connected }: Props) => {
           <img className="w-6" src="/icons/avatar.svg" alt="More" />
         </>
       ) : (
-        <p className="hidden md:inline" onClick={() => Router.push('/onboarding')}>
+        <p className="hidden md:inline" onClick={() => activate(injected)}>
           Connect Wallet
         </p>
       )}

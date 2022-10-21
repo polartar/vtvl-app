@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import React from 'react';
 
-const SelectInput = styled.select`
+const SelectInputStyled = styled.select`
   background-image: url('/chevron-down.svg');
   background-position: 96% 50%;
   background-repeat: no-repeat;
@@ -38,7 +38,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
  * This component mimics the default select input and already contains the a11y and label.
  * To use, simply use the `<Select />` component as a regular `<select>` one. Add in an options prop that contains the { label: '', value: ''} for each option
  */
-const Select = ({
+const SelectInput = ({
   label = '',
   required = false,
   className = '',
@@ -52,17 +52,17 @@ const Select = ({
     <label className={`${required ? 'required' : ''} ${className}`}>
       {label ? <span>{label}</span> : null}
       <div className={`${success && 'success'} ${error && 'error'}`}>
-        <SelectInput {...props} className="appearance-none">
+        <SelectInputStyled {...props} className="appearance-none">
           {options.map((option, idx) => (
             <option value={option.value} key={idx}>
               {option.label}
             </option>
           ))}
-        </SelectInput>
+        </SelectInputStyled>
         {message ? <p>{message}</p> : null}
       </div>
     </label>
   );
 };
 
-export default Select;
+export default SelectInput;

@@ -8,14 +8,14 @@ const Dashboard: NextPage = () => {
   const router = useRouter();
   return (
     <div>
-      <h1 className="font-medium text-center mb-16">My Projects</h1>
+      <h1 className="h2 font-medium text-center mb-10">My Projects</h1>
       {!hasProject ? (
         <EmptyState
           image="/images/cryptocurrency-trading-bot.gif"
           title="No projects found"
           description={
             <>
-              Your projects live here. Start a project by clicking on "<strong>Mint a new token</strong>" or "
+              Your projects live here. Start a project by clicking on <br />"<strong>Mint a new token</strong>" or "
               <strong>Import existing tokent</strong>".
             </>
           }>

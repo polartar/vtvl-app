@@ -323,8 +323,8 @@ const MintingToken: NextPageWithLayout = () => {
 MintingToken.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
-    { title: 'Dashboard', route: '/' },
-    { title: 'Minting token', route: 'minting-token' }
+    { title: 'Dashboard', route: '/dashboard' },
+    { title: 'Minting token', route: '/minting-token' }
   ];
 
   // Update these into a state coming from the context

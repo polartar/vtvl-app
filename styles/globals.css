@@ -195,11 +195,19 @@
   /* Button component */
   /* Defaults to primary */
   button {
-    @apply rounded-full inline-block text-base py-2.5 px-5 bg-neutral-100 transition-all;
+    @apply rounded-full inline-block text-base py-2.5 px-5 bg-neutral-100;
   }
+
+  button, a {
+    @apply transition-all transform;
+  }
+
+  /* a:hover,
+  a:focus-visible,
   button:hover,
   button:focus-visible {
-  }
+    @apply -translate-y-px transform;
+  } */
 
   button.primary {
     @apply bg-primary-900 text-white;
@@ -274,7 +282,7 @@
   }
 
   /* Typography */
-  .display, h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+  .display, h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6, .sora {
     font-family: 'Sora', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   }
   .display {
@@ -312,21 +320,32 @@
   }
 
   label > span,
-  label .label {
+  label .label,
+  .form-label {
     @apply font-medium text-sm text-neutral-800 inline-flex gap-1 self-start mb-1.5 relative;
   }
 
   label.required > span:after,
-  label.required .label:after {
+  label.required .label:after,
+  .form-label.required:after {
     content: '*';
     @apply text-secondary-900;
   }
 
+  /* HTML's input element -- that is not a radio and range type -- style overrides */
   label > div > input:not([type='radio']):not([type='range']):not(.minMaxInput input),
+  /* HTML's default select element style overrides */
   label > div > select,
+  /* special radiobuttons style overrides */
   .radioButton,
-  .minMaxInput {
-    @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all duration-1000;
+  /* react-select's Select and Creatable overrides */
+  .select__control {
+    @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all;
+  }
+
+  :disabled,
+  [disabled] {
+    @apply opacity-80;
   }
 
   :disabled,
@@ -341,8 +360,9 @@
     @apply border-primary-400;
   }
 
+  /* Check if this affects other form control components */
+  label > div:not([id]):not(.minMaxInput),
   /* Form and form control styles for error and success states */
-  label > div,
   .form {
     @apply rounded-xl border border-transparent text-white transition-all duration-500;
   }
@@ -403,8 +423,18 @@
   }
   @keyframes fadeOutMessage {
     to {
-      @apply opacity-0 h-0 mt-0 pb-0;
+      @apply opacity-0 h-0 mt-0 pb-0 pt-0;
     }
+  }
+
+  /* MinMax component styles */
+  .minMaxInput input:focus,
+  .minMaxInput input:focus-visible {
+    @apply outline-none;
+  }
+  .minMaxInput:has(input:focus),
+  .minMaxInput:has(input:focus-visible) {
+    @apply border-primary-400;
   }
 
   /* Contents */
@@ -439,9 +469,46 @@
   .avatar.initials.default {
     @apply text-lg;
   }
+
+  /* Select, react-select, creatable select via react-select overrides */
+  .select__control {
+    min-height: 3.25rem;
+    @apply py-2 h-auto rounded-3xl !important;
+  }
+  .select__control--is-focused {
+    box-shadow: 0 0 0 1px var(--primary-400) !important;
+    @apply border-primary-400 !important;
+  }
+
+  .select__value-container {
+    @apply p-0 gap-1 !important;
+  }
+  .select__input-container,
+  .select__multi-value {
+    @apply my-0 !important;
+  }
+  .select__multi-value {
+    @apply rounded-2xl overflow-hidden m-0 !important;
+  }
+  .select__multi-value__label {
+    @apply pl-2.5 !important;
+  }
+  .select__menu {
+    @apply static rounded-xl overflow-hidden !important;
+  }
+  .select__indicator {
+    @apply pr-1 !important;
+  }
+  .select__option {
+    @apply text-neutral-600 text-sm !important;
+  }
+  .select__option--is-focused {
+    @apply text-neutral-50 bg-primary-500 !important;
+  }
 }
 
 *,
-html {
+html,
+.inter {
   font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
