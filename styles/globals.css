@@ -348,6 +348,11 @@
     @apply opacity-80;
   }
 
+  :disabled,
+  [disabled] {
+    @apply opacity-80;
+  }
+
   label > div > input:focus,
   label > div > input:focus-visible,
   label > div > select:focus,
