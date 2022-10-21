@@ -57,8 +57,8 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
     const additionalInfo = getAdditionalUserInfo(credential);
-
-    setUser(credential.user);
+    const memberInfo = await fetchMemberByEmail(credential.user.email || '');
+    setUser({ ...credential.user, memberInfo });
     setLoading(false);
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
