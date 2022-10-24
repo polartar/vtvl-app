@@ -4,13 +4,14 @@ import React, { useEffect, useRef } from 'react';
 interface Props {
   selected: boolean;
   hovered: boolean;
-  children: string;
+  children: string | JSX.Element;
   onClick: () => void;
   icon: string;
   hoverIcon: string;
+  className?: string;
 }
 
-const SidebarItem = ({ selected, hovered, children, onClick, icon, hoverIcon }: Props) => {
+const SidebarItem = ({ selected, hovered, children, onClick, icon, hoverIcon, className }: Props) => {
   // const itemRef = useRef(null);
   // const sItem: any = document.getElementsByClassName('sidebar-item');
   // const sIcon: any = document.getElementsByClassName('sidebar-item-icon');
@@ -31,7 +32,7 @@ const SidebarItem = ({ selected, hovered, children, onClick, icon, hoverIcon }: 
       selected={selected ? 1 : 0}
       onClick={onClick}
       // ref={itemRef}
-      className="sidebar-item"
+      className={`sidebar-item ${className}`}
       icon={icon}
       hoverIcon={hoverIcon}>
       <IconArea className="sidebar-item-icon" icon={icon} selected={selected ? 1 : 0} hoverIcon={hoverIcon} />
@@ -45,7 +46,6 @@ const SidebarItemContainer = styled.div<{
   icon: string;
   hoverIcon: string;
 }>`
-  width: 247px;
   height: 48px;
   border-radius: ${({ selected }) => (selected ? '24px' : '5px')};
   background-color: ${({ selected }) => (selected ? '#1B369A' : 'transparent')};
@@ -77,6 +77,7 @@ const IconArea = styled.div<{
   selected: number;
   hoverIcon: string;
 }>`
+  flex-shrink: 0;
   width: 24px;
   height: 24px;
   margin: 0 12px;

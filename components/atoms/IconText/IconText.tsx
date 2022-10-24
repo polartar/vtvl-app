@@ -3,7 +3,7 @@ import React from 'react';
 
 interface Props {
   sideIcon?: string;
-  children: string;
+  children: string | JSX.Element;
 }
 
 const IconText = ({ sideIcon, children }: Props) => {
@@ -16,7 +16,6 @@ const IconText = ({ sideIcon, children }: Props) => {
 };
 
 const IconTextContainer = styled.div`
-  width: 247px;
   height: 40px;
   background-color: transparent;
   display: flex;

@@ -98,7 +98,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       />
       <Layout>
         {active || sidebar || showSideBar ? <Sidebar {...SidebarProps} /> : null}
-        <div className="flex flex-col items-center flex-grow p-8">{props.children}</div>
+        <div className="flex flex-col items-center flex-grow p-8 pt-7">{props.children}</div>
       </Layout>
     </Container>
   );

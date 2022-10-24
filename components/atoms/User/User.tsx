@@ -4,13 +4,14 @@ import React from 'react';
 interface Props {
   userName: string;
   role: string;
+  compact: boolean;
 }
 
-const User = ({ userName, role }: Props) => {
+const User = ({ userName, role, compact = false }: Props) => {
   return (
     <UserContainer>
-      <img src="/images/user.png" alt="userImg" />
-      <div>
+      <img src="/images/user.png" alt="userImg" className={`transition-all ${compact ? 'mx-1' : 'mx-3'}`} />
+      <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
         <p>{userName}</p>
         <p>{role}</p>
       </div>
@@ -31,7 +32,6 @@ const UserContainer = styled.div`
     cursor: pointer;
   }
   img {
-    margin: 0 12px;
     width: 40px;
     height: 40px;
   }

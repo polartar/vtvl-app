@@ -33,7 +33,9 @@ export type AuthContextData = {
   logOut: () => Promise<void>;
   error: string;
   showSideBar: boolean;
+  sidebarIsExpanded: boolean;
   toggleSideBar: () => void;
+  expandSidebar: () => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -45,6 +47,7 @@ export function AuthContextProvider({ children }: any) {
   const [error, setError] = useState('');
   // Remove after implementing context to show/hide the sidebar
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
+  const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -153,6 +156,7 @@ export function AuthContextProvider({ children }: any) {
 
   // Remove after implementing context to show/hide the sidebar
   const toggleSideBar = () => setShowSideBar((prev) => !prev);
+  const expandSidebar = () => setSidebarIsExpanded((prev) => !prev);
 
   const memoedValue = useMemo(
     () => ({
@@ -169,9 +173,11 @@ export function AuthContextProvider({ children }: any) {
       error,
       // Remove after implementing context to show/hide the sidebar
       showSideBar,
-      toggleSideBar
+      sidebarIsExpanded,
+      toggleSideBar,
+      expandSidebar
     }),
-    [user, loading, error, showSideBar]
+    [user, loading, error, showSideBar, sidebarIsExpanded]
   );
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;
