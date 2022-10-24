@@ -6,11 +6,11 @@ interface ChipProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   /**
    * Label of chip
    */
-  label: string | number;
+  label: CommonLabelType;
   /**
    * What background color to use
    */
-  color?: 'primary' | 'secondary' | 'danger' | 'success' | 'default' | 'gray' | 'random';
+  color?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'default' | 'gray' | 'random';
   /**
    * How large should the chip be?
    */
