@@ -18,7 +18,7 @@ interface FormTypes {
   tokenSymbol: string;
   tokenLogo: string;
   supplyCap: string;
-  mintAmount: number;
+  mintAmount: number | '';
 }
 
 const MintingToken: NextPageWithLayout = () => {
@@ -250,7 +250,7 @@ const MintingToken: NextPageWithLayout = () => {
                           <span>Amount to mint</span>
                         </label>
                       }
-                      placeholder="500000"
+                      placeholder=""
                       type="number"
                       error={
                         Boolean(errors.mintAmount) ||
@@ -284,7 +284,7 @@ const MintingToken: NextPageWithLayout = () => {
               {supplyCap.value === 'LIMITED' ? (
                 <div className="mt-6">
                   <RangeSlider
-                    max={initialSupply.value}
+                    max={initialSupply.value ? initialSupply.value : 0}
                     value={mintAmount.value ? mintAmount.value : 0}
                     className="mt-5"
                     onChange={handleMintAmountChange}

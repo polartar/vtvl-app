@@ -88,6 +88,7 @@ const Uploader = ({
   const [percent, setPercent] = useState(0);
   const [url, setUrl] = useState('');
   const [error, setError] = useState(false);
+  const [errorText, setErrorText] = useState('');
   const [csvArray, setCSVArray] = useState([]);
 
   // Triggers the click function of the hidden input element when the "Click upload" text is clicked.
@@ -126,6 +127,39 @@ const Uploader = ({
         // Add to files array - in preparation for multiple file upload
         setFiles((prevFiles) => [...prevFiles, { percent: 0, file, url: '' }]);
         if (file.size <= maxSize) {
+          let timer: ReturnType<typeof setInterval>;
+          // const newFileName = generateRandomFileName() + extractExtension(file.name);
+          const storageRef = ref(storage, `/files/${file.name}`);
+          const uploadTask = uploadBytesResumable(storageRef, file);
+          uploadTask.on(
+            'state_changed',
+            () => {
+              // const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+              timer = setInterval(
+                () =>
+                  setPercent((prevPercent) => {
+                    if (prevPercent < 96) return prevPercent + 0.5;
+                    return prevPercent;
+                  }),
+                10
+              );
+            },
+            () => {
+              setErrorText('');
+              setError(true);
+              setPercent(0);
+              setUrl('');
+            },
+            () => {
+              // download url
+              getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+                clearInterval(timer);
+                setUrl(url);
+                setPercent(100);
+                if (onUpload) onUpload(url);
+              });
+            }
+          );
           // Handle csv upload
           if (accept === '.csv') {
             fileReader.onload = function (event: any) {
@@ -170,6 +204,7 @@ const Uploader = ({
             );
           }
         } else {
+          setErrorText('Image is too big');
           setError(true);
         }
       });
@@ -179,6 +214,7 @@ const Uploader = ({
   // Function to remove the desired file and update the file list.
   const removeFile = () => {
     setFiles([]);
+    setErrorText('');
     setError(false);
     setPercent(0);
     setUrl('');
@@ -214,7 +250,7 @@ const Uploader = ({
                 <div className="text-sm flex flex-col">
                   <span className="font-medium text-neutral-800">{file.name}</span>
                   <span className="text-neutral-500">
-                    {convertBytesToKB(file.size)} kb - {percent}% uploaded
+                    {errorText ? errorText : `${convertBytesToKB(file.size)} kb - ${percent}% uploaded`}
                   </span>
                 </div>
               </div>

@@ -7,9 +7,9 @@ export interface IMintFormState {
   tokenSymbol: string;
   tokenLogo: string;
   supplyCap: 'UNLIMITED' | 'LIMITED';
-  mintAmount: number;
+  mintAmount: number | '';
   decimals: number;
-  initialSupply: number;
+  initialSupply: number | '';
   contractAddress: string;
 }
 
@@ -26,8 +26,8 @@ export function MintContextProvider({ children }: any) {
     tokenSymbol: '',
     tokenLogo: '',
     supplyCap: 'UNLIMITED',
-    mintAmount: 500000,
-    initialSupply: 500000,
+    mintAmount: '',
+    initialSupply: '',
     decimals: 18,
     contractAddress: ''
   });

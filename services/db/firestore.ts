@@ -1,5 +1,5 @@
 import { CollectionReference, DocumentData, collection, getFirestore } from 'firebase/firestore';
-import type { IContract, IMember, IOrganization, ISafe, IUser, IVesting } from 'types/models';
+import type { IContract, IMember, IOrganization, ISafe, IToken, IUser, IVesting } from 'types/models';
 
 import firebase from '../auth/firebase';
 
@@ -15,3 +15,4 @@ export const orgCollection = getCollection<IOrganization>('organizations');
 export const safeCollection = getCollection<ISafe>('safes');
 export const vestingCollection = getCollection<IVesting>('vestings');
 export const contractCollection = getCollection<IContract>('contracts');
+export const tokenCollection = getCollection<IToken>('tokens');

@@ -13,9 +13,10 @@ import { addDoc, collection, getDocs, getFirestore } from 'firebase/firestore/li
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useMintContext } from 'providers/mint.context';
-import { ReactElement } from 'react';
+import { ReactElement, useEffect } from 'react';
 import { useState } from 'react';
 import { db } from 'services/auth/firebase';
+import { createToken } from 'services/db/token';
 import { parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {
@@ -48,11 +49,18 @@ const Summary: NextPageWithLayout = () => {
 
         updateMintFormState({ ...mintFormState, contractAddress: tokenContract.address });
 
-        const contractsCollection = collection(db, 'contracts');
-        addDoc(contractsCollection, {
+        createToken({
+          name: tokenName,
+          symbol: tokenSymbol,
           address: tokenContract.address,
-          owner: account,
-          logo: tokenLogo
+          logo: tokenLogo,
+          organization_id: '',
+          created_at: Math.floor(new Date().getTime() / 1000),
+          updated_at: Math.floor(new Date().getTime() / 1000),
+          imported: false,
+          supply_cap: supplyCap,
+          max_supply: initialSupply ? initialSupply : 0,
+          initial_supply: mintAmount ? mintAmount : 0
         });
 
         console.log('Deployed an ERC Token for testing.');
@@ -64,6 +72,12 @@ const Summary: NextPageWithLayout = () => {
       console.log('err - ', err);
     }
   };
+
+  useEffect(() => {
+    if (!tokenName) {
+      Router.push('/minting-token');
+    }
+  }, [tokenName]);
 
   return (
     <div className="panel rounded-lg mx-auto max-w-xl w-1/2 mt-14">
