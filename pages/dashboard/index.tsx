@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useState } from 'react';
 
-import { NextPageWithLayout } from './_app';
+import { NextPageWithLayout } from '../_app';
 
 const Dashboard: NextPageWithLayout = () => {
   const [hasProject, setHasProject] = useState(true);

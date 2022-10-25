@@ -7,6 +7,8 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   message?: string | JSX.Element | JSX.Element[];
   error?: boolean;
   success?: boolean;
+  icon?: string;
+  iconPosition?: 'left' | 'right';
 }
 
 /**
@@ -30,14 +32,19 @@ const Input = ({
   message = '',
   error = false,
   success = false,
+  icon = '',
+  iconPosition = 'left',
   ...props
 }: InputProps) => {
   return (
-    <label className={`${required ? 'required' : ''} ${className}`}>
+    <label className={`input-component ${required ? 'required' : ''} ${className}`}>
       {label ? <span>{label}</span> : null}
-      <div className={`${success && 'success'} ${error && 'error'}`}>
-        <input type="text" {...props} />
-        {message ? <p>{message}</p> : null}
+      <div className={`input-component__container ${success ? 'success' : ''} ${error ? 'error' : ''}`}>
+        <div className="input-component__input">
+          {icon ? <img src={icon} alt={label?.toString() || 'Input icon'} className="w-6 h-6 fill-current" /> : null}
+          <input type="text" {...props} className="grow w-full outline-0 border-0 bg-transparent" />
+        </div>
+        {message ? <p className="input-component__message">{message}</p> : null}
       </div>
     </label>
   );

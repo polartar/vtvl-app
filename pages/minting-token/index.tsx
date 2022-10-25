@@ -277,7 +277,7 @@ const MintingToken: NextPageWithLayout = () => {
                     label="MAX"
                     color="secondary"
                     onClick={handleMaxMintAmouont}
-                    className="absolute right-6 bottom-3"
+                    className="absolute right-6 bottom-4"
                   />
                 ) : null}
               </div>
