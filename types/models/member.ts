@@ -1,9 +1,12 @@
+import { User as FirebaseUser } from 'firebase/auth';
+
 export interface IAddress {
   walletAddress: string;
   chainId: number;
 }
 
 export interface IMember {
+  id?: string;
   user_id?: string;
   org_id: string;
   name: string;
@@ -12,6 +15,6 @@ export interface IMember {
   type: string;
 }
 
-export interface IUser {
-  id: string;
+export interface IUser extends FirebaseUser {
+  memberInfo?: IMember;
 }

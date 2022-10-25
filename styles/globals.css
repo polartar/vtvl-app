@@ -481,22 +481,30 @@
     @apply outline-none;
   }
 
-  .input-component__input { @apply px-4; }
+  .input-component__input {
+    @apply px-4;
+  }
   .input-component__input:has(input:focus),
   .input-component__input:has(input:focus-visible) {
     @apply border-primary-700;
   }
 
   .input-component__container.error .input-component__input,
-  .input-component__container.success .input-component__input { @apply rounded-lg; }
+  .input-component__container.success .input-component__input {
+    @apply rounded-lg;
+  }
   .input-component__container.success .input-component__input {
     animation: fadeOutInputStyles 1s;
     animation-delay: 2s;
     animation-fill-mode: forwards;
   }
 
-  .input-component .error .input-component__message { @apply text-danger-700; }
-  .input-component .success .input-component__message { @apply text-success-700; }
+  .input-component .error .input-component__message {
+    @apply text-danger-700;
+  }
+  .input-component .success .input-component__message {
+    @apply text-success-700;
+  }
 
   /* Avatar component style */
   .avatar,

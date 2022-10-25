@@ -1,23 +1,21 @@
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
-import OnboardingContext, { Step } from '@providers/onboarding.context';
+import AuthContext from '@providers/auth.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
-import React, { useContext, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import React, { useContext } from 'react';
 
 const MemberWalletPage: NextPage = () => {
+  const { user } = useContext(AuthContext);
   const { activate } = useWeb3React();
-  const { onNext, setCurrentStep } = useContext(OnboardingContext);
-
-  useEffect(() => {
-    setCurrentStep(Step.ChainSetup);
-  }, []);
+  const router = useRouter();
 
   async function metamaskActivate() {
     try {
       await activate(injected);
-      await onNext({});
+      router.push('/dashboard');
     } catch (error) {
       console.log('connection error ', error);
     }
@@ -26,7 +24,7 @@ const MemberWalletPage: NextPage = () => {
   async function walletConnectActivate() {
     try {
       await activate(walletconnect);
-      await onNext({});
+      router.push('/dashboard');
     } catch (error) {
       console.log('connection error ', error);
     }
@@ -66,7 +64,7 @@ const MemberWalletPage: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-8 max-w-2xl px-9 py-10 text-center">
       <div>
-        <h1 className="font-medium mb-4">Hey Satoshi</h1>
+        <h1 className="font-medium mb-4">Hey {user?.memberInfo?.name}</h1>
         <p className="text-sm text-neutral-500">
           We're glad to have you onboard.
           <br />
@@ -76,7 +74,7 @@ const MemberWalletPage: NextPage = () => {
       <div className="panel max-w-lg">
         <Wallets wallets={wallets} />
         <div className="my-5 text-xs text-neutral-600 font-medium border-t border-b border-gray-200 py-5">
-          <button type="button" className="primary">
+          <button type="button" className="primary" onClick={() => router.push('/dashboard')}>
             No thanks, I'll stick to email
           </button>
         </div>

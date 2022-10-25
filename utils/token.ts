@@ -5,5 +5,5 @@ export const parseTokenAmount = (amountTokens: string | number, decimals?: numbe
 };
 
 export const formatNumber = (number: number) => {
-  return Number(number).toLocaleString('en', {minimumFractionDigits: 0, maximumFractionDigits: 6})
-}
+  return Number(number).toLocaleString('en', { minimumFractionDigits: 0, maximumFractionDigits: 6 });
+};

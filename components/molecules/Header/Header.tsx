@@ -1,26 +1,24 @@
 import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
 import NetworkSelector from '@components/atoms/NetworkSelector/NetworkSelector';
 import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
+import AuthContext from '@providers/auth.context';
 import { useWeb3React } from '@web3-react/core';
-import { User } from 'firebase/auth';
 import Router from 'next/router';
-import React, { useEffect } from 'react';
+import React, { useContext } from 'react';
+import { IUser } from 'types/models';
 
 interface HeaderProps {
+  user: IUser | undefined,
   connected: boolean;
-  user?: User;
   onLogin?: () => void;
   onLogout?: () => void;
   onCreateAccount?: () => void;
   toggleSideBar?: () => void;
 }
 
-const Header = ({ connected, user, onLogin, onLogout, onCreateAccount, toggleSideBar }: HeaderProps) => {
+const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSideBar }: HeaderProps) => {
   const { active, account } = useWeb3React();
 
-  useEffect(() => {
-    console.log('is web3 header active ', active);
-  }, []);
   return (
     <header className="sticky top-0 z-40 w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
       <div className="flex flex-row items-center">
@@ -37,7 +35,9 @@ const Header = ({ connected, user, onLogin, onLogout, onCreateAccount, toggleSid
           src="/logo.svg"
           className="hidden sm:block w-48 h-9 mr-5 cursor-pointer"
           alt="VTVL"
-          onClick={() => Router.push('/onboarding')}
+          onClick={() =>
+            user?.memberInfo?.type === 'employee' ? Router.push('/onboarding/member') : Router.push('/onboarding')
+          }
         />
         <div className="hidden md:block">
           <SearchInput placeholder="Search" />
