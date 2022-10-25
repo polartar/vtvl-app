@@ -10,7 +10,7 @@ export enum SupportedChainId {
   CRONOS = 25
 }
 
-export const SupportedChains = {
+const prodSupportedChains = {
   [SupportedChainId.MAINNET]: {
     id: 1,
     icon: '/icons/chains/ethereum.svg',
@@ -93,3 +93,80 @@ export const SupportedChains = {
     multisigTxUrl: ''
   }
 };
+
+const devSupportedChains = {
+  [SupportedChainId.ROPSTEN]: {
+    id: 3,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Ropsten',
+    code: 'ETH',
+    rpc: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    explorer: 'https://ropsten.etherscan.io',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.GOERLI]: {
+    id: 5,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Goerli',
+    code: 'ETH',
+    rpc: 'https://sokol.poa.network/',
+    explorer: 'https://goerli.etherscan.io',
+    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
+  },
+  [SupportedChainId.KOVAN]: {
+    id: 42,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Kovan',
+    code: 'ETH',
+    rpc: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    explorer: 'https://kovan.etherscan.io',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.BINANCE]: {
+    id: 56,
+    icon: '/icons/chains/bsc.svg',
+    title: 'Binance Smart Chain',
+    code: 'BSC',
+    rpc: 'https://speedy-nodes-nyc.moralis.io/476f8ed27ca8c180ebc32f48/bsc/testnet',
+    explorer: 'https://testnet.bscscan.com',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.POLYGON]: {
+    id: 80001,
+    icon: '/icons/chains/polygon.svg',
+    title: 'Polygon',
+    code: 'MATIC',
+    rpc: 'https://rpc-mumbai.maticvigil.com',
+    explorer: 'https://mumbai.polygonscan.com',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.AVALANCHE]: {
+    id: 43113,
+    icon: '/icons/chains/avalanche.svg',
+    title: 'Avalanche',
+    code: 'AVAX',
+    rpc: 'https://api.avax-test.network/ext/bc/C/rpc',
+    explorer: 'https://snowtrace.io/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.FANTOM]: {
+    id: 4002,
+    icon: '/icons/chains/fantom.svg',
+    title: 'Fantom',
+    code: 'FTM',
+    rpc: 'https://rpc.testnet.fantom.network/',
+    explorer: 'https://ftmscan.com/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.CRONOS]: {
+    id: 338,
+    icon: '/icons/chains/cronos.svg',
+    title: 'Cronos',
+    code: 'CRO',
+    rpc: 'https://cronos-testnet-3.crypto.org:8545/',
+    explorer: 'https://cronos.crypto.org/explorer/testnet3/',
+    multisigTxUrl: ''
+  }
+};
+
+export const SupportedChains = process.env.NODE_ENV == "production" ? prodSupportedChains : devSupportedChains;
