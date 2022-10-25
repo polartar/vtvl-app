@@ -7,22 +7,22 @@ import Radio from '@components/atoms/FormControls/Radio/Radio';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
 import Uploader from '@components/atoms/Uploader/Uploader';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useTokenContext } from '@providers/token.context';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { useMintContext } from 'providers/mint.context';
 import { ReactElement, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 interface FormTypes {
-  tokenName: string;
-  tokenSymbol: string;
-  tokenLogo: string;
+  name: string;
+  symbol: string;
+  logo: string;
   supplyCap: string;
-  mintAmount: number | '';
+  initialSupply: number | '';
 }
 
 const MintingToken: NextPageWithLayout = () => {
-  const { mintFormState, updateMintFormState } = useMintContext();
+  const { mintFormState, updateMintFormState } = useTokenContext();
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -41,22 +41,22 @@ const MintingToken: NextPageWithLayout = () => {
   });
 
   // Watch for data changes from the input fields
-  const tokenName = { value: watch('tokenName'), state: getFieldState('tokenName') };
-  const tokenSymbol = { value: watch('tokenSymbol'), state: getFieldState('tokenSymbol') };
+  const name = { value: watch('name'), state: getFieldState('name') };
+  const symbol = { value: watch('symbol'), state: getFieldState('symbol') };
   const supplyCap = { value: watch('supplyCap'), state: getFieldState('supplyCap') };
-  const mintAmount = { value: watch('mintAmount'), state: getFieldState('mintAmount') };
   const initialSupply = { value: watch('initialSupply'), state: getFieldState('initialSupply') };
+  const maxSupply = { value: watch('maxSupply'), state: getFieldState('maxSupply') };
 
-  const handleMintAmountChange = (e: any) => {
-    setValue('mintAmount', e.target.value);
+  const handleinitialSupplyChange = (e: any) => {
+    setValue('initialSupply', e.target.value);
   };
 
   const handleMaxMintAmouont = () => {
-    setValue('mintAmount', initialSupply.value);
+    setValue('maxSupply', maxSupply.value);
   };
 
   const handleUpload = (url: string) => {
-    setValue('tokenLogo', url);
+    setValue('logo', url);
   };
 
   // Handle the submit of the form
@@ -118,7 +118,7 @@ const MintingToken: NextPageWithLayout = () => {
             message={formMessage}>
             <div className="grid md:grid-cols-2 gap-5 mb-5">
               <Controller
-                name="tokenName"
+                name="name"
                 control={control}
                 rules={{ required: true }}
                 render={({ field }) => (
@@ -126,12 +126,12 @@ const MintingToken: NextPageWithLayout = () => {
                     label="Token name"
                     placeholder="Enter token name"
                     required
-                    error={Boolean(errors.tokenName)}
-                    success={!errors.tokenName && (tokenName.state.isTouched || tokenName.state.isDirty) && isSubmitted}
+                    error={Boolean(errors.name)}
+                    success={!errors.name && (name.state.isTouched || name.state.isDirty) && isSubmitted}
                     message={
-                      errors.tokenName
+                      errors.name
                         ? 'Please enter token name'
-                        : (tokenName.state.isTouched || tokenName.state.isDirty) && isSubmitted
+                        : (name.state.isTouched || name.state.isDirty) && isSubmitted
                         ? 'Token name is okay'
                         : ''
                     }
@@ -140,7 +140,7 @@ const MintingToken: NextPageWithLayout = () => {
                 )}
               />
               <Controller
-                name="tokenSymbol"
+                name="symbol"
                 control={control}
                 rules={{ required: true }}
                 render={({ field }) => (
@@ -148,14 +148,12 @@ const MintingToken: NextPageWithLayout = () => {
                     label="Token symbol"
                     placeholder="Enter token symbol"
                     required
-                    error={Boolean(errors.tokenSymbol)}
-                    success={
-                      !errors.tokenSymbol && (tokenSymbol.state.isTouched || tokenSymbol.state.isDirty) && isSubmitted
-                    }
+                    error={Boolean(errors.symbol)}
+                    success={!errors.symbol && (symbol.state.isTouched || symbol.state.isDirty) && isSubmitted}
                     message={
-                      errors.tokenSymbol
+                      errors.symbol
                         ? 'Please enter token symbol'
-                        : (tokenSymbol.state.isTouched || tokenSymbol.state.isDirty) && isSubmitted
+                        : (symbol.state.isTouched || symbol.state.isDirty) && isSubmitted
                         ? 'Token symbol is okay'
                         : ''
                     }
@@ -166,7 +164,7 @@ const MintingToken: NextPageWithLayout = () => {
             </div>
             <div className="border-t border-neutral-200 py-5">
               <Controller
-                name="tokenLogo"
+                name="logo"
                 control={control}
                 render={({ field }) => <Uploader label="Token logo" onUpload={handleUpload} />}
               />
@@ -207,7 +205,7 @@ const MintingToken: NextPageWithLayout = () => {
             <div className="border-t border-neutral-200 py-5">
               {supplyCap.value === 'LIMITED' ? (
                 <Controller
-                  name="initialSupply"
+                  name="maxSupply"
                   control={control}
                   rules={{ required: true }}
                   render={({ field }) => (
@@ -218,18 +216,16 @@ const MintingToken: NextPageWithLayout = () => {
                           <span>Maximum amount of tokens</span>
                         </label>
                       }
-                      placeholder="500000"
+                      placeholder=""
                       type="number"
-                      error={Boolean(errors.initialSupply)}
+                      error={Boolean(errors.maxSupply)}
                       success={
-                        !errors.initialSupply &&
-                        (initialSupply.state.isTouched || initialSupply.state.isDirty) &&
-                        isSubmitted
+                        !errors.maxSupply && (maxSupply.state.isTouched || maxSupply.state.isDirty) && isSubmitted
                       }
                       message={
-                        errors.initialSupply
+                        errors.maxSupply
                           ? 'Please enter the initial total supply'
-                          : (initialSupply.state.isTouched || initialSupply.state.isDirty) && isSubmitted
+                          : (maxSupply.state.isTouched || maxSupply.state.isDirty) && isSubmitted
                           ? 'Initial total supply is ok'
                           : ''
                       }
@@ -240,7 +236,7 @@ const MintingToken: NextPageWithLayout = () => {
               ) : null}
               <div className="relative">
                 <Controller
-                  name="mintAmount"
+                  name="initialSupply"
                   control={control}
                   rules={{ required: true }}
                   render={({ field }) => (
@@ -253,18 +249,20 @@ const MintingToken: NextPageWithLayout = () => {
                       placeholder=""
                       type="number"
                       error={
-                        Boolean(errors.mintAmount) ||
-                        (mintAmount.value > initialSupply.value && supplyCap.value === 'LIMITED')
+                        Boolean(errors.initialSupply) ||
+                        (initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED')
                       }
                       success={
-                        !errors.mintAmount && (mintAmount.state.isTouched || mintAmount.state.isDirty) && isSubmitted
+                        !errors.initialSupply &&
+                        (initialSupply.state.isTouched || initialSupply.state.isDirty) &&
+                        isSubmitted
                       }
                       message={
-                        errors.mintAmount
+                        errors.initialSupply
                           ? 'Please enter amount to mint'
-                          : mintAmount.value > initialSupply.value && supplyCap.value === 'LIMITED'
+                          : initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED'
                           ? 'Amount to mint should be smaller than the maximum amount'
-                          : (mintAmount.state.isTouched || mintAmount.state.isDirty) && isSubmitted
+                          : (initialSupply.state.isTouched || initialSupply.state.isDirty) && isSubmitted
                           ? 'Amount to min is okay'
                           : ''
                       }
@@ -285,9 +283,9 @@ const MintingToken: NextPageWithLayout = () => {
                 <div className="mt-6">
                   <RangeSlider
                     max={initialSupply.value ? initialSupply.value : 0}
-                    value={mintAmount.value ? mintAmount.value : 0}
+                    value={initialSupply.value ? initialSupply.value : 0}
                     className="mt-5"
-                    onChange={handleMintAmountChange}
+                    onChange={handleinitialSupplyChange}
                   />
                 </div>
               ) : null}
