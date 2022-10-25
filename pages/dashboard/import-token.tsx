@@ -1,15 +1,22 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
+import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import TokenDetails from '@components/atoms/TokenDetails/TokenDetails';
-import { useState } from 'react';
+import { useWeb3React } from '@web3-react/core';
+import { ethers } from 'ethers';
+import { useAuthContext } from 'providers/auth.context';
+import { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { createToken } from 'services/db/token';
 
 interface IImportToken {
   tokenAddress: string;
 }
 
 const DashboardImportToken = () => {
+  const { organizationId } = useAuthContext();
+
   const defaultValues: IImportToken = {
     tokenAddress: ''
   };
@@ -27,25 +34,36 @@ const DashboardImportToken = () => {
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
   const [message, setMessage] = useState('');
+  const [tokenName, setTokenName] = useState('');
+  const [tokenSymbol, setTokenSymbol] = useState('');
+  const [tokenDecimals, setTokenDecimals] = useState(18);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit: SubmitHandler<IImportToken> = async (data) => {
     // Place integration codes here for truly importing the token
     console.log('Submitted the data', data);
 
     // These are just a samples, remove or modify this when doing the integration.
-    setError(true);
-    setMessage('SAMPLE error if in any case. Oh no!');
-
-    setTimeout(() => {
-      setError(false);
-      setSuccess(true);
-      setMessage('SAMPLE success after Alright! back online!');
-
-      setTimeout(() => {
-        resetFormStates();
-        reset();
-      }, 4000);
-    }, 3000);
+    if (!tokenAddress.value || tokenAddress.value.length !== 42) {
+      setError(true);
+      setMessage('Token address is invalid');
+    } else if (tokenName) {
+      setLoading(true);
+      const tokenRefId = await createToken({
+        name: tokenName,
+        symbol: tokenSymbol,
+        decimals: tokenDecimals,
+        address: tokenAddress.value,
+        logo: '',
+        organizationId: organizationId!,
+        imported: true,
+        createdAt: Math.floor(new Date().getTime() / 1000),
+        updatedAt: Math.floor(new Date().getTime() / 1000),
+        supplyCap: 'UNLIMITED',
+        status: 'SUCCESS'
+      });
+      setLoading(false);
+    }
   };
 
   const resetFormStates = () => {
@@ -53,6 +71,58 @@ const DashboardImportToken = () => {
     setSuccess(false);
     setMessage('');
   };
+
+  const fetchTokenDetails = async () => {
+    setLoading(true);
+    setError(false);
+    setMessage('');
+    try {
+      const tokenContract = new ethers.Contract(
+        tokenAddress.value,
+        [
+          // Read-Only Functions
+          'function balanceOf(address owner) view returns (uint256)',
+          'function decimals() view returns (uint8)',
+          'function symbol() view returns (string)',
+          'function name() view returns (string)'
+        ],
+        ethers.getDefaultProvider(
+          `https://${process.env.NEXT_PUBLIC_TEST_NETWORK_NAME}.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`
+        )
+      );
+      const symbol = await tokenContract.symbol();
+      const name = await tokenContract.name();
+      const decimals = await tokenContract.decimals();
+      setTokenName(name);
+      setTokenSymbol(symbol);
+      setTokenDecimals(decimals);
+      setError(false);
+      setMessage('');
+    } catch (err) {
+      setError(true);
+      setMessage("Token with that address doesn't exist");
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (tokenAddress.value && tokenAddress.value.length === 42) {
+      fetchTokenDetails();
+    } else {
+      setTokenName('');
+      setTokenSymbol('');
+      setTokenDecimals(18);
+
+      if (tokenAddress.value) {
+        setError(true);
+        setMessage('Token address is invalid');
+      } else {
+        setError(false);
+        setMessage('');
+      }
+    }
+  }, [tokenAddress.value]);
+
   return (
     <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
       <h1 className="text-neutral-900">Import an existing ERC-20 token</h1>
@@ -74,23 +144,28 @@ const DashboardImportToken = () => {
           render={({ field }) => <Input icon="/images/chain-icons.png" {...field} />}
         />
         {/* Search for the token address to get the Token name after below */}
-        {tokenAddress.value ? (
+        {tokenAddress.value && tokenAddress.value.length === 42 && tokenName ? (
           <div className="border-t border-gray-200 mt-5 py-5">
             <TokenDetails
-              title="BICO - Biconomy"
-              address="0xf17e65822b568b3903685a7c9f496cf7656cc6c2"
-              url="https://etherscan.io/token/0xf17e65822b568b3903685a7c9f496cf7656cc6c2"
+              title={`${tokenName} - ${tokenSymbol}`}
+              address={tokenAddress.value}
+              url={`https://${
+                process.env.NEXT_PUBLIC_TEST_NETWORK_NAME === 'mainnet'
+                  ? ''
+                  : `${process.env.NEXT_PUBLIC_TEST_NETWORK_NAME}.`
+              }etherscan.io/token/${tokenAddress.value}`}
             />
           </div>
         ) : null}
         <div className="flex flex-row justify-between items-center border-t border-gray-200 pt-5 mt-6">
           <BackButton label="Back" onClick={() => {}} />
-          <button
-            disabled={!tokenAddress.value}
+          <Button
+            disabled={!tokenAddress.value || error}
             className="flex flex-row items-center gap-2 primary group transition-all transform"
+            loading={loading}
             type="submit">
             Add token
-          </button>
+          </Button>
         </div>
       </Form>
     </div>
