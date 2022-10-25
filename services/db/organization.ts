@@ -1,4 +1,4 @@
-import { addDoc, doc, getDoc, setDoc } from '@firebase/firestore';
+import { WhereFilterOp, addDoc, doc, getDoc, getDocs, query, setDoc, where } from '@firebase/firestore';
 import { orgCollection } from 'services/db/firestore';
 import { IOrganization } from 'types/models';
 
@@ -6,6 +6,19 @@ export const fetchOrg = async (id: string): Promise<IOrganization | undefined> =
   const orgRef = doc(orgCollection, id);
   const orgDoc = await getDoc(orgRef);
   return orgDoc.data();
+};
+
+export const fetchOrgByQuery = async (
+  field: string,
+  syntax: WhereFilterOp,
+  value: string
+): Promise<{ id: string; data: IOrganization | undefined } | undefined> => {
+  const q = query(orgCollection, where(field, syntax, value));
+  const querySnapshot = await getDocs(q);
+
+  if (querySnapshot && !querySnapshot.empty) {
+    return { id: querySnapshot.docs[0].id, data: querySnapshot.docs[0].data() };
+  }
 };
 
 export const updateOrg = async (org: IOrganization, id: string): Promise<void> => {

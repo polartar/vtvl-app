@@ -1,8 +1,8 @@
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { Web3Provider } from '@ethersproject/providers';
 import { AuthContextProvider } from '@providers/auth.context';
-import { MintContextProvider } from '@providers/mint.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
+import { TokenContextProvider } from '@providers/token.context';
 import { VestingContextProvider } from '@providers/vesting.context';
 import { Web3ReactProvider } from '@web3-react/core';
 import { NextPage } from 'next';
@@ -45,16 +45,16 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
         {/* <Web3ReactProviderReloaded getLibrary={getLibrary}> */}
         <AuthContextProvider>
-          <VestingContextProvider>
+          <TokenContextProvider>
             <OnboardingContextProvider>
-              <MintContextProvider>
+              <VestingContextProvider>
                 {/* <DefaultLayout sidebar={true} connected={true}> */}
                 <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
                 <ToastContainer />
                 <ReactTooltip effect="float" type="dark" place="top" multiline />
-              </MintContextProvider>
+              </VestingContextProvider>
             </OnboardingContextProvider>
-          </VestingContextProvider>
+          </TokenContextProvider>
         </AuthContextProvider>
         {/* </Web3ReactProviderReloaded> */}
       </Web3ReactProvider>
