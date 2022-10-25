@@ -3,11 +3,12 @@ export interface IToken {
   symbol: string;
   address: string;
   logo: string;
-  organization_id: string;
+  organizationId: string;
   imported: boolean;
-  created_at: number;
-  updated_at: number;
-  supply_cap: string;
-  max_supply?: number;
-  initial_supply?: number;
+  createdAt: number;
+  updatedAt: number;
+  supplyCap: string;
+  maxSupply?: number;
+  initialSupply?: number;
+  status: 'PENDING' | 'SUCCESS' | 'FAILED';
 }

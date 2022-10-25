@@ -4,13 +4,16 @@ import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
 import DashboardSchedule from '@components/organisms/DashboardSchedule/DashboardSchedule';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useTokenContext } from '@providers/token.context';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useState } from 'react';
 
-import { NextPageWithLayout } from './_app';
+import { NextPageWithLayout } from '../_app';
 
 const Dashboard: NextPageWithLayout = () => {
+  const { mintFormState } = useTokenContext();
+
   const [hasProject, setHasProject] = useState(true);
   const router = useRouter();
   const activities = [
@@ -39,7 +42,7 @@ const Dashboard: NextPageWithLayout = () => {
   console.log(activities);
   return (
     <>
-      {!hasProject ? (
+      {!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED' ? (
         <>
           <h1 className="h2 font-medium text-center mb-10">My Projects</h1>
           <EmptyState
@@ -69,9 +72,9 @@ const Dashboard: NextPageWithLayout = () => {
           {/* Token details section and CTAs */}
           <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
             <div>
-              <TokenProfile name="BICONOMY" logo="/images/biconomy-logo.png" className="mb-2" />
+              {mintFormState.logo ? <TokenProfile name="BICONOMY" logo={mintFormState.logo} className="mb-2" /> : null}
               <p className="text-sm font-medium text-netural-900">
-                Token address: <span className="text-neutral-500">0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5</span>
+                Token address: <span className="text-neutral-500">{mintFormState.address}</span>
               </p>
             </div>
             <div className="flex flex-row items-center justify-start gap-2">

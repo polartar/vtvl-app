@@ -3,6 +3,8 @@ import Button from '@components/atoms/Button/Button';
 import DotLoader from '@components/atoms/DotLoader/DotLoader';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useAuthContext } from '@providers/auth.context';
+import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { injected } from 'connectors';
@@ -12,18 +14,18 @@ import { ethers } from 'ethers';
 import { addDoc, collection, getDocs, getFirestore } from 'firebase/firestore/lite';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { useMintContext } from 'providers/mint.context';
 import { ReactElement, useEffect } from 'react';
 import { useState } from 'react';
 import { db } from 'services/auth/firebase';
-import { createToken } from 'services/db/token';
+import { createToken, fetchTokenByQuery } from 'services/db/token';
 import { parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {
+  const { organizationId } = useAuthContext();
   const { library, account, activate } = useWeb3React();
-  const { mintFormState, updateMintFormState } = useMintContext();
+  const { mintFormState, updateMintFormState } = useTokenContext();
 
-  const { tokenName, tokenSymbol, tokenLogo, decimals, mintAmount, supplyCap, initialSupply } = mintFormState;
+  const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply } = mintFormState;
 
   const [loading, setLoading] = useState(false);
 
@@ -39,28 +41,29 @@ const Summary: NextPageWithLayout = () => {
         const tokenContract =
           supplyCap === 'LIMITED'
             ? await TokenFactory.deploy(
-                tokenName,
-                tokenSymbol,
-                parseTokenAmount(mintAmount, decimals),
-                parseTokenAmount(initialSupply, decimals)
+                name,
+                symbol,
+                parseTokenAmount(initialSupply, decimals),
+                parseTokenAmount(maxSupply, decimals)
               )
-            : await TokenFactory.deploy(tokenName, tokenSymbol, parseTokenAmount(mintAmount, decimals));
+            : await TokenFactory.deploy(name, symbol, parseTokenAmount(initialSupply, decimals));
         await tokenContract.deployed();
 
         updateMintFormState({ ...mintFormState, contractAddress: tokenContract.address });
 
         createToken({
-          name: tokenName,
-          symbol: tokenSymbol,
+          name: name,
+          symbol: symbol,
           address: tokenContract.address,
-          logo: tokenLogo,
-          organization_id: '',
-          created_at: Math.floor(new Date().getTime() / 1000),
-          updated_at: Math.floor(new Date().getTime() / 1000),
+          logo: logo,
+          organizationId: organizationId!,
+          createdAt: Math.floor(new Date().getTime() / 1000),
+          updatedAt: Math.floor(new Date().getTime() / 1000),
           imported: false,
-          supply_cap: supplyCap,
-          max_supply: initialSupply ? initialSupply : 0,
-          initial_supply: mintAmount ? mintAmount : 0
+          supplyCap: supplyCap,
+          maxSupply: maxSupply ? maxSupply : 0,
+          initialSupply: initialSupply ? initialSupply : 0,
+          status: 'SUCCESS'
         });
 
         console.log('Deployed an ERC Token for testing.');
@@ -74,20 +77,20 @@ const Summary: NextPageWithLayout = () => {
   };
 
   useEffect(() => {
-    if (!tokenName) {
+    if (!name) {
       Router.push('/minting-token');
     }
-  }, [tokenName]);
+  }, [name]);
 
   return (
     <div className="panel rounded-lg mx-auto max-w-xl w-1/2 mt-14">
-      <TokenProfile name={tokenName} symbol={tokenSymbol} logo={tokenLogo} />
+      <TokenProfile name={name} symbol={symbol} logo={logo} />
       <label className="mt-5">
         <span>Contract Address</span>
       </label>
       <progress
         value={
-          supplyCap === 'LIMITED' ? (parseInt(mintAmount.toString()) / parseInt(initialSupply.toString())) * 100 : 100
+          supplyCap === 'LIMITED' ? (parseInt(initialSupply.toString()) / parseInt(maxSupply.toString())) * 100 : 100
         }
         max="100"
         className="w-full">
@@ -100,11 +103,11 @@ const Summary: NextPageWithLayout = () => {
         </label>
         <label>
           <span>Amount to mint</span>
-          <p className="paragraphy-small-medium">{mintAmount}</p>
+          <p className="paragraphy-small-medium">{initialSupply}</p>
         </label>
         <label>
           <span>Maximum supply</span>
-          <p className="paragraphy-small-medium">{supplyCap === 'LIMITED' ? initialSupply : 'Unlimited'}</p>
+          <p className="paragraphy-small-medium">{supplyCap === 'LIMITED' ? maxSupply : 'Unlimited'}</p>
         </label>
       </div>
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">

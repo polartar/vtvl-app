@@ -2,7 +2,7 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { NextPage } from 'next';
-import Router from 'next/router';
+import { useRouter } from 'next/router';
 import { useContext } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { emailPattern } from 'types/constants/validation-patterns';
@@ -14,6 +14,7 @@ type LoginForm = {
 const MemberLoginPage: NextPage = () => {
   const { teammateSignIn, signInWithGoogle } = useContext(AuthContext);
   const { onNext } = useContext(OnboardingContext);
+  const router = useRouter();
 
   const {
     control,
@@ -35,15 +36,17 @@ const MemberLoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    console.log('is this a new user???....', newLogin?.isFirstLogin);
-    console.log('completing setup');
     await onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     const values = getValues();
-    await teammateSignIn(values.memberEmail, Router.locale || '');
-    Router.push('/dashboard');
+    try {
+      await teammateSignIn(values.memberEmail, window.location.toString());
+      router.push('/onboarding/member');
+    } catch (error) {
+      console.log(' invalid member signin ', error);
+    }
   };
 
   return (

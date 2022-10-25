@@ -17,7 +17,7 @@ const Wallets = ({ wallets }: IWalletsProps) => {
   return (
     <div className="grid grid-cols-2 grid-flow-dense auto-cols-min gap-4">
       {wallets.map((wallet: IWallet, walletIndex: number) => (
-        <div className="flex flex-row items-center justify-center">
+        <div key={walletIndex} className="flex flex-row items-center justify-center">
           <WalletButton
             key={`wallet-button-${wallet.name}-${walletIndex}`}
             label={wallet.name}

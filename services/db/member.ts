@@ -1,5 +1,5 @@
 import { addDoc, doc, getDoc, getDocs, limit, query, setDoc, where } from '@firebase/firestore';
-import { db, memberCollection } from 'services/db/firestore';
+import { memberCollection } from 'services/db/firestore';
 import { IMember } from 'types/models';
 
 export const fetchMember = async (id: string): Promise<IMember | undefined> => {
@@ -11,7 +11,6 @@ export const fetchMember = async (id: string): Promise<IMember | undefined> => {
 export const fetchMemberByEmail = async (email: string): Promise<IMember | undefined> => {
   const q = query(memberCollection, where('email', '==', email), limit(1));
   const querySnapshot = await getDocs(q);
-
   return querySnapshot?.docs.at(0)?.data();
 };
 
