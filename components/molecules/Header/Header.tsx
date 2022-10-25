@@ -34,7 +34,9 @@ const Header = ({ connected, onLogin, onLogout, onCreateAccount, toggleSideBar }
           src="/logo.svg"
           className="hidden sm:block w-48 h-9 mr-5 cursor-pointer"
           alt="VTVL"
-          onClick={() => user?.memberInfo?.type === 'employee' ? Router.push('/onboarding/member') : Router.push('/onboarding')}
+          onClick={() =>
+            user?.memberInfo?.type === 'employee' ? Router.push('/onboarding/member') : Router.push('/onboarding')
+          }
         />
         <div className="hidden md:block">
           <SearchInput placeholder="Search" />
