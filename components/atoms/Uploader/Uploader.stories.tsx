@@ -22,7 +22,8 @@ SingleImage.args = {
 export const OnForm = () => {
   const [logoUrl, setLogoUrl] = useState('');
 
-  const updateUploadedFiles = (url: string) => {
+  const updateUploadedFiles = (url: string, fileName: string) => {
+    console.log('File name is', fileName);
     setLogoUrl(url);
   };
 

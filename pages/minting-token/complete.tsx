@@ -3,11 +3,17 @@ import { useMintContext } from '@providers/mint.context';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
-import { ReactElement } from 'react';
+import { ReactElement, useEffect } from 'react';
 
 const Complete: NextPageWithLayout = () => {
   const { mintFormState } = useMintContext();
   const { tokenSymbol, tokenName, tokenLogo, contractAddress } = mintFormState;
+
+  useEffect(() => {
+    if (!tokenName) {
+      Router.push('/minting-token');
+    }
+  }, [tokenName]);
 
   return (
     <div className="panel rounded-lg mx-auto max-w-xl w-2/5 mt-14 text-center">
@@ -39,8 +45,8 @@ const Complete: NextPageWithLayout = () => {
 Complete.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
-    { title: 'Dashboard', route: '/' },
-    { title: 'Minting token', route: 'minting-token' }
+    { title: 'Dashboard', route: '/dashboard' },
+    { title: 'Minting token', route: '/minting-token' }
   ];
 
   // Update these into a state coming from the context

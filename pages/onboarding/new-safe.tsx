@@ -2,13 +2,14 @@ import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
-import Select from '@components/atoms/FormControls/Select/Select';
+import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
+import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
@@ -289,7 +290,7 @@ const NewSafePage: NextPage = () => {
           </div>
         ))}
         <button type="button" className="secondary mb-5 flex flex-row items-center gap-2 py-1.5" onClick={addOwner}>
-          <img src="/icons/plus.svg" alt="Add more members" aria-hidden="true" />
+          <PlusIcon alt="Add more members" aria-hidden="true" />
           Add more
         </button>
         {options > 0 ? (
@@ -299,7 +300,7 @@ const NewSafePage: NextPage = () => {
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <Select
+                <SelectInput
                   label="How many people should authorize this transaction"
                   placeholder="Select how many"
                   className="md:col-span-2"

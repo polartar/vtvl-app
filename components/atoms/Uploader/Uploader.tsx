@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { convertAllToOptions } from 'utils/shared';
 
 import { storage } from '../../../services/auth/firebase';
 
@@ -40,8 +41,10 @@ interface UploadProps extends React.InputHTMLAttributes<HTMLInputElement> {
   accept?: string;
   /** Optional maxSize -- in bytes */
   maxSize?: number;
+  /** Optional readOnly - using this will disable auto upload and will return the file data */
+  readOnly?: boolean;
   /** Callback function for updating the state from the parent component using this component. */
-  onUpload?: (url: string) => void;
+  onUpload?: (data: any, text?: any) => void;
 }
 
 interface FileProps {
@@ -69,10 +72,13 @@ const Uploader = ({
   onUpload,
   maxSize = DEFAULT_MAX_FILE_SIZE_IN_BYTES,
   multiple = false,
+  readOnly = false,
   ...props
 }: UploadProps) => {
   // References to files and input element.
   const hiddenFileInput = useRef<HTMLInputElement>(null);
+
+  let fileReader: any;
 
   // Used object instead of array for ease of use, especially when deleting from a list.
   const [files, setFiles] = useState<FileProps[]>([]);
@@ -82,11 +88,34 @@ const Uploader = ({
   const [percent, setPercent] = useState(0);
   const [url, setUrl] = useState('');
   const [error, setError] = useState(false);
+  const [errorText, setErrorText] = useState('');
+  const [csvArray, setCSVArray] = useState([]);
 
   // Triggers the click function of the hidden input element when the "Click upload" text is clicked.
   const handleUploadBtnClick = () => {
     // Always check if it's null
     if (null !== hiddenFileInput.current) hiddenFileInput.current.click();
+  };
+
+  // This function is used to handle CSV files on the fly.
+  const csvFileToObject = (contents: any) => {
+    const csvHeader = convertAllToOptions(contents.slice(0, contents.indexOf('\n')).split(','));
+    const csvRows = contents.slice(contents.indexOf('\n') + 1).split('\n');
+
+    const csvArray = csvRows.map((i: any) => {
+      const values = i.split(',');
+      const obj = csvHeader.reduce((object: any, header: any, index: number) => {
+        object[header.value] = values[index];
+        return object;
+      }, {});
+      return obj;
+    });
+
+    const csvObject = { headers: csvHeader, data: csvArray };
+
+    console.log('CSV array', csvObject, csvArray);
+    // setCSVArray(csvArray);
+    return csvObject;
   };
 
   // This function is used to handle adding new files in the files list
@@ -116,6 +145,7 @@ const Uploader = ({
               );
             },
             () => {
+              setErrorText('');
               setError(true);
               setPercent(0);
               setUrl('');
@@ -130,7 +160,51 @@ const Uploader = ({
               });
             }
           );
+          // Handle csv upload
+          if (accept === '.csv') {
+            fileReader.onload = function (event: any) {
+              const text = event.target.result;
+              const csvObject = csvFileToObject(text);
+              if (onUpload) onUpload(csvObject, file.name);
+            };
+
+            fileReader.readAsText(file);
+          } else {
+            let timer: ReturnType<typeof setInterval>;
+            // const newFileName = generateRandomFileName() + extractExtension(file.name);
+            const storageRef = ref(storage, `/files/${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+            uploadTask.on(
+              'state_changed',
+              () => {
+                // const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                timer = setInterval(
+                  () =>
+                    setPercent((prevPercent) => {
+                      if (prevPercent < 96) return prevPercent + 0.5;
+                      return prevPercent;
+                    }),
+                  10
+                );
+              },
+              () => {
+                setError(true);
+                setPercent(0);
+                setUrl('');
+              },
+              () => {
+                // download url
+                getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+                  clearInterval(timer);
+                  setUrl(url);
+                  setPercent(100);
+                  if (onUpload) onUpload(url, file.name);
+                });
+              }
+            );
+          }
         } else {
+          setErrorText('Image is too big');
           setError(true);
         }
       });
@@ -140,6 +214,7 @@ const Uploader = ({
   // Function to remove the desired file and update the file list.
   const removeFile = () => {
     setFiles([]);
+    setErrorText('');
     setError(false);
     setPercent(0);
     setUrl('');
@@ -175,7 +250,7 @@ const Uploader = ({
                 <div className="text-sm flex flex-col">
                   <span className="font-medium text-neutral-800">{file.name}</span>
                   <span className="text-neutral-500">
-                    {convertBytesToKB(file.size)} kb - {percent}% uploaded
+                    {errorText ? errorText : `${convertBytesToKB(file.size)} kb - ${percent}% uploaded`}
                   </span>
                 </div>
               </div>
@@ -196,6 +271,11 @@ const Uploader = ({
       </div>
     );
   };
+
+  useEffect(() => {
+    // Ensures that this runs client-side
+    fileReader = new FileReader();
+  });
 
   return (
     <>
@@ -221,13 +301,13 @@ const Uploader = ({
               } absolute bg-gray-50 rounded-full flex items-center justify-center w-12 h-12`}></div>
           </div>
           <div className="relative z-10 mt-3 text-sm">
-            <span className="text-sm text-primary-900 cursor-pointer" onClick={handleUploadBtnClick}>
+            <span className="text-sm text-secondary-900 cursor-pointer" onClick={handleUploadBtnClick}>
               Click to upload
             </span>
             &nbsp;
             <span className="text-neutral-500">or drag and drop</span>
           </div>
-          <div className="mt-1 text-neutral-500 text-sm">
+          <div className="mt-1 text-neutral-500 text-xs">
             {accept.includes('.csv') ? 'CSV (max. size 1mb)' : `SVG, PNG or JPG (max. ${pixels} pixels)`}
           </div>
           <input

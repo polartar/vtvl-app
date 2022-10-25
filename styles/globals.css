@@ -195,11 +195,20 @@
   /* Button component */
   /* Defaults to primary */
   button {
-    @apply rounded-full inline-block text-base py-2.5 px-5 bg-neutral-100 transition-all;
+    @apply rounded-full inline-block text-base py-2.5 px-5 bg-neutral-100;
   }
+
+  button,
+  a {
+    @apply transition-all transform;
+  }
+
+  /* a:hover,
+  a:focus-visible,
   button:hover,
   button:focus-visible {
-  }
+    @apply -translate-y-px transform;
+  } */
 
   button.primary {
     @apply bg-primary-900 text-white;
@@ -286,7 +295,8 @@
   h5,
   .h5,
   h6,
-  .h6 {
+  .h6,
+  .sora {
     font-family: 'Sora', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   }
   .display {
@@ -324,21 +334,34 @@
   }
 
   label > span,
-  label .label {
+  label .label,
+  .form-label {
     @apply font-medium text-sm text-neutral-800 inline-flex gap-1 self-start mb-1.5 relative;
   }
 
   label.required > span:after,
-  label.required .label:after {
+  label.required .label:after,
+  .form-label.required:after {
     content: '*';
     @apply text-secondary-900;
   }
 
+  /* HTML's input element -- that is not a radio and range type -- style overrides */
   label > div > input:not([type='radio']):not([type='range']):not(.minMaxInput input),
+  /* HTML's default select element style overrides */
   label > div > select,
+  /* special radiobuttons style overrides */
   .radioButton,
-  .minMaxInput {
-    @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all duration-1000;
+  /* react-select's Select and Creatable overrides */
+  .select__control,
+  /* custom input component */
+  .input-component__input {
+    @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all;
+  }
+
+  :disabled,
+  [disabled] {
+    @apply opacity-80;
   }
 
   :disabled,
@@ -353,8 +376,9 @@
     @apply border-primary-400;
   }
 
+  /* Check if this affects other form control components */
+  .input-component__container,
   /* Form and form control styles for error and success states */
-  label > div,
   .form {
     @apply rounded-xl border border-transparent text-white transition-all duration-500;
   }
@@ -363,15 +387,24 @@
     @apply p-1 rounded-3xl border border-gray-300;
   }
 
-  label > div.error,
+  .input-component__container.error,
   .form-error {
     @apply p-1 bg-danger-100 border-danger-500 text-danger-700;
   }
 
-  label > div.success,
+  .input-component__container.success,
   .form-success {
     @apply p-1 bg-success-100 border-success-200 text-success-600;
+  }
+
+  .input-component__container.success {
     animation: fadeOutContainer 1s;
+    animation-delay: 2s;
+    animation-fill-mode: forwards;
+  }
+
+  .form-success {
+    animation: fadeOutFormContainer 1s;
     animation-delay: 2s;
     animation-fill-mode: forwards;
   }
@@ -403,6 +436,11 @@
   }
 
   /* animation for success states on form input */
+  @keyframes fadeOutFormContainer {
+    to {
+      @apply border border-gray-300 bg-white;
+    }
+  }
   @keyframes fadeOutContainer {
     to {
       @apply border-transparent bg-transparent text-white;
@@ -415,8 +453,18 @@
   }
   @keyframes fadeOutMessage {
     to {
-      @apply opacity-0 h-0 mt-0 pb-0;
+      @apply opacity-0 h-0 mt-0 pb-0 pt-0;
     }
+  }
+
+  /* MinMax component styles */
+  .minMaxInput input:focus,
+  .minMaxInput input:focus-visible {
+    @apply outline-none;
+  }
+  .minMaxInput:has(input:focus),
+  .minMaxInput:has(input:focus-visible) {
+    @apply border-primary-400;
   }
 
   /* Contents */
@@ -426,6 +474,30 @@
 }
 
 @layer components {
+  /* Input component styles */
+  .input-component input,
+  .input-component input:focus,
+  .input-component input:focus-visible {
+    @apply outline-none;
+  }
+
+  .input-component__input { @apply px-4; }
+  .input-component__input:has(input:focus),
+  .input-component__input:has(input:focus-visible) {
+    @apply border-primary-700;
+  }
+
+  .input-component__container.error .input-component__input,
+  .input-component__container.success .input-component__input { @apply rounded-lg; }
+  .input-component__container.success .input-component__input {
+    animation: fadeOutInputStyles 1s;
+    animation-delay: 2s;
+    animation-fill-mode: forwards;
+  }
+
+  .input-component .error .input-component__message { @apply text-danger-700; }
+  .input-component .success .input-component__message { @apply text-success-700; }
+
   /* Avatar component style */
   .avatar,
   .avatar .text {
@@ -451,9 +523,114 @@
   .avatar.initials.default {
     @apply text-lg;
   }
+
+  /* Select, react-select, creatable select via react-select overrides */
+  .select__control {
+    min-height: 3.25rem;
+    @apply py-2 h-auto rounded-3xl !important;
+  }
+  .select__control--is-focused {
+    box-shadow: 0 0 0 1px var(--primary-400) !important;
+    @apply border-primary-400 !important;
+  }
+
+  .select__value-container {
+    @apply p-0 gap-1 !important;
+  }
+  .select__input-container,
+  .select__multi-value {
+    @apply my-0 !important;
+  }
+  .select__multi-value {
+    @apply rounded-2xl overflow-hidden m-0 !important;
+  }
+  .select__multi-value__label {
+    @apply pl-2.5 !important;
+  }
+  .select__menu {
+    @apply static rounded-xl overflow-hidden !important;
+  }
+  .select__indicator {
+    @apply pr-1 !important;
+  }
+  .select__option {
+    @apply text-neutral-600 text-sm !important;
+  }
+  .select__option--is-focused {
+    @apply text-neutral-50 bg-primary-500 !important;
+  }
+}
+
+@layer utilities {
+  /* Since much of layouts are based on this */
+  .col-stretch {
+    @apply flex flex-col items-stretch gap-2;
+  }
+  .col-right {
+    @apply flex flex-col items-end gap-2;
+  }
+  .row-center {
+    @apply flex flex-row items-center gap-2;
+  }
+  /* Paragraph styles */
+  .paragraphy-large-bold {
+    @apply text-lg font-bold;
+  }
+  .paragraphy-large-semibold {
+    @apply text-lg font-semibold;
+  }
+  .paragraphy-large-medium {
+    @apply text-lg font-medium;
+  }
+  .paragraphy-large {
+    @apply text-lg font-normal;
+  }
+  .paragraphy-medium-bold {
+    @apply text-base font-bold;
+  }
+  .paragraphy-medium-semibold {
+    @apply text-base font-semibold;
+  }
+  .paragraphy-medium-medium {
+    @apply text-base font-medium;
+  }
+  .paragraphy-medium {
+    @apply text-base font-normal;
+  }
+  .paragraphy-small-bold {
+    @apply text-sm font-bold;
+  }
+  .paragraphy-small-semibold {
+    @apply text-sm font-semibold;
+  }
+  .paragraphy-small-medium {
+    @apply text-sm font-medium;
+  }
+  .paragraphy-small {
+    @apply text-sm font-normal;
+  }
+  .paragraphy-tiny-bold {
+    @apply text-xs font-bold;
+  }
+  .paragraphy-tiny-semibold {
+    @apply text-xs font-semibold;
+  }
+  .paragraphy-tiny-medium {
+    @apply text-xs font-medium;
+  }
+  .paragraphy-tiny {
+    @apply text-xs font-normal;
+  }
+  .neutral-text {
+    @apply text-neutral-500;
+  }
+  .dark-text {
+    @apply text-neutral-900;
+  }
 }
 
 *,
-html {
+html,
+.inter {
   font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }

@@ -18,7 +18,7 @@ interface FormTypes {
   tokenSymbol: string;
   tokenLogo: string;
   supplyCap: string;
-  mintAmount: number;
+  mintAmount: number | '';
 }
 
 const MintingToken: NextPageWithLayout = () => {
@@ -250,7 +250,7 @@ const MintingToken: NextPageWithLayout = () => {
                           <span>Amount to mint</span>
                         </label>
                       }
-                      placeholder="500000"
+                      placeholder=""
                       type="number"
                       error={
                         Boolean(errors.mintAmount) ||
@@ -277,14 +277,14 @@ const MintingToken: NextPageWithLayout = () => {
                     label="MAX"
                     color="secondary"
                     onClick={handleMaxMintAmouont}
-                    className="absolute right-6 bottom-3"
+                    className="absolute right-6 bottom-4"
                   />
                 ) : null}
               </div>
               {supplyCap.value === 'LIMITED' ? (
                 <div className="mt-6">
                   <RangeSlider
-                    max={initialSupply.value}
+                    max={initialSupply.value ? initialSupply.value : 0}
                     value={mintAmount.value ? mintAmount.value : 0}
                     className="mt-5"
                     onChange={handleMintAmountChange}
@@ -323,8 +323,8 @@ const MintingToken: NextPageWithLayout = () => {
 MintingToken.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
-    { title: 'Dashboard', route: '/' },
-    { title: 'Minting token', route: 'minting-token' }
+    { title: 'Dashboard', route: '/dashboard' },
+    { title: 'Minting token', route: '/minting-token' }
   ];
 
   // Update these into a state coming from the context

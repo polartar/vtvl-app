@@ -10,9 +10,10 @@ interface LimitedSupplyProps extends React.InputHTMLAttributes<HTMLInputElement>
   message?: string | JSX.Element | JSX.Element[];
   error?: boolean;
   success?: boolean;
-  onMaxChange: (e: any) => void;
+  onMaxChange?: (e: any) => void;
   onMinChange: (e: any) => void;
   onUseMax: (e?: any) => void;
+  maxReadOnly?: boolean;
 }
 
 const LimitedSupply = ({
@@ -23,18 +24,29 @@ const LimitedSupply = ({
   className = '',
   onMaxChange,
   onMinChange,
-  onUseMax
+  onUseMax,
+  maxReadOnly = false
 }: LimitedSupplyProps) => {
   return (
     <>
       <label className={`${required ? 'required' : ''} ${className}`}>
-        {label ? <span>{label}</span> : null}
+        <div className="flex flex-row items-center justify-between gap-3">
+          {label ? (
+            <>
+              <span className={`form-label ${required ? 'required' : ''}`}>{label}</span>
+              {maxReadOnly ? (
+                <p className="text-xs font-medium text-neutral-700">Token total supply: {maximum}</p>
+              ) : null}
+            </>
+          ) : null}
+        </div>
         <MinMaxInput
           min={initial}
           max={maximum}
           onMinChange={onMinChange}
           onMaxChange={onMaxChange}
           onUseMax={onUseMax}
+          maxReadOnly={maxReadOnly}
         />
         <RangeSlider max={maximum} value={initial} className="mt-5" onChange={onMinChange} />
       </label>

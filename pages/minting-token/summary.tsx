@@ -13,9 +13,10 @@ import { addDoc, collection, getDocs, getFirestore } from 'firebase/firestore/li
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useMintContext } from 'providers/mint.context';
-import { ReactElement } from 'react';
+import { ReactElement, useEffect } from 'react';
 import { useState } from 'react';
 import { db } from 'services/auth/firebase';
+import { createToken } from 'services/db/token';
 import { parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {
@@ -48,11 +49,18 @@ const Summary: NextPageWithLayout = () => {
 
         updateMintFormState({ ...mintFormState, contractAddress: tokenContract.address });
 
-        const tokensCollection = collection(db, 'tokens');
-        addDoc(tokensCollection, {
+        createToken({
+          name: tokenName,
+          symbol: tokenSymbol,
           address: tokenContract.address,
-          owner: account,
-          logo: tokenLogo
+          logo: tokenLogo,
+          organization_id: '',
+          created_at: Math.floor(new Date().getTime() / 1000),
+          updated_at: Math.floor(new Date().getTime() / 1000),
+          imported: false,
+          supply_cap: supplyCap,
+          max_supply: initialSupply ? initialSupply : 0,
+          initial_supply: mintAmount ? mintAmount : 0
         });
 
         console.log('Deployed an ERC Token for testing.');
@@ -64,6 +72,12 @@ const Summary: NextPageWithLayout = () => {
       console.log('err - ', err);
     }
   };
+
+  useEffect(() => {
+    if (!tokenName) {
+      Router.push('/minting-token');
+    }
+  }, [tokenName]);
 
   return (
     <div className="panel rounded-lg mx-auto max-w-xl w-1/2 mt-14">
@@ -82,17 +96,15 @@ const Summary: NextPageWithLayout = () => {
       <div className="border-y border-gray-300 mt-5 py-5 grid md:grid-cols-3">
         <label>
           <span>Supply cap</span>
-          <p className="text-sm font-medium text-neutral-500 capitalize">{supplyCap.toLowerCase()}</p>
+          <p className="paragraphy-small-medium capitalize">{supplyCap.toLowerCase()}</p>
         </label>
         <label>
           <span>Amount to mint</span>
-          <p className="text-sm font-medium text-neutral-500">{mintAmount}</p>
+          <p className="paragraphy-small-medium">{mintAmount}</p>
         </label>
         <label>
           <span>Maximum supply</span>
-          <p className="text-sm font-medium text-neutral-500">
-            {supplyCap === 'LIMITED' ? initialSupply : 'Unlimited'}
-          </p>
+          <p className="paragraphy-small-medium">{supplyCap === 'LIMITED' ? initialSupply : 'Unlimited'}</p>
         </label>
       </div>
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
@@ -108,8 +120,8 @@ const Summary: NextPageWithLayout = () => {
 Summary.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
-    { title: 'Dashboard', route: '/' },
-    { title: 'Minting token', route: 'minting-token' }
+    { title: 'Dashboard', route: '/dashboard' },
+    { title: 'Minting token', route: '/minting-token' }
   ];
 
   // Update these into a state coming from the context

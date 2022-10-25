@@ -3,12 +3,19 @@ import { Web3Provider } from '@ethersproject/providers';
 import { AuthContextProvider } from '@providers/auth.context';
 import { MintContextProvider } from '@providers/mint.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
+import { VestingContextProvider } from '@providers/vesting.context';
 import { Web3ReactProvider } from '@web3-react/core';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import React, { ReactElement, ReactNode } from 'react';
+// Todo: Arvin #18 - Explore styles that can be customized / override to conform with VTVL branding.
+// React datepicker initial styling.
+import 'react-datepicker/dist/react-datepicker.css';
+import Modal from 'react-modal';
 import { ToastContainer } from 'react-toastify';
+// Toast initial styling.
 import 'react-toastify/dist/ReactToastify.css';
+import ReactTooltip from 'react-tooltip';
 import 'styles/globals.css';
 
 // Exporting a layout type for nested layouts
@@ -29,23 +36,30 @@ function getLibrary(provider: any): Web3Provider {
 // const Web3ReactProviderReloaded = createWeb3ReactRoot('network')
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+  Modal.setAppElement('#react-modal');
   // Use the layout defined at the page level, if available
   // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.
   const getLayout = Component.getLayout ?? ((page) => page);
   return (
-    <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
-      {/* <Web3ReactProviderReloaded getLibrary={getLibrary}> */}
-      <AuthContextProvider>
-        <OnboardingContextProvider>
-          <MintContextProvider>
-            {/* <DefaultLayout sidebar={true} connected={true}> */}
-            <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-            <ToastContainer />
-          </MintContextProvider>
-        </OnboardingContextProvider>
-      </AuthContextProvider>
-      {/* </Web3ReactProviderReloaded> */}
-    </Web3ReactProvider>
+    <>
+      <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
+        {/* <Web3ReactProviderReloaded getLibrary={getLibrary}> */}
+        <AuthContextProvider>
+          <VestingContextProvider>
+            <OnboardingContextProvider>
+              <MintContextProvider>
+                {/* <DefaultLayout sidebar={true} connected={true}> */}
+                <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                <ToastContainer />
+                <ReactTooltip effect="float" type="dark" place="top" multiline />
+              </MintContextProvider>
+            </OnboardingContextProvider>
+          </VestingContextProvider>
+        </AuthContextProvider>
+        {/* </Web3ReactProviderReloaded> */}
+      </Web3ReactProvider>
+      <div id="react-modal"></div>
+    </>
   );
 }
 
