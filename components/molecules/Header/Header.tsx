@@ -5,8 +5,10 @@ import AuthContext from '@providers/auth.context';
 import { useWeb3React } from '@web3-react/core';
 import Router from 'next/router';
 import React, { useContext } from 'react';
+import { IUser } from 'types/models';
 
 interface HeaderProps {
+  user: IUser | undefined,
   connected: boolean;
   onLogin?: () => void;
   onLogout?: () => void;
@@ -14,9 +16,8 @@ interface HeaderProps {
   toggleSideBar?: () => void;
 }
 
-const Header = ({ connected, onLogin, onLogout, onCreateAccount, toggleSideBar }: HeaderProps) => {
+const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSideBar }: HeaderProps) => {
   const { active, account } = useWeb3React();
-  const { user } = useContext(AuthContext);
 
   return (
     <header className="sticky top-0 z-40 w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
