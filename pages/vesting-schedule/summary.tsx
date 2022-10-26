@@ -20,7 +20,7 @@ import {
   DATE_FREQ_TO_TIMESTAMP,
   ReleaseFrequency
 } from 'types/constants/schedule-configuration';
-import { parseTokenAmount } from 'utils/token';
+import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
   getCliffAmount,
@@ -192,10 +192,11 @@ const ScheduleSummary: NextPageWithLayout = () => {
           <label>
             <span>Total token per user</span>
             <p>
-              {new Decimal(scheduleFormState.amountToBeVested)
-                .div(new Decimal(recipients.length))
-                .toDP(6, Decimal.ROUND_UP)
-                .toString()}{' '}
+              {formatNumber(
+                new Decimal(scheduleFormState.amountToBeVested)
+                  .div(new Decimal(recipients.length))
+                  .toDP(6, Decimal.ROUND_UP)
+              )}{' '}
               BICO
             </p>
           </label>

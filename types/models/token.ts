@@ -11,4 +11,5 @@ export interface IToken {
   maxSupply?: number;
   initialSupply?: number;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
+  decimals?: number;
 }

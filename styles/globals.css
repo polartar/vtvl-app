@@ -359,14 +359,23 @@
     @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all;
   }
 
+  /* Other disabled styles */
   :disabled,
   [disabled] {
     @apply opacity-80;
   }
 
-  :disabled,
-  [disabled] {
-    @apply opacity-80;
+  /* Input disabled styles */
+  .input-component__input:has(:disabled),
+  .input-component__input:has([disabled]),
+  .minMaxInput:has(:disabled),
+  .minMaxInput:has([disabled]),
+  select:disabled,
+  select[disabled],
+  .barRadio:has(:disabled),
+  .barRadio:has([disabled])
+  {
+    @apply border-gray-500 bg-gray-100 text-gray-400;
   }
 
   label > div > input:focus,
@@ -458,6 +467,7 @@
   }
 
   /* MinMax component styles */
+  .minMaxInput input { @apply bg-transparent; }
   .minMaxInput input:focus,
   .minMaxInput input:focus-visible {
     @apply outline-none;
@@ -566,6 +576,98 @@
   }
   .select__option--is-focused {
     @apply text-neutral-50 bg-primary-500 !important;
+  }
+
+
+  /* Progress bar customization */
+  /* Mozilla browser */
+  /* progress, */
+  /* Other browsers */
+  progress::-webkit-progress-bar {
+    padding: 4px;
+    background: var(--neutral-100);
+    border: 1px solid var(--neutral-300);
+    border-radius: 48px;
+    height: 18px;
+    box-sizing: border-box;
+  }
+  /* Other browsers */
+  progress::-webkit-progress-value {
+  /* Mozilla browser */
+  /* progress::-moz-progress-bar { */
+    height: 8px;
+    border-radius: 48px;
+    border: 1px solid var(--primary-900);
+    background: var(--primary-900);
+    background: linear-gradient(90deg, rgba(27,54,154,1) 0%, rgba(70,98,203,1) 50%, rgba(98,122,207,1) 100%)
+  }
+}
+
+@layer utilities {
+  /* Since much of layouts are based on this */
+  .col-stretch {
+    @apply flex flex-col items-stretch gap-2;
+  }
+  .col-right {
+    @apply flex flex-col items-end gap-2;
+  }
+  .row-center {
+    @apply flex flex-row items-center gap-2;
+  }
+  /* Paragraph styles */
+  .paragraphy-large-bold {
+    @apply text-lg font-bold;
+  }
+  .paragraphy-large-semibold {
+    @apply text-lg font-semibold;
+  }
+  .paragraphy-large-medium {
+    @apply text-lg font-medium;
+  }
+  .paragraphy-large {
+    @apply text-lg font-normal;
+  }
+  .paragraphy-medium-bold {
+    @apply text-base font-bold;
+  }
+  .paragraphy-medium-semibold {
+    @apply text-base font-semibold;
+  }
+  .paragraphy-medium-medium {
+    @apply text-base font-medium;
+  }
+  .paragraphy-medium {
+    @apply text-base font-normal;
+  }
+  .paragraphy-small-bold {
+    @apply text-sm font-bold;
+  }
+  .paragraphy-small-semibold {
+    @apply text-sm font-semibold;
+  }
+  .paragraphy-small-medium {
+    @apply text-sm font-medium;
+  }
+  .paragraphy-small {
+    @apply text-sm font-normal;
+  }
+  .paragraphy-tiny-bold {
+    @apply text-xs font-bold;
+  }
+  .paragraphy-tiny-semibold {
+    @apply text-xs font-semibold;
+  }
+  .paragraphy-tiny-medium {
+    @apply text-xs font-medium;
+  }
+  .paragraphy-tiny {
+    @apply text-xs font-normal;
+  }
+  .neutral-text {
+    @apply text-neutral-500;
+  }
+  .dark-text {
+    @apply text-neutral-900;
   }
 }
 

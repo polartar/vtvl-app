@@ -10,7 +10,17 @@ interface ChipProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   /**
    * What background color to use
    */
-  color?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'default' | 'gray' | 'random';
+  color?:
+    | 'primary'
+    | 'primaryAlt'
+    | 'secondary'
+    | 'secondaryAlt'
+    | 'danger'
+    | 'success'
+    | 'warning'
+    | 'default'
+    | 'gray'
+    | 'random';
   /**
    * How large should the chip be?
    */
@@ -35,7 +45,9 @@ const Chip = ({ size = 'default', color = 'default', label, rounded = false, cla
   const colors = {
     default: 'bg-neutral-50 text-neutral-800 border-neutral-50',
     primary: 'bg-primary-900 text-white border-primary-900',
+    primaryAlt: 'bg-primary-100 text-primary-900 border-primary-200',
     secondary: 'bg-secondary-900 text-white border-secondary-900',
+    secondaryAlt: 'bg-secondary-100 text-secondary-900 border-secondary-100',
     warning: 'bg-warning-100 text-warning-500 border-warning-200',
     success: 'bg-success-100 text-success-500 border-success-200',
     danger: 'bg-danger-100 text-danger-500 border-danger-200',

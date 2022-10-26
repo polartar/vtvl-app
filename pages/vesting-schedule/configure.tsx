@@ -1,4 +1,5 @@
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
+import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
@@ -48,7 +49,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     getFieldState,
     getValues,
     setValue,
-    formState: { errors, isSubmitted }
+    formState: { errors, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: scheduleFormState
   });
@@ -191,7 +192,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     <>
       <div className="grid md:grid-cols-12 w-full gap-3.5">
         <div className="md:col-span-7">
-          <form className="w-full mb-6 panel" onSubmit={handleSubmit(onSubmit)}>
+          <Form isSubmitting={isSubmitting} className="w-full mb-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="grid md:grid-cols-2 gap-5 mb-5">
               {/**
                * Date picker start
@@ -410,7 +411,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 Continue
               </button>
             </div>
-          </form>
+          </Form>
         </div>
         <div className="md:col-span-5">
           <div className="panel">

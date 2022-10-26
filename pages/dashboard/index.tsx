@@ -5,9 +5,10 @@ import DashboardInfoCard from '@components/organisms/DashboardInfoCard/Dashboard
 import DashboardSchedule from '@components/organisms/DashboardSchedule/DashboardSchedule';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
-import { useRouter } from 'next/router';
+import Router, { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useState } from 'react';
+import { formatNumber } from 'utils/token';
 
 import { NextPageWithLayout } from '../_app';
 
@@ -61,7 +62,7 @@ const Dashboard: NextPageWithLayout = () => {
               <PlusIcon className="w-5 h-5" />
               Mint new token
             </button>
-            <button type="button" className="line">
+            <button type="button" className="line" onClick={() => router.push('/dashboard/import-token')}>
               Import existing token
             </button>
           </EmptyState>
@@ -78,11 +79,11 @@ const Dashboard: NextPageWithLayout = () => {
               </p>
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
-              <button className="primary row-center">
+              <button className="primary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Create Schedule</span>
               </button>
-              <button className="secondary row-center">
+              <button className="secondary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Mint Supply</span>
               </button>
@@ -96,7 +97,7 @@ const Dashboard: NextPageWithLayout = () => {
               endDate="July 2, 2023"
               cliff="1 month"
               linearRelease="Monthly"
-              totalAllocated="75,000 BICO"
+              totalAllocated={`${formatNumber(75000)} BICO`}
               status="approvalNeeded"
               detailUrl="/vesting-schedule"
             />
