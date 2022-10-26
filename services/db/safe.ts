@@ -11,7 +11,9 @@ export const fetchSafe = async (id: string): Promise<ISafe | undefined> => {
 export const fetchSafeByAddress = async (address: string): Promise<ISafe | undefined> => {
   const q = query(safeCollection, where('address', '==', address), limit(1));
   const querySnapshot = await getDocs(q);
-  return querySnapshot?.docs.at(0)?.data();
+  const safe = querySnapshot?.docs.at(0)?.data();
+  if (safe) safe.id = querySnapshot?.docs.at(0)?.ref.id;
+  return safe;
 };
 
 export const updateSafe = async (safe: ISafe, id: string): Promise<void> => {
@@ -19,7 +21,12 @@ export const updateSafe = async (safe: ISafe, id: string): Promise<void> => {
   await setDoc(safeRef, safe);
 };
 
-export const createSafe = async (safe: ISafe): Promise<string> => {
+export const createOrUpdateSafe = async (safe: ISafe, ref?: string): Promise<string> => {
+  if (ref) {
+    const safeRef = doc(safeCollection, ref);
+    await setDoc(safeRef, safe);
+    return ref;
+  }
   const safeRef = await addDoc(safeCollection, safe);
   return safeRef.id;
 };

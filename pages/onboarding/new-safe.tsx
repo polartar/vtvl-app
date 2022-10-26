@@ -13,7 +13,7 @@ import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { createSafe, fetchSafeByAddress } from 'services/db/safe';
+import { createOrUpdateSafe, fetchSafeByAddress } from 'services/db/safe';
 import { deploySafe, getSafeInfo } from 'services/gnosois';
 
 interface Owner {
@@ -35,6 +35,7 @@ const NewSafePage: NextPage = () => {
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
+  const [safeRef, setSafeRef] = useState<string>();
 
   useEffect(() => {
     console.log('safe address here is ', query.address?.toString());
@@ -132,6 +133,7 @@ const NewSafePage: NextPage = () => {
       if (savedSafe) {
         defaultValues.owners = savedSafe.owners;
         defaultValues.organizationName = savedSafe.org_name;
+        setSafeRef(savedSafe?.id);
       }
       setOptions(defaultValues.authorizedUsers);
       reset({ ...defaultValues });
@@ -173,15 +175,18 @@ const NewSafePage: NextPage = () => {
         return;
       }
 
-      await createSafe({
-        user_id: user?.uid,
-        org_id: user?.memberInfo?.org_id || '',
-        org_name: values.organizationName,
-        address: safe.getAddress(),
-        chainId: chainId || 0,
-        owners: values.owners,
-        threshold: values.authorizedUsers
-      });
+      await createOrUpdateSafe(
+        {
+          user_id: user?.uid,
+          org_id: user?.memberInfo?.org_id || '',
+          org_name: values.organizationName,
+          address: safe.getAddress(),
+          chainId: chainId || 0,
+          owners: values.owners,
+          threshold: values.authorizedUsers
+        },
+        safeRef
+      );
       return await onNext({ safeAddress: safe.getAddress() });
     } catch (error) {
       console.log('error getting safe info ', error);
