@@ -18,7 +18,7 @@ import { ReactElement, useEffect } from 'react';
 import { useState } from 'react';
 import { db } from 'services/auth/firebase';
 import { createToken, fetchTokenByQuery } from 'services/db/token';
-import { parseTokenAmount } from 'utils/token';
+import { formatNumber, parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
@@ -103,11 +103,11 @@ const Summary: NextPageWithLayout = () => {
         </label>
         <label>
           <span>Amount to mint</span>
-          <p className="paragraphy-small-medium">{initialSupply}</p>
+          <p className="paragraphy-small-medium">{formatNumber(+initialSupply)}</p>
         </label>
         <label>
           <span>Maximum supply</span>
-          <p className="paragraphy-small-medium">{supplyCap === 'LIMITED' ? maxSupply : 'Unlimited'}</p>
+          <p className="paragraphy-small-medium">{supplyCap === 'LIMITED' ? formatNumber(+maxSupply) : 'Unlimited'}</p>
         </label>
       </div>
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">

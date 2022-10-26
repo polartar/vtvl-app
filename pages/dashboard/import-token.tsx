@@ -3,10 +3,13 @@ import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import TokenDetails from '@components/atoms/TokenDetails/TokenDetails';
+import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
+import Router from 'next/router';
+import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { createToken } from 'services/db/token';
 
@@ -14,7 +17,7 @@ interface IImportToken {
   tokenAddress: string;
 }
 
-const DashboardImportToken = () => {
+const DashboardImportToken: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
 
   const defaultValues: IImportToken = {
@@ -158,17 +161,36 @@ const DashboardImportToken = () => {
           </div>
         ) : null}
         <div className="flex flex-row justify-between items-center border-t border-gray-200 pt-5 mt-6">
-          <BackButton label="Back" onClick={() => {}} />
+          <BackButton
+            label="Back"
+            onClick={() => {
+              Router.push('/dashboard');
+            }}
+          />
           <Button
+            loading={isSubmitting || loading}
             disabled={!tokenAddress.value || error}
             className="flex flex-row items-center gap-2 primary group transition-all transform"
-            loading={loading}
             type="submit">
             Add token
           </Button>
         </div>
       </Form>
     </div>
+  );
+};
+
+// Assign a stepped layout -- to refactor later and put into a provider / service / utility function because this is a repetitive function
+DashboardImportToken.getLayout = function getLayout(page: ReactElement) {
+  // Update these into a state coming from the context
+  const crumbSteps = [
+    { title: 'Dashboard', route: '/dashboard' },
+    { title: 'Import token', route: '/dashboard/import-token' }
+  ];
+  return (
+    <SteppedLayout title="Import token" crumbs={crumbSteps}>
+      {page}
+    </SteppedLayout>
   );
 };
 

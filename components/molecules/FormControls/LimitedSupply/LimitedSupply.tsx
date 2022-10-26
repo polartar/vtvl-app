@@ -1,11 +1,13 @@
 import MinMaxInput from '@components/atoms/FormControls/MinMaxInput/MinMaxInput';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
+import { formatNumber } from 'utils/token';
 
 interface LimitedSupplyProps extends React.InputHTMLAttributes<HTMLInputElement> {
   required?: boolean;
   initial: number;
   maximum: number;
   label?: string;
+  maximumLabel?: string;
   className?: string;
   message?: string | JSX.Element | JSX.Element[];
   error?: boolean;
@@ -19,6 +21,7 @@ interface LimitedSupplyProps extends React.InputHTMLAttributes<HTMLInputElement>
 const LimitedSupply = ({
   required = false,
   label = '',
+  maximumLabel = 'Token total supply',
   initial,
   maximum,
   className = '',
@@ -35,7 +38,9 @@ const LimitedSupply = ({
             <>
               <span className={`form-label ${required ? 'required' : ''}`}>{label}</span>
               {maxReadOnly ? (
-                <p className="text-xs font-medium text-neutral-700">Token total supply: {maximum}</p>
+                <p className="text-xs font-medium text-neutral-700">
+                  {maximumLabel}: {formatNumber(maximum)}
+                </p>
               ) : null}
             </>
           ) : null}

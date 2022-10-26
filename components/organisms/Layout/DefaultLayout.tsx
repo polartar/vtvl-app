@@ -59,6 +59,12 @@ const SidebarProps = {
       icon: '/icons/s_transactions.svg',
       hoverIcon: '/icons/s_transactions2.svg',
       route: '/transactions'
+    },
+    {
+      title: 'Claims Portal',
+      icon: '/icons/s_dashboard.svg',
+      hoverIcon: '/icons/s_dashboard2.svg',
+      route: '/tokens'
     }
   ],
   submenuList: [
