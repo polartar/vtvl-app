@@ -11,8 +11,7 @@ import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { createMember } from 'services/db/member';
-import { createOrg } from 'services/db/organization';
+import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 interface Contributor {
@@ -29,7 +28,7 @@ type AccountForm = {
 };
 
 const AccountSetupPage: NextPage = () => {
-  const { sendTeammateInvite, user } = useContext(AuthContext);
+  const { sendTeammateInvite, user, onboardNewMember } = useContext(AuthContext);
   const { onPrevious, onNext, info } = useContext(OnboardingContext);
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
@@ -120,26 +119,28 @@ const AccountSetupPage: NextPage = () => {
       return;
     }
 
-    const orgId = await createOrg({ name: values.company, email: values.companyEmail, user_id: user?.uid });
-    const memberId = await createMember({
-      name: values.name,
-      email: values.companyEmail,
-      org_id: orgId,
-      type: info?.accountType || ''
-    });
+    await onboardNewMember(
+      {
+        name: values.name,
+        email: values.companyEmail,
+        type: info?.accountType || ''
+      },
+      { name: values.company, email: values.companyEmail }
+    );
+
+    console.log('user org id now is ', user.memberInfo?.org_id);
 
     if (values.contributors && values.contributors.length > 0) {
       values.contributors.map(async (contributor) => {
-        const memberId = await createMember({
+        await addInvitee({
           name: contributor.name,
           email: contributor.email,
-          org_id: orgId,
-          type: 'employee'
+          org_id: user.memberInfo?.org_id || ''
         });
-        await sendTeammateInvite(contributor.email, memberId);
+        await sendTeammateInvite(contributor.email, 'employee');
       });
     }
-    return await onNext({ accountId: memberId });
+    return await onNext({ orgId: user.memberInfo?.org_id });
   };
 
   // Recommended by React hook forms when using field array https://react-hook-form.com/api/usefieldarray

@@ -8,8 +8,7 @@ import { NextPage } from 'next';
 import Router from 'next/router';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
 import React, { useContext, useEffect, useState } from 'react';
-import { createSafe } from 'services/db/safe';
-import { fetchSafes, getSafeInfo } from 'services/gnosois';
+import { fetchSafes } from 'services/gnosois';
 
 const YourSafesPage: NextPage = () => {
   const { active, account, chainId, library } = useWeb3React();
@@ -28,43 +27,10 @@ const YourSafesPage: NextPage = () => {
   }, [account]);
 
   const importSafe = async (address: string) => {
-    if (!active || !chainId || !library) {
-      console.log('Please login with metamask to create safe');
-      return;
-    }
-    console.log('trying import ');
-    if (!user) {
-      console.log('Please login to import safe');
-      return;
-    }
-    try {
-      const safe = await getSafeInfo(library, address);
-      if (!safe) {
-        console.log(
-          "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
-        );
-        return;
-      }
-
-      const owners = await safe.getOwners();
-      const threshold = await safe.getThreshold();
-      const storedSafeId = await createSafe({
-        user_id: user?.uid,
-        address,
-        chainId: chainId,
-        owners: owners.map((o) => {
-          return { name: '', address: o };
-        }),
-        threshold
-      });
-      onNext({ safeId: storedSafeId });
-      // Router.push({
-      //   pathname: '/onboarding/new-safe',
-      //   query: { safeAddress: address }
-      // })
-    } catch (error) {
-      console.log('error importing safe ', error);
-    }
+    Router.push({
+      pathname: '/onboarding/new-safe',
+      query: { address }
+    });
   };
 
   return (

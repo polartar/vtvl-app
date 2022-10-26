@@ -10,7 +10,20 @@ export enum SupportedChainId {
   CRONOS = 25
 }
 
-const prodSupportedChains = {
+interface Network {
+  id: number;
+  icon: string;
+  title: string;
+  code: string;
+  rpc: string;
+  explorer: string;
+  multisigTxUrl: string;
+}
+type SupportedChainsType = {
+  [P in SupportedChainId]: Network;
+};
+
+const prodSupportedChains: SupportedChainsType = {
   [SupportedChainId.MAINNET]: {
     id: 1,
     icon: '/icons/chains/ethereum.svg',
@@ -94,7 +107,16 @@ const prodSupportedChains = {
   }
 };
 
-const devSupportedChains = {
+const devSupportedChains: SupportedChainsType = {
+  [SupportedChainId.MAINNET]: {
+    id: 5,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Mainnet-Test',
+    code: 'ETH',
+    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    explorer: 'https://goerli.etherscan.io',
+    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
+  },
   [SupportedChainId.ROPSTEN]: {
     id: 3,
     icon: '/icons/chains/ethereum.svg',
@@ -169,4 +191,4 @@ const devSupportedChains = {
   }
 };
 
-export const SupportedChains = process.env.NODE_ENV == "production" ? prodSupportedChains : devSupportedChains;
+export const SupportedChains = process.env.NODE_ENV == 'production' ? prodSupportedChains : devSupportedChains;

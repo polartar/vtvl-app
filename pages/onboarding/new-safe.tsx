@@ -13,7 +13,7 @@ import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { createSafe } from 'services/db/safe';
+import { createSafe, fetchSafeByAddress } from 'services/db/safe';
 import { deploySafe, getSafeInfo } from 'services/gnosois';
 
 interface Owner {
@@ -31,57 +31,20 @@ const NewSafePage: NextPage = () => {
   const { user } = useContext(AuthContext);
   const { onNext, onPrevious } = useContext(OnboardingContext);
   const { query } = useRouter();
-  const [isImported, setIsImported] = useState(false);
-  const [importedSafeAddress, setImportedSafeAddress] = useState('');
   const [importedSafe, setImportedSafe] = useState<Safe>();
-  const [owners, setOwners] = useState<{ name: string; address: string }[]>([{ name: '', address: '' }]);
-  const [threshold, setThreshold] = useState(0);
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
-  // const { safeAddress } = router.params
-  console.log('routed query here pls ', query.safeAddress);
 
   useEffect(() => {
-    if (query.safeAddress) {
-      setImportedSafeAddress(query.safeAddress?.toString());
+    console.log('safe address here is ', query.address?.toString());
+    if (query.address) {
       (async () => {
-        await getSafeDetails(importedSafeAddress);
+        await importSafe(query.address?.toString() || '');
       })();
     }
-  }, []);
+  }, [query.address]);
 
-  const getSafeDetails = async (safeAddress: string) => {
-    if (!active || !chainId || !library) {
-      console.log('Please login with metamask to create safe');
-      return;
-    }
-    console.log('getting safe details ');
-    if (!user) {
-      console.log('Please login to import safe');
-      return;
-    }
-    try {
-      const safe = await getSafeInfo(library, safeAddress);
-      if (!safe) {
-        console.log(
-          "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
-        );
-        return;
-      }
-      console.log('we have gotten safe dtails her ', safe);
-      setImportedSafe(safe);
-      const o = (await safe.getOwners()).map((o) => {
-        return { name: '', address: o };
-      });
-      setOwners(o);
-      const t = await safe.getThreshold();
-      setThreshold(t);
-      setIsImported(true);
-    } catch (error: any) {
-      console.log('error importing safe ', error);
-    }
-  };
   // Get to use the react-hook-form and set default values
   const {
     control,
@@ -89,12 +52,13 @@ const NewSafePage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
+    reset,
     formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
       organizationName: '',
-      owners: owners,
-      authorizedUsers: threshold
+      owners: [{ name: '', address: '' }],
+      authorizedUsers: 0
     }
   });
 
@@ -123,7 +87,7 @@ const NewSafePage: NextPage = () => {
   };
 
   const currentOwnerCount = +getValues('owners').length + 1;
-  const [options, setOptions] = useState(currentOwnerCount || 0);
+  const [options, setOptions] = useState(currentOwnerCount);
 
   console.log('Values', errors, isValid, isDirty, isSubmitted);
 
@@ -131,6 +95,53 @@ const NewSafePage: NextPage = () => {
   const addOwner = () => {
     setOptions((prev) => prev + 1);
     append({ name: '', address: '' });
+  };
+
+  const importSafe = async (address: string) => {
+    if (!active || !chainId || !library) {
+      setFormError(true);
+      setFormMessage('Please login with metamask to setup safe!');
+      return;
+    }
+
+    if (!user) {
+      setFormError(true);
+      setFormMessage('Please login to setup safe!');
+      return;
+    }
+    try {
+      const safe = await getSafeInfo(library, address);
+      if (!safe) {
+        setFormError(true);
+        setFormMessage(
+          "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
+        );
+        return;
+      }
+
+      const o = (await safe.getOwners()).map((o) => {
+        return { name: '', address: o };
+      });
+
+      setImportedSafe(safe);
+      const defaultValues: any = {};
+      defaultValues.owners = o;
+      defaultValues.authorizedUsers = await safe.getThreshold();
+      //populate with existing safe if we have it stored
+      const savedSafe = await fetchSafeByAddress(await safe.getAddress());
+      if (savedSafe) {
+        defaultValues.owners = savedSafe.owners;
+        defaultValues.organizationName = savedSafe.org_name;
+      }
+      setOptions(defaultValues.authorizedUsers);
+      reset({ ...defaultValues });
+    } catch (error: any) {
+      console.log('error importing safe ', error);
+      setFormError(true);
+      setFormMessage(
+        "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
+      );
+    }
   };
 
   const onSubmit: SubmitHandler<ConfirmationForm> = async (data) => {
@@ -153,7 +164,7 @@ const NewSafePage: NextPage = () => {
         return;
       }
 
-      const safe = isImported ? importedSafe : await deploySafe(library, owners, values.authorizedUsers);
+      const safe = importedSafe !== null ? importedSafe : await deploySafe(library, owners, values.authorizedUsers);
 
       if (!safe) {
         console.log('invalid safe configurations ');
@@ -161,14 +172,17 @@ const NewSafePage: NextPage = () => {
         setFormError(true);
         return;
       }
-      const storedSafeId = await createSafe({
+
+      await createSafe({
         user_id: user?.uid,
+        org_id: user?.memberInfo?.org_id || '',
+        org_name: values.organizationName,
         address: safe.getAddress(),
         chainId: chainId || 0,
         owners: values.owners,
         threshold: values.authorizedUsers
       });
-      return await onNext({ safeId: storedSafeId });
+      return await onNext({ safeAddress: safe.getAddress() });
     } catch (error) {
       console.log('error getting safe info ', error);
       setFormMessage('Error getting safe info');
@@ -261,7 +275,7 @@ const NewSafePage: NextPage = () => {
                     label="Owner's address"
                     placeholder="Enter owner's address"
                     required
-                    disabled={isImported && field.value ? true : false}
+                    disabled={importedSafe !== null ? true : false}
                     error={Boolean(getOwnersState(ownerIndex).address.state.error)}
                     success={
                       !getOwnersState(ownerIndex).address.state.error &&
@@ -304,11 +318,12 @@ const NewSafePage: NextPage = () => {
                   label="How many people should authorize this transaction"
                   placeholder="Select how many"
                   className="md:col-span-2"
+                  defaultValue={importedSafe !== null ? options : 0}
                   options={Array.from(Array(options).keys()).map((num) => {
-                    return { label: num, value: num };
+                    return { label: num + 1, value: num + 1 };
                   })}
                   required
-                  disabled={isImported && field.value ? true : false}
+                  disabled={importedSafe !== null ? true : false}
                   error={Boolean(errors.authorizedUsers)}
                   success={
                     !errors.authorizedUsers &&

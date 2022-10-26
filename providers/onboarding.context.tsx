@@ -6,9 +6,9 @@ interface OnboardingInfo {
   isFirstTimeUser?: boolean;
   userId?: string;
   accountType?: string;
-  accountId?: string;
+  orgId?: string;
   skipSafe?: boolean;
-  safeId?: string;
+  safeAddress?: string;
 }
 
 export type OnboardingContextData = {
@@ -63,6 +63,7 @@ export function OnboardingContextProvider({ children }: any) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState('');
   const router = useRouter();
+  const tried = useEagerConnect();
 
   useEffect(() => {
     console.log('onboarding contest current step is ', currentStep);
@@ -147,14 +148,14 @@ export function OnboardingContextProvider({ children }: any) {
         break;
 
       case Step.AccountSetup:
-        if (!data.accountId) throw Error(States[currentStep].error);
-        setInfo({ ...info, accountId: data.accountId });
+        //   if (!data.orgId) throw Error(States[currentStep].error);
+        setInfo({ ...info, orgId: data.orgId });
         await setRoute();
         break;
 
       case Step.SafeSetup:
-        if (data.skipSafe == false && !data.safeId) throw Error(States[currentStep].error);
-        setInfo({ ...info, safeId: data.safeId });
+        if (data.skipSafe == false && !data.safeAddress) throw Error(States[currentStep].error);
+        setInfo({ ...info, safeAddress: data.safeAddress });
         await setRoute();
         break;
 
