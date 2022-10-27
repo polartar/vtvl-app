@@ -202,7 +202,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 {startDateTime.value ? (
                   <>
                     <Input
-                      label="Start Date"
+                      label="Start date"
                       required
                       value={format(startDateTime.value, 'MM/dd/yyyy')}
                       onFocus={handleFocusCalendar}
@@ -226,7 +226,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 {endDateTime.value ? (
                   <>
                     <Input
-                      label="End Date"
+                      label="End date"
                       required
                       value={format(endDateTime.value, 'MM/dd/yyyy')}
                       onFocus={handleFocusCalendar}
@@ -257,7 +257,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               <div>
                 {startDateTime.value ? (
                   <Input
-                    label="Start Date"
+                    label="Start time"
                     required
                     value={format(startDateTime.value, 'h:mm aa')}
                     onFocus={handleFocusTimePicker}
@@ -284,7 +284,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               <div>
                 {endDateTime.value ? (
                   <Input
-                    label="End Date"
+                    label="End time"
                     required
                     value={format(endDateTime.value, 'h:mm aa')}
                     onFocus={handleFocusTimePicker}
@@ -438,6 +438,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       {...field}
                       value={field.value}
                       onChange={onTemplateChange}
+                      placeholder="Find or create template"
                       className="select-container"
                       classNamePrefix="select"
                     />
@@ -476,7 +477,7 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
     },
     {
       title: 'Schedule summary',
-      desc: 'Schedule created successfully!'
+      desc: ''
     }
   ];
   return (

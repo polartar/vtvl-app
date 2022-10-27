@@ -49,18 +49,13 @@ const Dashboard: NextPageWithLayout = () => {
           <EmptyState
             image="/images/cryptocurrency-trading-bot.gif"
             title="No projects found"
-            description={
-              <>
-                Your projects live here. Start a project by clicking on <br />"<strong>Mint a new token</strong>" or "
-                <strong>Import existing tokent</strong>".
-              </>
-            }>
+            description={<>Create a project by selecting an option below</>}>
             <button
               type="button"
               className="primary flex flex-row gap-2 items-center"
               onClick={() => router.push('/minting-token')}>
               <PlusIcon className="w-5 h-5" />
-              Mint new token
+              Mint a new token
             </button>
             <button type="button" className="line" onClick={() => router.push('/dashboard/import-token')}>
               Import existing token

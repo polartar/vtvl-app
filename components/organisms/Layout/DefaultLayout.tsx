@@ -20,6 +20,21 @@ const Layout = styled.div`
   min-height: calc(100vh - 80px);
 `;
 
+/**
+ * SIDEBAR ITEMS BASED ON USER ROLES
+ *
+ * INVESTOR
+ * - Portfolio Overview
+ * - Claims Portal
+ * - Support
+ * - Switch to founder
+ *
+ * FOUNDER
+ * -
+ *
+ * EMPLOYEE
+ */
+
 const SidebarProps = {
   collapsed: false,
   roleTitle: 'Founder',

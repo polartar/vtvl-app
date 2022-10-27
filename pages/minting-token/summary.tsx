@@ -106,12 +106,12 @@ const Summary: NextPageWithLayout = () => {
           <p className="paragraphy-small-medium">{formatNumber(+initialSupply)}</p>
         </label>
         <label>
-          <span>Maximum supply</span>
+          <span>Maximum amount</span>
           <p className="paragraphy-small-medium">{supplyCap === 'LIMITED' ? formatNumber(+maxSupply) : 'Unlimited'}</p>
         </label>
       </div>
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-        <BackButton label="Return to details" onClick={() => Router.push('/minting-token')} />
+        <BackButton label="Back to details" onClick={() => Router.push('/minting-token')} />
         <Button className="primary" type="button" onClick={handleCreateToken} loading={loading}>
           Create transaction
         </Button>

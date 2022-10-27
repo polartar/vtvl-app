@@ -111,7 +111,7 @@ const ScheduleDetails = ({
       ) : (
         <EmptyState image="/images/blockchain-technology.gif" imageSize="small" description="No schedule details yet" />
       )}
-      <div className="grid md:grid-cols-2 gap-3 mt-5">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
         <label>
           <span>Cliff</span>
           <p className="flex flex-row items-start gap-2 text-xs">
@@ -150,7 +150,7 @@ const ScheduleDetails = ({
                 {formatTime(projectedEndDateTime)}
               </>
             ) : null}
-            <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." />
+            {/* <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." /> */}
           </p>
         </label>
       </div>

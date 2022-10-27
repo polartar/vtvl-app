@@ -12,25 +12,25 @@ const ScheduleOverview = (props: IScheduleOverviewProps) => {
       </div>
       <div>
         <label>
-          <span>No. of Beneficiaries</span>
+          <span>No. of recipients</span>
         </label>
         <p className="paragraphy-tiny-medium neutral-text">{props.beneficiaries}</p>
       </div>
       <div>
         <label>
-          <span>Start Date</span>
+          <span>Start</span>
         </label>
         <p className="paragraphy-tiny-medium neutral-text">{props.startDate}</p>
       </div>
       <div>
         <label>
-          <span>End Date</span>
+          <span>End</span>
         </label>
         <p className="paragraphy-tiny-medium neutral-text">{props.endDate}</p>
       </div>
       <div>
         <label>
-          <span>Cliff</span>
+          <span>Cliff release</span>
         </label>
         <p className="paragraphy-tiny-medium neutral-text">{props.cliff}</p>
       </div>
@@ -42,7 +42,7 @@ const ScheduleOverview = (props: IScheduleOverviewProps) => {
       </div>
       <div>
         <label>
-          <span>Total allocated</span>
+          <span>Vesting allocation</span>
         </label>
         <p className="paragraphy-tiny-medium neutral-text">{props.totalAllocated}</p>
       </div>

@@ -19,6 +19,7 @@ import { deploySafe, getSafeInfo } from 'services/gnosois';
 interface Owner {
   name: string;
   address: string;
+  email: string;
 }
 
 type ConfirmationForm = {
@@ -58,7 +59,7 @@ const NewSafePage: NextPage = () => {
   } = useForm({
     defaultValues: {
       organizationName: '',
-      owners: [{ name: '', address: '' }],
+      owners: [{ name: '', address: '', email: '' }],
       authorizedUsers: 0
     }
   });
@@ -83,6 +84,10 @@ const NewSafePage: NextPage = () => {
       address: {
         value: watch(`owners.${index}.address`),
         state: getFieldState(`owners.${index}.address`)
+      },
+      email: {
+        value: watch(`owners.${index}.email`),
+        state: getFieldState(`owners.${index}.email`)
       }
     };
   };
@@ -95,7 +100,7 @@ const NewSafePage: NextPage = () => {
   // Add a contributor to the list
   const addOwner = () => {
     setOptions((prev) => prev + 1);
-    append({ name: '', address: '' });
+    append({ name: '', address: '', email: '' });
   };
 
   const importSafe = async (address: string) => {
@@ -156,7 +161,7 @@ const NewSafePage: NextPage = () => {
       const values = getValues();
       const owners = values.owners.map((o) => o.address);
       if (!active) {
-        setFormMessage('Please login with metamask to create safe');
+        setFormMessage('Please login with metamask to setup safe');
         setFormError(true);
         return;
       }
@@ -197,7 +202,7 @@ const NewSafePage: NextPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
+    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
       <h1 className="text-neutral-900">Setup your multi-sig safe</h1>
       <Form
         className="w-full my-6"
@@ -207,19 +212,17 @@ const NewSafePage: NextPage = () => {
         success={formSuccess}
         message={formMessage}>
         <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
-        <p className="text-sm text-neutral-500">
-          You can natively create new, import or login to your existing gnisis safe multisig.
-        </p>
-        <div className="grid md:grid-cols-2 py-5 gap-5 border-b border-neutral-200 mb-5">
+        <p className="text-sm text-neutral-500">Natively create a new Safe or login to your existing one</p>
+        <div className="grid md:grid-cols-3 py-5 gap-5 border-b border-neutral-200 mb-5">
           <Controller
             name="organizationName"
             control={control}
             rules={{ required: true }}
             render={({ field }) => (
               <Input
-                label="Your organization name"
-                placeholder="Enter your organization name"
-                className="md:col-span-2"
+                label="Your organisation name"
+                placeholder="Enter your organisation name"
+                className="md:col-span-3"
                 error={Boolean(errors.organizationName)}
                 required
                 success={
@@ -229,9 +232,9 @@ const NewSafePage: NextPage = () => {
                 }
                 message={
                   errors.organizationName
-                    ? 'Please enter your organization name'
+                    ? 'Please enter your organisation name'
                     : (organizationName.state.isTouched || organizationName.state.isDirty) && isSubmitted
-                    ? 'Organization name is okay'
+                    ? 'Organisation name is okay'
                     : ''
                 }
                 {...field}
@@ -240,16 +243,16 @@ const NewSafePage: NextPage = () => {
           />
         </div>
         {fields.map((owner, ownerIndex) => (
-          <div key={`owner-${owner.id}`} className="flex flex-row md:items-center gap-5 mb-5">
-            <div className="grid md:grid-cols-2 gap-5 grow w-full">
+          <div key={`owner-${owner.id}`} className="flex flex-row md:items-start gap-5 mb-5">
+            <div className="grid md:grid-cols-3 gap-5 grow w-full">
               <Controller
                 name={`owners.${ownerIndex}.name`}
                 control={control}
                 rules={{ required: true }}
                 render={({ field }) => (
                   <Input
-                    label="Owner's name"
-                    placeholder="Enter owner's name"
+                    label="Owner name"
+                    placeholder="Enter owner name"
                     required
                     error={Boolean(getOwnersState(ownerIndex).name.state.error)}
                     success={
@@ -260,11 +263,11 @@ const NewSafePage: NextPage = () => {
                     }
                     message={
                       getOwnersState(ownerIndex).name.state.error
-                        ? "Please enter owner's name"
+                        ? 'Please enter owner name'
                         : (getOwnersState(ownerIndex).name.state.isTouched ||
                             getOwnersState(ownerIndex).name.state.isDirty) &&
                           isSubmitted
-                        ? "Owner's name is okay"
+                        ? 'Owner name is okay'
                         : ''
                     }
                     {...field}
@@ -277,8 +280,8 @@ const NewSafePage: NextPage = () => {
                 rules={{ required: true }}
                 render={({ field }) => (
                   <Input
-                    label="Owner's address"
-                    placeholder="Enter owner's address"
+                    label="Owner address"
+                    placeholder="Enter owner address"
                     required
                     disabled={importedSafe !== null ? true : false}
                     error={Boolean(getOwnersState(ownerIndex).address.state.error)}
@@ -290,13 +293,44 @@ const NewSafePage: NextPage = () => {
                     }
                     message={
                       getOwnersState(ownerIndex).address.state.error
-                        ? "Please enter owner's address"
+                        ? 'Please enter owner address'
                         : (getOwnersState(ownerIndex).address.state.isTouched ||
                             getOwnersState(ownerIndex).address.state.isDirty) &&
                           isSubmitted
-                        ? "Owner's address is okay"
+                        ? 'Owner address is okay'
                         : ''
                     }
+                    className="md:col-span-2"
+                    {...field}
+                  />
+                )}
+              />
+              <Controller
+                name={`owners.${ownerIndex}.email`}
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Input
+                    label="Owner email"
+                    placeholder="Enter owner email"
+                    required
+                    error={Boolean(getOwnersState(ownerIndex).email.state.error)}
+                    success={
+                      !getOwnersState(ownerIndex).email.state.error &&
+                      (getOwnersState(ownerIndex).email.state.isTouched ||
+                        getOwnersState(ownerIndex).email.state.isDirty) &&
+                      isSubmitted
+                    }
+                    message={
+                      getOwnersState(ownerIndex).email.state.error
+                        ? 'Please enter owner email'
+                        : (getOwnersState(ownerIndex).email.state.isTouched ||
+                            getOwnersState(ownerIndex).email.state.isDirty) &&
+                          isSubmitted
+                        ? 'Owner email is okay'
+                        : ''
+                    }
+                    className="md:col-span-3"
                     {...field}
                   />
                 )}
@@ -314,45 +348,51 @@ const NewSafePage: NextPage = () => {
         </button>
         {options > 0 ? (
           <div className="border-t border-b border-neutral-300 py-5 mb-5 ">
-            <Controller
-              name="authorizedUsers"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <SelectInput
-                  label="How many people should authorize this transaction"
-                  placeholder="Select how many"
-                  className="md:col-span-2"
-                  defaultValue={importedSafe !== null ? options : 0}
-                  options={Array.from(Array(options).keys()).map((num) => {
-                    return { label: num + 1, value: num + 1 };
-                  })}
-                  required
-                  disabled={importedSafe !== null ? true : false}
-                  error={Boolean(errors.authorizedUsers)}
-                  success={
-                    !errors.authorizedUsers &&
-                    (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) &&
-                    isSubmitted
-                  }
-                  message={
-                    errors.authorizedUsers
-                      ? 'Please select how many'
-                      : (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) && isSubmitted
-                      ? 'Authorized people'
-                      : ''
-                  }
-                  {...field}
+            <div className="md:col-span-2">
+              <label className="required">
+                <span>Any transaction requires the confirmation of:</span>
+              </label>
+              <div className="row-center">
+                <Controller
+                  name="authorizedUsers"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <SelectInput
+                      placeholder="Select how many"
+                      className="w-24"
+                      options={Array.from(Array(options).keys()).map((num) => {
+                        return { label: num + 1, value: num + 1 };
+                      })}
+                      required
+                      disabled={importedSafe !== null ? true : false}
+                      error={Boolean(errors.authorizedUsers)}
+                      success={
+                        !errors.authorizedUsers &&
+                        (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) &&
+                        isSubmitted
+                      }
+                      message={
+                        errors.authorizedUsers
+                          ? 'Please select how many'
+                          : (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) && isSubmitted
+                          ? 'Authorized people'
+                          : ''
+                      }
+                      {...field}
+                    />
+                  )}
                 />
-              )}
-            />
+                <span className="paragraphy-small-medium text-neutral-800">out of {options - 1} owner(s)</span>
+              </div>
+            </div>
           </div>
         ) : null}
         <div className="flex flex-row justify-between items-center">
-          <BackButton label="Return" onClick={() => onPrevious()} />
+          <BackButton label="Back to founder details" onClick={() => onPrevious()} />
           <Button className="primary group" type="submit" loading={isSubmitting}>
             <span className="flex flex-row items-center gap-2 ">
-              Sign and Authorize
+              Sign and authorize
               <img
                 aria-hidden="true"
                 src="/icons/arrow-small-right-white.svg"

@@ -6,6 +6,7 @@ import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
+import Router from 'next/router';
 import React, { useContext, useEffect } from 'react';
 
 const OnboardingContainer = styled.section`
@@ -32,6 +33,7 @@ const Signing = styled.div`
 const Vesting = styled.div`
   border-radius: 0 26px 26px 0;
   background: url('/images/background.png');
+  background-size: cover;
 `;
 
 const WalletContainer = styled.div`
@@ -74,10 +76,6 @@ const ConnectWalletPage: NextPage = () => {
       name: 'Wallet Connect',
       image: '/icons/wallets/walletconnect.svg',
       onClick: walletConnectActivate
-    },
-    {
-      name: 'Members Login',
-      image: '/icons/wallets/space-suit.svg'
     },
     {
       name: 'Coinbase Wallet',
@@ -135,11 +133,24 @@ const ConnectWalletPage: NextPage = () => {
         </div>
         <WalletContainer>
           <Wallets wallets={wallets} />
-          <div className="my-5 text-xs text-neutral-600 font-medium">
-            <span>Can&apos;t find your wallet?</span>&nbsp;
+          <div className="my-5 py-5 border-b border-t border-gray-200 row-center justify-center gap-4">
+            <button type="button" className="py-2 primary" onClick={() => Router.push('/member-login')}>
+              Login as member
+            </button>
+            <button type="button" className="py-2 primary line" onClick={() => Router.push('/member-login')}>
+              Login as guest
+            </button>
+          </div>
+          <div className="my-5 text-xs text-neutral-600 font-medium flex flex-row items-center justify-center gap-10">
             <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
-              Suggest Wallet
+              What is Wallet?
             </a>
+            <div>
+              <span>Can&apos;t find your wallet?</span>&nbsp;
+              <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
+                Suggest Wallet
+              </a>
+            </div>
           </div>
           <Consent />
         </WalletContainer>

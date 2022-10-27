@@ -79,7 +79,7 @@ export function OnboardingContextProvider({ children }: any) {
 
   const completeOnboarding = () => {
     setInProgress(false);
-    router.replace('/dashboard');
+    router.push('/dashboard');
   };
 
   const onPrevious = () => {
@@ -99,7 +99,7 @@ export function OnboardingContextProvider({ children }: any) {
     if (nextstep > Step.SafeSetup) {
       console.log('onboarding context ending onboarding');
       setInProgress(false);
-      await router.replace('/dashboard');
+      await router.push('/dashboard');
       return;
     }
 
@@ -111,7 +111,7 @@ export function OnboardingContextProvider({ children }: any) {
 
     if (nextstep == Step.UserTypeSetup) {
       console.log('is this a first time user -- contest -- ', isFirstTimeUser);
-      await router.replace(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
+      await router.push(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
       return;
     }
 
@@ -124,7 +124,7 @@ export function OnboardingContextProvider({ children }: any) {
     // }
 
     console.log('onboarding context valid route aboutt to replace route ', States[nextstep as Step].route);
-    await router.replace(States[nextstep as Step].route);
+    await router.push(States[nextstep as Step].route);
   };
 
   const onNext = async (data: OnboardingInfo) => {

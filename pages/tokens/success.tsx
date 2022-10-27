@@ -1,5 +1,6 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useTokenContext } from '@providers/token.context';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement } from 'react';
@@ -36,10 +37,13 @@ const ClaimTokenComplete: NextPageWithLayout = () => {
 
 // Assign a stepped layout -- to refactor later and put into a provider / service / utility function because this is a repetitive function
 ClaimTokenComplete.getLayout = function getLayout(page: ReactElement) {
+  const { mintFormState } = useTokenContext();
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'My tokens', route: '/tokens' },
-    { title: 'AAVE', route: '/tokens/001' },
+    // Update the title of this into the actual token name
+    { title: mintFormState?.name || 'Biconomy', route: '/tokens/001' },
+    // Update the title of this into the actual schedule name
     { title: 'Schedule-01', route: '/tokens/001' }
   ];
 
