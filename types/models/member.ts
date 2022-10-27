@@ -5,6 +5,12 @@ export interface IAddress {
   chainId: number;
 }
 
+export interface IInvitee {
+  org_id: string;
+  name: string;
+  email: string;
+}
+
 export interface IMember {
   id?: string;
   user_id?: string;
@@ -13,6 +19,7 @@ export interface IMember {
   email: string;
   wallets?: [IAddress];
   type: string;
+  joined?: number;
 }
 
 export interface IUser extends FirebaseUser {

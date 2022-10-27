@@ -6,9 +6,9 @@ interface OnboardingInfo {
   isFirstTimeUser?: boolean;
   userId?: string;
   accountType?: string;
-  accountId?: string;
+  orgId?: string;
   skipSafe?: boolean;
-  safeId?: string;
+  safeAddress?: string;
 }
 
 export type OnboardingContextData = {
@@ -63,6 +63,7 @@ export function OnboardingContextProvider({ children }: any) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState('');
   const router = useRouter();
+  const tried = useEagerConnect();
 
   useEffect(() => {
     console.log('onboarding contest current step is ', currentStep);
@@ -78,7 +79,7 @@ export function OnboardingContextProvider({ children }: any) {
 
   const completeOnboarding = () => {
     setInProgress(false);
-    router.replace('/dashboard');
+    router.push('/dashboard');
   };
 
   const onPrevious = () => {
@@ -98,7 +99,7 @@ export function OnboardingContextProvider({ children }: any) {
     if (nextstep > Step.SafeSetup) {
       console.log('onboarding context ending onboarding');
       setInProgress(false);
-      await router.replace('/dashboard');
+      await router.push('/dashboard');
       return;
     }
 
@@ -110,7 +111,7 @@ export function OnboardingContextProvider({ children }: any) {
 
     if (nextstep == Step.UserTypeSetup) {
       console.log('is this a first time user -- contest -- ', isFirstTimeUser);
-      await router.replace(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
+      await router.push(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
       return;
     }
 
@@ -123,7 +124,7 @@ export function OnboardingContextProvider({ children }: any) {
     // }
 
     console.log('onboarding context valid route aboutt to replace route ', States[nextstep as Step].route);
-    await router.replace(States[nextstep as Step].route);
+    await router.push(States[nextstep as Step].route);
   };
 
   const onNext = async (data: OnboardingInfo) => {
@@ -147,14 +148,14 @@ export function OnboardingContextProvider({ children }: any) {
         break;
 
       case Step.AccountSetup:
-        if (!data.accountId) throw Error(States[currentStep].error);
-        setInfo({ ...info, accountId: data.accountId });
+        //   if (!data.orgId) throw Error(States[currentStep].error);
+        setInfo({ ...info, orgId: data.orgId });
         await setRoute();
         break;
 
       case Step.SafeSetup:
-        if (data.skipSafe == false && !data.safeId) throw Error(States[currentStep].error);
-        setInfo({ ...info, safeId: data.safeId });
+        if (data.skipSafe == false && !data.safeAddress) throw Error(States[currentStep].error);
+        setInfo({ ...info, safeAddress: data.safeAddress });
         await setRoute();
         break;
 

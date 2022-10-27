@@ -8,7 +8,7 @@ import React, { useContext } from 'react';
 import { IUser } from 'types/models';
 
 interface HeaderProps {
-  user: IUser | undefined,
+  user: IUser | undefined;
   connected: boolean;
   onLogin?: () => void;
   onLogout?: () => void;
