@@ -57,7 +57,6 @@ export const States = {
 };
 
 export function OnboardingContextProvider({ children }: any) {
-  const triedToEagerConnect = useEagerConnect();
   const [info, setInfo] = useState<OnboardingInfo | undefined>();
   const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
   const [inProgress, setInProgress] = useState<boolean>(false);

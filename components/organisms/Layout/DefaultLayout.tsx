@@ -20,6 +20,21 @@ const Layout = styled.div`
   min-height: calc(100vh - 80px);
 `;
 
+/**
+ * SIDEBAR ITEMS BASED ON USER ROLES
+ *
+ * INVESTOR
+ * - Portfolio Overview
+ * - Claims Portal
+ * - Support
+ * - Switch to founder
+ *
+ * FOUNDER
+ * -
+ *
+ * EMPLOYEE
+ */
+
 const SidebarProps = {
   collapsed: false,
   roleTitle: 'Founder',
@@ -59,6 +74,12 @@ const SidebarProps = {
       icon: '/icons/s_transactions.svg',
       hoverIcon: '/icons/s_transactions2.svg',
       route: '/transactions'
+    },
+    {
+      title: 'Claims Portal',
+      icon: '/icons/s_dashboard.svg',
+      hoverIcon: '/icons/s_dashboard2.svg',
+      route: '/tokens'
     }
   ],
   submenuList: [
@@ -97,8 +118,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout>
-        {(active && sidebar) || showSideBar ? <Sidebar {...SidebarProps} /> : null}
-        <div className="flex flex-col items-center flex-grow p-8">{props.children}</div>
+        {active || sidebar || showSideBar ? <Sidebar {...SidebarProps} /> : null}
+        <div className="flex flex-col items-center flex-grow p-8 pt-7">{props.children}</div>
       </Layout>
     </Container>
   );

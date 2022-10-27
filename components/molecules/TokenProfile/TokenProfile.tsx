@@ -1,17 +1,28 @@
 import Chip from '@components/atoms/Chip/Chip';
 
-interface TokenProfileProps {
+interface TokenProfileProps extends React.BaseHTMLAttributes<HTMLDivElement> {
   logo: string;
   name: string;
-  symbol: string;
+  symbol?: string;
+  size?: 'small' | 'default';
 }
 
-const TokenProfile = ({ logo, name, symbol }: TokenProfileProps) => {
+const TokenProfile = ({ logo, name, symbol = '', size = 'default', ...props }: TokenProfileProps) => {
+  const sizes = {
+    small: {
+      image: 'w-8 h-8',
+      name: 'text-lg'
+    },
+    default: {
+      image: 'w-12 h-12',
+      name: 'h2'
+    }
+  };
   return (
-    <div className="flex flex-row items-center gap-2.5">
-      {logo ? <img src={logo} className="rounded-full h-12 w-12" alt={name} /> : null}
-      <h3 className="h2 font-bold">{name}</h3>
-      <Chip label={symbol} rounded />
+    <div className={`flex flex-row items-center gap-2.5 ${props.className}`}>
+      {logo ? <img src={logo} className={`rounded-full ${sizes[size].image}`} alt={name} /> : null}
+      <h3 className={`font-semibold inter ${sizes[size].name}`}>{name}</h3>
+      {symbol ? <Chip label={symbol} rounded /> : null}
     </div>
   );
 };

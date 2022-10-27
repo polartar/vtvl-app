@@ -2,7 +2,7 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { NextPage } from 'next';
-import Router from 'next/router';
+import { useRouter } from 'next/router';
 import { useContext } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { emailPattern } from 'types/constants/validation-patterns';
@@ -14,6 +14,7 @@ type LoginForm = {
 const MemberLoginPage: NextPage = () => {
   const { teammateSignIn, signInWithGoogle } = useContext(AuthContext);
   const { onNext } = useContext(OnboardingContext);
+  const router = useRouter();
 
   const {
     control,
@@ -35,23 +36,28 @@ const MemberLoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    console.log('is this a new user???....', newLogin?.isFirstLogin);
-    console.log('completing setup');
     await onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     const values = getValues();
-    await teammateSignIn(values.memberEmail, Router.locale || '');
-    Router.push('/dashboard');
+    try {
+      await teammateSignIn(values.memberEmail, window.location.toString());
+      router.push('/onboarding/member');
+    } catch (error) {
+      console.log(' invalid member signin ', error);
+    }
   };
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
-      <h1 className="text-neutral-900">Login to VTVL</h1>
+      <h1 className="text-neutral-900">Log in</h1>
       <p className="text-sm text-center text-neutral-500">
+        Select or enter your credentials to gain the access to platform.
+        <br />
         Only registered team members are allowed to access this site.
       </p>
+
       <div className="w-full my-6 panel flex flex-col items-center">
         <button
           onClick={async () => await googleSignIn()}
@@ -100,7 +106,7 @@ const MemberLoginPage: NextPage = () => {
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <span className="font-medium text-xs text-neutral-800">
-          Can&apos;t find your access code? <span className="text-primary-900">Send a new code</span>
+          Don&apos;t have an account? Create an account. <span className="text-primary-900">Send me a new code</span>
         </span>
       </div>
     </div>

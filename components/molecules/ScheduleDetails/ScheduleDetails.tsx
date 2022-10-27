@@ -1,7 +1,6 @@
 import Chip from '@components/atoms/Chip/Chip';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import Hint from '@components/atoms/Hint/Hint';
-import format from 'date-fns/format';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   CliffDuration,
@@ -9,6 +8,8 @@ import {
   DATE_FREQ_TO_TIMESTAMP,
   ReleaseFrequency
 } from 'types/constants/schedule-configuration';
+import { formatDate, formatTime } from 'utils/shared';
+import { formatNumber } from 'utils/token';
 import {
   getChartData,
   getCliffAmount,
@@ -53,9 +54,6 @@ const ScheduleDetails = ({
    * Date / Time - Scheduled day and time.
    * Formats into "Fri, Oct 14, 2022 4:00 PM (GMT+8)"
    */
-  const formatDate = (date: Date) => format(date, 'E, LLL d, yyyy');
-  const formatTime = (date: Date) => format(date, 'h:mm a (O)');
-
   const duration = startDateTime && endDateTime ? getDuration(startDateTime, endDateTime) : '';
   const cliffDate = startDateTime ? getCliffDateTime(startDateTime, cliffDuration) : '';
   const cliffAmount = getCliffAmount(cliffDuration, +lumpSumReleaseAfterCliff, +amountToBeVested);
@@ -113,19 +111,19 @@ const ScheduleDetails = ({
       ) : (
         <EmptyState image="/images/blockchain-technology.gif" imageSize="small" description="No schedule details yet" />
       )}
-      <div className="grid md:grid-cols-2 gap-3 mt-5">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
         <label>
           <span>Cliff</span>
           <p className="flex flex-row items-start gap-2 text-xs">
             <img src="/icons/graph-stairs.svg" className="w-6 h-6" alt="Cliff" />
-            {cliffAmount.toString()} {token}
+            {formatNumber(cliffAmount)} {token}
           </p>
         </label>
         <label>
           <span>Linear Release</span>
           <p className="flex flex-row items-start gap-2 text-xs">
             <img src="/icons/graph-line.svg" className="w-6 h-6" alt="Cliff" />
-            {releaseAmount.toString()} {token} /{DATE_FREQ_TO_LABEL[releaseFrequency]}
+            {formatNumber(releaseAmount)} {token} /{DATE_FREQ_TO_LABEL[releaseFrequency]}
           </p>
         </label>
         <label>
@@ -152,7 +150,7 @@ const ScheduleDetails = ({
                 {formatTime(projectedEndDateTime)}
               </>
             ) : null}
-            <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." />
+            {/* <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." /> */}
           </p>
         </label>
       </div>

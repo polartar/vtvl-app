@@ -4,7 +4,6 @@ import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
-import useEagerConnect from 'hooks/useEagerConnect';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
@@ -13,7 +12,6 @@ import { createSafe } from 'services/db/safe';
 import { fetchSafes, getSafeInfo } from 'services/gnosois';
 
 const YourSafesPage: NextPage = () => {
-  const triedToEagerConnect = useEagerConnect();
   const { active, account, chainId, library } = useWeb3React();
   const { user } = useContext(AuthContext);
   const { onPrevious, onNext } = useContext(OnboardingContext);
@@ -70,13 +68,11 @@ const YourSafesPage: NextPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
+    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
       <h1 className="text-neutral-900">Setup your multi-sig safe</h1>
       <div className="w-full my-6 panel">
         <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
-        <p className="text-sm text-neutral-500">
-          You can natively create new, import or login to your existing gnosis safe multisig.
-        </p>
+        <p className="text-sm text-neutral-500">Natively create a new Safe or login to your existing one</p>
         <div className="mt-5">
           <p className="text-sm text-neutral-500">List of {safes?.length} safes</p>
           {safes?.length ? (
@@ -106,7 +102,7 @@ const YourSafesPage: NextPage = () => {
         </div>
 
         <div className="flex flex-row justify-between items-center mt-6">
-          <BackButton label="Return to account setup" onClick={() => onPrevious()} />
+          <BackButton label="Back to account setup" onClick={() => onPrevious()} />
           <button
             className="flex flex-row items-center gap-2 primary line group transition-all transform"
             type="button"

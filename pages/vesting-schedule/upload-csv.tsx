@@ -9,21 +9,21 @@ const UploadCSVConfiguration: NextPageWithLayout = () => {
 
   const vestingScheduleSteps = {
     step1: {
-      title: 'Import from CSV file',
-      description: "Speed up the process by uploading a CSV file containing all your recipients' details.",
-      templateLabel: 'VTVL Recipient Template',
+      title: 'Import details from a CSV file',
+      description: 'Speed up the process by uploading a CSV file containing all your vesting requirements.',
+      templateLabel: 'VTVL vesting schedule template',
       templateUrl: '/',
       cancelButtonLabel: 'Back',
-      confirmButtonLabel: 'Upload file'
+      confirmButtonLabel: 'Continue'
     },
     step2: {
       title: 'Map your details',
       description: 'Match your column headers to the respective categories on the left.',
       cancelButtonLabel: 'Back',
-      confirmButtonLabel: 'Continue'
+      confirmButtonLabel: 'Confirm'
     },
     step3: {
-      title: 'Summary of recipients',
+      title: 'Summary of vesting details',
       description: (
         <>
           Ensure your imported data is mapped correctly. Click '<strong>Back</strong>' to edit or '
@@ -31,7 +31,7 @@ const UploadCSVConfiguration: NextPageWithLayout = () => {
         </>
       ),
       cancelButtonLabel: 'Back',
-      confirmButtonLabel: 'Continue'
+      confirmButtonLabel: 'Confirm'
     }
   };
 

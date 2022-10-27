@@ -1,5 +1,6 @@
 import Decimal from 'decimal.js';
 import { MultiValue } from 'react-select';
+
 import { CliffDuration, ReleaseFrequency } from './constants/schedule-configuration';
 
 export interface IRecipient {

@@ -20,7 +20,7 @@ import {
   DATE_FREQ_TO_TIMESTAMP,
   ReleaseFrequency
 } from 'types/constants/schedule-configuration';
-import { parseTokenAmount } from 'utils/token';
+import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
   getCliffAmount,
@@ -181,23 +181,28 @@ const ScheduleSummary: NextPageWithLayout = () => {
     <>
       <div className="w-full mb-6 panel max-w-2xl">
         <label>
-          <span>Recipients</span>
+          <span>Recipient(s)</span>
         </label>
         <div className="flex flex-row flex-wrap gap-2 pb-5 border-b border-neutral-200">
           {recipients.map((recipient) => (
             <Chip rounded label={recipient.name} color="random" />
           ))}
         </div>
-        <div className="py-5 border-b border-neutral-200">
+        <div className="py-5 border-b border-neutral-200 grid grid-cols-2 gap-3">
           <label>
-            <span>Total token per user</span>
+            <span>Total token per recipient</span>
             <p>
-              {new Decimal(scheduleFormState.amountToBeVested)
-                .div(new Decimal(recipients.length))
-                .toDP(6, Decimal.ROUND_UP)
-                .toString()}{' '}
+              {formatNumber(
+                new Decimal(scheduleFormState.amountToBeVested)
+                  .div(new Decimal(recipients.length))
+                  .toDP(6, Decimal.ROUND_UP)
+              )}{' '}
               BICO
             </p>
+          </label>
+          <label>
+            <span>Total locked tokens</span>
+            <p>{formatNumber(new Decimal(scheduleFormState.amountToBeVested).toDP(6, Decimal.ROUND_UP))} BICO</p>
           </label>
         </div>
         <div className="py-5 border-b border-neutral-200">
@@ -240,7 +245,7 @@ ScheduleSummary.getLayout = function getLayout(page: ReactElement) {
     },
     {
       title: 'Schedule summary',
-      desc: 'Schedule created successfully!'
+      desc: ''
     }
   ];
   return (

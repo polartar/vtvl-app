@@ -7,6 +7,7 @@ import Radio from '@components/atoms/FormControls/Radio/Radio';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { NextPage } from 'next';
+import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
@@ -350,7 +351,7 @@ const AccountSetupPage: NextPage = () => {
               type="button"
               className="secondary mb-5 flex flex-row items-center gap-2 py-1.5"
               onClick={addContributor}>
-              <img src="/icons/plus.svg" alt="Add more members" aria-hidden="true" />
+              <PlusIcon alt="Add more members" aria-hidden="true" />
               Add more members
             </button>
           </>
