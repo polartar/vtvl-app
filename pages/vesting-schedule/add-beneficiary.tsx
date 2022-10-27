@@ -176,7 +176,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
     step1: {
       title: 'Import from CSV file',
       description: "Speed up the process by uploading a CSV file containing all your recipients' details.",
-      templateLabel: 'VTVL Recipient Template',
+      templateLabel: 'VTVL recipient template',
       templateUrl: '/',
       cancelButtonLabel: 'Cancel',
       confirmButtonLabel: 'Upload file'
@@ -237,7 +237,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
             <>
               <label className="required">
                 <div className="flex flex-row items-center justify-between gap-3">
-                  <span className="form-label required">Select beneficiary</span>
+                  <span className="form-label required">Select recipient</span>
                   <p className="text-xs font-medium text-neutral-700">
                     Token allocation per user:{' '}
                     {recipients.value && recipients.value.length > 0
@@ -255,9 +255,10 @@ const AddBeneficiary: NextPageWithLayout = () => {
                   {...field}
                   value={recipients.value}
                   onChange={onChangeRecipient}
-                  noOptionsMessage={() => <>Create a beneficiary below</>}
+                  noOptionsMessage={() => <>Create a recipient below</>}
                   className="select-container"
                   classNamePrefix="select"
+                  placeholder="Add recipient below"
                 />
                 {beneficiariesErrors.recipients ? (
                   <p className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a beneficiary</p>
@@ -297,12 +298,10 @@ const AddBeneficiary: NextPageWithLayout = () => {
           <Controller
             name="name"
             control={control}
-            rules={{ required: true }}
             render={({ field }) => (
               <Input
                 label="Name"
-                placeholder="Enter name"
-                required
+                placeholder="Enter name (optional)"
                 error={Boolean(errors.name)}
                 success={!errors.name && (name.state.isTouched || name.state.isDirty) && isSubmitted}
                 message={
@@ -346,7 +345,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
             rules={{ required: true }}
             render={({ field }) => (
               <label className="required md:col-span-2">
-                <span>Beneficiary type</span>
+                <span>Recipient type</span>
                 <CreatableSelect
                   isMulti
                   onCreateOption={onCreateRecipientType}
@@ -356,6 +355,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
                   onChange={onRecipientTypeChange}
                   className="select-container"
                   classNamePrefix="select"
+                  placeholder="Find or create recipient type"
                 />
                 {errors.recipientType ? (
                   <div className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a beneficiary</div>
@@ -365,7 +365,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
           />
           <div className="flex flex-row gap-2 md:col-span-2">
             <button type="submit" className="secondary py-1">
-              Add beneficiary
+              Add recipient
             </button>
             <a
               href="javascript:;"
@@ -379,7 +379,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
         <form
           className="flex flex-row justify-between items-center pt-5"
           onSubmit={beneficiariesSubmit(onRecipientsSubmit)}>
-          <BackButton label="Return to details" onClick={() => Router.push('/vesting-schedule/configure')} />
+          <BackButton label="Back to details" onClick={() => Router.push('/vesting-schedule/configure')} />
           <button className="primary" type="submit">
             Continue
           </button>
@@ -414,11 +414,11 @@ AddBeneficiary.getLayout = function getLayout(page: ReactElement) {
     },
     {
       title: 'Add beneficiary',
-      desc: 'Add beneficiary to this schedule'
+      desc: 'Add recipient to this schedule'
     },
     {
       title: 'Schedule summary',
-      desc: 'Schedule created successfully!'
+      desc: ''
     }
   ];
   return (

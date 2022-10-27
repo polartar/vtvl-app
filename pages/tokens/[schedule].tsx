@@ -7,6 +7,7 @@ import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/Limi
 import MyTokenDetails from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useTokenContext } from '@providers/token.context';
 import format from 'date-fns/format';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -130,9 +131,9 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   ];
 
   const chartData = [
-    { name: 'Claimed', value: 100 },
+    { name: 'Claimed', value: 1000 },
     { name: 'Unclaimed', value: 500 },
-    { name: 'Remaining', value: 4000 }
+    { name: 'Remaining', value: 9630 }
   ];
 
   const priceData = [
@@ -185,7 +186,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     y={'51%'}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className="paragraphy-small-medium fill-neutral-900">
+                    className="paragraphy-medium-medium fill-neutral-900">
                     {formatNumber(10000)} AAVE
                   </text>
                   <text
@@ -299,7 +300,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
             </Form>
           </div>
           <div className="md:col-span-5">
-            <div className="panel p-0 h-48 mb-4 relative flex items-end">
+            <div className="panel p-0 h-48 mb-9 relative flex items-end">
               <div className="flex flex-col justify-between h-full items-stretch p-4 absolute inset-0 z-10">
                 <div className="flex flex-row items-start justify-between">
                   <TokenProfile logo="/images/biconomy-logo.png" name="Biconomy" symbol="BICO" size="small" />
@@ -354,10 +355,13 @@ const MyTokenSchedule: NextPageWithLayout = () => {
 
 // Assign a stepped layout -- to refactor later and put into a provider / service / utility function because this is a repetitive function
 MyTokenSchedule.getLayout = function getLayout(page: ReactElement) {
+  const { mintFormState } = useTokenContext();
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'My tokens', route: '/tokens' },
-    { title: 'AAVE', route: '/tokens/001' },
+    // Update the title of this into the actual token name
+    { title: mintFormState?.name || 'AAVE', route: '/tokens/001' },
+    // Update the title of this into the actual schedule name
     { title: 'Schedule-01', route: '/tokens/001' }
   ];
   return (

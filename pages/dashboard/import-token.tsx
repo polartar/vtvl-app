@@ -138,7 +138,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
         className="w-full my-6">
         <span className="paragraphy-medium-medium text-neutral-700">Token address</span>
         <p className="text-sm text-neutral-500 mb-2">
-          Please confirm the token details below to make sure it's the correct token.
+          Please confirm the token address below to make sure it's the correct token.
         </p>
         <Controller
           name="tokenAddress"
@@ -172,7 +172,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
             disabled={!tokenAddress.value || error}
             className="flex flex-row items-center gap-2 primary group transition-all transform"
             type="submit">
-            Add token
+            Add your token
           </Button>
         </div>
       </Form>

@@ -51,10 +51,13 @@ const MemberLoginPage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
-      <h1 className="text-neutral-900">Login to VTVL</h1>
+      <h1 className="text-neutral-900">Log in</h1>
       <p className="text-sm text-center text-neutral-500">
+        Select or enter your credentials to gain the access to platform.
+        <br />
         Only registered team members are allowed to access this site.
       </p>
+
       <div className="w-full my-6 panel flex flex-col items-center">
         <button
           onClick={async () => await googleSignIn()}
@@ -103,7 +106,7 @@ const MemberLoginPage: NextPage = () => {
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <span className="font-medium text-xs text-neutral-800">
-          Can&apos;t find your access code? <span className="text-primary-900">Send a new code</span>
+          Don&apos;t have an account? Create an account. <span className="text-primary-900">Send me a new code</span>
         </span>
       </div>
     </div>

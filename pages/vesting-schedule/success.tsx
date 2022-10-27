@@ -7,12 +7,12 @@ import { ReactElement } from 'react';
 const ConfirmationSuccess: NextPageWithLayout = () => {
   return (
     <>
-      <h1 className="h2 font-medium text-center mb-10">Create a vesting contract</h1>
+      <h1 className="h2 font-medium text-center mb-10">Confirmation</h1>
       <EmptyState
         image="/images/success-animation.gif"
         imageSize="small"
         imageBlend={false}
-        title="Schedule successfully created and submitted"
+        title="Vesting schedule succesfully created!"
         description="A notification has been sent to the founder for approval">
         <button type="button" className="primary flex" onClick={() => Router.push(`/vesting-schedule`)}>
           View schedules
