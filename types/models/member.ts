@@ -18,7 +18,7 @@ export interface IMember {
   name?: string;
   email?: string;
   wallets?: [IAddress];
-  type: string;
+  type?: string;
   joined?: number;
 }
 

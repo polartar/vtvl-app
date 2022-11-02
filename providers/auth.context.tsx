@@ -71,13 +71,13 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
     const additionalInfo = getAdditionalUserInfo(credential);
-    if (additionalInfo?.isNewUser) {
-      setIsNewUser(additionalInfo.isNewUser);
-    } else {
-      const memberInfo = await fetchMemberByEmail(credential.user.email || '');
-      setOrganizationId(memberInfo?.org_id);
-      setUser({ ...credential.user, memberInfo });
+    const memberInfo = await fetchMember(credential.user.uid);
+    if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
+      setIsNewUser(additionalInfo?.isNewUser || false);
+      await newMember(credential.user.uid, credential.user.email || '');
     }
+    setOrganizationId(memberInfo?.org_id);
+    setUser({ ...credential.user, memberInfo });
     setLoading(false);
     return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
   };
