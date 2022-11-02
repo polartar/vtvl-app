@@ -11,7 +11,7 @@ interface IDashboardPanelProps {
   status:
     | 'authRequired'
     | 'vestingContractRequired'
-    | 'linkToSafe'
+    | 'transferToMultisigSafe'
     | 'fundingRequired'
     | 'fundingInProgress'
     | 'approved'
@@ -39,7 +39,7 @@ interface IDashboardPanelStatuses {
  * Statuses:
  * - authRequired - has confirmation steps - based on number of approvals
  * - vestingContractRequired
- * - linkToSafe
+ * - transferToMultisigSafe
  * - fundingRequired
  * - fundingInProgress - has confirmation steps - based on number of approvals
  * - approved
@@ -88,9 +88,9 @@ const DashboardPanel = ({
         </>
       )
     },
-    linkToSafe: {
+    transferToMultisigSafe: {
       icon: <WarningIcon className="w-4 h-4" />,
-      label: 'Safe',
+      label: 'Optional',
       actions: (
         <>
           <button className="line primary" disabled onClick={onPrimaryClick}>
@@ -98,7 +98,7 @@ const DashboardPanel = ({
           </button>
           <button className="black row-center" onClick={onSecondaryClick}>
             <img src="/images/multi-sig.png" className="w-6 h-6" aria-hidden="true" />
-            Transfer ownership to multi-sig Safe
+            Transfer ownership to Multi-sig Safe
           </button>
         </>
       )
