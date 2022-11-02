@@ -1,6 +1,7 @@
 import Chip from '@components/atoms/Chip/Chip';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import Hint from '@components/atoms/Hint/Hint';
+import format from 'date-fns/format';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   CliffDuration,
