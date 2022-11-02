@@ -1,12 +1,11 @@
 import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
-import OnboardingContext from '@providers/onboarding.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useContext } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { fetchMemberByEmail } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 type LoginForm = {
@@ -15,7 +14,7 @@ type LoginForm = {
 
 const MemberLoginPage: NextPage = () => {
   const { teammateSignIn, sendLoginLink, signInWithGoogle } = useContext(AuthContext);
-  const { onNext } = useContext(OnboardingContext);
+  const { onNext, startOnboarding } = useContext(OnboardingContext);
   const router = useRouter();
 
   const {
@@ -38,22 +37,29 @@ const MemberLoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    await onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
+    if (newLogin) {
+      console.log('new login');
+      startOnboarding(Step.SignUp);
+    }
+    onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     const values = getValues();
     try {
-      const member = await fetchMemberByEmail(values.memberEmail);
-      console.log('we have member here ', member);
+      const params: any = new URL(window.location.toString() || '');
+      const type = params.searchParams.get('type');
+      const orgId = params.searchParams.get('orgId');
 
-      if (member) {
-        // returning user
-        await sendLoginLink(values.memberEmail);
-        toast.success('Please check your email for the link to login');
+      if (type && orgId) {
+        // invited member
+        await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
+        router.push('/onboarding/member');
         return;
       }
-      await teammateSignIn(values.memberEmail, window.location.toString());
+
+      await sendLoginLink(values.memberEmail);
+      toast.success('Please check your email for the link to login');
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);
@@ -108,7 +114,10 @@ const MemberLoginPage: NextPage = () => {
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <span className="font-medium text-xs text-neutral-800">
-          Don&apos;t have an account? <span className="text-primary-900">Create an account</span>
+          Don&apos;t have an account?{' '}
+          <span className="text-primary-900" onClick={() => router.replace('onboarding/sign-up')}>
+            Create an account.
+          </span>
         </span>
       </div>
     </div>

@@ -15,8 +15,8 @@ import useEagerConnect from 'hooks/useEagerConnect';
 import Router from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from 'services/auth/firebase';
-import { createOrUpdateMember, fetchMemberByEmail, newMember } from 'services/db/member';
-import { createOrg, fetchOrgByQuery } from 'services/db/organization';
+import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
+import { createOrg, fetchOrg, fetchOrgByQuery } from 'services/db/organization';
 import { IMember, IOrganization, IUser } from 'types/models';
 
 export type NewLogin = {
@@ -29,11 +29,12 @@ export type AuthContextData = {
   organizationId: string | undefined;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  emailSignUp: (email: string, url: string) => Promise<void>;
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
-  onboardNewMember: (member: { name: string; email: string; type: string }, org: IOrganization) => Promise<void>;
-  teammateSignIn: (email: string, url: string) => Promise<void>;
-  sendTeammateInvite: (email: string, type: string) => Promise<void>;
+  registerNewMember: (member: { name: string; email: string; type: string }, org: IOrganization) => Promise<void>;
+  teammateSignIn: (email: string, type: string, orgId: string, url: string) => Promise<void>;
+  sendTeammateInvite: (email: string, type: string, orgId?: string) => Promise<void>;
   sendLoginLink: (email: string) => Promise<void>;
   loading: boolean;
   logOut: () => Promise<void>;
@@ -70,11 +71,14 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
     const additionalInfo = getAdditionalUserInfo(credential);
-    const memberInfo = await fetchMemberByEmail(credential.user.email || '');
+    const memberInfo = await fetchMember(credential.user.uid);
+    if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
+      setIsNewUser(additionalInfo?.isNewUser || false);
+      await newMember(credential.user.uid, credential.user.email || '');
+    }
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
     setLoading(false);
-    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
   };
 
@@ -96,58 +100,76 @@ export function AuthContextProvider({ children }: any) {
     setLoading(false);
   };
 
-  const onboardNewMember = async (member: { name: string; email: string; type: string }, org: IOrganization) => {
+  const registerNewMember = async (member: { name: string; email: string; type: string }, org: IOrganization) => {
     setLoading(true);
     if (!user) throw new Error('please sign in to setup your account');
 
     const orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
+    await newMember(user.uid, member.email, member.type, orgId);
     const memberInfo: IMember = {
       ...member,
       org_id: orgId,
       joined: Math.floor(new Date().getTime() / 1000)
     };
-    await createOrUpdateMember(memberInfo, user?.uid || '');
+
     setOrganizationId(orgId);
     setUser({ ...user, memberInfo });
     setLoading(false);
   };
 
-  const teammateSignIn = async (email: string, url?: string): Promise<void> => {
+  const emailSignUp = async (email: string, url?: string): Promise<void> => {
     setLoading(true);
-
-    const member = await fetchMemberByEmail(email);
-
     // first time user
     const isValidLink = isSignInWithEmailLink(auth, url || '');
     if (!isValidLink || !email) throw new Error('invalid sign url');
 
-    const params: any = new URL(url || '');
-    const type = params.searchParams.get('type') || 'employee';
+    const credential = await signInWithEmailLink(auth, email, url);
+    const additionalInfo = getAdditionalUserInfo(credential);
+    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+
+    setUser({ ...credential.user });
+    setLoading(false);
+  };
+
+  const teammateSignIn = async (email: string, type: string, orgId: string, url?: string): Promise<void> => {
+    setLoading(true);
+    // first time user
+    const isValidLink = isSignInWithEmailLink(auth, url || '');
+    if (!isValidLink || !email) throw new Error('invalid sign url');
+
+    const org = await fetchOrg(orgId);
+    if (!org) throw new Error('invalid sign url, no organization');
+
     console.log('user type is ', type);
     const credential = await signInWithEmailLink(auth, email, url);
     const additionalInfo = getAdditionalUserInfo(credential);
-    await newMember(email, type, credential.user.uid);
+    await newMember(credential.user.uid, email, type, orgId);
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+
+    const member = await fetchMember(credential.user.uid);
     setUser({ ...credential.user, memberInfo: member });
     setLoading(false);
-    Router.push('/onboarding/member');
   };
 
   const sendLoginLink = async (email: string): Promise<void> => {
     setLoading(true);
+    const member = await fetchMemberByEmail(email);
+    console.log('sending login link here ', member);
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/dashboard`,
+      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}${
+        member?.email ? '/dashboard' : `/onboarding/select-user-type?email=${email}`
+      }`,
       handleCodeInApp: true
     };
     await sendSignInLinkToEmail(auth, email, actionCodeSettings);
     setLoading(false);
   };
 
-  const sendTeammateInvite = async (email: string, type: string): Promise<void> => {
+  const sendTeammateInvite = async (email: string, type: string, orgId?: string): Promise<void> => {
     setLoading(true);
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/member-login?type=${type}`,
+      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/onboarding/sign-up?type=${type}&orgId=${orgId}`,
       handleCodeInApp: true
     };
     await sendSignInLinkToEmail(auth, email, actionCodeSettings);
@@ -158,13 +180,17 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await signInAnonymously(auth);
     const additionalInfo = getAdditionalUserInfo(credential);
-    setUser(credential.user);
+    setUser({ ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } });
     setLoading(false);
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
   };
 
-  const logOut = () => signOut(auth);
+  const logOut = async () => {
+    await signOut(auth);
+    setUser(undefined);
+    Router.replace('/onboarding');
+  };
 
   // Remove after implementing context to show/hide the sidebar
   const toggleSideBar = () => setShowSideBar((prev) => !prev);
@@ -176,12 +202,13 @@ export function AuthContextProvider({ children }: any) {
       organizationId,
       signUpWithEmail,
       signInWithEmail,
+      emailSignUp,
       signInWithGoogle,
       anonymousSignIn,
       teammateSignIn,
       sendTeammateInvite,
       sendLoginLink,
-      onboardNewMember,
+      registerNewMember,
       loading,
       isNewUser,
       logOut,
@@ -192,7 +219,7 @@ export function AuthContextProvider({ children }: any) {
       toggleSideBar,
       expandSidebar
     }),
-    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId]
+    [loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, user]
   );
 
   useEffect(() => {

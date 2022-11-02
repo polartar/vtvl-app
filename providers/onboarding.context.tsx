@@ -16,7 +16,7 @@ export type OnboardingContextData = {
   onPrevious: () => void;
   setInfo: (info: OnboardingInfo) => void;
   onNext: (info: OnboardingInfo) => void;
-  setCurrentStep: (step: Step) => void;
+  startOnboarding: (step: Step) => void;
   completeOnboarding: () => void;
   inProgress: boolean;
   loading: boolean;
@@ -27,7 +27,7 @@ const OnboardingContext = createContext({} as OnboardingContextData);
 
 export enum Step {
   ChainSetup = 1,
-  Login = 2,
+  SignUp = 2,
   UserTypeSetup = 3,
   AccountSetup = 4,
   SafeSetup = 5
@@ -38,8 +38,8 @@ export const States = {
     route: '/onboarding',
     error: 'Please login with web3 wallet to continue'
   },
-  [Step.Login]: {
-    route: '/member-login',
+  [Step.SignUp]: {
+    route: '/onboarding/sign-up',
     error: 'Please login to continue'
   },
   [Step.UserTypeSetup]: {
@@ -66,8 +66,6 @@ export function OnboardingContextProvider({ children }: any) {
   const tried = useEagerConnect();
 
   useEffect(() => {
-    console.log('onboarding contest current step is ', currentStep);
-    console.log('onboarding in progress ?? ', inProgress);
     router.beforePopState(({ as }) => {
       if (as !== router.asPath && inProgress) {
         const prevstep = currentStep == Step.ChainSetup ? currentStep : currentStep - 1;
@@ -77,9 +75,13 @@ export function OnboardingContextProvider({ children }: any) {
     });
   }, [router]);
 
+  const startOnboarding = (step: Step) => {
+    setInProgress(true);
+    setCurrentStep(step);
+  };
   const completeOnboarding = () => {
     setInProgress(false);
-    router.push('/dashboard');
+    router.replace('/dashboard');
   };
 
   const onPrevious = () => {
@@ -99,7 +101,7 @@ export function OnboardingContextProvider({ children }: any) {
     if (nextstep > Step.SafeSetup) {
       console.log('onboarding context ending onboarding');
       setInProgress(false);
-      await router.push('/dashboard');
+      await router.replace('/dashboard');
       return;
     }
 
@@ -111,7 +113,7 @@ export function OnboardingContextProvider({ children }: any) {
 
     if (nextstep == Step.UserTypeSetup) {
       console.log('is this a first time user -- contest -- ', isFirstTimeUser);
-      await router.push(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
+      await router.replace(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
       return;
     }
 
@@ -124,7 +126,7 @@ export function OnboardingContextProvider({ children }: any) {
     // }
 
     console.log('onboarding context valid route aboutt to replace route ', States[nextstep as Step].route);
-    await router.push(States[nextstep as Step].route);
+    await router.replace(States[nextstep as Step].route);
   };
 
   const onNext = async (data: OnboardingInfo) => {
@@ -135,9 +137,9 @@ export function OnboardingContextProvider({ children }: any) {
         await setRoute();
         break;
 
-      case Step.Login:
+      case Step.SignUp:
         if (!data.userId || data.isFirstTimeUser == undefined) throw Error(States[currentStep].error);
-        setInfo({ ...info, userId: data.userId });
+        setInfo({ ...info, userId: data.userId, isFirstTimeUser: data.isFirstTimeUser });
         await setRoute(data.isFirstTimeUser);
         break;
 
@@ -171,7 +173,7 @@ export function OnboardingContextProvider({ children }: any) {
       onPrevious,
       onNext,
       setInfo,
-      setCurrentStep,
+      startOnboarding,
       completeOnboarding,
       loading,
       inProgress,

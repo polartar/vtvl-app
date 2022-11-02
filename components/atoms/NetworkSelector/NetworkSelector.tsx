@@ -13,8 +13,6 @@ const NetworkSelector = () => {
   });
 
   useEffect(() => {
-    console.log('active is ', active);
-    console.log('account is ', account);
     if (!active) setShowNetworks(false);
     if (chainId) {
       setSelectedNetwork({
