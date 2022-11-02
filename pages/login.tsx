@@ -88,14 +88,7 @@ const LoginPage: NextPage = () => {
                   placeholder="Enter your company email address"
                   className="md:col-span-2"
                   error={Boolean(errors.userEmail)}
-                  success={!errors.userEmail && (userEmail.state.isTouched || userEmail.state.isDirty) && isSubmitted}
-                  message={
-                    errors.userEmail
-                      ? 'Please enter your company email'
-                      : (userEmail.state.isTouched || userEmail.state.isDirty) && isSubmitted
-                      ? 'Company email is okay'
-                      : ''
-                  }
+                  message={errors.userEmail ? 'Please enter your company email' : ''}
                   {...field}
                 />
               )}
@@ -111,16 +104,7 @@ const LoginPage: NextPage = () => {
                   className="md:col-span-2"
                   type={'password'}
                   error={Boolean(errors.userPassword)}
-                  success={
-                    !errors.userPassword && (userPassword.state.isTouched || userPassword.state.isDirty) && isSubmitted
-                  }
-                  message={
-                    errors.userPassword
-                      ? 'Please enter your password'
-                      : (userPassword.state.isTouched || userPassword.state.isDirty) && isSubmitted
-                      ? 'Password is okay'
-                      : ''
-                  }
+                  message={errors.userPassword ? 'Please enter your password' : ''}
                   {...field}
                 />
               )}

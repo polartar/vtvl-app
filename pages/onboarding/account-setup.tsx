@@ -210,14 +210,7 @@ const AccountSetupPage: NextPage = () => {
                 placeholder="Enter your name"
                 required
                 error={Boolean(errors.name)}
-                success={!errors.name && (userName.state.isTouched || userName.state.isDirty) && isSubmitted}
-                message={
-                  errors.name
-                    ? 'Please enter your name'
-                    : (userName.state.isTouched || userName.state.isDirty) && isSubmitted
-                    ? 'Name is okay'
-                    : ''
-                }
+                message={errors.name ? 'Please enter your name' : ''}
                 {...field}
               />
             )}
@@ -233,14 +226,7 @@ const AccountSetupPage: NextPage = () => {
                 placeholder="Enter your company name"
                 required
                 error={Boolean(errors.company)}
-                success={!errors.company && (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted}
-                message={
-                  errors.company
-                    ? 'Please enter your company name'
-                    : (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted
-                    ? 'Company name is okay'
-                    : ''
-                }
+                message={errors.company ? 'Please enter your company name' : ''}
                 {...field}
               />
             )}
@@ -257,18 +243,7 @@ const AccountSetupPage: NextPage = () => {
                 className="md:col-span-2"
                 required
                 error={Boolean(errors.companyEmail)}
-                success={
-                  !errors.companyEmail &&
-                  (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) &&
-                  isSubmitted
-                }
-                message={
-                  errors.companyEmail
-                    ? 'Please enter your company email'
-                    : (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) && isSubmitted
-                    ? 'Company email is okay'
-                    : ''
-                }
+                message={errors.companyEmail ? 'Please enter your company email' : ''}
                 {...field}
               />
             )}
@@ -292,19 +267,9 @@ const AccountSetupPage: NextPage = () => {
                         placeholder="Enter contributor's name"
                         required
                         error={Boolean(getContributorState(contributorIndex).name.state.error)}
-                        success={
-                          !getContributorState(contributorIndex).name.state.error &&
-                          (getContributorState(contributorIndex).name.state.isTouched ||
-                            getContributorState(contributorIndex).name.state.isDirty) &&
-                          isSubmitted
-                        }
                         message={
                           getContributorState(contributorIndex).name.state.error
                             ? "Please enter contributor's name"
-                            : (getContributorState(contributorIndex).name.state.isTouched ||
-                                getContributorState(contributorIndex).name.state.isDirty) &&
-                              isSubmitted
-                            ? "Contributor's name is okay"
                             : ''
                         }
                         {...field}
@@ -321,19 +286,9 @@ const AccountSetupPage: NextPage = () => {
                         placeholder="Enter contributor's email"
                         required
                         error={Boolean(getContributorState(contributorIndex).email.state.error)}
-                        success={
-                          !getContributorState(contributorIndex).email.state.error &&
-                          (getContributorState(contributorIndex).email.state.isTouched ||
-                            getContributorState(contributorIndex).email.state.isDirty) &&
-                          isSubmitted
-                        }
                         message={
                           getContributorState(contributorIndex).email.state.error
                             ? "Please enter contributor's email"
-                            : (getContributorState(contributorIndex).email.state.isTouched ||
-                                getContributorState(contributorIndex).email.state.isDirty) &&
-                              isSubmitted
-                            ? "Contributor's email is okay"
                             : ''
                         }
                         {...field}

@@ -482,6 +482,9 @@
   .panel {
     @apply p-6 rounded-3xl border border-gray-300;
   }
+
+  /* Recharts override */
+  .recharts-cartesian-axis-tick-value { @apply text-xs text-neutral-800; }
 }
 
 @layer components {

@@ -281,16 +281,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
                 className="md:col-span-2"
                 required
                 error={Boolean(errors.walletAddress)}
-                success={
-                  !errors.walletAddress && (walletAddress.state.isTouched || walletAddress.state.isDirty) && isSubmitted
-                }
-                message={
-                  errors.walletAddress
-                    ? 'Please enter wallet address'
-                    : (walletAddress.state.isTouched || walletAddress.state.isDirty) && isSubmitted
-                    ? 'Wallet address is okay'
-                    : ''
-                }
+                message={errors.walletAddress ? 'Please enter wallet address' : ''}
                 {...field}
               />
             )}
@@ -303,14 +294,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
                 label="Name"
                 placeholder="Enter name (optional)"
                 error={Boolean(errors.name)}
-                success={!errors.name && (name.state.isTouched || name.state.isDirty) && isSubmitted}
-                message={
-                  errors.name
-                    ? 'Please enter name'
-                    : (name.state.isTouched || name.state.isDirty) && isSubmitted
-                    ? 'Name is okay'
-                    : ''
-                }
+                message={errors.name ? 'Please enter name' : ''}
                 {...field}
               />
             )}
@@ -326,14 +310,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
                 placeholder="Enter company name"
                 required
                 error={Boolean(errors.company)}
-                success={!errors.company && (company.state.isTouched || company.state.isDirty) && isSubmitted}
-                message={
-                  errors.company
-                    ? 'Please enter your company name'
-                    : (company.state.isTouched || company.state.isDirty) && isSubmitted
-                    ? 'Company name is okay'
-                    : ''
-                }
+                message={errors.company ? 'Please enter your company name' : ''}
                 {...field}
               />
             )}

@@ -225,18 +225,7 @@ const NewSafePage: NextPage = () => {
                 className="md:col-span-3"
                 error={Boolean(errors.organizationName)}
                 required
-                success={
-                  !errors.organizationName &&
-                  (organizationName.state.isTouched || organizationName.state.isDirty) &&
-                  isSubmitted
-                }
-                message={
-                  errors.organizationName
-                    ? 'Please enter your organisation name'
-                    : (organizationName.state.isTouched || organizationName.state.isDirty) && isSubmitted
-                    ? 'Organisation name is okay'
-                    : ''
-                }
+                message={errors.organizationName ? 'Please enter your organisation name' : ''}
                 {...field}
               />
             )}
@@ -255,21 +244,7 @@ const NewSafePage: NextPage = () => {
                     placeholder="Enter owner name"
                     required
                     error={Boolean(getOwnersState(ownerIndex).name.state.error)}
-                    success={
-                      !getOwnersState(ownerIndex).name.state.error &&
-                      (getOwnersState(ownerIndex).name.state.isTouched ||
-                        getOwnersState(ownerIndex).name.state.isDirty) &&
-                      isSubmitted
-                    }
-                    message={
-                      getOwnersState(ownerIndex).name.state.error
-                        ? 'Please enter owner name'
-                        : (getOwnersState(ownerIndex).name.state.isTouched ||
-                            getOwnersState(ownerIndex).name.state.isDirty) &&
-                          isSubmitted
-                        ? 'Owner name is okay'
-                        : ''
-                    }
+                    message={getOwnersState(ownerIndex).name.state.error ? 'Please enter owner name' : ''}
                     {...field}
                   />
                 )}
@@ -285,21 +260,7 @@ const NewSafePage: NextPage = () => {
                     required
                     disabled={importedSafe !== null ? true : false}
                     error={Boolean(getOwnersState(ownerIndex).address.state.error)}
-                    success={
-                      !getOwnersState(ownerIndex).address.state.error &&
-                      (getOwnersState(ownerIndex).address.state.isTouched ||
-                        getOwnersState(ownerIndex).address.state.isDirty) &&
-                      isSubmitted
-                    }
-                    message={
-                      getOwnersState(ownerIndex).address.state.error
-                        ? 'Please enter owner address'
-                        : (getOwnersState(ownerIndex).address.state.isTouched ||
-                            getOwnersState(ownerIndex).address.state.isDirty) &&
-                          isSubmitted
-                        ? 'Owner address is okay'
-                        : ''
-                    }
+                    message={getOwnersState(ownerIndex).address.state.error ? 'Please enter owner address' : ''}
                     className="md:col-span-2"
                     {...field}
                   />
@@ -315,21 +276,7 @@ const NewSafePage: NextPage = () => {
                     placeholder="Enter owner email"
                     required
                     error={Boolean(getOwnersState(ownerIndex).email.state.error)}
-                    success={
-                      !getOwnersState(ownerIndex).email.state.error &&
-                      (getOwnersState(ownerIndex).email.state.isTouched ||
-                        getOwnersState(ownerIndex).email.state.isDirty) &&
-                      isSubmitted
-                    }
-                    message={
-                      getOwnersState(ownerIndex).email.state.error
-                        ? 'Please enter owner email'
-                        : (getOwnersState(ownerIndex).email.state.isTouched ||
-                            getOwnersState(ownerIndex).email.state.isDirty) &&
-                          isSubmitted
-                        ? 'Owner email is okay'
-                        : ''
-                    }
+                    message={getOwnersState(ownerIndex).email.state.error ? 'Please enter owner email' : ''}
                     className="md:col-span-3"
                     {...field}
                   />
@@ -367,18 +314,7 @@ const NewSafePage: NextPage = () => {
                       required
                       disabled={importedSafe !== null ? true : false}
                       error={Boolean(errors.authorizedUsers)}
-                      success={
-                        !errors.authorizedUsers &&
-                        (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        errors.authorizedUsers
-                          ? 'Please select how many'
-                          : (authorizedUsers.state.isTouched || authorizedUsers.state.isDirty) && isSubmitted
-                          ? 'Authorized people'
-                          : ''
-                      }
+                      message={errors.authorizedUsers ? 'Please select how many' : ''}
                       {...field}
                     />
                   )}

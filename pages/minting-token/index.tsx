@@ -127,14 +127,7 @@ const MintingToken: NextPageWithLayout = () => {
                     placeholder="Enter token name"
                     required
                     error={Boolean(errors.name)}
-                    success={!errors.name && (name.state.isTouched || name.state.isDirty) && isSubmitted}
-                    message={
-                      errors.name
-                        ? 'Please enter token name'
-                        : (name.state.isTouched || name.state.isDirty) && isSubmitted
-                        ? 'Token name is okay'
-                        : ''
-                    }
+                    message={errors.name ? 'Please enter token name' : ''}
                     {...field}
                   />
                 )}
@@ -149,14 +142,7 @@ const MintingToken: NextPageWithLayout = () => {
                     placeholder="Enter token symbol"
                     required
                     error={Boolean(errors.symbol)}
-                    success={!errors.symbol && (symbol.state.isTouched || symbol.state.isDirty) && isSubmitted}
-                    message={
-                      errors.symbol
-                        ? 'Please enter token symbol'
-                        : (symbol.state.isTouched || symbol.state.isDirty) && isSubmitted
-                        ? 'Token symbol is okay'
-                        : ''
-                    }
+                    message={errors.symbol ? 'Please enter token symbol' : ''}
                     {...field}
                   />
                 )}
@@ -219,16 +205,7 @@ const MintingToken: NextPageWithLayout = () => {
                       placeholder=""
                       type="number"
                       error={Boolean(errors.maxSupply)}
-                      success={
-                        !errors.maxSupply && (maxSupply.state.isTouched || maxSupply.state.isDirty) && isSubmitted
-                      }
-                      message={
-                        errors.maxSupply
-                          ? 'Please enter the initial total supply'
-                          : (maxSupply.state.isTouched || maxSupply.state.isDirty) && isSubmitted
-                          ? 'Initial total supply is ok'
-                          : ''
-                      }
+                      message={errors.maxSupply ? 'Please enter the initial total supply' : ''}
                       {...field}
                     />
                   )}
@@ -252,18 +229,11 @@ const MintingToken: NextPageWithLayout = () => {
                         Boolean(errors.initialSupply) ||
                         (initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED')
                       }
-                      success={
-                        !errors.initialSupply &&
-                        (initialSupply.state.isTouched || initialSupply.state.isDirty) &&
-                        isSubmitted
-                      }
                       message={
                         errors.initialSupply
                           ? 'Please enter amount to mint'
                           : initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED'
                           ? 'Amount to mint should be smaller than the maximum amount'
-                          : (initialSupply.state.isTouched || initialSupply.state.isDirty) && isSubmitted
-                          ? 'Amount to min is okay'
                           : ''
                       }
                       {...field}

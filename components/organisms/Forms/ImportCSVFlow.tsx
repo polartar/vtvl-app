@@ -270,7 +270,7 @@ const ImportCSVFlow = ({
           <>
             <p className="mb-5 text-sm">
               Download:{' '}
-              <a href={steps.step1.templateUrl} target="_blank">
+              <a href={steps.step1.templateUrl} target="_blank" className="font-bold underline text-primary-900">
                 {steps.step1.templateLabel}
               </a>
             </p>

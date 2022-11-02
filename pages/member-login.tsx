@@ -96,16 +96,7 @@ const MemberLoginPage: NextPage = () => {
                   className="md:col-span-2"
                   error={Boolean(errors.memberEmail)}
                   required
-                  success={
-                    !errors.memberEmail && (memberEmail.state.isTouched || memberEmail.state.isDirty) && isSubmitted
-                  }
-                  message={
-                    errors.memberEmail
-                      ? 'Please enter your company email'
-                      : (memberEmail.state.isTouched || memberEmail.state.isDirty) && isSubmitted
-                      ? 'Company email is okay'
-                      : ''
-                  }
+                  message={errors.memberEmail ? 'Please enter your company email' : ''}
                   {...field}
                 />
               )}
@@ -117,7 +108,7 @@ const MemberLoginPage: NextPage = () => {
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <span className="font-medium text-xs text-neutral-800">
-          Don&apos;t have an account? Create an account. <span className="text-primary-900">Send me a new code</span>
+          Don&apos;t have an account? <span className="text-primary-900">Create an account</span>
         </span>
       </div>
     </div>

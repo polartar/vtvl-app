@@ -42,12 +42,6 @@ export const getCliffDateTime = (startDate: Date, cliffDuration: CliffDuration) 
     case '1-minute':
       durationOption.minutes = 1;
       break;
-    case '2-minutes':
-      durationOption.minutes = 2;
-      break;
-    case '10-minutes':
-      durationOption.minutes = 10;
-      break;
     case '1-hour':
       durationOption.hours = 1;
       break;
@@ -174,7 +168,8 @@ export const getChartData = ({
   const frequencyInterval = DATE_FREQ_TO_TIMESTAMP[frequency];
   const actualStart = cliffDuration !== 'no-cliff' ? cliffDate : start;
   const projectedEndDate = getProjectedEndDateTime(actualStart, end, numberOfReleases, frequencyInterval);
-  const chartData = [];
+  const cliffData = [];
+  const releaseData = [];
   // Stores the current amount and be cumulative during interval
   let currentAmount = new Decimal(0).toDP(6, Decimal.ROUND_UP);
 
@@ -182,15 +177,31 @@ export const getChartData = ({
   let currentDate = start;
 
   if (start && end && cliffDate) {
-    // Add in a zero value as initial dot in the line chart
-    chartData.push({ date: formatDateTime(currentDate), value: currentAmount.toString() });
-
     if (cliffDuration !== 'no-cliff') {
+      // Set base on cliff
+      cliffData.push({
+        date: formatDateTime(currentDate),
+        value: 0
+      });
       // Add the amount based on cliff
       currentAmount = Decimal.add(currentAmount, cliffAmount);
       currentDate = cliffDate;
       // Then add the cliff date with the new value
-      chartData.push({ date: formatDateTime(currentDate), value: currentAmount.toString() });
+      cliffData.push({
+        date: formatDateTime(currentDate),
+        value: currentAmount.toString()
+      });
+      // Add also to release data to place a dot in the cliff as the starting point of the linear release
+      releaseData.push({
+        date: formatDateTime(currentDate),
+        value: currentAmount.toString()
+      });
+    } else {
+      // Add in a zero value as initial dot in the line chart
+      releaseData.push({
+        date: formatDateTime(currentDate),
+        value: currentAmount.toString()
+      });
     }
 
     // This is used to determine a linear vs stepAfter (staircase style) type of line chart
@@ -198,7 +209,10 @@ export const getChartData = ({
     const singleLineFrequencies = ['continuous', 'minute', 'hourly'];
     if (singleLineFrequencies.includes(frequency) || numberOfReleases > 60) {
       // The total amount to be vested
-      chartData.push({ date: formatDateTime(projectedEndDate), value: vestedAmount.toString() });
+      releaseData.push({
+        date: formatDateTime(projectedEndDate),
+        value: vestedAmount.toString()
+      });
     } else {
       // Loop based on frequency interval (how many releases)
       for (let i = 0; i < numberOfReleases; i++) {
@@ -210,12 +224,12 @@ export const getChartData = ({
         currentAmount = Decimal.add(currentAmount, releaseAmount);
 
         // Check if current amount is more the the amount to be vested
-        chartData.push({
+        releaseData.push({
           date: formatDateTime(currentDate),
           value: currentAmount.toString()
         });
       }
     }
   }
-  return chartData;
+  return { release: releaseData, cliff: cliffData };
 };
