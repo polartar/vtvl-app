@@ -120,7 +120,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout>
-        { (user || sidebar || showSideBar) && !inProgress ? <Sidebar {...SidebarProps} roleTitle ={user?.memberInfo?.type || 'founder'} /> : null}
+        {(user || sidebar || showSideBar) && !inProgress ? (
+          <Sidebar {...SidebarProps} roleTitle={user?.memberInfo?.type || 'founder'} />
+        ) : null}
         <div className="flex flex-col items-center flex-grow p-8 pt-7">{props.children}</div>
       </Layout>
     </Container>

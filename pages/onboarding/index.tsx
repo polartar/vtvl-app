@@ -45,17 +45,17 @@ const ConnectWalletPage: NextPage = () => {
   const { active, activate } = useWeb3React();
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const { user, anonymousSignIn } = useContext(AuthContext);
-  const [activated, setActivated] = useState(false)
+  const [activated, setActivated] = useState(false);
 
   useEffect(() => {
     injected.isAuthorized().then((isAuthorized) => {
       if (isAuthorized) {
-        console.log("activated, user is ", user);
-        (async ()=>{
-          await activate(injected, undefined, true)
-          if(user) Router.push('dashboard');
-          else if(!activated) Router.push('member-login');
-        })()
+        console.log('activated, user is ', user);
+        (async () => {
+          await activate(injected, undefined, true);
+          if (user) Router.push('dashboard');
+          else if (!activated) Router.push('member-login');
+        })();
       }
     });
   }, [active]);
@@ -153,7 +153,13 @@ const ConnectWalletPage: NextPage = () => {
             <button type="button" className="py-2 primary" onClick={() => Router.push('/onboarding/member-login')}>
               Login as member
             </button>
-            <button type="button" className="py-2 primary line" onClick={async() => { await anonymousSignIn(); Router.push('/dashboard')}}>
+            <button
+              type="button"
+              className="py-2 primary line"
+              onClick={async () => {
+                await anonymousSignIn();
+                Router.push('/dashboard');
+              }}>
               Login as guest
             </button>
           </div>

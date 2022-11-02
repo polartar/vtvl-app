@@ -35,7 +35,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
     setSelectedRoute(route);
     Router.push(route);
   };
-  console.log("user type here is ", user)
+  console.log('user type here is ', user);
   return (
     <SidebarContainer isExpanded={sidebarIsExpanded} className="transition-all">
       <img
@@ -79,8 +79,13 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
           </IconText>
         ))}
         <UserContainer>
-          <User userName={user?.displayName || 'John Doe'} profilePhoto={user?.photoURL || ''} role={user?.memberInfo?.type || 'founder'} compact={!sidebarIsExpanded} />
-          {sidebarIsExpanded ? <LogoutImg src="/icons/logout.svg" alt="logoutImg" onClick={()=> logOut()} /> : null}
+          <User
+            userName={user?.displayName || 'John Doe'}
+            profilePhoto={user?.photoURL || ''}
+            role={user?.memberInfo?.type || 'founder'}
+            compact={!sidebarIsExpanded}
+          />
+          {sidebarIsExpanded ? <LogoutImg src="/icons/logout.svg" alt="logoutImg" onClick={() => logOut()} /> : null}
         </UserContainer>
       </div>
     </SidebarContainer>

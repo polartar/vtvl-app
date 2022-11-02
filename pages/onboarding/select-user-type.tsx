@@ -1,7 +1,7 @@
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import styled from '@emotion/styled';
 import AuthContext from '@providers/auth.context';
-import OnboardingContext, {Step} from '@providers/onboarding.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import React, { useContext, useEffect } from 'react';
@@ -42,19 +42,19 @@ const SelectUserTypePage: NextPage = () => {
   const [selected, setSelected] = React.useState('');
 
   useEffect(() => {
-    startOnboarding(Step.UserTypeSetup)
+    startOnboarding(Step.UserTypeSetup);
     const params: any = new URL(window.location.toString());
     const email = params.searchParams.get('email');
-    if(email) loginWithUrl(email);
-  }, [])
+    if (email) loginWithUrl(email);
+  }, []);
 
   const loginWithUrl = async (email: string) => {
     try {
       await emailSignUp(email, window.location.toString());
     } catch (error) {
-      console.log("error ", error)
+      console.log('error ', error);
     }
-  }
+  };
 
   return (
     <Container>
@@ -76,7 +76,7 @@ const SelectUserTypePage: NextPage = () => {
       <button
         className="secondary"
         onClick={async () => {
-          if(selected === 'founder'){
+          if (selected === 'founder') {
             onNext({ accountType: selected });
             return;
           }

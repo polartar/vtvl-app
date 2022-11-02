@@ -37,9 +37,9 @@ const SignUpPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    if(newLogin){
-      console.log("new login")
-      startOnboarding(Step.SignUp)
+    if (newLogin) {
+      console.log('new login');
+      startOnboarding(Step.SignUp);
     }
     onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
@@ -47,7 +47,6 @@ const SignUpPage: NextPage = () => {
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     const values = getValues();
     try {
-
       const params: any = new URL(window.location.toString() || '');
       const type = params.searchParams.get('type');
       const orgId = params.searchParams.get('orgId');
@@ -61,7 +60,6 @@ const SignUpPage: NextPage = () => {
 
       await sendLoginLink(values.memberEmail);
       toast.success('Please check your email for the link to login');
-
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);
@@ -125,7 +123,10 @@ const SignUpPage: NextPage = () => {
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <span className="font-medium text-xs text-neutral-800">
-          Already have an account? <span className="text-primary-900" onClick={()=> router.replace('onboarding/member-login')}>Login</span>
+          Already have an account?{' '}
+          <span className="text-primary-900" onClick={() => router.replace('onboarding/member-login')}>
+            Login
+          </span>
         </span>
       </div>
     </div>

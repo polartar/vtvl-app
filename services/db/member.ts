@@ -19,7 +19,7 @@ export const fetchMemberByEmail = async (email: string): Promise<IMember | undef
 //   await setDoc(memberRef, member);
 // };
 
-export const newMember = async (uid: string, email: string, type: string, org_id?:string,): Promise<void> => {
+export const newMember = async (uid: string, email: string, type: string, org_id?: string): Promise<void> => {
   const q = query(inviteeCollection, where('email', '==', email), limit(1));
   const querySnapshot = await getDocs(q);
   const invitee = querySnapshot?.docs.at(0);

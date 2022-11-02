@@ -1,3 +1,4 @@
+import Chip from '@components/atoms/Chip/Chip';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
@@ -6,6 +7,7 @@ import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/Limi
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useWeb3React } from '@web3-react/core';
+import add from 'date-fns/add';
 import format from 'date-fns/format';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -17,6 +19,7 @@ import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { fetchContractByQuery } from 'services/db/contract';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
+import { SelectOptions } from 'types/shared';
 
 type DateTimeType = Date | null;
 
@@ -81,8 +84,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   const cliffOptions = [
     { label: 'No cliff', value: 'no-cliff' },
-    { label: '2 minutes', value: '2-minutes' },
-    { label: '10 minutes', value: '10-minutes' },
     { label: '1 hour', value: '1-hour' },
     { label: '6 hours', value: '6-hours' },
     { label: '12 hours', value: '12-hours' },
@@ -136,11 +137,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const createTemplate = (label: string) => ({ label, value: label.toLocaleLowerCase().replace(/W/g, '') });
   // Sets the initial default recipient options -- will probably need to adjust this later on.
   // Should base from data fetched from firestore
-  const templateDefaultOptions = [
-    createTemplate('Q1 Private'),
-    createTemplate('Q2 Seed'),
-    createTemplate('Q3 Series A')
-  ];
+  const templateDefaultOptions: SelectOptions[] = [];
 
   const [templateOptions, setTemplateOptions] = useState(templateDefaultOptions);
 
@@ -188,6 +185,63 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   //   }
   // }, [account]);
   console.log({ scheduleFormState });
+
+  const quickDates = [
+    { label: '+ 1 month', value: '1-month' },
+    { label: '+ 3 months', value: '3-months' },
+    { label: '+ 6 months', value: '6-months' },
+    { label: '+ 1 year', value: '1-year' },
+    { label: '+ 2 years', value: '2-years' },
+    { label: '+ 4 years', value: '4-years' }
+  ];
+
+  /**
+   * Quick way for the user to fill up the END DATE and TIME
+   * Clicking a chip duration ie., +1 month, +1 year etc. will automatically add that into the START DATE TIME to set the END DATE TIME
+   */
+  const addDateToSchedule = (value: string) => {
+    const durationOption = {
+      years: 0,
+      months: 0,
+      weeks: 0,
+      days: 0,
+      hours: 0,
+      minutes: 0
+    };
+    switch (value) {
+      case '1-month':
+        durationOption.months = 1;
+        break;
+      case '3-months':
+        durationOption.months = 3;
+        break;
+      case '6-months':
+        durationOption.months = 6;
+        break;
+      case '1-year':
+        durationOption.years = 1;
+        break;
+      case '2-years':
+        durationOption.years = 2;
+        break;
+      case '4-years':
+        durationOption.years = 4;
+        break;
+    }
+
+    // Get the start date and add the corresponding new date
+    if (startDateTime.value) {
+      const prospectiveEndDateTime = add(startDateTime.value, durationOption);
+      setValue('endDateTime', prospectiveEndDateTime);
+    } else {
+      // If no start date is currently selected, use the current date
+      const prospectiveStartDateTime = new Date();
+      const prospectiveEndDateTime = add(prospectiveStartDateTime, durationOption);
+      setValue('startDateTime', prospectiveStartDateTime);
+      setValue('endDateTime', prospectiveEndDateTime);
+    }
+  };
+
   return (
     <>
       <div className="grid md:grid-cols-12 w-full gap-3.5">
@@ -249,6 +303,18 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 ) : null}
               </div>
               {/* Date picker end */}
+              <div className="md:col-span-2 row-center gap-3">
+                {quickDates.map((quickDate, qdIndex) => (
+                  <Chip
+                    key={`Quick-date-${qdIndex}`}
+                    label={quickDate.label}
+                    rounded
+                    color="alt"
+                    className="cursor-pointer transform transition-all hover:-translate-y-px hover:bg-primary-900 hover:text-neutral-50 hover:border-primary-900"
+                    onClick={() => addDateToSchedule(quickDate.value)}
+                  />
+                ))}
+              </div>
 
               {/**
                * Time picker start
@@ -322,18 +388,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       options={cliffOptions}
                       required
                       error={Boolean(errors.cliffDuration)}
-                      success={
-                        !errors.cliffDuration &&
-                        (cliffDuration.state.isTouched || cliffDuration.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        errors.cliffDuration
-                          ? 'Please select cliff duration'
-                          : (cliffDuration.state.isTouched || cliffDuration.state.isDirty) && isSubmitted
-                          ? 'Cliff duration confirmed'
-                          : ''
-                      }
+                      message={errors.cliffDuration ? 'Please select cliff duration' : ''}
                       {...field}
                     />
                   )}
@@ -350,16 +405,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         className="mt-5"
                         required
                         error={Boolean(fieldState.error)}
-                        success={
-                          !fieldState.error && (fieldState.isTouched || fieldState.isDirty) && formState.isSubmitted
-                        }
-                        message={
-                          fieldState.error
-                            ? 'Please enter lump sum amount'
-                            : (fieldState.isTouched || fieldState.isDirty) && formState.isSubmitted
-                            ? 'Lumpsum amount confirmed'
-                            : ''
-                        }
+                        message={fieldState.error ? 'Please enter lump sum amount' : ''}
                         {...field}
                       />
                     )}
@@ -377,18 +423,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       options={radioOptions}
                       required
                       error={Boolean(errors.releaseFrequency)}
-                      success={
-                        !errors.releaseFrequency &&
-                        (releaseFrequency.state.isTouched || releaseFrequency.state.isDirty) &&
-                        isSubmitted
-                      }
-                      message={
-                        errors.releaseFrequency
-                          ? 'Please select cliff duration'
-                          : (releaseFrequency.state.isTouched || releaseFrequency.state.isDirty) && isSubmitted
-                          ? 'Cliff duration confirmed'
-                          : ''
-                      }
+                      message={errors.releaseFrequency ? 'Please select cliff duration' : ''}
                       {...field}
                     />
                   )}
@@ -439,6 +474,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       value={field.value}
                       onChange={onTemplateChange}
                       placeholder="Find or create template"
+                      noOptionsMessage={() => 'Type to create a template'}
                       className="select-container"
                       classNamePrefix="select"
                     />

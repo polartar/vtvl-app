@@ -11,7 +11,11 @@ interface Props {
 const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
   return (
     <UserContainer>
-      <img src={ profilePhoto || '/images/user.png'} alt="userImg" className={`transition-all ${compact ? 'mx-1' : 'mx-3'}`} />
+      <img
+        src={profilePhoto || '/images/user.png'}
+        alt="userImg"
+        className={`transition-all ${compact ? 'mx-1' : 'mx-3'}`}
+      />
       <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
         <p>{userName}</p>
         <p>{role}</p>

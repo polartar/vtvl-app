@@ -73,7 +73,6 @@ export function AuthContextProvider({ children }: any) {
     const additionalInfo = getAdditionalUserInfo(credential);
     if (additionalInfo?.isNewUser) {
       setIsNewUser(additionalInfo.isNewUser);
-
     } else {
       const memberInfo = await fetchMemberByEmail(credential.user.email || '');
       setOrganizationId(memberInfo?.org_id);
@@ -139,7 +138,7 @@ export function AuthContextProvider({ children }: any) {
     if (!isValidLink || !email) throw new Error('invalid sign url');
 
     const org = await fetchOrg(orgId);
-    if(!org) throw new Error('invalid sign url, no organization');
+    if (!org) throw new Error('invalid sign url, no organization');
 
     console.log('user type is ', type);
     const credential = await signInWithEmailLink(auth, email, url);
@@ -156,9 +155,11 @@ export function AuthContextProvider({ children }: any) {
   const sendLoginLink = async (email: string): Promise<void> => {
     setLoading(true);
     const member = await fetchMemberByEmail(email);
-    console.log("sending login link here ", member)
+    console.log('sending login link here ', member);
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}${ member?.email ? '/dashboard' : `/onboarding/select-user-type?email=${email}`}`,
+      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}${
+        member?.email ? '/dashboard' : `/onboarding/select-user-type?email=${email}`
+      }`,
       handleCodeInApp: true
     };
     await sendSignInLinkToEmail(auth, email, actionCodeSettings);
@@ -179,7 +180,7 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await signInAnonymously(auth);
     const additionalInfo = getAdditionalUserInfo(credential);
-    setUser({...credential.user, memberInfo: {type: 'anonymous', name: 'anonymous', org_id:'', }});
+    setUser({ ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } });
     setLoading(false);
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
@@ -188,7 +189,7 @@ export function AuthContextProvider({ children }: any) {
   const logOut = async () => {
     await signOut(auth);
     setUser(undefined);
-    Router.replace('/onboarding')
+    Router.replace('/onboarding');
   };
 
   // Remove after implementing context to show/hide the sidebar
