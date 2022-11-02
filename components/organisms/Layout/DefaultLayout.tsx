@@ -104,6 +104,7 @@ interface DefaultLayoutProps {
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const { user, error, logOut, showSideBar, toggleSideBar } = useContext(AuthContext);
   const { active } = useWeb3React();
+  console.log("user here is ", user)
   return (
     <Container>
       <Head>
@@ -118,7 +119,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout>
-        {active || sidebar || showSideBar ? <Sidebar {...SidebarProps} /> : null}
+        { user || sidebar || showSideBar ? <Sidebar {...SidebarProps} roleTitle ={user?.memberInfo?.type || 'founder'} /> : null}
         <div className="flex flex-col items-center flex-grow p-8 pt-7">{props.children}</div>
       </Layout>
     </Container>

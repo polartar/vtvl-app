@@ -2,12 +2,13 @@ import Carousel from '@components/atoms/Carousel/Carousel';
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
 import styled from '@emotion/styled';
+import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
 import Router from 'next/router';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 const OnboardingContainer = styled.section`
   display: grid;
@@ -41,17 +42,30 @@ const WalletContainer = styled.div`
 `;
 
 const ConnectWalletPage: NextPage = () => {
-  const { activate } = useWeb3React();
+  const { active, activate } = useWeb3React();
   const { onNext, setCurrentStep } = useContext(OnboardingContext);
+  const { user, anonymousSignIn } = useContext(AuthContext);
+  const [activated, setActivated] = useState(false)
 
   useEffect(() => {
-    setCurrentStep(Step.ChainSetup);
-  }, []);
+    injected.isAuthorized().then((isAuthorized) => {
+      if (isAuthorized) {
+        console.log("activated, user is ", user);
+        (async ()=>{
+          await activate(injected, undefined, true)
+          if(user) Router.push('dashboard');
+          else if(!activated) Router.push('member-login');
+        })()
+      }
+    });
+  }, [active]);
 
   async function metamaskActivate() {
     try {
       await activate(injected);
-      await onNext({});
+      setActivated(true);
+      setCurrentStep(Step.ChainSetup);
+      onNext({});
     } catch (error) {
       console.log('connection error ', error);
     }
@@ -60,7 +74,9 @@ const ConnectWalletPage: NextPage = () => {
   async function walletConnectActivate() {
     try {
       await activate(walletconnect);
-      await onNext({});
+      setActivated(true);
+      setCurrentStep(Step.ChainSetup);
+      onNext({});
     } catch (error) {
       console.log('connection error ', error);
     }
@@ -137,7 +153,7 @@ const ConnectWalletPage: NextPage = () => {
             <button type="button" className="py-2 primary" onClick={() => Router.push('/member-login')}>
               Login as member
             </button>
-            <button type="button" className="py-2 primary line" onClick={() => Router.push('/member-login')}>
+            <button type="button" className="py-2 primary line" onClick={async() => { await anonymousSignIn(); Router.push('/dashboard')}}>
               Login as guest
             </button>
           </div>

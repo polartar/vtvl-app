@@ -14,9 +14,9 @@ export interface IInvitee {
 export interface IMember {
   id?: string;
   user_id?: string;
-  org_id: string;
-  name: string;
-  email: string;
+  org_id?: string;
+  name?: string;
+  email?: string;
   wallets?: [IAddress];
   type: string;
   joined?: number;

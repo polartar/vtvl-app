@@ -28,7 +28,7 @@ type AccountForm = {
 };
 
 const AccountSetupPage: NextPage = () => {
-  const { sendTeammateInvite, user, onboardNewMember } = useContext(AuthContext);
+  const { sendTeammateInvite, user, registerNewMember } = useContext(AuthContext);
   const { onPrevious, onNext, info } = useContext(OnboardingContext);
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
@@ -119,7 +119,7 @@ const AccountSetupPage: NextPage = () => {
       return;
     }
 
-    await onboardNewMember(
+    await registerNewMember(
       {
         name: values.name,
         email: values.companyEmail,
@@ -137,10 +137,10 @@ const AccountSetupPage: NextPage = () => {
           email: contributor.email,
           org_id: user.memberInfo?.org_id || ''
         });
-        await sendTeammateInvite(contributor.email, 'employee');
+        await sendTeammateInvite(contributor.email, 'employee', user.memberInfo?.org_id);
       });
     }
-    return await onNext({ orgId: user.memberInfo?.org_id });
+    return onNext({ orgId: user.memberInfo?.org_id });
   };
 
   // Recommended by React hook forms when using field array https://react-hook-form.com/api/usefieldarray

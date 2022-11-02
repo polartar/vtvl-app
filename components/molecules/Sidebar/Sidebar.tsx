@@ -28,7 +28,7 @@ interface Props {
 }
 
 const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
-  const { sidebarIsExpanded, expandSidebar } = useContext(AuthContext);
+  const { sidebarIsExpanded, expandSidebar, user, logOut } = useContext(AuthContext);
   const currentRoute = useRouter();
   const [selectedRoute, setSelectedRoute] = React.useState(currentRoute.pathname || '');
   const handleMenuClick = (route: string) => {
@@ -78,8 +78,8 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
           </IconText>
         ))}
         <UserContainer>
-          <User userName={userName} role={role} compact={!sidebarIsExpanded} />
-          {sidebarIsExpanded ? <LogoutImg src="/icons/logout.svg" alt="logoutImg" /> : null}
+          <User userName={user?.displayName || 'John Doe'} profilePhoto={user?.photoURL || ''} role={user?.memberInfo?.type || 'founder'} compact={!sidebarIsExpanded} />
+          {sidebarIsExpanded ? <LogoutImg src="/icons/logout.svg" alt="logoutImg" onClick={()=> logOut()} /> : null}
         </UserContainer>
       </div>
     </SidebarContainer>

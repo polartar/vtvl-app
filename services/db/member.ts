@@ -14,21 +14,20 @@ export const fetchMemberByEmail = async (email: string): Promise<IMember | undef
   return querySnapshot?.docs.at(0)?.data();
 };
 
-export const createOrUpdateMember = async (member: IMember, id: string): Promise<void> => {
-  const memberRef = doc(memberCollection, id);
-  await setDoc(memberRef, member);
-};
+// export const createOrUpdateMember = async (member: IMember, id: string): Promise<void> => {
+//   const memberRef = doc(memberCollection, id);
+//   await setDoc(memberRef, member);
+// };
 
-export const newMember = async (email: string, type: string, uid: string): Promise<void> => {
+export const newMember = async (uid: string, email: string, type: string, org_id?:string,): Promise<void> => {
   const q = query(inviteeCollection, where('email', '==', email), limit(1));
   const querySnapshot = await getDocs(q);
   const invitee = querySnapshot?.docs.at(0);
 
-  if (!invitee) throw new Error('uninvited member');
-  await deleteDoc(invitee?.ref);
+  if (invitee) await deleteDoc(invitee.ref);
 
   const memberRef = doc(memberCollection, uid);
-  await setDoc(memberRef, { ...invitee.data(), joined: Math.floor(new Date().getTime() / 1000), type });
+  await setDoc(memberRef, { ...invitee?.data(), type, org_id, joined: Math.floor(new Date().getTime() / 1000) });
 };
 
 export const addInvitee = async (invitee: IInvitee): Promise<void> => {

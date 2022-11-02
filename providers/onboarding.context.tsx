@@ -27,7 +27,7 @@ const OnboardingContext = createContext({} as OnboardingContextData);
 
 export enum Step {
   ChainSetup = 1,
-  Login = 2,
+  SignUp = 2,
   UserTypeSetup = 3,
   AccountSetup = 4,
   SafeSetup = 5
@@ -38,8 +38,8 @@ export const States = {
     route: '/onboarding',
     error: 'Please login with web3 wallet to continue'
   },
-  [Step.Login]: {
-    route: '/member-login',
+  [Step.SignUp]: {
+    route: '/signup',
     error: 'Please login to continue'
   },
   [Step.UserTypeSetup]: {
@@ -135,9 +135,9 @@ export function OnboardingContextProvider({ children }: any) {
         await setRoute();
         break;
 
-      case Step.Login:
+      case Step.SignUp:
         if (!data.userId || data.isFirstTimeUser == undefined) throw Error(States[currentStep].error);
-        setInfo({ ...info, userId: data.userId });
+        setInfo({ ...info, userId: data.userId, isFirstTimeUser: data.isFirstTimeUser });
         await setRoute(data.isFirstTimeUser);
         break;
 
