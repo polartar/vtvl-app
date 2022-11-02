@@ -16,7 +16,7 @@ export type OnboardingContextData = {
   onPrevious: () => void;
   setInfo: (info: OnboardingInfo) => void;
   onNext: (info: OnboardingInfo) => void;
-  setCurrentStep: (step: Step) => void;
+  startOnboarding: (step: Step) => void;
   completeOnboarding: () => void;
   inProgress: boolean;
   loading: boolean;
@@ -39,7 +39,7 @@ export const States = {
     error: 'Please login with web3 wallet to continue'
   },
   [Step.SignUp]: {
-    route: '/signup',
+    route: '/onboarding/sign-up',
     error: 'Please login to continue'
   },
   [Step.UserTypeSetup]: {
@@ -66,8 +66,6 @@ export function OnboardingContextProvider({ children }: any) {
   const tried = useEagerConnect();
 
   useEffect(() => {
-    console.log('onboarding contest current step is ', currentStep);
-    console.log('onboarding in progress ?? ', inProgress);
     router.beforePopState(({ as }) => {
       if (as !== router.asPath && inProgress) {
         const prevstep = currentStep == Step.ChainSetup ? currentStep : currentStep - 1;
@@ -77,6 +75,10 @@ export function OnboardingContextProvider({ children }: any) {
     });
   }, [router]);
 
+  const startOnboarding = (step: Step) => {
+    setInProgress(true);
+    setCurrentStep(step);
+  };
   const completeOnboarding = () => {
     setInProgress(false);
     router.push('/dashboard');
@@ -171,7 +173,7 @@ export function OnboardingContextProvider({ children }: any) {
       onPrevious,
       onNext,
       setInfo,
-      setCurrentStep,
+      startOnboarding,
       completeOnboarding,
       loading,
       inProgress,

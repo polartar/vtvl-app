@@ -106,7 +106,7 @@ export function AuthContextProvider({ children }: any) {
     if (!user) throw new Error('please sign in to setup your account');
 
     const orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
-    await newMember(member.email, member.type, user.uid, orgId);
+    await newMember(user.uid, member.email, member.type, orgId);
     const memberInfo: IMember = {
       ...member,
       org_id: orgId,
@@ -156,9 +156,9 @@ export function AuthContextProvider({ children }: any) {
   const sendLoginLink = async (email: string): Promise<void> => {
     setLoading(true);
     const member = await fetchMemberByEmail(email);
-
+    console.log("sending login link here ", member)
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/ ${ member ? 'dashboard' : 'onboarding/select-user-type'}`,
+      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}${ member?.email ? '/dashboard' : `/onboarding/select-user-type?email=${email}`}`,
       handleCodeInApp: true
     };
     await sendSignInLinkToEmail(auth, email, actionCodeSettings);
@@ -168,7 +168,7 @@ export function AuthContextProvider({ children }: any) {
   const sendTeammateInvite = async (email: string, type: string, orgId?: string): Promise<void> => {
     setLoading(true);
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/member-login?type=${type}&orgId=${orgId}`,
+      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/onboarding/sign-up?type=${type}&orgId=${orgId}`,
       handleCodeInApp: true
     };
     await sendSignInLinkToEmail(auth, email, actionCodeSettings);
@@ -218,7 +218,7 @@ export function AuthContextProvider({ children }: any) {
       toggleSideBar,
       expandSidebar
     }),
-    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId]
+    [loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, user]
   );
 
   useEffect(() => {

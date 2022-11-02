@@ -43,7 +43,7 @@ const WalletContainer = styled.div`
 
 const ConnectWalletPage: NextPage = () => {
   const { active, activate } = useWeb3React();
-  const { onNext, setCurrentStep } = useContext(OnboardingContext);
+  const { onNext, startOnboarding } = useContext(OnboardingContext);
   const { user, anonymousSignIn } = useContext(AuthContext);
   const [activated, setActivated] = useState(false)
 
@@ -64,7 +64,7 @@ const ConnectWalletPage: NextPage = () => {
     try {
       await activate(injected);
       setActivated(true);
-      setCurrentStep(Step.ChainSetup);
+      startOnboarding(Step.ChainSetup);
       onNext({});
     } catch (error) {
       console.log('connection error ', error);
@@ -75,7 +75,7 @@ const ConnectWalletPage: NextPage = () => {
     try {
       await activate(walletconnect);
       setActivated(true);
-      setCurrentStep(Step.ChainSetup);
+      startOnboarding(Step.ChainSetup);
       onNext({});
     } catch (error) {
       console.log('connection error ', error);
@@ -150,7 +150,7 @@ const ConnectWalletPage: NextPage = () => {
         <WalletContainer>
           <Wallets wallets={wallets} />
           <div className="my-5 py-5 border-b border-t border-gray-200 row-center justify-center gap-4">
-            <button type="button" className="py-2 primary" onClick={() => Router.push('/member-login')}>
+            <button type="button" className="py-2 primary" onClick={() => Router.push('/onboarding/member-login')}>
               Login as member
             </button>
             <button type="button" className="py-2 primary line" onClick={async() => { await anonymousSignIn(); Router.push('/dashboard')}}>

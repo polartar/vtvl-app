@@ -1,6 +1,7 @@
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
+import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import Head from 'next/head';
 import React, { useContext } from 'react';
@@ -103,8 +104,8 @@ interface DefaultLayoutProps {
  */
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const { user, error, logOut, showSideBar, toggleSideBar } = useContext(AuthContext);
+  const { inProgress } = useContext(OnboardingContext);
   const { active } = useWeb3React();
-  console.log("user here is ", user)
   return (
     <Container>
       <Head>
@@ -119,7 +120,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout>
-        { user || sidebar || showSideBar ? <Sidebar {...SidebarProps} roleTitle ={user?.memberInfo?.type || 'founder'} /> : null}
+        { (user || sidebar || showSideBar) && !inProgress ? <Sidebar {...SidebarProps} roleTitle ={user?.memberInfo?.type || 'founder'} /> : null}
         <div className="flex flex-col items-center flex-grow p-8 pt-7">{props.children}</div>
       </Layout>
     </Container>

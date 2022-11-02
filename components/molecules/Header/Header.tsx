@@ -1,10 +1,9 @@
 import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
 import NetworkSelector from '@components/atoms/NetworkSelector/NetworkSelector';
 import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
-import AuthContext from '@providers/auth.context';
 import { useWeb3React } from '@web3-react/core';
-import Router from 'next/router';
-import React, { useContext } from 'react';
+import Router, { useRouter } from 'next/router';
+import React from 'react';
 import { IUser } from 'types/models';
 
 interface HeaderProps {
@@ -18,6 +17,7 @@ interface HeaderProps {
 
 const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSideBar }: HeaderProps) => {
   const { active, account } = useWeb3React();
+  const { asPath } = useRouter()
 
   return (
     <header className="sticky top-0 z-40 w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
@@ -43,6 +43,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
           <SearchInput placeholder="Search" />
         </div>
       </div>
+      { asPath !== '/onboarding' &&
       <div className="flex flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5">
         <div className="flex flex-row items-center gap-1 sm:gap-2">
           <img src="/icons/gas.svg" alt="Gas" className="w-4" />
@@ -53,6 +54,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
         {active ? <NetworkSelector /> : null}
         <WalletConnect connected={active} account={account || ''} />
       </div>
+      }
     </header>
   );
 };
