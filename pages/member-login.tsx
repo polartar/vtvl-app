@@ -55,6 +55,7 @@ const MemberLoginPage: NextPage = () => {
       if (type && orgId) {
         // invited member
         await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
+        router.push('/onboarding/member');
         return;
       }
 

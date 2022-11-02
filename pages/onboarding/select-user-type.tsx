@@ -1,8 +1,9 @@
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import styled from '@emotion/styled';
-import OnboardingContext from '@providers/onboarding.context';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext, {Step} from '@providers/onboarding.context';
 import { NextPage } from 'next';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 
 const Container = styled.div`
   width: 100%;
@@ -35,8 +36,23 @@ const userTypes = {
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const { onNext } = useContext(OnboardingContext);
+  const { onNext, setCurrentStep } = useContext(OnboardingContext);
+  const { emailSignUp } = useContext(AuthContext);
   const [selected, setSelected] = React.useState('');
+
+  useEffect(() => {
+    const params: any = new URL(window.location.toString());
+    const email = params.searchParams.get('email');
+    if(email) loginWithUrl(email);
+  }, [])
+
+  const loginWithUrl = async (email: string) => {
+    try {
+      await emailSignUp(email, window.location.toString());
+    } catch (error) {
+      console.log("error ", error)
+    }
+  }
 
   return (
     <Container>
@@ -58,7 +74,8 @@ const SelectUserTypePage: NextPage = () => {
       <button
         className="secondary"
         onClick={async () => {
-          await onNext({ accountType: selected });
+          setCurrentStep(Step.UserTypeSetup);
+          onNext({ accountType: selected });
         }}>
         Continue
       </button>

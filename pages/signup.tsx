@@ -6,7 +6,6 @@ import { useRouter } from 'next/router';
 import { useContext } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { fetchMemberByEmail } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 type LoginForm = {
@@ -56,6 +55,7 @@ const SignUpPage: NextPage = () => {
       if (type && orgId) {
         // invited member
         await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
+        router.push('/onboarding/member');
         return;
       }
 

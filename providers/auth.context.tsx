@@ -29,6 +29,7 @@ export type AuthContextData = {
   organizationId: string | undefined;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
+  emailSignUp: (email: string, url: string) => Promise<void>;
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
   registerNewMember: (member: { name: string; email: string; type: string }, org: IOrganization) => Promise<void>;
@@ -117,6 +118,20 @@ export function AuthContextProvider({ children }: any) {
     setLoading(false);
   };
 
+  const emailSignUp = async (email: string, url?: string): Promise<void> => {
+    setLoading(true);
+    // first time user
+    const isValidLink = isSignInWithEmailLink(auth, url || '');
+    if (!isValidLink || !email) throw new Error('invalid sign url');
+
+    const credential = await signInWithEmailLink(auth, email, url);
+    const additionalInfo = getAdditionalUserInfo(credential);
+    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+
+    setUser({ ...credential.user });
+    setLoading(false);
+  };
+
   const teammateSignIn = async (email: string, type: string, orgId: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
@@ -136,7 +151,6 @@ export function AuthContextProvider({ children }: any) {
     const member = await fetchMember(credential.user.uid);
     setUser({ ...credential.user, memberInfo: member });
     setLoading(false);
-    Router.push('/onboarding/member');
   };
 
   const sendLoginLink = async (email: string): Promise<void> => {
@@ -144,7 +158,7 @@ export function AuthContextProvider({ children }: any) {
     const member = await fetchMemberByEmail(email);
 
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/ ${member ? 'dashboard' : 'onboarding/account-setup'}`,
+      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/ ${ member ? 'dashboard' : 'onboarding/select-user-type'}`,
       handleCodeInApp: true
     };
     await sendSignInLinkToEmail(auth, email, actionCodeSettings);
@@ -187,6 +201,7 @@ export function AuthContextProvider({ children }: any) {
       organizationId,
       signUpWithEmail,
       signInWithEmail,
+      emailSignUp,
       signInWithGoogle,
       anonymousSignIn,
       teammateSignIn,
