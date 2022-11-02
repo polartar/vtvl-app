@@ -32,7 +32,7 @@ export type AuthContextData = {
   emailSignUp: (email: string, url: string) => Promise<void>;
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
-  registerNewMember: (member: { name: string; email: string; type: string }, org: IOrganization) => Promise<void>;
+  registerNewMember: (member: { name: string; email: string; companyEmail: string, type: string }, org: IOrganization) => Promise<void>;
   teammateSignIn: (email: string, type: string, orgId: string, url: string) => Promise<void>;
   sendTeammateInvite: (email: string, type: string, orgId?: string) => Promise<void>;
   sendLoginLink: (email: string) => Promise<void>;
@@ -85,7 +85,7 @@ export function AuthContextProvider({ children }: any) {
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true);
     const credential = await signInWithEmailAndPassword(auth, email, password);
-    const memberInfo = await fetchMemberByEmail(credential.user.email || '');
+    const memberInfo = await fetchMember(credential.user.uid);
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
     setLoading(false);
@@ -94,18 +94,18 @@ export function AuthContextProvider({ children }: any) {
   const signUpWithEmail = async (email: string, password: string) => {
     setLoading(true);
     const credential = await createUserWithEmailAndPassword(auth, email, password);
-    const memberInfo = await fetchMemberByEmail(credential.user.email || '');
+    const memberInfo = await fetchMember(credential.user.uid);
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
     setLoading(false);
   };
 
-  const registerNewMember = async (member: { name: string; email: string; type: string }, org: IOrganization) => {
+  const registerNewMember = async (member: { name: string; email: string; companyEmail: string, type: string }, org: IOrganization) => {
     setLoading(true);
     if (!user) throw new Error('please sign in to setup your account');
 
     const orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
-    await newMember(user.uid, member.email, member.type, orgId);
+    await newMember(user.uid, member.email, member.companyEmail, member.type, orgId);
     const memberInfo: IMember = {
       ...member,
       org_id: orgId,

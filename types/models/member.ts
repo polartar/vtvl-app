@@ -17,6 +17,7 @@ export interface IMember {
   org_id?: string;
   name?: string;
   email?: string;
+  companyEmail?: string;
   wallets?: [IAddress];
   type?: string;
   joined?: number;
