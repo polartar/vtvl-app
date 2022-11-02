@@ -116,8 +116,13 @@ const Dashboard: NextPageWithLayout = () => {
             status="vestingContractRequired"
             className="mb-6"
           />
-          <DashboardPanel type="contract" contract={sampleContractDetails} status="linkToSafe" className="mb-6" />
-          <DashboardPanel type="schedule" schedule={sampleScheduleDetails} status="fundingRequired" className="mb-6" />
+          <DashboardPanel
+            type="contract"
+            contract={sampleContractDetails}
+            status="transferToMultisigSafe"
+            className="mb-6"
+          />
+          <DashboardPanel type="contract" contract={sampleContractDetails} status="fundingRequired" className="mb-6" />
           <DashboardPanel
             type="schedule"
             schedule={sampleScheduleDetails}
