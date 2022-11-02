@@ -51,7 +51,14 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                 {/* <DefaultLayout sidebar={true} connected={true}> */}
                 <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
                 <ToastContainer />
-                <ReactTooltip effect="float" type="dark" place="top" multiline />
+                <ReactTooltip
+                  effect="solid"
+                  type="dark"
+                  place="top"
+                  multiline
+                  delayShow={300}
+                  backgroundColor="var(--neutral-700)"
+                />
               </VestingContextProvider>
             </OnboardingContextProvider>
           </TokenContextProvider>
