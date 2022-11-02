@@ -466,9 +466,7 @@
   }
 
   /* MinMax component styles */
-  .minMaxInput input {
-    @apply bg-transparent;
-  }
+  .minMaxInput input { @apply bg-transparent; }
   .minMaxInput input:focus,
   .minMaxInput input:focus-visible {
     @apply outline-none;
@@ -582,6 +580,10 @@
     @apply text-neutral-50 bg-primary-500 !important;
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> staging
   /* Progress bar customization */
   /* Mozilla browser */
   /* progress, */
@@ -596,13 +598,13 @@
   }
   /* Other browsers */
   progress::-webkit-progress-value {
-    /* Mozilla browser */
-    /* progress::-moz-progress-bar { */
+  /* Mozilla browser */
+  /* progress::-moz-progress-bar { */
     height: 8px;
     border-radius: 48px;
     border: 1px solid var(--primary-900);
     background: var(--primary-900);
-    background: linear-gradient(90deg, rgba(27, 54, 154, 1) 0%, rgba(70, 98, 203, 1) 50%, rgba(98, 122, 207, 1) 100%);
+    background: linear-gradient(90deg, rgba(27,54,154,1) 0%, rgba(70,98,203,1) 50%, rgba(98,122,207,1) 100%)
   }
 }
 

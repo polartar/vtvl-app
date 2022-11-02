@@ -33,6 +33,10 @@ const NewSafePage: NextPage = () => {
   const { onNext, onPrevious } = useContext(OnboardingContext);
   const { query } = useRouter();
   const [importedSafe, setImportedSafe] = useState<Safe>();
+  const [owners, setOwners] = useState<{ name: string; address: string; email: string }[]>([
+    { name: '', address: '', email: '' }
+  ]);
+  const [threshold, setThreshold] = useState(0);
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -47,6 +51,36 @@ const NewSafePage: NextPage = () => {
     }
   }, [query.address]);
 
+  const getSafeDetails = async (safeAddress: string) => {
+    if (!active || !chainId || !library) {
+      console.log('Please login with metamask to create safe');
+      return;
+    }
+    console.log('getting safe details ');
+    if (!user) {
+      console.log('Please login to import safe');
+      return;
+    }
+    try {
+      const safe = await getSafeInfo(library, safeAddress);
+      if (!safe) {
+        console.log(
+          "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
+        );
+        return;
+      }
+      console.log('we have gotten safe dtails her ', safe);
+      setImportedSafe(safe);
+      const o = (await safe.getOwners()).map((o) => {
+        return { name: '', address: o, email: '' };
+      });
+      setOwners(o);
+      const t = await safe.getThreshold();
+      setThreshold(t);
+    } catch (error: any) {
+      console.log('error importing safe ', error);
+    }
+  };
   // Get to use the react-hook-form and set default values
   const {
     control,
