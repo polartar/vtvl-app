@@ -30,7 +30,7 @@ interface WalletButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
 }
 const WalletButton = ({ image, label, subLabel, disabled = false, ...props }: WalletButtonProps) => {
   return (
-    <ConnectButton {...props} disabled={disabled} className={`${disabled ? 'grayscale opacity-50' : ''}`}>
+    <ConnectButton {...props} disabled={disabled} className={`wallet-button ${disabled ? 'grayscale opacity-50' : ''}`}>
       <img src={image} alt={label} className="mb-5" />
       <p className="text-sm font-medium text-neutral-800">{label}</p>
       {subLabel ? <p>{subLabel}</p> : null}

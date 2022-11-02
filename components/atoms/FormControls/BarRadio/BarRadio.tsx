@@ -41,7 +41,7 @@ const BarRadio = ({ label = '', options, required, className, variant = 'input',
       ) : null}
 
       <div
-        className={`barRadio flex flex-row item-center justify-stretch border border-neutral-300 overflow-hidden h-12 ${variants[variant].container}`}>
+        className={`barRadio flex flex-row item-center justify-stretch border border-neutral-300 overflow-hidden h-10 ${variants[variant].container}`}>
         {options.map((option, optionIndex) => (
           <label
             key={`bar-radio-option-${option.value}-${optionIndex}`}

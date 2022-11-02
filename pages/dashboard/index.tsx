@@ -2,12 +2,13 @@ import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
-import DashboardSchedule from '@components/organisms/DashboardSchedule/DashboardSchedule';
+import DashboardPanel from '@components/organisms/DashboardPanel/DashboardPanel';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
 import Router, { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useState } from 'react';
+import { IScheduleOverviewProps, IVestingContractProps } from 'types/models/vesting';
 import { formatNumber } from 'utils/token';
 
 import { NextPageWithLayout } from '../_app';
@@ -39,6 +40,24 @@ const Dashboard: NextPageWithLayout = () => {
       date: new Date(2022, 8, 28, 11, 32)
     }
   ];
+
+  const sampleScheduleDetails: IScheduleOverviewProps = {
+    name: 'Voyager-0123',
+    beneficiaries: 4,
+    startDate: 'October 22, 2022',
+    endDate: 'July 2, 2023',
+    cliff: '1 month',
+    linearRelease: 'Monthly',
+    totalAllocated: `${formatNumber(75000)} BICO`
+  };
+
+  const sampleContractDetails: IVestingContractProps = {
+    tokenName: 'Biconomy',
+    tokenSymbol: 'BICO',
+    supplyCap: 'Limited',
+    maxSupply: 60000000,
+    address: '0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5'
+  };
 
   console.log(activities);
   return (
@@ -84,19 +103,28 @@ const Dashboard: NextPageWithLayout = () => {
               </button>
             </div>
           </div>
-          <div className="panel mb-6">
-            <DashboardSchedule
-              name="Voyager-0123"
-              beneficiaries={4}
-              startDate="October 22, 2022"
-              endDate="July 2, 2023"
-              cliff="1 month"
-              linearRelease="Monthly"
-              totalAllocated={`${formatNumber(75000)} BICO`}
-              status="approvalNeeded"
-              detailUrl="/vesting-schedule"
-            />
-          </div>
+          <DashboardPanel
+            type="schedule"
+            schedule={sampleScheduleDetails}
+            status="authRequired"
+            step={1}
+            className="mb-6"
+          />
+          <DashboardPanel
+            type="contract"
+            contract={sampleContractDetails}
+            status="vestingContractRequired"
+            className="mb-6"
+          />
+          <DashboardPanel type="contract" contract={sampleContractDetails} status="linkToSafe" className="mb-6" />
+          <DashboardPanel type="schedule" schedule={sampleScheduleDetails} status="fundingRequired" className="mb-6" />
+          <DashboardPanel
+            type="schedule"
+            schedule={sampleScheduleDetails}
+            status="fundingInProgress"
+            step={2}
+            className="mb-6"
+          />
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <DashboardInfoCard
               icon="/icons/calendar.svg"
@@ -119,7 +147,8 @@ const Dashboard: NextPageWithLayout = () => {
 
             <div className="panel">
               <h3 className="h5 text-neutral-900 inter font-semibold mb-4">Activity</h3>
-              <ActivityFeed activities={activities} />
+              <p className="text-neutral-400">Coming soon</p>
+              {/* <ActivityFeed activities={activities} /> */}
             </div>
           </div>
         </div>

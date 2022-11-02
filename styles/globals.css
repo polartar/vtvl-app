@@ -25,7 +25,7 @@
   --primary-300: #a4afd7;
   --primary-200: #bbc3e1;
   --primary-100: #d1d7eb;
-  --primary-50: #020202;
+  --primary-50: #e8ebf5;
   /* Secondary */
   --secondary-900: #f9623b;
   --secondary-800: #fa724f;
@@ -195,7 +195,7 @@
   /* Button component */
   /* Defaults to primary */
   button {
-    @apply rounded-full inline-block text-base py-2.5 px-5 bg-neutral-100;
+    @apply rounded-full inline-block text-base py-2 px-5 bg-neutral-100;
   }
 
   button,
@@ -203,12 +203,12 @@
     @apply transition-all transform;
   }
 
-  /* a:hover,
-  a:focus-visible,
-  button:hover,
-  button:focus-visible {
+  a:hover:not(:disabled),
+  a:focus-visible:not(:disabled),
+  button:hover:not(:disabled),
+  button:focus-visible:not(:disabled) {
     @apply -translate-y-px transform;
-  } */
+  }
 
   button.primary {
     @apply bg-primary-900 text-white;
@@ -248,6 +248,14 @@
     @apply bg-danger-500;
   }
 
+  button.black {
+    @apply bg-black text-white;
+  }
+  button.black:hover,
+  button.black:focus-visible {
+    @apply bg-black;
+  }
+
   button.line {
     @apply bg-white border border-neutral-300 text-neutral-600;
   }
@@ -266,12 +274,15 @@
   button.line.danger {
     @apply border-danger-500 text-danger-500;
   }
-  button.line:not(.primary, .secondary, .success, .danger, .warning):hover,
-  button.line:not(.primary, .secondary, .success, .danger, .warning):focus-visible {
+  button.line.black {
+    @apply border-black text-black;
+  }
+  button.line:not(.primary, .secondary, .success, .danger, .warning, .black):hover,
+  button.line:not(.primary, .secondary, .success, .danger, .warning, .black):focus-visible {
     @apply bg-neutral-300;
   }
-  button.line:is(.primary, .secondary, .success, .danger, .warning):hover,
-  button.line:is(.primary, .secondary, .success, .danger, .warning):focus-visible {
+  button.line:is(.primary, .secondary, .success, .danger, .warning, .black):hover,
+  button.line:is(.primary, .secondary, .success, .danger, .warning, .black):focus-visible {
     @apply text-white;
   }
 
@@ -280,6 +291,11 @@
   }
   button.large {
     @apply py-3 py-6 text-lg;
+  }
+
+  button[disabled]:not(.wallet-button),
+  button:disabled:not(.wallet-button) {
+    @apply bg-primary-50 border border-primary-400 text-primary-300 !important;
   }
 
   /* Typography */
@@ -356,7 +372,7 @@
   .select__control,
   /* custom input component */
   .input-component__input {
-    @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all;
+    @apply flex items-center gap-2 relative border rounded-3xl py-2 px-6 h-10 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all;
   }
 
   /* Other disabled styles */
@@ -557,7 +573,7 @@
 
   /* Select, react-select, creatable select via react-select overrides */
   .select__control {
-    min-height: 3.25rem;
+    min-height: 2.5rem;
     @apply py-2 h-auto rounded-3xl !important;
   }
   .select__control--is-focused {
@@ -582,7 +598,10 @@
     @apply static rounded-xl overflow-hidden !important;
   }
   .select__indicator {
-    @apply pr-1 !important;
+    @apply py-0 pr-1 pl-2 !important;
+  }
+  .select__indicator-separator {
+    @apply hidden !important;
   }
   .select__option {
     @apply text-neutral-600 text-sm !important;
@@ -591,10 +610,6 @@
     @apply text-neutral-50 bg-primary-500 !important;
   }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> staging
   /* Progress bar customization */
   /* Mozilla browser */
   /* progress, */

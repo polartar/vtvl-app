@@ -133,7 +133,7 @@ const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: I
           </button>
           <a
             href={viewDetailsUrl}
-            className="flex w-full items-center justify-center h-13 text-primary-900 text-sm font-medium">
+            className="flex w-full items-center justify-center h-10 text-primary-900 text-sm font-medium">
             View details
           </a>
         </div>
