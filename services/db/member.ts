@@ -1,6 +1,6 @@
-import { addDoc, doc, getDoc, getDocs, limit, query, setDoc, where } from '@firebase/firestore';
-import { memberCollection } from 'services/db/firestore';
-import { IMember } from 'types/models';
+import { addDoc, deleteDoc, doc, getDoc, getDocs, limit, query, setDoc, where } from '@firebase/firestore';
+import { inviteeCollection, memberCollection } from 'services/db/firestore';
+import { IInvitee, IMember } from 'types/models';
 
 export const fetchMember = async (id: string): Promise<IMember | undefined> => {
   const memberRef = doc(memberCollection, id);
@@ -14,12 +14,23 @@ export const fetchMemberByEmail = async (email: string): Promise<IMember | undef
   return querySnapshot?.docs.at(0)?.data();
 };
 
-export const updateMember = async (member: IMember, id: string): Promise<void> => {
+export const createOrUpdateMember = async (member: IMember, id: string): Promise<void> => {
   const memberRef = doc(memberCollection, id);
   await setDoc(memberRef, member);
 };
 
-export const createMember = async (member: IMember): Promise<string> => {
-  const memberRef = await addDoc(memberCollection, member);
-  return memberRef.id;
+export const newMember = async (email: string, type: string, uid: string): Promise<void> => {
+  const q = query(inviteeCollection, where('email', '==', email), limit(1));
+  const querySnapshot = await getDocs(q);
+  const invitee = querySnapshot?.docs.at(0);
+
+  if (!invitee) throw new Error('uninvited member');
+  await deleteDoc(invitee?.ref);
+
+  const memberRef = doc(memberCollection, uid);
+  await setDoc(memberRef, { ...invitee.data(), joined: Math.floor(new Date().getTime() / 1000), type });
+};
+
+export const addInvitee = async (invitee: IInvitee): Promise<void> => {
+  await addDoc(inviteeCollection, invitee);
 };

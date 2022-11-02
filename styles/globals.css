@@ -373,8 +373,7 @@
   select:disabled,
   select[disabled],
   .barRadio:has(:disabled),
-  .barRadio:has([disabled])
-  {
+  .barRadio:has([disabled]) {
     @apply border-gray-500 bg-gray-100 text-gray-400;
   }
 
@@ -481,6 +480,9 @@
   .panel {
     @apply p-6 rounded-3xl border border-gray-300;
   }
+
+  /* Recharts override */
+  .recharts-cartesian-axis-tick-value { @apply text-xs text-neutral-800; }
 }
 
 @layer components {
@@ -578,7 +580,10 @@
     @apply text-neutral-50 bg-primary-500 !important;
   }
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> staging
   /* Progress bar customization */
   /* Mozilla browser */
   /* progress, */

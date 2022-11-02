@@ -5,6 +5,8 @@ import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useContext } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
+import { fetchMemberByEmail } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 type LoginForm = {
@@ -12,7 +14,7 @@ type LoginForm = {
 };
 
 const MemberLoginPage: NextPage = () => {
-  const { teammateSignIn, signInWithGoogle } = useContext(AuthContext);
+  const { teammateSignIn, sendLoginLink, signInWithGoogle } = useContext(AuthContext);
   const { onNext } = useContext(OnboardingContext);
   const router = useRouter();
 
@@ -42,9 +44,18 @@ const MemberLoginPage: NextPage = () => {
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     const values = getValues();
     try {
+      const member = await fetchMemberByEmail(values.memberEmail);
+      console.log('we have member here ', member);
+
+      if (member) {
+        // returning user
+        await sendLoginLink(values.memberEmail);
+        toast.success('Please check your email for the link to login');
+        return;
+      }
       await teammateSignIn(values.memberEmail, window.location.toString());
-      router.push('/onboarding/member');
     } catch (error) {
+      toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);
     }
   };
@@ -85,16 +96,7 @@ const MemberLoginPage: NextPage = () => {
                   className="md:col-span-2"
                   error={Boolean(errors.memberEmail)}
                   required
-                  success={
-                    !errors.memberEmail && (memberEmail.state.isTouched || memberEmail.state.isDirty) && isSubmitted
-                  }
-                  message={
-                    errors.memberEmail
-                      ? 'Please enter your company email'
-                      : (memberEmail.state.isTouched || memberEmail.state.isDirty) && isSubmitted
-                      ? 'Company email is okay'
-                      : ''
-                  }
+                  message={errors.memberEmail ? 'Please enter your company email' : ''}
                   {...field}
                 />
               )}
@@ -106,7 +108,7 @@ const MemberLoginPage: NextPage = () => {
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <span className="font-medium text-xs text-neutral-800">
-          Don&apos;t have an account? Create an account. <span className="text-primary-900">Send me a new code</span>
+          Don&apos;t have an account? <span className="text-primary-900">Create an account</span>
         </span>
       </div>
     </div>

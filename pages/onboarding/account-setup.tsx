@@ -11,8 +11,7 @@ import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { createMember } from 'services/db/member';
-import { createOrg } from 'services/db/organization';
+import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 interface Contributor {
@@ -29,7 +28,7 @@ type AccountForm = {
 };
 
 const AccountSetupPage: NextPage = () => {
-  const { sendTeammateInvite, user } = useContext(AuthContext);
+  const { sendTeammateInvite, user, onboardNewMember } = useContext(AuthContext);
   const { onPrevious, onNext, info } = useContext(OnboardingContext);
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
@@ -120,26 +119,28 @@ const AccountSetupPage: NextPage = () => {
       return;
     }
 
-    const orgId = await createOrg({ name: values.company, email: values.companyEmail, user_id: user?.uid });
-    const memberId = await createMember({
-      name: values.name,
-      email: values.companyEmail,
-      org_id: orgId,
-      type: info?.accountType || ''
-    });
+    await onboardNewMember(
+      {
+        name: values.name,
+        email: values.companyEmail,
+        type: info?.accountType || ''
+      },
+      { name: values.company, email: values.companyEmail }
+    );
+
+    console.log('user org id now is ', user.memberInfo?.org_id);
 
     if (values.contributors && values.contributors.length > 0) {
       values.contributors.map(async (contributor) => {
-        const memberId = await createMember({
+        await addInvitee({
           name: contributor.name,
           email: contributor.email,
-          org_id: orgId,
-          type: 'employee'
+          org_id: user.memberInfo?.org_id || ''
         });
-        await sendTeammateInvite(contributor.email, memberId);
+        await sendTeammateInvite(contributor.email, 'employee');
       });
     }
-    return await onNext({ accountId: memberId });
+    return await onNext({ orgId: user.memberInfo?.org_id });
   };
 
   // Recommended by React hook forms when using field array https://react-hook-form.com/api/usefieldarray
@@ -209,14 +210,7 @@ const AccountSetupPage: NextPage = () => {
                 placeholder="Enter your name"
                 required
                 error={Boolean(errors.name)}
-                success={!errors.name && (userName.state.isTouched || userName.state.isDirty) && isSubmitted}
-                message={
-                  errors.name
-                    ? 'Please enter your name'
-                    : (userName.state.isTouched || userName.state.isDirty) && isSubmitted
-                    ? 'Name is okay'
-                    : ''
-                }
+                message={errors.name ? 'Please enter your name' : ''}
                 {...field}
               />
             )}
@@ -232,14 +226,7 @@ const AccountSetupPage: NextPage = () => {
                 placeholder="Enter your company name"
                 required
                 error={Boolean(errors.company)}
-                success={!errors.company && (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted}
-                message={
-                  errors.company
-                    ? 'Please enter your company name'
-                    : (userCompany.state.isTouched || userCompany.state.isDirty) && isSubmitted
-                    ? 'Company name is okay'
-                    : ''
-                }
+                message={errors.company ? 'Please enter your company name' : ''}
                 {...field}
               />
             )}
@@ -256,18 +243,7 @@ const AccountSetupPage: NextPage = () => {
                 className="md:col-span-2"
                 required
                 error={Boolean(errors.companyEmail)}
-                success={
-                  !errors.companyEmail &&
-                  (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) &&
-                  isSubmitted
-                }
-                message={
-                  errors.companyEmail
-                    ? 'Please enter your company email'
-                    : (userCompanyEmail.state.isTouched || userCompanyEmail.state.isDirty) && isSubmitted
-                    ? 'Company email is okay'
-                    : ''
-                }
+                message={errors.companyEmail ? 'Please enter your company email' : ''}
                 {...field}
               />
             )}
@@ -291,19 +267,9 @@ const AccountSetupPage: NextPage = () => {
                         placeholder="Enter contributor's name"
                         required
                         error={Boolean(getContributorState(contributorIndex).name.state.error)}
-                        success={
-                          !getContributorState(contributorIndex).name.state.error &&
-                          (getContributorState(contributorIndex).name.state.isTouched ||
-                            getContributorState(contributorIndex).name.state.isDirty) &&
-                          isSubmitted
-                        }
                         message={
                           getContributorState(contributorIndex).name.state.error
                             ? "Please enter contributor's name"
-                            : (getContributorState(contributorIndex).name.state.isTouched ||
-                                getContributorState(contributorIndex).name.state.isDirty) &&
-                              isSubmitted
-                            ? "Contributor's name is okay"
                             : ''
                         }
                         {...field}
@@ -320,19 +286,9 @@ const AccountSetupPage: NextPage = () => {
                         placeholder="Enter contributor's email"
                         required
                         error={Boolean(getContributorState(contributorIndex).email.state.error)}
-                        success={
-                          !getContributorState(contributorIndex).email.state.error &&
-                          (getContributorState(contributorIndex).email.state.isTouched ||
-                            getContributorState(contributorIndex).email.state.isDirty) &&
-                          isSubmitted
-                        }
                         message={
                           getContributorState(contributorIndex).email.state.error
                             ? "Please enter contributor's email"
-                            : (getContributorState(contributorIndex).email.state.isTouched ||
-                                getContributorState(contributorIndex).email.state.isDirty) &&
-                              isSubmitted
-                            ? "Contributor's email is okay"
                             : ''
                         }
                         {...field}

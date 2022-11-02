@@ -1,6 +1,7 @@
 import Chip from '@components/atoms/Chip/Chip';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import Hint from '@components/atoms/Hint/Hint';
+import format from 'date-fns/format';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   CliffDuration,
@@ -73,6 +74,8 @@ const ScheduleDetails = ({
     vestedAmount: +amountToBeVested
   });
 
+  console.log('Chart data', chartData);
+
   const frequencyInterval = DATE_FREQ_TO_TIMESTAMP[releaseFrequency];
   const actualStartDateTime = cliffDuration !== 'no-cliff' ? cliffDate : startDateTime;
   const projectedEndDateTime =
@@ -94,18 +97,43 @@ const ScheduleDetails = ({
        * However, we are not ensured that the parent always has width and height.
        * This will force the responsive container to have a dynamic width and height.
        */}
-      {chartData.length ? (
+      {chartData ? (
         <ResponsiveContainer width={'99%'} height={300}>
-          <LineChart width={300} height={300} data={chartData}>
+          <LineChart width={300} height={300}>
+            <CartesianGrid stroke="#d0d5dd" strokeDasharray="0 0" />
+            <XAxis
+              dataKey="date"
+              type="category"
+              allowDuplicatedCategory={false}
+              tickFormatter={(value) => format(new Date(value), 'MMM yyyy')}
+            />
+            <YAxis
+              allowDataOverflow={true}
+              dataKey="value"
+              domain={[0, amountToBeVested]}
+              tickFormatter={(value) => formatNumber(value, 0)}
+            />
+            <Tooltip />
+            <Line
+              type="stepAfter"
+              data={chartData.cliff}
+              dataKey="value"
+              name="Cliff"
+              stroke="var(--primary-900)"
+              strokeWidth={2}
+              dot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 3 }}
+              activeDot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 4 }}
+            />
             <Line
               type={singleLineFrequencies.includes(releaseFrequency) || numberOfReleases > 60 ? 'linear' : 'stepAfter'}
+              data={chartData.release}
               dataKey="value"
-              stroke="#8884d8"
+              name="Linear release"
+              stroke="var(--primary-900)"
+              strokeWidth={2}
+              dot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 3 }}
+              activeDot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 4 }}
             />
-            <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
           </LineChart>
         </ResponsiveContainer>
       ) : (

@@ -1,8 +1,6 @@
 export type CliffDuration =
   | 'no-cliff'
   | '1-minute'
-  | '2-minutes'
-  | '10-minutes'
   | '1-hour'
   | '6-hours'
   | '12-hours'
@@ -49,8 +47,6 @@ export const DATE_FREQ_TO_OPTION = {
 export const CLIFFDURATION_TIMESTAMP: { [key in CliffDuration]: number } = {
   'no-cliff': 0,
   '1-minute': 60,
-  '2-minutes': 120,
-  '10-minutes': 600,
   '1-hour': 3600,
   '6-hours': 21600,
   '12-hours': 43200,
