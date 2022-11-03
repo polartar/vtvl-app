@@ -75,7 +75,11 @@ export function AuthContextProvider({ children }: any) {
     const memberInfo = await fetchMember(credential.user.uid);
     if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
       setIsNewUser(additionalInfo?.isNewUser || false);
-      await newMember(credential.user.uid, credential.user.email || '');
+      await newMember(credential.user.uid, {
+        email: credential.user.email || '',
+        companyEmail: credential.user.email || '',
+        name: credential.user.displayName || ''
+      });
     }
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
@@ -99,7 +103,11 @@ export function AuthContextProvider({ children }: any) {
     const additionalInfo = getAdditionalUserInfo(credential);
     if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
       setIsNewUser(additionalInfo?.isNewUser || false);
-      await newMember(credential.user.uid, credential.user.email || '');
+      await newMember(credential.user.uid, {
+        email: credential.user.email || '',
+        companyEmail: credential.user.email || '',
+        name: credential.user.displayName || ''
+      });
     }
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
@@ -111,7 +119,13 @@ export function AuthContextProvider({ children }: any) {
     if (!user) throw new Error('please sign in to setup your account');
 
     const orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
-    await newMember(user.uid, member.email, member.companyEmail, member.type, orgId);
+    await newMember(user.uid, {
+      email: member.email || '',
+      companyEmail: member.email || user.email || '',
+      name: user.displayName || '',
+      type: member.type,
+      org_id: orgId
+    });
     const memberInfo: IMember = {
       ...member,
       org_id: orgId,
@@ -149,7 +163,13 @@ export function AuthContextProvider({ children }: any) {
     console.log('user type is ', type);
     const credential = await signInWithEmailLink(auth, email, url);
     const additionalInfo = getAdditionalUserInfo(credential);
-    await newMember(credential.user.uid, email, type, orgId);
+    await newMember(credential.user.uid, {
+      email: credential.user.email || '',
+      companyEmail: credential.user.email || '',
+      name: credential.user.displayName || '',
+      type,
+      org_id: orgId
+    });
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
@@ -197,6 +217,7 @@ export function AuthContextProvider({ children }: any) {
     const user = auth.currentUser;
     if(!user) return;
     const memberInfo = await fetchMember(user.uid);
+    console.log("member info here  is ", memberInfo)
     if (memberInfo) {
       setUser({ ...user, memberInfo });
     }

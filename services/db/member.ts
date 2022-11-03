@@ -19,15 +19,22 @@ export const fetchMemberByEmail = async (email: string): Promise<IMember | undef
 //   await setDoc(memberRef, member);
 // };
 
-export const newMember = async (uid: string, email: string, companyEmail?: string, type?: string, org_id?: string): Promise<void> => {
-  const q = query(inviteeCollection, where('email', '==', email), limit(1));
+export const newMember = async (uid: string, member: IMember): Promise<void> => {
+  const q = query(inviteeCollection, where('email', '==', member.email), limit(1));
   const querySnapshot = await getDocs(q);
   const invitee = querySnapshot?.docs.at(0);
 
   if (invitee) await deleteDoc(invitee.ref);
 
   const memberRef = doc(memberCollection, uid);
-  await setDoc(memberRef, { ...invitee?.data(), email: email || '', companyEmail: companyEmail || '', type: type || 'anonymous', org_id: org_id || '', joined: Math.floor(new Date().getTime() / 1000) });
+  await setDoc(memberRef, {
+    ...invitee?.data(),
+    email: member.email || '',
+    companyEmail: invitee?.data().email || member.companyEmail || '',
+    type:  invitee?.data().email ? 'employee' : (member.type || 'anonymous'),
+    org_id: invitee?.data().org_id || member.org_id || '',
+    joined: member.joined || Math.floor(new Date().getTime() / 1000)
+  });
 };
 
 export const addInvitee = async (invitee: IInvitee): Promise<void> => {

@@ -58,7 +58,7 @@ export const States = {
 };
 
 export function OnboardingContextProvider({ children }: any) {
-  const { refreshUser } =  useContext(AuthContext);
+  const { user, refreshUser } =  useContext(AuthContext);
   const [info, setInfo] = useState<OnboardingInfo | undefined>();
   const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
   const [inProgress, setInProgress] = useState<boolean>(false);
@@ -84,7 +84,7 @@ export function OnboardingContextProvider({ children }: any) {
   const completeOnboarding = () => {
     setInProgress(false);
     refreshUser();
-    router.replace('/dashboard');
+    router.replace(user?.memberInfo?.type === 'investor' ? '/tokens' : '/dashboard')
   };
 
   const onPrevious = () => {

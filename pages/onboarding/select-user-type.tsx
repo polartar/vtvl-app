@@ -7,6 +7,7 @@ import Router from 'next/router';
 import React, { useContext, useEffect } from 'react';
 import { newMember } from 'services/db/member';
 import { toast } from 'react-toastify';
+import { useWeb3React } from '@web3-react/core';
 
 const Container = styled.div`
   width: 100%;
@@ -39,8 +40,9 @@ const userTypes = {
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const { onNext, startOnboarding } = useContext(OnboardingContext);
+  const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
   const { emailSignUp, user } = useContext(AuthContext);
+  const { active } = useWeb3React();
   const [selected, setSelected] = React.useState('');
 
   useEffect(() => {
@@ -65,8 +67,13 @@ const SelectUserTypePage: NextPage = () => {
         return;
       }
       if(user){
-        await newMember(user.uid, user.email || '', user.email || '', selected);
-        Router.push('/member');
+        await newMember(user.uid, {
+          email: user.email || '',
+          companyEmail: user.email || '',
+          name: user.displayName || '',
+          type: selected
+        });
+        active ? completeOnboarding() : Router.push('/member');
         return;
       }
       // invalid email sign up link
