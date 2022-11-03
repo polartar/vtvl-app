@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
@@ -29,7 +30,7 @@ export type AuthContextData = {
   organizationId: string | undefined;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  emailSignUp: (email: string, url: string) => Promise<void>;
+  emailSignUp: (email: string, type: string, url: string) => Promise<void>;
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
   registerNewMember: (
@@ -37,9 +38,10 @@ export type AuthContextData = {
     org: IOrganization
   ) => Promise<void>;
   teammateSignIn: (email: string, type: string, orgId: string, url: string) => Promise<void>;
-  sendTeammateInvite: (email: string, type: string, orgId?: string) => Promise<void>;
+  sendTeammateInvite: (email: string, type: string, userName: string, orgName: string, orgId?: string) => Promise<void>;
   sendLoginLink: (email: string) => Promise<void>;
   loading: boolean;
+  isNewUser: boolean;
   logOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
   error: string;
@@ -77,13 +79,13 @@ export function AuthContextProvider({ children }: any) {
     const additionalInfo = getAdditionalUserInfo(credential);
     const memberInfo = await fetchMember(credential.user.uid);
     if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
-      setIsNewUser(additionalInfo?.isNewUser || false);
       await newMember(credential.user.uid, {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
         name: credential.user.displayName || ''
       });
     }
+    setIsNewUser(additionalInfo?.isNewUser || false);
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
     setLoading(false);
@@ -94,8 +96,10 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await signInWithEmailAndPassword(auth, email, password);
     const memberInfo = await fetchMember(credential.user.uid);
+    const additionalInfo = getAdditionalUserInfo(credential);
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
+    setIsNewUser(additionalInfo?.isNewUser || false);
     setLoading(false);
   };
 
@@ -105,7 +109,6 @@ export function AuthContextProvider({ children }: any) {
     const memberInfo = await fetchMember(credential.user.uid);
     const additionalInfo = getAdditionalUserInfo(credential);
     if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
-      setIsNewUser(additionalInfo?.isNewUser || false);
       await newMember(credential.user.uid, {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
@@ -114,6 +117,7 @@ export function AuthContextProvider({ children }: any) {
     }
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
+    setIsNewUser(additionalInfo?.isNewUser || false);
     setLoading(false);
   };
 
@@ -125,25 +129,24 @@ export function AuthContextProvider({ children }: any) {
     if (!user) throw new Error('please sign in to setup your account');
 
     const orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
-    await newMember(user.uid, {
+
+    const memberInfo: IMember = {
       email: member.email || '',
       companyEmail: member.email || user.email || '',
       name: user.displayName || '',
       type: member.type,
-      org_id: orgId
-    });
-    const memberInfo: IMember = {
-      ...member,
       org_id: orgId,
       joined: Math.floor(new Date().getTime() / 1000)
     };
 
+    await newMember(user.uid, memberInfo);
     setOrganizationId(orgId);
     setUser({ ...user, memberInfo });
+    setIsNewUser(true);
     setLoading(false);
   };
 
-  const emailSignUp = async (email: string, url?: string): Promise<void> => {
+  const emailSignUp = async (email: string, type: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
     const isValidLink = isSignInWithEmailLink(auth, url || '');
@@ -153,7 +156,18 @@ export function AuthContextProvider({ children }: any) {
     const additionalInfo = getAdditionalUserInfo(credential);
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
-    setUser({ ...credential.user });
+    const member = await fetchMember(credential.user.uid);
+    const memberInfo = member
+      ? member
+      : {
+          email: credential.user.email || '',
+          companyEmail: credential.user.email || '',
+          name: credential.user.displayName || '',
+          type
+        };
+    await newMember(credential.user.uid, memberInfo);
+    setUser({ ...credential.user, memberInfo });
+
     setLoading(false);
   };
 
@@ -169,18 +183,21 @@ export function AuthContextProvider({ children }: any) {
     console.log('user type is ', type);
     const credential = await signInWithEmailLink(auth, email, url);
     const additionalInfo = getAdditionalUserInfo(credential);
-    await newMember(credential.user.uid, {
-      email: credential.user.email || '',
-      companyEmail: credential.user.email || '',
-      name: credential.user.displayName || '',
-      type,
-      org_id: orgId
-    });
-
-    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
     const member = await fetchMember(credential.user.uid);
-    setUser({ ...credential.user, memberInfo: member });
+    const memberInfo = member
+      ? member
+      : {
+          email: credential.user.email || '',
+          companyEmail: credential.user.email || '',
+          name: credential.user.displayName || '',
+          type
+        };
+
+    await newMember(credential.user.uid, { ...memberInfo, type });
+
+    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+    setUser({ ...credential.user, memberInfo });
     setLoading(false);
   };
 
@@ -188,23 +205,27 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const member = await fetchMemberByEmail(email);
     console.log('sending login link here ', member);
-    const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}${
-        member?.email ? '/dashboard' : `/onboarding/select-user-type?email=${email}`
-      }`,
-      handleCodeInApp: true
-    };
-    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    //TODO: abstract api calls
+    await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/email/login`, {
+      email
+    });
     setLoading(false);
   };
 
-  const sendTeammateInvite = async (email: string, type: string, orgId?: string): Promise<void> => {
+  const sendTeammateInvite = async (email: string, type: string, name: string, orgName: string, orgId?: string): Promise<void> => {
     setLoading(true);
-    const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/onboarding/sign-up?type=${type}&orgId=${orgId}`,
-      handleCodeInApp: true
-    };
-    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    // const actionCodeSettings = {
+    //   url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/onboarding/sign-up?type=${type}&orgId=${orgId}`,
+    //   handleCodeInApp: true
+    // };
+    // await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/email/teammate-invite`, {
+      email,
+      type,
+      orgId,
+      orgName,
+      name
+    });
     setLoading(false);
   };
 
@@ -223,7 +244,6 @@ export function AuthContextProvider({ children }: any) {
     const user = auth.currentUser;
     if (!user) return;
     const memberInfo = await fetchMember(user.uid);
-    console.log('member info here  is ', memberInfo);
     if (memberInfo) {
       setUser({ ...user, memberInfo });
     }

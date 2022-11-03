@@ -41,20 +41,27 @@ const userTypes = {
 
 const SelectUserTypePage: NextPage = () => {
   const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
-  const { emailSignUp, user } = useContext(AuthContext);
+  const { emailSignUp, user, isNewUser } = useContext(AuthContext);
   const { active } = useWeb3React();
   const [selected, setSelected] = React.useState('');
+  const [orgId, setOrgId] = React.useState('');
+  const [userName, setUserName] = React.useState('');
 
   useEffect(() => {
     startOnboarding(Step.UserTypeSetup);
     const params: any = new URL(window.location.toString());
+    const name = params.searchParams.get('name');
+    const orgId = params.searchParams.get('orgId');
     const email = params.searchParams.get('email');
+    setOrgId(orgId);
+    setUserName(name);
     if (email) loginWithUrl(email);
   }, []);
 
   const loginWithUrl = async (email: string) => {
     try {
-      await emailSignUp(email, window.location.toString());
+      await emailSignUp(email, '', window.location.toString());
+      if (!isNewUser) completeOnboarding();
     } catch (error) {
       console.log('error ', error);
     }
@@ -66,12 +73,14 @@ const SelectUserTypePage: NextPage = () => {
         onNext({ accountType: selected });
         return;
       }
+      active ? completeOnboarding() : Router.push('/member');
       if (user) {
         await newMember(user.uid, {
           email: user.email || '',
           companyEmail: user.email || '',
-          name: user.displayName || '',
-          type: selected
+          name: userName || user.displayName || '',
+          type: selected,
+          org_id: orgId
         });
         active ? completeOnboarding() : Router.push('/member');
         return;
