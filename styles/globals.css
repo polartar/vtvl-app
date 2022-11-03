@@ -376,8 +376,8 @@
   }
 
   /* Other disabled styles */
-  :disabled,
-  [disabled] {
+  :disabled:not(fieldset),
+  [disabled]:not(fieldset) {
     @apply opacity-80;
   }
 
@@ -404,7 +404,7 @@
   .input-component__container,
   /* Form and form control styles for error and success states */
   .form {
-    @apply rounded-xl border border-transparent text-white transition-all duration-500;
+    @apply rounded-xl border border-transparent transition-all duration-500;
   }
 
   .form {
@@ -413,7 +413,11 @@
 
   .input-component__container.error,
   .form-error {
-    @apply p-1 bg-danger-100 border-danger-500 text-danger-700;
+    @apply p-1 bg-danger-100 border-danger-500;
+  }
+
+  .form-error .form-message {
+    @apply text-danger-700;
   }
 
   .input-component__container.success,
@@ -427,6 +431,9 @@
     animation-fill-mode: forwards;
   }
 
+  .form-success .form-message {
+    @apply text-success-600;
+  }
   .form-success {
     animation: fadeOutFormContainer 1s;
     animation-delay: 2s;
