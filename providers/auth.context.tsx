@@ -9,21 +9,15 @@ import {
   signInWithEmailAndPassword,
   signInWithEmailLink,
   signInWithPopup,
-  signOut,
-  signInWithCustomToken,
-
-  getAuth,
+  signOut
 } from 'firebase/auth';
-
 import useEagerConnect from 'hooks/useEagerConnect';
 import Router from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import firebase, { auth } from 'services/auth/firebase';
+import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery } from 'services/db/organization';
 import { IMember, IOrganization, IUser } from 'types/models';
-import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
-import SendMail from 'utils/email';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -38,12 +32,16 @@ export type AuthContextData = {
   emailSignUp: (email: string, url: string) => Promise<void>;
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
-  registerNewMember: (member: { name: string; email: string; companyEmail: string, type: string }, org: IOrganization) => Promise<void>;
+  registerNewMember: (
+    member: { name: string; email: string; companyEmail: string; type: string },
+    org: IOrganization
+  ) => Promise<void>;
   teammateSignIn: (email: string, type: string, orgId: string, url: string) => Promise<void>;
   sendTeammateInvite: (email: string, type: string, orgId?: string) => Promise<void>;
   sendLoginLink: (email: string) => Promise<void>;
   loading: boolean;
   logOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   error: string;
   showSideBar: boolean;
   sidebarIsExpanded: boolean;
@@ -63,7 +61,7 @@ export function AuthContextProvider({ children }: any) {
   // Remove after implementing context to show/hide the sidebar
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
   const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(false);
-  console.log({ organizationId });
+  console.log({ user });
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) setUser(user);
@@ -80,7 +78,11 @@ export function AuthContextProvider({ children }: any) {
     const memberInfo = await fetchMember(credential.user.uid);
     if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
       setIsNewUser(additionalInfo?.isNewUser || false);
-      await newMember(credential.user.uid, credential.user.email || '');
+      await newMember(credential.user.uid, {
+        email: credential.user.email || '',
+        companyEmail: credential.user.email || '',
+        name: credential.user.displayName || ''
+      });
     }
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
@@ -101,17 +103,35 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     const memberInfo = await fetchMember(credential.user.uid);
+    const additionalInfo = getAdditionalUserInfo(credential);
+    if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
+      setIsNewUser(additionalInfo?.isNewUser || false);
+      await newMember(credential.user.uid, {
+        email: credential.user.email || '',
+        companyEmail: credential.user.email || '',
+        name: credential.user.displayName || ''
+      });
+    }
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
     setLoading(false);
   };
 
-  const registerNewMember = async (member: { name: string; email: string; companyEmail: string, type: string }, org: IOrganization) => {
+  const registerNewMember = async (
+    member: { name: string; email: string; companyEmail: string; type: string },
+    org: IOrganization
+  ) => {
     setLoading(true);
     if (!user) throw new Error('please sign in to setup your account');
 
     const orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
-    await newMember(user.uid, member.email, member.companyEmail, member.type, orgId);
+    await newMember(user.uid, {
+      email: member.email || '',
+      companyEmail: member.email || user.email || '',
+      name: user.displayName || '',
+      type: member.type,
+      org_id: orgId
+    });
     const memberInfo: IMember = {
       ...member,
       org_id: orgId,
@@ -149,7 +169,13 @@ export function AuthContextProvider({ children }: any) {
     console.log('user type is ', type);
     const credential = await signInWithEmailLink(auth, email, url);
     const additionalInfo = getAdditionalUserInfo(credential);
-    await newMember(credential.user.uid, email, type, orgId);
+    await newMember(credential.user.uid, {
+      email: credential.user.email || '',
+      companyEmail: credential.user.email || '',
+      name: credential.user.displayName || '',
+      type,
+      org_id: orgId
+    });
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
@@ -168,18 +194,7 @@ export function AuthContextProvider({ children }: any) {
       }`,
       handleCodeInApp: true
     };
-    //  auth.
-
-    auth.instance.
-    const link = firebaseAdmin.auth().generateEmailVerificationLink(email, actionCodeSettings);
-    console.log("generated link is ", link)
-    SendMail({
-      to: email,
-      email,
-      emailLink: link,
-      subject: "Login Link",
-    });
-  //  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
     setLoading(false);
   };
 
@@ -201,6 +216,17 @@ export function AuthContextProvider({ children }: any) {
     setLoading(false);
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
+  };
+
+  const refreshUser = async (): Promise<void> => {
+    setLoading(true);
+    const user = auth.currentUser;
+    if (!user) return;
+    const memberInfo = await fetchMember(user.uid);
+    console.log('member info here  is ', memberInfo);
+    if (memberInfo) {
+      setUser({ ...user, memberInfo });
+    }
   };
 
   const logOut = async () => {
@@ -228,6 +254,7 @@ export function AuthContextProvider({ children }: any) {
       registerNewMember,
       loading,
       isNewUser,
+      refreshUser,
       logOut,
       error,
       // Remove after implementing context to show/hide the sidebar

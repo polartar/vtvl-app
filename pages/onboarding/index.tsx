@@ -43,18 +43,19 @@ const WalletContainer = styled.div`
 
 const ConnectWalletPage: NextPage = () => {
   const { active, activate } = useWeb3React();
-  const { onNext, startOnboarding } = useContext(OnboardingContext);
+  const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
   const { user, anonymousSignIn } = useContext(AuthContext);
   const [activated, setActivated] = useState(false);
 
   useEffect(() => {
+    startOnboarding(Step.ChainSetup);
     injected.isAuthorized().then((isAuthorized) => {
       if (isAuthorized) {
         console.log('activated, user is ', user);
         (async () => {
           await activate(injected, undefined, true);
-          if (user) Router.push('dashboard');
-          else if (!activated) Router.push('member-login');
+          if (user) completeOnboarding();
+          else if (!activated) Router.push('/onboarding/member-login');
         })();
       }
     });
@@ -64,7 +65,6 @@ const ConnectWalletPage: NextPage = () => {
     try {
       await activate(injected);
       setActivated(true);
-      startOnboarding(Step.ChainSetup);
       onNext({});
     } catch (error) {
       console.log('connection error ', error);
@@ -75,7 +75,6 @@ const ConnectWalletPage: NextPage = () => {
     try {
       await activate(walletconnect);
       setActivated(true);
-      startOnboarding(Step.ChainSetup);
       onNext({});
     } catch (error) {
       console.log('connection error ', error);
@@ -158,7 +157,7 @@ const ConnectWalletPage: NextPage = () => {
               className="py-2 primary line"
               onClick={async () => {
                 await anonymousSignIn();
-                Router.push('/dashboard');
+                completeOnboarding();
               }}>
               Login as guest
             </button>

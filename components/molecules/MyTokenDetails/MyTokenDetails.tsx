@@ -1,5 +1,6 @@
 import Chip from '@components/atoms/Chip/Chip';
 import VestingProgress from '@components/atoms/VestingProgress/VestingProgress';
+import Link from 'next/link';
 import CopyIcon from 'public/icons/copy-to-clipboard.svg';
 import Countdown from 'react-countdown';
 import { formatDate, formatTime } from 'utils/shared';
@@ -131,11 +132,11 @@ const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: I
             onClick={onClaim}>
             Claim <strong>{formatNumber(props.claimable.token)}</strong> {props.token.symbol}
           </button>
-          <a
-            href={viewDetailsUrl}
-            className="flex w-full items-center justify-center h-10 text-primary-900 text-sm font-medium">
-            View details
-          </a>
+          <Link href={viewDetailsUrl}>
+            <span className="flex w-full items-center justify-center h-10 text-primary-900 text-sm font-medium cursor-pointer">
+              View details
+            </span>
+          </Link>
         </div>
       </div>
     </div>

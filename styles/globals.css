@@ -376,8 +376,8 @@
   }
 
   /* Other disabled styles */
-  :disabled,
-  [disabled] {
+  :disabled:not(fieldset),
+  [disabled]:not(fieldset) {
     @apply opacity-80;
   }
 
@@ -404,7 +404,7 @@
   .input-component__container,
   /* Form and form control styles for error and success states */
   .form {
-    @apply rounded-xl border border-transparent text-white transition-all duration-500;
+    @apply rounded-xl border border-transparent transition-all duration-500;
   }
 
   .form {
@@ -413,7 +413,11 @@
 
   .input-component__container.error,
   .form-error {
-    @apply p-1 bg-danger-100 border-danger-500 text-danger-700;
+    @apply p-1 bg-danger-100 border-danger-500;
+  }
+
+  .form-error .form-message {
+    @apply text-danger-700;
   }
 
   .input-component__container.success,
@@ -427,6 +431,9 @@
     animation-fill-mode: forwards;
   }
 
+  .form-success .form-message {
+    @apply text-success-600;
+  }
   .form-success {
     animation: fadeOutFormContainer 1s;
     animation-delay: 2s;
@@ -527,6 +534,17 @@
   /* Recharts override */
   .recharts-cartesian-axis-tick-value {
     @apply text-xs text-neutral-800;
+  }
+
+  /* Markdown content styles -- due to Tailwind resetting all element styles, we need to add styling for these. */
+  .markdown-content p {
+    @apply my-4;
+  }
+  .markdown-content h1 {
+    @apply my-6 font-semibold;
+  }
+  .markdown-content h2 {
+    @apply my-5 font-semibold;
   }
 }
 
@@ -718,6 +736,10 @@
   .dark-text {
     @apply text-neutral-900;
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 *,
