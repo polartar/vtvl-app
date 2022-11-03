@@ -3815,6 +3815,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/crypto-js@^4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@types/crypto-js/-/crypto-js-4.1.1.tgz#602859584cecc91894eb23a4892f38cfa927890d"
+  integrity sha512-BG7fQKZ689HIoc5h+6D2Dgq1fABRa0RbBWKBd9SP/MVRVXROflpm5fhwyATX5duFmbStzyzyycPB8qUYKDH3NA==
+
 "@types/d3-color@^2":
   version "2.0.3"
   resolved "https://registry.npmjs.org/@types/d3-color/-/d3-color-2.0.3.tgz#8bc4589073c80e33d126345542f588056511fe82"
@@ -3960,6 +3965,11 @@
   version "4.0.2"
   resolved "https://registry.npmjs.org/@types/long/-/long-4.0.2.tgz"
   integrity sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==
+
+"@types/luxon@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.0.2.tgz#11361eb3c8a81e9b8d6b35b6ffe155e8eb95480d"
+  integrity sha512-HM2OVWckUMmXbWYZufmWT2XMURGDZ6XbyNyQ+Lx+gCFGFqbZaIjsz7b+AGeGP/AuVYHBiuGY+wXfweP1RremnA==
 
 "@types/mdast@^3.0.0":
   version "3.0.10"
@@ -6469,6 +6479,11 @@ crypto-browserify@^3.11.0:
     public-encrypt "^4.0.0"
     randombytes "^2.0.0"
     randomfill "^1.0.3"
+
+crypto-js@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.1.1.tgz#9e485bcf03521041bd85844786b83fb7619736cf"
+  integrity sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==
 
 css-color-names@^0.0.4:
   version "0.0.4"
@@ -9761,6 +9776,11 @@ lru-cache@^6.0.0:
   integrity sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==
   dependencies:
     yallist "^4.0.0"
+
+luxon@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.1.0.tgz#9ac33d7142b7ea18d4ec8583cdeb0b079abef60d"
+  integrity sha512-7w6hmKC0/aoWnEsmPCu5Br54BmbmUp5GfcqBxQngRcXJ+q5fdfjEzn7dxmJh2YdDhgW8PccYtlWKSv4tQkrTQg==
 
 lz-string@^1.4.4:
   version "1.4.4"

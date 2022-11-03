@@ -2,7 +2,7 @@ import mail, { MailDataRequired } from "@sendgrid/mail";
 
 const key = process.env.SENDGRID_API_KEY;
 mail.setApiKey(key || "");
-const temp = "d-1fbec631dc1248fc9b79e51299b0917f";
+const temp = "d-dbd24a1f6b69408bbdcff1b4130ecde4";
 
 export interface DT {
   firstname?: string;
@@ -24,31 +24,22 @@ export interface SendMailProps {
 
 export default async function SendMail({
   to,
-  from,
-  firstname,
   email,
-  templateId,
-  link,
+  // templateId,
+  emailLink,
   subject,
-  title,
-  amount,
-  author,
 }: any) {
   try {
     if (!to) return "Reciever's email is needed";
-    if (!from) return "Senders's email is needed";
-    if (!templateId) return " Email template is needed";
+  //  if (!from) return "Senders's email is needed";
+  //  if (!templateId) return " Email template is needed";
 
     const dynamicTemplateData = {
       email,
       subject,
-      link,
-      firstname,
-      title,
-      amount,
-      author,
+      emailLink,
     };
-    await mail.send({ to, from, templateId, dynamicTemplateData, subject });
+    await mail.send({ to, from: 'adaobi@vtvl.io', templateId: temp, dynamicTemplateData, subject });
     return "email sent";
   } catch (error) {
     console.log(error);

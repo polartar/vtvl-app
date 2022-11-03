@@ -9,15 +9,21 @@ import {
   signInWithEmailAndPassword,
   signInWithEmailLink,
   signInWithPopup,
-  signOut
+  signOut,
+  signInWithCustomToken,
+
+  getAuth,
 } from 'firebase/auth';
+
 import useEagerConnect from 'hooks/useEagerConnect';
 import Router from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { auth } from 'services/auth/firebase';
+import firebase, { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery } from 'services/db/organization';
 import { IMember, IOrganization, IUser } from 'types/models';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
+import SendMail from 'utils/email';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -162,7 +168,18 @@ export function AuthContextProvider({ children }: any) {
       }`,
       handleCodeInApp: true
     };
-    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    //  auth.
+
+    auth.instance.
+    const link = firebaseAdmin.auth().generateEmailVerificationLink(email, actionCodeSettings);
+    console.log("generated link is ", link)
+    SendMail({
+      to: email,
+      email,
+      emailLink: link,
+      subject: "Login Link",
+    });
+  //  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
     setLoading(false);
   };
 
