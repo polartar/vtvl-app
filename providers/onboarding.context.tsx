@@ -1,6 +1,8 @@
 import useEagerConnect from 'hooks/useEagerConnect';
 import { useRouter } from 'next/router';
-import React, { createContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+
+import AuthContext from './auth.context';
 
 interface OnboardingInfo {
   isFirstTimeUser?: boolean;
@@ -57,6 +59,7 @@ export const States = {
 };
 
 export function OnboardingContextProvider({ children }: any) {
+  const { user, refreshUser } = useContext(AuthContext);
   const [info, setInfo] = useState<OnboardingInfo | undefined>();
   const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
   const [inProgress, setInProgress] = useState<boolean>(false);
@@ -81,7 +84,8 @@ export function OnboardingContextProvider({ children }: any) {
   };
   const completeOnboarding = () => {
     setInProgress(false);
-    router.replace('/dashboard');
+    refreshUser();
+    router.replace(user?.memberInfo?.type === 'investor' ? '/tokens' : '/dashboard');
   };
 
   const onPrevious = () => {
@@ -179,7 +183,7 @@ export function OnboardingContextProvider({ children }: any) {
       inProgress,
       error
     }),
-    [info, loading, error, currentStep]
+    [info, loading, error, currentStep, inProgress]
   );
 
   return <OnboardingContext.Provider value={memoedValue}>{children}</OnboardingContext.Provider>;

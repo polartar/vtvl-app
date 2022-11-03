@@ -2,9 +2,12 @@ import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import styled from '@emotion/styled';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
+import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import React, { useContext, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import { newMember } from 'services/db/member';
 
 const Container = styled.div`
   width: 100%;
@@ -37,8 +40,9 @@ const userTypes = {
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const { onNext, startOnboarding } = useContext(OnboardingContext);
-  const { emailSignUp } = useContext(AuthContext);
+  const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
+  const { emailSignUp, user } = useContext(AuthContext);
+  const { active } = useWeb3React();
   const [selected, setSelected] = React.useState('');
 
   useEffect(() => {
@@ -53,6 +57,30 @@ const SelectUserTypePage: NextPage = () => {
       await emailSignUp(email, window.location.toString());
     } catch (error) {
       console.log('error ', error);
+    }
+  };
+
+  const handleContinue = async () => {
+    try {
+      if (selected === 'founder') {
+        onNext({ accountType: selected });
+        return;
+      }
+      if (user) {
+        await newMember(user.uid, {
+          email: user.email || '',
+          companyEmail: user.email || '',
+          name: user.displayName || '',
+          type: selected
+        });
+        active ? completeOnboarding() : Router.push('/member');
+        return;
+      }
+      // invalid email sign up link
+      toast.error('Invalid link please go to the sign up page and try again.');
+    } catch (error) {
+      console.log(error);
+      toast.error('Oops something went wrong. Please go to the sign up page and try again.');
     }
   };
 
@@ -73,15 +101,7 @@ const SelectUserTypePage: NextPage = () => {
           ))}
         </div>
       </div>
-      <button
-        className="secondary"
-        onClick={async () => {
-          if (selected === 'founder') {
-            onNext({ accountType: selected });
-            return;
-          }
-          Router.replace('/member');
-        }}>
+      <button className="secondary" onClick={() => handleContinue()}>
         Continue
       </button>
     </Container>
