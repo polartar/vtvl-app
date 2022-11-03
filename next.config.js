@@ -8,6 +8,11 @@ const nextConfig = {
       issuer: /\.[jt]sx?$/,
       use: ['@svgr/webpack']
     });
+    // Module for loading markdown files
+    config.module.rules.push({
+      test: /\.md$/,
+      use: 'raw-loader'
+    });
 
     return config;
   },
