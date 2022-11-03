@@ -1,6 +1,7 @@
 import useEagerConnect from 'hooks/useEagerConnect';
 import { useRouter } from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+
 import AuthContext from './auth.context';
 
 interface OnboardingInfo {
@@ -58,7 +59,7 @@ export const States = {
 };
 
 export function OnboardingContextProvider({ children }: any) {
-  const { user, refreshUser } =  useContext(AuthContext);
+  const { user, refreshUser } = useContext(AuthContext);
   const [info, setInfo] = useState<OnboardingInfo | undefined>();
   const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
   const [inProgress, setInProgress] = useState<boolean>(false);
@@ -84,7 +85,7 @@ export function OnboardingContextProvider({ children }: any) {
   const completeOnboarding = () => {
     setInProgress(false);
     refreshUser();
-    router.replace(user?.memberInfo?.type === 'investor' ? '/tokens' : '/dashboard')
+    router.replace(user?.memberInfo?.type === 'investor' ? '/tokens' : '/dashboard');
   };
 
   const onPrevious = () => {

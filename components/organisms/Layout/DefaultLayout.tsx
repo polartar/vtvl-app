@@ -106,10 +106,10 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const { user, error, logOut, showSideBar, toggleSideBar, refreshUser } = useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
   const { active } = useWeb3React();
-  useEffect(()=>{
-    (async ()=> await refreshUser())()
-  },[])
-  console.log("in progress here is ", inProgress)
+  useEffect(() => {
+    (async () => await refreshUser())();
+  }, []);
+  console.log('in progress here is ', inProgress);
   return (
     <Container>
       <Head>

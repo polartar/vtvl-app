@@ -32,13 +32,16 @@ export type AuthContextData = {
   emailSignUp: (email: string, url: string) => Promise<void>;
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
-  registerNewMember: (member: { name: string; email: string; companyEmail: string; type: string }, org: IOrganization) => Promise<void>;
+  registerNewMember: (
+    member: { name: string; email: string; companyEmail: string; type: string },
+    org: IOrganization
+  ) => Promise<void>;
   teammateSignIn: (email: string, type: string, orgId: string, url: string) => Promise<void>;
   sendTeammateInvite: (email: string, type: string, orgId?: string) => Promise<void>;
   sendLoginLink: (email: string) => Promise<void>;
   loading: boolean;
   logOut: () => Promise<void>;
-  refreshUser: () => Promise<void>
+  refreshUser: () => Promise<void>;
   error: string;
   showSideBar: boolean;
   sidebarIsExpanded: boolean;
@@ -114,7 +117,10 @@ export function AuthContextProvider({ children }: any) {
     setLoading(false);
   };
 
-  const registerNewMember = async (member: { name: string; email: string; companyEmail: string, type: string }, org: IOrganization) => {
+  const registerNewMember = async (
+    member: { name: string; email: string; companyEmail: string; type: string },
+    org: IOrganization
+  ) => {
     setLoading(true);
     if (!user) throw new Error('please sign in to setup your account');
 
@@ -215,13 +221,13 @@ export function AuthContextProvider({ children }: any) {
   const refreshUser = async (): Promise<void> => {
     setLoading(true);
     const user = auth.currentUser;
-    if(!user) return;
+    if (!user) return;
     const memberInfo = await fetchMember(user.uid);
-    console.log("member info here  is ", memberInfo)
+    console.log('member info here  is ', memberInfo);
     if (memberInfo) {
       setUser({ ...user, memberInfo });
     }
-  }
+  };
 
   const logOut = async () => {
     await signOut(auth);

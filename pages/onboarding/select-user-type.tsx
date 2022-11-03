@@ -2,12 +2,12 @@ import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import styled from '@emotion/styled';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
+import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import React, { useContext, useEffect } from 'react';
-import { newMember } from 'services/db/member';
 import { toast } from 'react-toastify';
-import { useWeb3React } from '@web3-react/core';
+import { newMember } from 'services/db/member';
 
 const Container = styled.div`
   width: 100%;
@@ -60,13 +60,13 @@ const SelectUserTypePage: NextPage = () => {
     }
   };
 
-  const handleContinue = async() => {
+  const handleContinue = async () => {
     try {
       if (selected === 'founder') {
         onNext({ accountType: selected });
         return;
       }
-      if(user){
+      if (user) {
         await newMember(user.uid, {
           email: user.email || '',
           companyEmail: user.email || '',
@@ -77,12 +77,12 @@ const SelectUserTypePage: NextPage = () => {
         return;
       }
       // invalid email sign up link
-      toast.error("Invalid link please go to the sign up page and try again.")
+      toast.error('Invalid link please go to the sign up page and try again.');
     } catch (error) {
-      console.log(error)
-      toast.error("Oops something went wrong. Please go to the sign up page and try again.")
+      console.log(error);
+      toast.error('Oops something went wrong. Please go to the sign up page and try again.');
     }
-  }
+  };
 
   return (
     <Container>
@@ -101,9 +101,7 @@ const SelectUserTypePage: NextPage = () => {
           ))}
         </div>
       </div>
-      <button
-        className="secondary"
-        onClick={()=> handleContinue()}>
+      <button className="secondary" onClick={() => handleContinue()}>
         Continue
       </button>
     </Container>

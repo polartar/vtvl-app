@@ -44,7 +44,7 @@ const SignUpPage: NextPage = () => {
       }
       onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
   };
 

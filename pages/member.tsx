@@ -15,7 +15,7 @@ const MemberWalletPage: NextPage = () => {
   async function metamaskActivate() {
     try {
       await activate(injected);
-      completeOnboarding()
+      completeOnboarding();
     } catch (error) {
       console.log('connection error ', error);
     }
@@ -24,7 +24,7 @@ const MemberWalletPage: NextPage = () => {
   async function walletConnectActivate() {
     try {
       await activate(walletconnect);
-      completeOnboarding()
+      completeOnboarding();
     } catch (error) {
       console.log('connection error ', error);
     }
