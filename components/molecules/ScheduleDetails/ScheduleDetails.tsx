@@ -24,12 +24,14 @@ import {
 type DateTimeType = Date | null | undefined;
 
 interface ScheduleDetailProps extends React.AllHTMLAttributes<HTMLDivElement> {
+  label?: string;
   startDateTime: DateTimeType;
   endDateTime: DateTimeType;
   cliffDuration: CliffDuration;
   lumpSumReleaseAfterCliff: string | number;
   releaseFrequency: ReleaseFrequency;
   amountToBeVested: number;
+  hint?: boolean;
 
   /**
    * Token - what is the token symbol / name being vested.
@@ -39,6 +41,7 @@ interface ScheduleDetailProps extends React.AllHTMLAttributes<HTMLDivElement> {
 }
 
 const ScheduleDetails = ({
+  label = '',
   startDateTime,
   endDateTime,
   cliffDuration,
@@ -47,6 +50,7 @@ const ScheduleDetails = ({
   amountToBeVested,
   token,
   layout = 'default',
+  hint = true,
   ...props
 }: ScheduleDetailProps) => {
   /**
@@ -121,11 +125,13 @@ const ScheduleDetails = ({
 
   return (
     <>
-      <label className="mb-5">
-        <span className="flex flex-row items-center gap-2">
-          Schedule Details {duration ? <Chip color="default" rounded label={duration} /> : null}
-        </span>
-      </label>
+      {label ? (
+        <label className="mb-5">
+          <span className="flex flex-row items-center gap-2">
+            Schedule Details {duration ? <Chip color="default" rounded label={duration} /> : null}
+          </span>
+        </label>
+      ) : null}
       {/**
        * Responsive Container needs to have a dimension -- coming from the parent element.
        * However, we are not ensured that the parent always has width and height.

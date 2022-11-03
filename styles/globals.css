@@ -376,8 +376,8 @@
   }
 
   /* Other disabled styles */
-  :disabled,
-  [disabled] {
+  :disabled:not(fieldset),
+  [disabled]:not(fieldset) {
     @apply opacity-80;
   }
 
@@ -404,7 +404,7 @@
   .input-component__container,
   /* Form and form control styles for error and success states */
   .form {
-    @apply rounded-xl border border-transparent text-white transition-all duration-500;
+    @apply rounded-xl border border-transparent transition-all duration-500;
   }
 
   .form {
@@ -413,7 +413,11 @@
 
   .input-component__container.error,
   .form-error {
-    @apply p-1 bg-danger-100 border-danger-500 text-danger-700;
+    @apply p-1 bg-danger-100 border-danger-500;
+  }
+
+  .form-error .form-message {
+    @apply text-danger-700;
   }
 
   .input-component__container.success,
@@ -427,6 +431,9 @@
     animation-fill-mode: forwards;
   }
 
+  .form-success .form-message {
+    @apply text-success-600;
+  }
   .form-success {
     animation: fadeOutFormContainer 1s;
     animation-delay: 2s;
@@ -482,7 +489,9 @@
   }
 
   /* MinMax component styles */
-  .minMaxInput input { @apply bg-transparent; }
+  .minMaxInput input {
+    @apply bg-transparent;
+  }
   .minMaxInput input:focus,
   .minMaxInput input:focus-visible {
     @apply outline-none;
@@ -498,23 +507,45 @@
   }
 
   /* Table default styling */
-  table { @apply w-full whitespace-normal; }
-  table thead { @apply bg-neutral-50; }
-  table thead th { @apply text-left text-xs font-medium text-neutral-500; }
-  table tr { @apply border-b border-gray-200; }
-  table tbody tr td { @apply text-left text-xs text-neutral-900; }
+  table {
+    @apply w-full whitespace-normal;
+  }
+  table thead {
+    @apply bg-neutral-50;
+  }
+  table thead th {
+    @apply text-left text-xs font-medium text-neutral-500;
+  }
+  table tr {
+    @apply border-b border-gray-200;
+  }
+  table tbody tr td {
+    @apply text-left text-xs text-neutral-900;
+  }
   table thead th,
-  table tbody tr td { @apply py-3.5 px-6; }
+  table tbody tr td {
+    @apply py-3.5 px-6;
+  }
   table thead th:not(:first-child),
-  table tbody tr td:not(:first-child) { @apply border-l border-gray-200; }
+  table tbody tr td:not(:first-child) {
+    @apply border-l border-gray-200;
+  }
 
   /* Recharts override */
-  .recharts-cartesian-axis-tick-value { @apply text-xs text-neutral-800; }
+  .recharts-cartesian-axis-tick-value {
+    @apply text-xs text-neutral-800;
+  }
 
   /* Markdown content styles -- due to Tailwind resetting all element styles, we need to add styling for these. */
-  .markdown-content p { @apply my-4; }
-  .markdown-content h1 { @apply my-6 font-semibold; }
-  .markdown-content h2 { @apply my-5 font-semibold; }
+  .markdown-content p {
+    @apply my-4;
+  }
+  .markdown-content h1 {
+    @apply my-6 font-semibold;
+  }
+  .markdown-content h2 {
+    @apply my-5 font-semibold;
+  }
 }
 
 @layer components {
@@ -629,13 +660,13 @@
   }
   /* Other browsers */
   progress::-webkit-progress-value {
-  /* Mozilla browser */
-  /* progress::-moz-progress-bar { */
+    /* Mozilla browser */
+    /* progress::-moz-progress-bar { */
     height: 8px;
     border-radius: 48px;
     border: 1px solid var(--primary-900);
     background: var(--primary-900);
-    background: linear-gradient(90deg, rgba(27,54,154,1) 0%, rgba(70,98,203,1) 50%, rgba(98,122,207,1) 100%)
+    background: linear-gradient(90deg, rgba(27, 54, 154, 1) 0%, rgba(70, 98, 203, 1) 50%, rgba(98, 122, 207, 1) 100%);
   }
 }
 

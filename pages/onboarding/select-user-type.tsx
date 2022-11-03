@@ -1,8 +1,10 @@
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import styled from '@emotion/styled';
-import OnboardingContext from '@providers/onboarding.context';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
-import React, { useContext } from 'react';
+import Router from 'next/router';
+import React, { useContext, useEffect } from 'react';
 
 const Container = styled.div`
   width: 100%;
@@ -26,7 +28,7 @@ const userTypes = {
       value: 'investor',
       label: (
         <>
-          I’m an <span className="text-secondary-900">investor</span> looking to claim my tokens
+          I’m an <span className="text-secondary-900">employee / investor</span> looking to claim my tokens
         </>
       )
     }
@@ -35,8 +37,24 @@ const userTypes = {
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const { onNext } = useContext(OnboardingContext);
+  const { onNext, startOnboarding } = useContext(OnboardingContext);
+  const { emailSignUp } = useContext(AuthContext);
   const [selected, setSelected] = React.useState('');
+
+  useEffect(() => {
+    startOnboarding(Step.UserTypeSetup);
+    const params: any = new URL(window.location.toString());
+    const email = params.searchParams.get('email');
+    if (email) loginWithUrl(email);
+  }, []);
+
+  const loginWithUrl = async (email: string) => {
+    try {
+      await emailSignUp(email, window.location.toString());
+    } catch (error) {
+      console.log('error ', error);
+    }
+  };
 
   return (
     <Container>
@@ -58,7 +76,11 @@ const SelectUserTypePage: NextPage = () => {
       <button
         className="secondary"
         onClick={async () => {
-          await onNext({ accountType: selected });
+          if (selected === 'founder') {
+            onNext({ accountType: selected });
+            return;
+          }
+          Router.replace('/member');
         }}>
         Continue
       </button>

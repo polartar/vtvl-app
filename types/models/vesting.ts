@@ -19,6 +19,14 @@ export interface IScheduleOverviewProps {
   totalAllocated: string;
 }
 
+export interface IScheduleSummaryProps {
+  name: string;
+  tokenPerUser: number | string;
+  beneficiaries: number;
+  totalPeriod: string;
+  createdBy: string;
+}
+
 export interface IVestingContractProps {
   tokenName: string;
   tokenSymbol: string;

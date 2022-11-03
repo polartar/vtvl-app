@@ -1,3 +1,4 @@
+import Chip from '@components/atoms/Chip/Chip';
 import { IVestingContractProps } from 'types/models/vesting';
 import { formatNumber } from 'utils/token';
 
@@ -21,7 +22,7 @@ const ContractOverview = ({
         <label>
           <span>Token symbol</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{tokenSymbol}</p>
+        <Chip label={tokenSymbol} rounded size="small" color="gray" />
       </div>
       <div>
         <label>
