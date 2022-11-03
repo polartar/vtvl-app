@@ -1,9 +1,10 @@
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
-import EmptyState from '@components/atoms/EmptyState/EmptyState';
+import Chip from '@components/atoms/Chip/Chip';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import ProgressCircle from '@components/atoms/ProgressCircle/ProgressCircle';
-import CapTableOverview from '@components/molecules/CapTableOverview/CapTableOverview';
+import StatusIndicator from '@components/atoms/StatusIndicator/StatusIndicator';
+import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
 import Table from '@components/molecules/Table/Table';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import VestingOverview from '@components/molecules/VestingOverview/VestingOverview';
@@ -51,6 +52,17 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
 
+  // Renderer for schedule name -- with scenario for COMPLETED status
+  const CellScheduleName = ({ value, row, ...props }: any) => {
+    console.log('Cell schedule name', row, props);
+    return (
+      <div className="row-center">
+        {row.original.status === 'COMPLETED' ? <StatusIndicator size="small" color="success" /> : null}
+        {value}
+      </div>
+    );
+  };
+
   // Renderer for progress field
   const CellProgress = ({ value }: any) => (
     <div className="row-center">
@@ -62,13 +74,48 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // Renderer for combined information -- Amount + Token name / symbol
   const CellAmount = ({ value }: any) => formatNumber(value);
 
+  // Renderer for status
+  const CellStatus = ({ value }: any) => {
+    const statuses: any = {
+      WAITING_APPROVAL: { color: 'dangerAlt', label: 'Approval pending' },
+      WAITING_FUNDS: { color: 'warningAlt', label: 'Funds pending' },
+      CREATING: { color: 'successAlt', label: 'Creating' },
+      CREATED: { color: 'successAlt', label: 'Created' },
+      LIVE: { color: 'infoAlt', label: 'Live' },
+      COMPLETED: { color: 'gray', label: 'Completed' }
+    };
+    return <Chip {...statuses[value]} size="small" rounded />;
+  };
+
+  // Renderer for more action items
+  const CellActions = () => {
+    const menuItems = [{ label: 'Revoke', onClick: () => alert('Revoke clicked') }];
+    return (
+      <div className="row-center">
+        <button className="line small">Details</button>
+        <DropdownMenu items={menuItems} />
+      </div>
+    );
+  };
+
+  // Update color of row if the status of the vesting schedule record is COMPLETED
+  const getTrProps = (rowInfo: any) => {
+    if (rowInfo) {
+      return {
+        className: rowInfo.original.status === 'COMPLETED' ? 'bg-success-50' : ''
+      };
+    }
+    return {};
+  };
+
   // Defines the columns used and their functions in the table
   const columns = useMemo(
     () => [
       {
         id: 'scheduleName',
         Header: '# Sched',
-        accessor: 'scheduleName'
+        accessor: 'scheduleName',
+        Cell: CellScheduleName
       },
       {
         id: 'startDate',
@@ -105,7 +152,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       {
         id: 'status',
         Header: 'Status',
-        accessor: 'status'
+        accessor: 'status',
+        Cell: CellStatus
       },
       {
         id: 'requiredConfirmation',
@@ -116,6 +164,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         id: 'action',
         Header: '',
         accessor: 'action',
+        Cell: CellActions,
         getProps: () => ({
           updateAlertStatus: (value: any, id: string) => {
             // Save the update alert status to the DB
@@ -138,11 +187,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       cliffRelease: 'No Cliff',
       vestingPeriod: '3 months',
       totalAllocation: 50000,
-      status: 'Funds pending',
+      status: 'WAITING_FUNDS',
       requiredConfirmation: '2 out of 3'
     },
     {
-      id: '19xlnbgasldfkADSf',
+      id: '20xlnbgasldfkADSf',
       scheduleName: 'Viking-0123',
       startDate: 'Aug 06, 2022 07:00 (GST)',
       endDate: 'Nov 13, 2022 23:00 (GST)',
@@ -150,11 +199,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       cliffRelease: 'No Cliff',
       vestingPeriod: '3 months',
       totalAllocation: 50000,
-      status: 'Funds pending',
+      status: 'COMPLETED',
       requiredConfirmation: '2 out of 3'
     },
     {
-      id: '19xlnbgasldfkADSf',
+      id: '21xlnbgasldfkADSf',
       scheduleName: 'Viking-0123',
       startDate: 'Aug 06, 2022 07:00 (GST)',
       endDate: 'Nov 13, 2022 23:00 (GST)',
@@ -162,11 +211,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       cliffRelease: 'No Cliff',
       vestingPeriod: '3 months',
       totalAllocation: 50000,
-      status: 'Funds pending',
+      status: 'LIVE',
       requiredConfirmation: '2 out of 3'
     },
     {
-      id: '19xlnbgasldfkADSf',
+      id: '22xlnbgasldfkADSf',
       scheduleName: 'Viking-0123',
       startDate: 'Aug 06, 2022 07:00 (GST)',
       endDate: 'Nov 13, 2022 23:00 (GST)',
@@ -174,11 +223,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       cliffRelease: 'No Cliff',
       vestingPeriod: '3 months',
       totalAllocation: 50000,
-      status: 'Funds pending',
+      status: 'CREATING',
       requiredConfirmation: '2 out of 3'
     },
     {
-      id: '19xlnbgasldfkADSf',
+      id: '23xlnbgasldfkADSf',
       scheduleName: 'Viking-0123',
       startDate: 'Aug 06, 2022 07:00 (GST)',
       endDate: 'Nov 13, 2022 23:00 (GST)',
@@ -186,11 +235,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       cliffRelease: 'No Cliff',
       vestingPeriod: '3 months',
       totalAllocation: 50000,
-      status: 'Funds pending',
+      status: 'COMPLETED',
       requiredConfirmation: '2 out of 3'
     },
     {
-      id: '19xlnbgasldfkADSf',
+      id: '24xlnbgasldfkADSf',
       scheduleName: 'Viking-0123',
       startDate: 'Aug 06, 2022 07:00 (GST)',
       endDate: 'Nov 13, 2022 23:00 (GST)',
@@ -198,7 +247,19 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       cliffRelease: 'No Cliff',
       vestingPeriod: '3 months',
       totalAllocation: 50000,
-      status: 'Funds pending',
+      status: 'CREATED',
+      requiredConfirmation: '2 out of 3'
+    },
+    {
+      id: '25xlnbgasldfkADSf',
+      scheduleName: 'Viking-0123',
+      startDate: 'Aug 06, 2022 07:00 (GST)',
+      endDate: 'Nov 13, 2022 23:00 (GST)',
+      progress: 100,
+      cliffRelease: 'No Cliff',
+      vestingPeriod: '3 months',
+      totalAllocation: 50000,
+      status: 'WAITING_APPROVAL',
       requiredConfirmation: '2 out of 3'
     }
   ];
@@ -247,7 +308,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <SelectInput label="Status" options={recipientTypes} />
             <Input label="Amount" placeholder="Enter the amount" className="lg:col-span-2" />
           </div>
-          <Table columns={columns} data={data} />
+          <Table columns={columns} data={data} getTrProps={getTrProps} />
         </div>
       ) : (
         <>

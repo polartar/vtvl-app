@@ -2,7 +2,7 @@ import DownloadIcon from 'public/icons/download.svg';
 import PrintIcon from 'public/icons/print.svg';
 import { usePagination, useTable } from 'react-table';
 
-const Table = ({ columns, data, pagination = false, exports = false }: any) => {
+const Table = ({ columns, data, pagination = false, exports = false, getTrProps = () => {} }: any) => {
   // Table features
   // Use the state and functions returned from useTable to build your UI
   const {
@@ -49,7 +49,7 @@ const Table = ({ columns, data, pagination = false, exports = false }: any) => {
             {page.map((row: any, i: number) => {
               prepareRow(row);
               return (
-                <tr {...row.getRowProps()}>
+                <tr {...row.getRowProps()} {...getTrProps(row)}>
                   {row.cells.map((cell: any) => {
                     return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>;
                   })}

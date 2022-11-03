@@ -20,8 +20,16 @@ interface IDashboardPanelProps {
   contract?: IVestingContractProps;
   step?: number;
   className?: string;
+  pagination?: IDashboardPanelPagination;
   onPrimaryClick?: () => void;
   onSecondaryClick?: () => void;
+}
+
+interface IDashboardPanelPagination {
+  total: number;
+  page: number;
+  onPrevious: () => void;
+  onNext: () => void;
 }
 
 interface IDashboardPanelStatuses {
@@ -57,6 +65,7 @@ const DashboardPanel = ({
   contract,
   className,
   step = 0,
+  pagination,
   onPrimaryClick = () => {},
   onSecondaryClick = () => {},
   ...props
@@ -175,6 +184,25 @@ const DashboardPanel = ({
       </div>
       <div className="border-t mt-3 pt-3 row-center justify-between">
         <div className="row-center">{statuses[status].actions}</div>
+        {pagination ? (
+          <div className="row-center text-sm font-medium">
+            <button
+              className="primary py-2 text-sm font-medium"
+              disabled={pagination.page === 1}
+              onClick={pagination.onPrevious}>
+              Previous
+            </button>
+            <span>
+              {pagination.page} of {pagination.total}
+            </span>
+            <button
+              className="primary py-2 text-sm font-medium"
+              disabled={pagination.page === pagination.total}
+              onClick={pagination.onNext}>
+              Next
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -59,10 +59,24 @@ const Dashboard: NextPageWithLayout = () => {
     address: '0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5'
   };
 
+  // Samples for showing previous and next items via buttons
+  const showPreviousSchedule = () => {
+    console.log('Load and show the previous schedule here');
+    setCurrentPage((previous) => previous - 1);
+  };
+
+  const showNextSchedule = () => {
+    console.log('Load and show the next schedule here');
+    setCurrentPage((previous) => previous + 1);
+  };
+
+  const [currentPage, setCurrentPage] = useState(1);
+
   console.log(activities);
   return (
     <>
-      {!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED' ? (
+      {(!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED') &&
+      !hasProject ? (
         <>
           <h1 className="h2 font-medium text-center mb-10">My Projects</h1>
           <EmptyState
@@ -109,6 +123,7 @@ const Dashboard: NextPageWithLayout = () => {
             status="authRequired"
             step={1}
             className="mb-6"
+            pagination={{ total: 5, page: currentPage, onNext: showNextSchedule, onPrevious: showPreviousSchedule }}
           />
           <DashboardPanel
             type="contract"

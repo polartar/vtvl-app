@@ -203,12 +203,16 @@
     @apply transition-all transform;
   }
 
-  a:hover:not(:disabled),
+  /* Experimental hover states */
+  /* a:hover:not(:disabled),
   a:focus-visible:not(:disabled),
   button:hover:not(:disabled),
   button:focus-visible:not(:disabled) {
-    @apply -translate-y-px transform;
-  }
+    box-shadow:
+    0 0 6px 3px #fff,
+    0 0 10px 6px #f0f,
+    0 0 14px 9px #0ff;
+  } */
 
   button.primary {
     @apply bg-primary-900 text-white;
@@ -508,7 +512,7 @@
 
   /* Table default styling */
   table {
-    @apply w-full whitespace-normal;
+    @apply w-full whitespace-nowrap;
   }
   table thead {
     @apply bg-neutral-50;
