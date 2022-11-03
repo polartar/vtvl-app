@@ -122,7 +122,8 @@ const AccountSetupPage: NextPage = () => {
     await registerNewMember(
       {
         name: values.name,
-        email: values.companyEmail,
+        email: user.email || '',
+        companyEmail: values.companyEmail,
         type: info?.accountType || ''
       },
       { name: values.company, email: values.companyEmail }

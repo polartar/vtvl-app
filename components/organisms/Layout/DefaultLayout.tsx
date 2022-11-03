@@ -106,6 +106,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const { user, error, logOut, showSideBar, toggleSideBar } = useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
   const { active } = useWeb3React();
+  console.log("in progress here is ", inProgress)
   return (
     <Container>
       <Head>

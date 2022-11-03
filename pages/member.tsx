@@ -1,21 +1,21 @@
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
 import AuthContext from '@providers/auth.context';
+import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
 import React, { useContext } from 'react';
 
 const MemberWalletPage: NextPage = () => {
+  const { completeOnboarding } = useContext(OnboardingContext);
   const { user } = useContext(AuthContext);
   const { activate } = useWeb3React();
-  const router = useRouter();
 
   async function metamaskActivate() {
     try {
       await activate(injected);
-      router.push('/dashboard');
+      completeOnboarding()
     } catch (error) {
       console.log('connection error ', error);
     }
@@ -24,7 +24,7 @@ const MemberWalletPage: NextPage = () => {
   async function walletConnectActivate() {
     try {
       await activate(walletconnect);
-      router.push('/dashboard');
+      completeOnboarding()
     } catch (error) {
       console.log('connection error ', error);
     }
@@ -74,7 +74,7 @@ const MemberWalletPage: NextPage = () => {
       <div className="panel max-w-lg">
         <Wallets wallets={wallets} />
         <div className="my-5 text-xs text-neutral-600 font-medium border-t border-b border-gray-200 py-5">
-          <button type="button" className="primary" onClick={() => router.push('/dashboard')}>
+          <button type="button" className="primary" onClick={() => completeOnboarding()}>
             No thanks, I'll stick to email
           </button>
         </div>

@@ -5,6 +5,8 @@ import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import React, { useContext, useEffect } from 'react';
+import { newMember } from 'services/db/member';
+import { toast } from 'react-toastify';
 
 const Container = styled.div`
   width: 100%;
@@ -38,7 +40,7 @@ const userTypes = {
 
 const SelectUserTypePage: NextPage = () => {
   const { onNext, startOnboarding } = useContext(OnboardingContext);
-  const { emailSignUp } = useContext(AuthContext);
+  const { emailSignUp, user } = useContext(AuthContext);
   const [selected, setSelected] = React.useState('');
 
   useEffect(() => {
@@ -55,6 +57,25 @@ const SelectUserTypePage: NextPage = () => {
       console.log('error ', error);
     }
   };
+
+  const handleContinue = async() => {
+    try {
+      if (selected === 'founder') {
+        onNext({ accountType: selected });
+        return;
+      }
+      if(user){
+        await newMember(user.uid, user.email || '', user.email || '', selected);
+        Router.push('/member');
+        return;
+      }
+      // invalid email sign up link
+      toast.error("Invalid link please go to the sign up page and try again.")
+    } catch (error) {
+      console.log(error)
+      toast.error("Oops something went wrong. Please go to the sign up page and try again.")
+    }
+  }
 
   return (
     <Container>
@@ -75,13 +96,7 @@ const SelectUserTypePage: NextPage = () => {
       </div>
       <button
         className="secondary"
-        onClick={async () => {
-          if (selected === 'founder') {
-            onNext({ accountType: selected });
-            return;
-          }
-          Router.replace('/member');
-        }}>
+        onClick={()=> handleContinue()}>
         Continue
       </button>
     </Container>

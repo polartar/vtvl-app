@@ -36,12 +36,16 @@ const SignUpPage: NextPage = () => {
   };
 
   const googleSignIn = async () => {
-    const newLogin = await signInWithGoogle();
-    if (newLogin) {
-      console.log('new login');
-      startOnboarding(Step.SignUp);
+    try {
+      const newLogin = await signInWithGoogle();
+      if (newLogin) {
+        console.log('new login');
+        startOnboarding(Step.SignUp);
+      }
+      onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
+    } catch (error) {
+      console.error(error)
     }
-    onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
