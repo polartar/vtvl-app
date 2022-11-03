@@ -535,6 +535,17 @@
   .recharts-cartesian-axis-tick-value {
     @apply text-xs text-neutral-800;
   }
+
+  /* Markdown content styles -- due to Tailwind resetting all element styles, we need to add styling for these. */
+  .markdown-content p {
+    @apply my-4;
+  }
+  .markdown-content h1 {
+    @apply my-6 font-semibold;
+  }
+  .markdown-content h2 {
+    @apply my-5 font-semibold;
+  }
 }
 
 @layer components {
@@ -725,6 +736,10 @@
   .dark-text {
     @apply text-neutral-900;
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 *,

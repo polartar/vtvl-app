@@ -304,16 +304,18 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               </div>
               {/* Date picker end */}
               <div className="md:col-span-2 row-center gap-3">
-                {quickDates.map((quickDate, qdIndex) => (
-                  <Chip
-                    key={`Quick-date-${qdIndex}`}
-                    label={quickDate.label}
-                    rounded
-                    color="alt"
-                    className="cursor-pointer transform transition-all hover:-translate-y-px hover:bg-primary-900 hover:text-neutral-50 hover:border-primary-900"
-                    onClick={() => addDateToSchedule(quickDate.value)}
-                  />
-                ))}
+                <div className="row-center flex-wrap">
+                  {quickDates.map((quickDate, qdIndex) => (
+                    <Chip
+                      key={`Quick-date-${qdIndex}`}
+                      label={quickDate.label}
+                      rounded
+                      color="alt"
+                      className="cursor-pointer transform transition-all hover:-translate-y-px hover:bg-primary-900 hover:text-neutral-50 hover:border-primary-900"
+                      onClick={() => addDateToSchedule(quickDate.value)}
+                    />
+                  ))}
+                </div>
               </div>
 
               {/**
@@ -485,7 +487,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 )}
               />
             </div>
-            <ScheduleDetails {...getValues()} token="BICO" />
+            <ScheduleDetails {...getValues()} token="BICO" layout="small" />
           </div>
         </div>
       </div>

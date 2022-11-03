@@ -37,6 +37,7 @@ interface ScheduleDetailProps extends React.AllHTMLAttributes<HTMLDivElement> {
    * Token - what is the token symbol / name being vested.
    */
   token: string;
+  layout?: 'small' | 'default';
 }
 
 const ScheduleDetails = ({
@@ -48,6 +49,7 @@ const ScheduleDetails = ({
   releaseFrequency,
   amountToBeVested,
   token,
+  layout = 'default',
   hint = true,
   ...props
 }: ScheduleDetailProps) => {
@@ -78,6 +80,9 @@ const ScheduleDetails = ({
     vestedAmount: +amountToBeVested
   });
 
+  const hasChartValidValues = () => {
+    return chartData.release.length > 1 && chartData.release.filter((rel) => rel.value !== '0').length;
+  };
   console.log('Chart data', chartData);
 
   const frequencyInterval = DATE_FREQ_TO_TIMESTAMP[releaseFrequency];
@@ -88,6 +93,35 @@ const ScheduleDetails = ({
       : null;
 
   const singleLineFrequencies = ['continuous', 'minute', 'hourly'];
+
+  const formatTick = (value: string) => {
+    let dateFormat = '';
+    switch (releaseFrequency) {
+      case 'continuous':
+        dateFormat = 'M/d/yy h:mm:ss aaa';
+        break;
+      case 'minute':
+        dateFormat = 'M/d/yy h:mm:ss aaa';
+        break;
+      case 'hourly':
+        dateFormat = 'M/d/yy h:mm aaa';
+        break;
+      case 'daily':
+        dateFormat = 'MMM d yyyy';
+        break;
+      case 'weekly':
+        dateFormat = 'MMM d yyyy';
+        break;
+      case 'monthly':
+        dateFormat = 'MMM yyyy';
+        break;
+      case 'yearly':
+        dateFormat = 'yyyy';
+        break;
+    }
+    console.log('value', value);
+    return format(new Date(value), dateFormat);
+  };
 
   return (
     <>
@@ -103,16 +137,11 @@ const ScheduleDetails = ({
        * However, we are not ensured that the parent always has width and height.
        * This will force the responsive container to have a dynamic width and height.
        */}
-      {chartData ? (
+      {hasChartValidValues() ? (
         <ResponsiveContainer width={'99%'} height={300}>
           <LineChart width={300} height={300}>
             <CartesianGrid stroke="#d0d5dd" strokeDasharray="0 0" />
-            <XAxis
-              dataKey="date"
-              type="category"
-              allowDuplicatedCategory={false}
-              tickFormatter={(value) => format(new Date(value), 'MMM yyyy')}
-            />
+            <XAxis dataKey="date" type="category" allowDuplicatedCategory={false} tickFormatter={formatTick} />
             <YAxis
               allowDataOverflow={true}
               dataKey="value"
@@ -145,7 +174,7 @@ const ScheduleDetails = ({
       ) : (
         <EmptyState image="/images/blockchain-technology.gif" imageSize="small" description="No schedule details yet" />
       )}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
+      <div className={`grid gap-3 mt-5 ${layout === 'small' ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4 '}`}>
         <label>
           <span>Cliff</span>
           <p className="flex flex-row items-start gap-2 text-xs">
