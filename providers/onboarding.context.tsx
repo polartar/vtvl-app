@@ -59,7 +59,7 @@ export const States = {
 };
 
 export function OnboardingContextProvider({ children }: any) {
-  const { user, refreshUser } = useContext(AuthContext);
+  const { user, refreshUser, isNewUser } = useContext(AuthContext);
   const [info, setInfo] = useState<OnboardingInfo | undefined>();
   const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
   const [inProgress, setInProgress] = useState<boolean>(false);
@@ -109,11 +109,16 @@ export function OnboardingContextProvider({ children }: any) {
       return;
     }
 
+    if (currentStep === Step.ChainSetup) setInProgress(true);
+
+    if (currentStep === Step.SignUp && !isNewUser) {
+      completeOnboarding();
+      return;
+    }
+
     if (!States[nextstep as Step].route || !currentStep) throw new Error('invalid route onboarding context');
     console.log('onboarding context valid route');
     setCurrentStep(nextstep);
-
-    if (currentStep === Step.ChainSetup) setInProgress(true);
 
     if (nextstep == Step.UserTypeSetup) {
       console.log('is this a first time user -- contest -- ', isFirstTimeUser);

@@ -138,7 +138,7 @@ const AccountSetupPage: NextPage = () => {
           email: contributor.email,
           org_id: user.memberInfo?.org_id || ''
         });
-        await sendTeammateInvite(contributor.email, 'employee', user.memberInfo?.org_id);
+        await sendTeammateInvite(contributor.email, 'employee', contributor.name, values.company, user.memberInfo?.org_id);
       });
     }
     return onNext({ orgId: user.memberInfo?.org_id });

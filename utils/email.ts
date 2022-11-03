@@ -1,9 +1,12 @@
-import mail, { MailDataRequired } from "@sendgrid/mail";
+import mail from '@sendgrid/mail';
 
 const key = process.env.SENDGRID_API_KEY;
-mail.setApiKey(key || "");
-const temp = "d-dbd24a1f6b69408bbdcff1b4130ecde4";
+mail.setApiKey(key || '');
 
+export enum MailTemplates {
+  Login = 'd-dbd24a1f6b69408bbdcff1b4130ecde4',
+  TeammateInvite = 'd-bde77990c2394a1fba408a67285063b6'
+}
 export interface DT {
   firstname?: string;
   lastname?: string;
@@ -17,31 +20,20 @@ export interface DT {
 
 export interface SendMailProps {
   to: string;
-  from: string;
-  templateId: string;
-  dynamicTemplateData: DT;
+  subject: string;
+  templateId: MailTemplates;
+  data: any;
 }
 
-export default async function SendMail({
-  to,
-  email,
-  // templateId,
-  emailLink,
-  subject,
-}: any) {
+export default async function SendMail({ to, templateId, subject, data }: SendMailProps) {
   try {
     if (!to) return "Reciever's email is needed";
-  //  if (!from) return "Senders's email is needed";
-  //  if (!templateId) return " Email template is needed";
+    if (!templateId) return ' Email template is needed';
 
-    const dynamicTemplateData = {
-      email,
-      subject,
-      emailLink,
-    };
-    await mail.send({ to, from: 'adaobi@vtvl.io', templateId: temp, dynamicTemplateData, subject });
-    return "email sent";
+    const dynamicTemplateData = { ...data, subject };
+    await mail.send({ to, from: 'adaobi@vtvl.io', templateId, dynamicTemplateData, subject });
+    return 'email sent';
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }

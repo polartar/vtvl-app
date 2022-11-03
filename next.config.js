@@ -14,8 +14,6 @@ const nextConfig = {
       use: 'raw-loader'
     });
 
- //   config.resolve.fallback = { fs: false };
-
     return config;
   },
   async redirects() {

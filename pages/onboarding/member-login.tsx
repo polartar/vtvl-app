@@ -3,7 +3,7 @@ import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { emailPattern } from 'types/constants/validation-patterns';
@@ -16,6 +16,10 @@ const MemberLoginPage: NextPage = () => {
   const { teammateSignIn, sendLoginLink, signInWithGoogle } = useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const router = useRouter();
+
+  useEffect(() => {
+    startOnboarding(Step.SignUp);
+  }, []);
 
   const {
     control,
@@ -37,10 +41,6 @@ const MemberLoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    if (newLogin) {
-      console.log('new login');
-      startOnboarding(Step.SignUp);
-    }
     onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
@@ -115,7 +115,7 @@ const MemberLoginPage: NextPage = () => {
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <span className="font-medium text-xs text-neutral-800">
           Don&apos;t have an account?{' '}
-          <span className="text-primary-900" onClick={() => router.replace('onboarding/sign-up')}>
+          <span className="text-primary-900" onClick={() => router.replace('/onboarding/sign-up')}>
             Create an account.
           </span>
         </span>
