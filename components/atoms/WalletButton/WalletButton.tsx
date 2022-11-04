@@ -22,7 +22,7 @@ const ConnectButton = styled.button`
   }
 `;
 interface WalletButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  image: string;
+  image: string | JSX.Element;
   label: string;
   subLabel?: string | JSX.Element | JSX.Element[];
   disabled?: boolean;
@@ -31,7 +31,7 @@ interface WalletButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
 const WalletButton = ({ image, label, subLabel, disabled = false, ...props }: WalletButtonProps) => {
   return (
     <ConnectButton {...props} disabled={disabled} className={`wallet-button ${disabled ? 'grayscale opacity-50' : ''}`}>
-      <img src={image} alt={label} className="mb-5" />
+      {typeof image === 'string' ? <img src={image} alt={label} className="mb-5" /> : image}
       <p className="text-sm font-medium text-neutral-800">{label}</p>
       {subLabel ? <p>{subLabel}</p> : null}
     </ConnectButton>
