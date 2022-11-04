@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
 import SendMail, { MailTemplates } from 'utils/email';
+import dotenv from 'dotenv';
+
+dotenv.config()
 
 type Data = {
   message: string;
@@ -8,8 +11,12 @@ type Data = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const { email } = req.body;
+  const baseUrl = req.headers.host ? `http://${req.headers.host}` : process.env.NEXT_PUBLIC_DOMAIN_NAME;
+  console.log("base url here i s ", baseUrl)
+  console.log("coninue url here i s ", `${`${baseUrl}/onboarding/select-user-type?email=${email}`}`)
+
   const actionCodeSettings = {
-    url: `http://${req.headers.host || process.env.NEXT_PUBLIC_DOMAIN_NAME}/onboarding/select-user-type?email=${email}`,
+    url: `${baseUrl}/onboarding/select-user-type?email=${email}`,
     handleCodeInApp: true
   };
 
