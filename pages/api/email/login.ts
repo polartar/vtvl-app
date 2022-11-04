@@ -12,7 +12,7 @@ type Data = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const { email } = req.body;
   // const baseUrl = req.headers.host ? `http://${req.headers.host}` : process.env.NEXT_PUBLIC_DOMAIN_NAME;
-  const baseUrl = process.env.REDIRECTION_DOMAIN_NAME;
+  const baseUrl = process.env.NEXT_PUBLIC_DOMAIN_NAME;
   console.log('base url here i s ', baseUrl);
   console.log('coninue url here i s ', `${`${baseUrl}/onboarding/select-user-type?email=${email}`}`);
 
