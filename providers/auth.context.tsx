@@ -206,7 +206,7 @@ export function AuthContextProvider({ children }: any) {
     const member = await fetchMemberByEmail(email);
     console.log('sending login link here ', member);
     //TODO: abstract api calls
-    await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/email/login`, {
+    await axios.post(`${window.location.origin || process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/email/login`, {
       email
     });
     setLoading(false);
