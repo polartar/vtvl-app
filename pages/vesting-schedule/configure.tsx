@@ -108,7 +108,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Handle the changes made when updating the amount to be vested.
   const handleMinChange = (e: any) => {
-    console.log('Min changed', e.target.value);
+    console.log('Min changed', +e.target.value, tokenSupply);
     setValue('amountToBeVested', e.target.value);
   };
 

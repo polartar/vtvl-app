@@ -245,14 +245,16 @@ const MintingToken: NextPageWithLayout = () => {
                     label="MAX"
                     color="secondary"
                     onClick={handleMaxMintAmouont}
-                    className="absolute right-6 bottom-4"
+                    className={`absolute right-6 ${
+                      initialSupply.value > maxSupply.value || errors.initialSupply ? 'bottom-9' : 'bottom-2'
+                    }`}
                   />
                 ) : null}
               </div>
               {supplyCap.value === 'LIMITED' ? (
                 <div className="mt-6">
                   <RangeSlider
-                    max={initialSupply.value ? initialSupply.value : 0}
+                    max={maxSupply.value ? maxSupply.value : 0}
                     value={initialSupply.value ? initialSupply.value : 0}
                     className="mt-5"
                     onChange={handleinitialSupplyChange}
