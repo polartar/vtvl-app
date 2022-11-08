@@ -1,4 +1,4 @@
-import { addDoc, doc, getDoc, getDocs, limit, query, setDoc, where } from '@firebase/firestore';
+import { WhereFilterOp, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where } from '@firebase/firestore';
 import { safeCollection } from 'services/db/firestore';
 import { ISafe } from 'types/models';
 
@@ -29,4 +29,17 @@ export const createOrUpdateSafe = async (safe: ISafe, ref?: string): Promise<str
   }
   const safeRef = await addDoc(safeCollection, safe);
   return safeRef.id;
+};
+
+export const fetchSafeByQuery = async (
+  field: string,
+  syntax: WhereFilterOp,
+  value: string
+): Promise<ISafe | undefined> => {
+  const q = query(safeCollection, where(field, syntax, value));
+  const querySnapshot = await getDocs(q);
+
+  if (querySnapshot && !querySnapshot.empty) {
+    return querySnapshot.docs[0].data();
+  }
 };

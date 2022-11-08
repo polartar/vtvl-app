@@ -1,11 +1,17 @@
 import { IScheduleFormState } from '@providers/vesting.context';
+import Decimal from 'decimal.js';
 import { MultiValue } from 'react-select';
 import { IRecipient } from 'types/vesting';
 
 export interface IVesting {
   details: IScheduleFormState;
   recipients: MultiValue<IRecipient>;
-  owner: string;
+  organizationId: string;
+  status: 'WAITING_APPROVAL' | 'APPROVED' | 'SUCCESS' | 'FAILED';
+  vestingContract?: string;
+  createdAt?: number;
+  updatedAt?: number;
+  transactionId: string;
 }
 
 export interface IScheduleOverviewProps {
@@ -16,4 +22,20 @@ export interface IScheduleOverviewProps {
   cliff: string;
   linearRelease: string;
   totalAllocated: string;
+}
+
+export interface IScheduleSummaryProps {
+  name: string;
+  tokenPerUser: number | string;
+  beneficiaries: number;
+  totalPeriod: string;
+  createdBy: string;
+}
+
+export interface IVestingContractProps {
+  tokenName: string;
+  tokenSymbol: string;
+  supplyCap: 'LIMITED' | 'UNLIMITED';
+  maxSupply: number | Decimal;
+  address: string;
 }

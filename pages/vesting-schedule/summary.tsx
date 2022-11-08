@@ -2,6 +2,12 @@ import BackButton from '@components/atoms/BackButton/BackButton';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { Interface } from '@ethersproject/abi';
+import { BaseTransaction } from '@gnosis.pm/safe-apps-sdk';
+import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
+import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
+import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
+import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
@@ -11,15 +17,17 @@ import { ethers } from 'ethers';
 import { BigNumber } from 'ethers';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
+import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
-import { createContract, fetchContractByQuery, updateContract } from 'services/db/contract';
 import { createVesting } from 'services/db/vesting';
+import { createVestingContract, fetchVestingContractByQuery, updateVestingContract } from 'services/db/vestingContract';
 import {
   CLIFFDURATION_TIMESTAMP,
   CliffDuration,
   DATE_FREQ_TO_TIMESTAMP,
   ReleaseFrequency
 } from 'types/constants/schedule-configuration';
+import { SupportedChains } from 'types/constants/supported-chains';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -41,141 +49,191 @@ interface ScheduleFormTypes {
 }
 
 const ScheduleSummary: NextPageWithLayout = () => {
-  const { library, account, activate } = useWeb3React();
-  const { recipients, scheduleFormState } = useVestingContext();
+  const { library, account, activate, chainId } = useWeb3React();
+  const { organizationId, safe } = useAuthContext();
+  const { recipients, scheduleFormState, resetVestingState } = useVestingContext();
+  const { mintFormState } = useTokenContext();
 
   const handleCreateSchedule = async () => {
-    console.log({ recipients, scheduleFormState });
-    try {
-      if (!library) {
-        activate(injected);
-      } else if (account) {
-        const userContracts = await fetchContractByQuery('owner', '==', account);
+    const PERFORM_CREATE_FUNCTION = 'function performCreate(uint256 value, bytes memory deploymentData)';
+    const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
+    const ABI = [PERFORM_CREATE_FUNCTION];
+    const vestingId = await createVesting({
+      details: scheduleFormState,
+      recipients,
+      organizationId: organizationId!,
+      status: 'WAITING_APPROVAL',
+      createdAt: Math.floor(new Date().getTime() / 1000),
+      updatedAt: Math.floor(new Date().getTime() / 1000),
+      transactionId: ''
+    });
+    resetVestingState();
+    Router.push('/vesting-schedule/success');
+    // try {
+    //   if (!library) {
+    //     activate(injected);
+    //   } else if (account && safe && chainId) {
+    //     if (safe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())) {
+    //       const performCreateInterface = new ethers.utils.Interface(ABI);
+    //       const vestingContractInterface = new ethers.utils.Interface(VtvlVesting.abi);
+    //       console.log('0x' + VtvlVesting.bytecode + vestingContractInterface.encodeDeploy([mintFormState.address]));
+    //       const performCreateEncoded = performCreateInterface.encodeFunctionData(PERFORM_CREATE_INTERFACE, [
+    //         '0',
+    //         '0x' + VtvlVesting.bytecode + vestingContractInterface.encodeDeploy([mintFormState.address]).slice(2)
+    //       ]);
 
-        const vestingId = await createVesting({ details: scheduleFormState, recipients, owner: account });
+    //       const deployTxData = {
+    //         to: '0x7cbb62eaa69f79e6873cd1ecb2392971036cfaa4',
+    //         data: performCreateEncoded,
+    //         value: '0'
+    //       };
+    //       // console.log({ deployTxData });
+    //       const ethAdapter = new EthersAdapter({
+    //         ethers: ethers,
+    //         signer: library?.getSigner(0)
+    //       });
+    //       const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+    //       const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: deployTxData });
+    //       const signedSafeTransaction = await safeSdk.signTransaction(safeTransaction);
+    //       const txHash = await safeSdk.getTransactionHash(safeTransaction);
+    //       console.log({ safeTransaction, signedSafeTransaction, txHash });
 
-        const tokenContract = new ethers.Contract(
-          scheduleFormState.token,
-          [
-            // Read-Only Functions
-            'function balanceOf(address owner) view returns (uint256)',
-            'function decimals() view returns (uint8)',
-            'function symbol() view returns (string)',
+    //       // const ethAdapterOwner2 = new EthersAdapter({ ethers, signer: library?.getSigner(0) });
+    //       // const safeSdk2 = await safeSdk.connect({ ethAdapter: ethAdapterOwner2, safeAddress: safe?.address });
+    //       // const safeService = new SafeServiceClient({
+    //       //   txServiceUrl: SupportedChains[chainId].multisigTxUrl,
+    //       //   ethAdapter
+    //       // });
+    //       // const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
+    //       //   '0xfc5818c84be0ca998661e0502472a78ceee613af37589482539dfb22a0010eee'
+    //       // );
+    //       // const safeTx = await safeSdk2.createTransaction({
+    //       //   safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
+    //       // });
+    //       // apiTx.confirmations?.forEach((confirmation) => {
+    //       //   safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
+    //       // });
+    //       // const approveTxResponse = await safeSdk2.executeTransaction(safeTx);
+    //       // await approveTxResponse.transactionResponse?.wait();
+    //     }
 
-            // Authenticated Functions
-            'function transfer(address to, uint amount) returns (bool)',
+    //     // const ethAdapterOwner2 = new EthersAdapter({ ethers, signer: library?.getSigner(1) });
+    //     // const safeSdk2 = await safeSdk.connect({ ethAdapter: ethAdapterOwner2, safeAddress: safe?.address });
+    //     // const txHash = await safeSdk2.getTransactionHash(safeTransaction);
+    //     // const approveTxResponse = await safeSdk2.approveTransactionHash(txHash);
+    //     // await approveTxResponse.transactionResponse?.wait();
 
-            // Events
-            'event Transfer(address indexed from, address indexed to, uint amount)'
-          ],
-          library.getSigner()
-        );
-        const VestingFactory = new ethers.ContractFactory(VtvlVesting.abi, VtvlVesting.bytecode, library.getSigner());
-
-        let vestingContractAddress = '';
-        let vestingContract;
-        if (userContracts?.data?.vestingContract) {
-          vestingContractAddress = userContracts?.data?.vestingContract;
-          vestingContract = new ethers.Contract(vestingContractAddress, VtvlVesting.abi, library.getSigner());
-        } else {
-          vestingContract = await VestingFactory.deploy(scheduleFormState.token);
-          await vestingContract.deployed();
-          vestingContractAddress = vestingContract.address;
-          if (userContracts?.id && userContracts.data) {
-            updateContract({ ...userContracts.data, vestingContract: vestingContractAddress }, userContracts?.id);
-          }
-        }
-
-        const tokenBalance = await tokenContract.balanceOf(vestingContractAddress);
-        if (BigNumber.from(tokenBalance).lt(BigNumber.from(parseTokenAmount(scheduleFormState.amountToBeVested)))) {
-          const tx = await tokenContract.transfer(
-            vestingContractAddress,
-            BigNumber.from(parseTokenAmount(scheduleFormState.amountToBeVested)).sub(BigNumber.from(tokenBalance))
-          );
-          await tx.wait();
-        }
-
-        const cliffAmountPerUser =
-          getCliffAmount(
-            scheduleFormState.cliffDuration,
-            +scheduleFormState.lumpSumReleaseAfterCliff,
-            +scheduleFormState.amountToBeVested
-          ) / recipients.length;
-        const vestingAmountPerUser = +scheduleFormState.amountToBeVested / recipients.length - cliffAmountPerUser;
-
-        const addresses = recipients.map((recipient) => recipient.walletAddress);
-        const cliffReleaseDate = scheduleFormState.startDateTime
-          ? getCliffDateTime(scheduleFormState.startDateTime, scheduleFormState.cliffDuration)
-          : '';
-        const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
-        const numberOfReleases =
-          scheduleFormState.startDateTime && scheduleFormState.endDateTime
-            ? getNumberOfReleases(
-                scheduleFormState.releaseFrequency,
-                cliffReleaseDate || scheduleFormState.startDateTime,
-                scheduleFormState.endDateTime
-              )
-            : 0;
-        const actualStartDateTime =
-          scheduleFormState.cliffDuration !== 'no-cliff' ? cliffReleaseDate : scheduleFormState.startDateTime;
-        const vestingEndTimestamp =
-          scheduleFormState.endDateTime && actualStartDateTime
-            ? getProjectedEndDateTime(
-                actualStartDateTime,
-                scheduleFormState.endDateTime,
-                numberOfReleases,
-                DATE_FREQ_TO_TIMESTAMP[scheduleFormState.releaseFrequency]
-              )
-            : null;
-        const vestingStartTimestamps = new Array(recipients.length).fill(
-          cliffReleaseTimestamp ? cliffReleaseTimestamp : Math.floor(scheduleFormState.startDateTime!.getTime() / 1000)
-        );
-        const vestingEndTimestamps = new Array(recipients.length).fill(
-          Math.floor(vestingEndTimestamp!.getTime() / 1000)
-        );
-        const vestingCliffTimestamps = new Array(recipients.length).fill(cliffReleaseTimestamp);
-        const vestingReleaseIntervals = new Array(recipients.length).fill(
-          DATE_FREQ_TO_TIMESTAMP[scheduleFormState.releaseFrequency]
-        );
-        const vestingLinearVestAmounts = new Array(recipients.length).fill(parseTokenAmount(vestingAmountPerUser, 18));
-        const vestingCliffAmounts = new Array(recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
-        console.log({
-          addresses,
-          vestingStartTimestamps,
-          vestingEndTimestamps,
-          vestingCliffTimestamps,
-          vestingReleaseIntervals,
-          vestingLinearVestAmounts,
-          vestingCliffAmounts
-        });
-
-        await vestingContract.createClaimsBatch(
-          addresses,
-          vestingStartTimestamps,
-          vestingEndTimestamps,
-          vestingCliffTimestamps,
-          vestingReleaseIntervals,
-          vestingLinearVestAmounts,
-          vestingCliffAmounts
-        );
-
-        Router.push('/vesting-schedule/success');
-
-        // // updateMintFormState({ ...mintFormState, contractAddress: vestingContract.address });
-
-        // // const tokensCollection = collection(db, 'tokens');
-        // // addDoc(tokensCollection, {
-        // //   address: vestingContract.address,
-        // //   owner: account,
-        // //   logo: tokenLogo
-        // // });
-
-        // console.log('Deployed an ERC Token for testing.');
-        // console.log('Address:', vestingContract.address);
-      }
-    } catch (err) {
-      console.log('err - ', err);
-    }
+    //     // const userContracts = await fetchContractByQuery('owner', '==', account);
+    //     // const tokenContract = new ethers.Contract(
+    //     //   scheduleFormState.token,
+    //     //   [
+    //     //     // Read-Only Functions
+    //     //     'function balanceOf(address owner) view returns (uint256)',
+    //     //     'function decimals() view returns (uint8)',
+    //     //     'function symbol() view returns (string)',
+    //     //     // Authenticated Functions
+    //     //     'function transfer(address to, uint amount) returns (bool)',
+    //     //     // Events
+    //     //     'event Transfer(address indexed from, address indexed to, uint amount)'
+    //     //   ],
+    //     //   library.getSigner()
+    //     // );
+    //     // const VestingFactory = new ethers.ContractFactory(VtvlVesting.abi, VtvlVesting.bytecode, library.getSigner());
+    //     // let vestingContractAddress = '';
+    //     // let vestingContract;
+    //     // if (userContracts?.data?.vestingContract) {
+    //     //   vestingContractAddress = userContracts?.data?.vestingContract;
+    //     //   vestingContract = new ethers.Contract(vestingContractAddress, VtvlVesting.abi, library.getSigner());
+    //     // } else {
+    //     //   vestingContract = await VestingFactory.deploy(scheduleFormState.token);
+    //     //   await vestingContract.deployed();
+    //     //   vestingContractAddress = vestingContract.address;
+    //     //   if (userContracts?.id && userContracts.data) {
+    //     //     updateContract({ ...userContracts.data, vestingContract: vestingContractAddress }, userContracts?.id);
+    //     //   }
+    //     // }
+    //     // const tokenBalance = await tokenContract.balanceOf(vestingContractAddress);
+    //     // if (BigNumber.from(tokenBalance).lt(BigNumber.from(parseTokenAmount(scheduleFormState.amountToBeVested)))) {
+    //     //   const tx = await tokenContract.transfer(
+    //     //     vestingContractAddress,
+    //     //     BigNumber.from(parseTokenAmount(scheduleFormState.amountToBeVested)).sub(BigNumber.from(tokenBalance))
+    //     //   );
+    //     //   await tx.wait();
+    //     // }
+    //     // const cliffAmountPerUser =
+    //     //   getCliffAmount(
+    //     //     scheduleFormState.cliffDuration,
+    //     //     +scheduleFormState.lumpSumReleaseAfterCliff,
+    //     //     +scheduleFormState.amountToBeVested
+    //     //   ) / recipients.length;
+    //     // const vestingAmountPerUser = +scheduleFormState.amountToBeVested / recipients.length - cliffAmountPerUser;
+    //     // const addresses = recipients.map((recipient) => recipient.walletAddress);
+    //     // const cliffReleaseDate = scheduleFormState.startDateTime
+    //     //   ? getCliffDateTime(scheduleFormState.startDateTime, scheduleFormState.cliffDuration)
+    //     //   : '';
+    //     // const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
+    //     // const numberOfReleases =
+    //     //   scheduleFormState.startDateTime && scheduleFormState.endDateTime
+    //     //     ? getNumberOfReleases(
+    //     //         scheduleFormState.releaseFrequency,
+    //     //         cliffReleaseDate || scheduleFormState.startDateTime,
+    //     //         scheduleFormState.endDateTime
+    //     //       )
+    //     //     : 0;
+    //     // const actualStartDateTime =
+    //     //   scheduleFormState.cliffDuration !== 'no-cliff' ? cliffReleaseDate : scheduleFormState.startDateTime;
+    //     // const vestingEndTimestamp =
+    //     //   scheduleFormState.endDateTime && actualStartDateTime
+    //     //     ? getProjectedEndDateTime(
+    //     //         actualStartDateTime,
+    //     //         scheduleFormState.endDateTime,
+    //     //         numberOfReleases,
+    //     //         DATE_FREQ_TO_TIMESTAMP[scheduleFormState.releaseFrequency]
+    //     //       )
+    //     //     : null;
+    //     // const vestingStartTimestamps = new Array(recipients.length).fill(
+    //     //   cliffReleaseTimestamp ? cliffReleaseTimestamp : Math.floor(scheduleFormState.startDateTime!.getTime() / 1000)
+    //     // );
+    //     // const vestingEndTimestamps = new Array(recipients.length).fill(
+    //     //   Math.floor(vestingEndTimestamp!.getTime() / 1000)
+    //     // );
+    //     // const vestingCliffTimestamps = new Array(recipients.length).fill(cliffReleaseTimestamp);
+    //     // const vestingReleaseIntervals = new Array(recipients.length).fill(
+    //     //   DATE_FREQ_TO_TIMESTAMP[scheduleFormState.releaseFrequency]
+    //     // );
+    //     // const vestingLinearVestAmounts = new Array(recipients.length).fill(parseTokenAmount(vestingAmountPerUser, 18));
+    //     // const vestingCliffAmounts = new Array(recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
+    //     // console.log({
+    //     //   addresses,
+    //     //   vestingStartTimestamps,
+    //     //   vestingEndTimestamps,
+    //     //   vestingCliffTimestamps,
+    //     //   vestingReleaseIntervals,
+    //     //   vestingLinearVestAmounts,
+    //     //   vestingCliffAmounts
+    //     // });
+    //     // await vestingContract.createClaimsBatch(
+    //     //   addresses,
+    //     //   vestingStartTimestamps,
+    //     //   vestingEndTimestamps,
+    //     //   vestingCliffTimestamps,
+    //     //   vestingReleaseIntervals,
+    //     //   vestingLinearVestAmounts,
+    //     //   vestingCliffAmounts
+    //     // );
+    //     // // updateMintFormState({ ...mintFormState, contractAddress: vestingContract.address });
+    //     // // const tokensCollection = collection(db, 'tokens');
+    //     // // addDoc(tokensCollection, {
+    //     // //   address: vestingContract.address,
+    //     // //   owner: account,
+    //     // //   logo: tokenLogo
+    //     // // });
+    //     // console.log('Deployed an ERC Token for testing.');
+    //     // console.log('Address:', vestingContract.address);
+    //   }
+    // } catch (err) {
+    //   console.log('err - ', err);
+    // }
   };
   return (
     <>

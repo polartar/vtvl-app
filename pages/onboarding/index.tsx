@@ -2,19 +2,16 @@ import Carousel from '@components/atoms/Carousel/Carousel';
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
 import styled from '@emotion/styled';
-import OnboardingContext, { Step } from '@providers/onboarding.context';
-import { useWeb3React } from '@web3-react/core';
-import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
 import Router from 'next/router';
-import React, { useContext, useEffect } from 'react';
+import AstroHelmet from 'public/icons/astronaut-helmet.svg';
 
 const OnboardingContainer = styled.section`
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 26px;
   box-shadow: 0 10px 20px -15px rgba(56, 56, 56, 0.6);
-  max-width: 1200px;
+  max-width: 1152px;
   font-weight: medium;
 `;
 const Signing = styled.div`
@@ -40,60 +37,19 @@ const WalletContainer = styled.div`
   width: 100%;
 `;
 
-const ConnectWalletPage: NextPage = () => {
-  const { activate } = useWeb3React();
-  const { onNext, setCurrentStep } = useContext(OnboardingContext);
-
-  useEffect(() => {
-    setCurrentStep(Step.ChainSetup);
-  }, []);
-
-  async function metamaskActivate() {
-    try {
-      await activate(injected);
-      await onNext({});
-    } catch (error) {
-      console.log('connection error ', error);
-    }
-  }
-
-  async function walletConnectActivate() {
-    try {
-      await activate(walletconnect);
-      await onNext({});
-    } catch (error) {
-      console.log('connection error ', error);
-    }
-  }
-
+const SelectLoginTypePage: NextPage = () => {
   const wallets = [
     {
-      name: 'MetaMask',
-      image: '/icons/wallets/metamask.svg',
-      onClick: metamaskActivate
+      name: 'Member',
+      image: <AstroHelmet className="w-10 h-10 text-primary-900 mb-3" />,
+      // Change this based on where the flow it should be
+      onClick: () => Router.push('/onboarding/connect-wallet')
     },
     {
-      name: 'Wallet Connect',
-      image: '/icons/wallets/walletconnect.svg',
-      onClick: walletConnectActivate
-    },
-    {
-      name: 'Coinbase Wallet',
-      image: '/icons/wallets/coinbase.png',
-      subLabel: 'Soon',
-      disabled: true
-    },
-    {
-      name: 'Ledger',
-      image: '/icons/wallets/ledger.png',
-      subLabel: 'Soon',
-      disabled: true
-    },
-    {
-      name: 'Trezor',
-      image: '/icons/wallets/trezor.png',
-      subLabel: 'Soon',
-      disabled: true
+      name: 'Guest',
+      image: <AstroHelmet className="w-10 h-10 text-secondary-900 mb-3" />,
+      // Change this based on where the flow it should be
+      onClick: () => Router.push('/onboarding/connect-wallet')
     }
   ];
   const carouselItems = [
@@ -128,38 +84,23 @@ const ConnectWalletPage: NextPage = () => {
     <OnboardingContainer>
       <Signing>
         <div>
-          <h1 className="font-medium">Connect to your wallet</h1>
-          <p className="text-sm text-neutral-500">Please select a wallet to connect to this app</p>
+          <h1 className="font-medium">Access VTVL as</h1>
+          <p className="text-sm font-medium text-neutral-500">
+            Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
+            <strong>Guest</strong> to test our platform.
+          </p>
         </div>
         <WalletContainer>
-          <Wallets wallets={wallets} />
-          <div className="my-5 py-5 border-b border-t border-gray-200 row-center justify-center gap-4">
-            <button type="button" className="py-2 primary" onClick={() => Router.push('/member-login')}>
-              Login as member
-            </button>
-            <button type="button" className="py-2 primary line" onClick={() => Router.push('/member-login')}>
-              Login as guest
-            </button>
+          <div className="max-w-sm mx-auto mb-11">
+            <Wallets wallets={wallets} />
           </div>
-          <div className="my-5 text-xs text-neutral-600 font-medium flex flex-row items-center justify-center gap-10">
-            <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
-              What is Wallet?
-            </a>
-            <div>
-              <span>Can&apos;t find your wallet?</span>&nbsp;
-              <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
-                Suggest Wallet
-              </a>
-            </div>
-          </div>
-          <Consent />
         </WalletContainer>
       </Signing>
-      <Vesting className="flex flex-col items-center justify-start pt-24 pb-14">
+      <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
         <Carousel variant="dark" items={carouselItems} />
       </Vesting>
     </OnboardingContainer>
   );
 };
 
-export default ConnectWalletPage;
+export default SelectLoginTypePage;

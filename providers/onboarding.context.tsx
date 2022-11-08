@@ -1,6 +1,8 @@
 import useEagerConnect from 'hooks/useEagerConnect';
 import { useRouter } from 'next/router';
-import React, { createContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+
+import AuthContext from './auth.context';
 
 interface OnboardingInfo {
   isFirstTimeUser?: boolean;
@@ -16,7 +18,7 @@ export type OnboardingContextData = {
   onPrevious: () => void;
   setInfo: (info: OnboardingInfo) => void;
   onNext: (info: OnboardingInfo) => void;
-  setCurrentStep: (step: Step) => void;
+  startOnboarding: (step: Step) => void;
   completeOnboarding: () => void;
   inProgress: boolean;
   loading: boolean;
@@ -27,7 +29,7 @@ const OnboardingContext = createContext({} as OnboardingContextData);
 
 export enum Step {
   ChainSetup = 1,
-  Login = 2,
+  SignUp = 2,
   UserTypeSetup = 3,
   AccountSetup = 4,
   SafeSetup = 5
@@ -38,8 +40,8 @@ export const States = {
     route: '/onboarding',
     error: 'Please login with web3 wallet to continue'
   },
-  [Step.Login]: {
-    route: '/member-login',
+  [Step.SignUp]: {
+    route: '/onboarding/sign-up',
     error: 'Please login to continue'
   },
   [Step.UserTypeSetup]: {
@@ -57,6 +59,7 @@ export const States = {
 };
 
 export function OnboardingContextProvider({ children }: any) {
+  const { user, refreshUser, isNewUser } = useContext(AuthContext);
   const [info, setInfo] = useState<OnboardingInfo | undefined>();
   const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
   const [inProgress, setInProgress] = useState<boolean>(false);
@@ -66,8 +69,6 @@ export function OnboardingContextProvider({ children }: any) {
   const tried = useEagerConnect();
 
   useEffect(() => {
-    console.log('onboarding contest current step is ', currentStep);
-    console.log('onboarding in progress ?? ', inProgress);
     router.beforePopState(({ as }) => {
       if (as !== router.asPath && inProgress) {
         const prevstep = currentStep == Step.ChainSetup ? currentStep : currentStep - 1;
@@ -77,9 +78,14 @@ export function OnboardingContextProvider({ children }: any) {
     });
   }, [router]);
 
+  const startOnboarding = (step: Step) => {
+    setInProgress(true);
+    setCurrentStep(step);
+  };
   const completeOnboarding = () => {
     setInProgress(false);
-    router.push('/dashboard');
+    refreshUser();
+    router.replace(user?.memberInfo?.type === 'investor' ? '/tokens' : '/dashboard');
   };
 
   const onPrevious = () => {
@@ -103,11 +109,16 @@ export function OnboardingContextProvider({ children }: any) {
       return;
     }
 
+    if (currentStep === Step.ChainSetup) setInProgress(true);
+
+    if (currentStep === Step.SignUp && !isNewUser) {
+      completeOnboarding();
+      return;
+    }
+
     if (!States[nextstep as Step].route || !currentStep) throw new Error('invalid route onboarding context');
     console.log('onboarding context valid route');
     setCurrentStep(nextstep);
-
-    if (currentStep === Step.ChainSetup) setInProgress(true);
 
     if (nextstep == Step.UserTypeSetup) {
       console.log('is this a first time user -- contest -- ', isFirstTimeUser);
@@ -135,9 +146,9 @@ export function OnboardingContextProvider({ children }: any) {
         await setRoute();
         break;
 
-      case Step.Login:
+      case Step.SignUp:
         if (!data.userId || data.isFirstTimeUser == undefined) throw Error(States[currentStep].error);
-        setInfo({ ...info, userId: data.userId });
+        setInfo({ ...info, userId: data.userId, isFirstTimeUser: data.isFirstTimeUser });
         await setRoute(data.isFirstTimeUser);
         break;
 
@@ -171,13 +182,13 @@ export function OnboardingContextProvider({ children }: any) {
       onPrevious,
       onNext,
       setInfo,
-      setCurrentStep,
+      startOnboarding,
       completeOnboarding,
       loading,
       inProgress,
       error
     }),
-    [info, loading, error, currentStep]
+    [info, loading, error, currentStep, inProgress]
   );
 
   return <OnboardingContext.Provider value={memoedValue}>{children}</OnboardingContext.Provider>;

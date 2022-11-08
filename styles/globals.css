@@ -25,7 +25,7 @@
   --primary-300: #a4afd7;
   --primary-200: #bbc3e1;
   --primary-100: #d1d7eb;
-  --primary-50: #020202;
+  --primary-50: #e8ebf5;
   /* Secondary */
   --secondary-900: #f9623b;
   --secondary-800: #fa724f;
@@ -195,7 +195,7 @@
   /* Button component */
   /* Defaults to primary */
   button {
-    @apply rounded-full inline-block text-base py-2.5 px-5 bg-neutral-100;
+    @apply rounded-full inline-block text-base py-2 px-5 bg-neutral-100;
   }
 
   button,
@@ -203,11 +203,15 @@
     @apply transition-all transform;
   }
 
-  /* a:hover,
-  a:focus-visible,
-  button:hover,
-  button:focus-visible {
-    @apply -translate-y-px transform;
+  /* Experimental hover states */
+  /* a:hover:not(:disabled),
+  a:focus-visible:not(:disabled),
+  button:hover:not(:disabled),
+  button:focus-visible:not(:disabled) {
+    box-shadow:
+    0 0 6px 3px #fff,
+    0 0 10px 6px #f0f,
+    0 0 14px 9px #0ff;
   } */
 
   button.primary {
@@ -248,6 +252,14 @@
     @apply bg-danger-500;
   }
 
+  button.black {
+    @apply bg-black text-white;
+  }
+  button.black:hover,
+  button.black:focus-visible {
+    @apply bg-black;
+  }
+
   button.line {
     @apply bg-white border border-neutral-300 text-neutral-600;
   }
@@ -266,12 +278,15 @@
   button.line.danger {
     @apply border-danger-500 text-danger-500;
   }
-  button.line:not(.primary, .secondary, .success, .danger, .warning):hover,
-  button.line:not(.primary, .secondary, .success, .danger, .warning):focus-visible {
+  button.line.black {
+    @apply border-black text-black;
+  }
+  button.line:not(.primary, .secondary, .success, .danger, .warning, .black):hover,
+  button.line:not(.primary, .secondary, .success, .danger, .warning, .black):focus-visible {
     @apply bg-neutral-300;
   }
-  button.line:is(.primary, .secondary, .success, .danger, .warning):hover,
-  button.line:is(.primary, .secondary, .success, .danger, .warning):focus-visible {
+  button.line:is(.primary, .secondary, .success, .danger, .warning, .black):hover,
+  button.line:is(.primary, .secondary, .success, .danger, .warning, .black):focus-visible {
     @apply text-white;
   }
 
@@ -280,6 +295,11 @@
   }
   button.large {
     @apply py-3 py-6 text-lg;
+  }
+
+  button[disabled]:not(.wallet-button),
+  button:disabled:not(.wallet-button) {
+    @apply bg-primary-50 border border-primary-400 text-primary-300 !important;
   }
 
   /* Typography */
@@ -356,12 +376,12 @@
   .select__control,
   /* custom input component */
   .input-component__input {
-    @apply flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-13 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all;
+    @apply flex items-center gap-2 relative border rounded-3xl py-2 px-6 h-10 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all;
   }
 
   /* Other disabled styles */
-  :disabled,
-  [disabled] {
+  :disabled:not(fieldset),
+  [disabled]:not(fieldset) {
     @apply opacity-80;
   }
 
@@ -388,7 +408,7 @@
   .input-component__container,
   /* Form and form control styles for error and success states */
   .form {
-    @apply rounded-xl border border-transparent text-white transition-all duration-500;
+    @apply rounded-xl border border-transparent transition-all duration-500;
   }
 
   .form {
@@ -397,7 +417,11 @@
 
   .input-component__container.error,
   .form-error {
-    @apply p-1 bg-danger-100 border-danger-500 text-danger-700;
+    @apply p-1 bg-danger-100 border-danger-500;
+  }
+
+  .form-error .form-message {
+    @apply text-danger-700;
   }
 
   .input-component__container.success,
@@ -411,6 +435,9 @@
     animation-fill-mode: forwards;
   }
 
+  .form-success .form-message {
+    @apply text-success-600;
+  }
   .form-success {
     animation: fadeOutFormContainer 1s;
     animation-delay: 2s;
@@ -466,7 +493,9 @@
   }
 
   /* MinMax component styles */
-  .minMaxInput input { @apply bg-transparent; }
+  .minMaxInput input {
+    @apply bg-transparent;
+  }
   .minMaxInput input:focus,
   .minMaxInput input:focus-visible {
     @apply outline-none;
@@ -478,7 +507,48 @@
 
   /* Contents */
   .panel {
-    @apply p-6 rounded-3xl border border-gray-300;
+    @apply p-6 rounded-3xl border border-gray-300 overflow-hidden;
+  }
+
+  /* Table default styling */
+  table {
+    @apply w-full whitespace-nowrap;
+  }
+  table thead {
+    @apply bg-neutral-50;
+  }
+  table thead th {
+    @apply text-left text-xs font-medium text-neutral-500;
+  }
+  table tr {
+    @apply border-b border-gray-200;
+  }
+  table tbody tr td {
+    @apply text-left text-xs text-neutral-900;
+  }
+  table thead th,
+  table tbody tr td {
+    @apply py-3.5 px-6;
+  }
+  table thead th:not(:first-child),
+  table tbody tr td:not(:first-child) {
+    @apply border-l border-gray-200;
+  }
+
+  /* Recharts override */
+  .recharts-cartesian-axis-tick-value {
+    @apply text-xs text-neutral-800;
+  }
+
+  /* Markdown content styles -- due to Tailwind resetting all element styles, we need to add styling for these. */
+  .markdown-content p {
+    @apply my-4;
+  }
+  .markdown-content h1 {
+    @apply my-6 font-semibold;
+  }
+  .markdown-content h2 {
+    @apply my-5 font-semibold;
   }
 
   /* Recharts override */
@@ -546,7 +616,7 @@
 
   /* Select, react-select, creatable select via react-select overrides */
   .select__control {
-    min-height: 3.25rem;
+    min-height: 2.5rem;
     @apply py-2 h-auto rounded-3xl !important;
   }
   .select__control--is-focused {
@@ -571,7 +641,10 @@
     @apply static rounded-xl overflow-hidden !important;
   }
   .select__indicator {
-    @apply pr-1 !important;
+    @apply py-0 pr-1 pl-2 !important;
+  }
+  .select__indicator-separator {
+    @apply hidden !important;
   }
   .select__option {
     @apply text-neutral-600 text-sm !important;
@@ -580,10 +653,6 @@
     @apply text-neutral-50 bg-primary-500 !important;
   }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> staging
   /* Progress bar customization */
   /* Mozilla browser */
   /* progress, */
@@ -598,13 +667,13 @@
   }
   /* Other browsers */
   progress::-webkit-progress-value {
-  /* Mozilla browser */
-  /* progress::-moz-progress-bar { */
+    /* Mozilla browser */
+    /* progress::-moz-progress-bar { */
     height: 8px;
     border-radius: 48px;
     border: 1px solid var(--primary-900);
     background: var(--primary-900);
-    background: linear-gradient(90deg, rgba(27,54,154,1) 0%, rgba(70,98,203,1) 50%, rgba(98,122,207,1) 100%)
+    background: linear-gradient(90deg, rgba(27, 54, 154, 1) 0%, rgba(70, 98, 203, 1) 50%, rgba(98, 122, 207, 1) 100%);
   }
 }
 
@@ -674,6 +743,10 @@
   .dark-text {
     @apply text-neutral-900;
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 *,

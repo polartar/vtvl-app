@@ -3,7 +3,7 @@ import WalletButton from '@components/atoms/WalletButton/WalletButton';
 
 interface IWallet {
   name: string;
-  image: string;
+  image: string | JSX.Element;
   subLabel?: unknown;
   disabled?: boolean;
   onClick?: () => void;

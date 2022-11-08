@@ -147,7 +147,7 @@ const devSupportedChains: SupportedChainsType = {
   [SupportedChainId.BINANCE]: {
     id: 56,
     icon: '/icons/chains/bsc.svg',
-    title: 'Binance Smart Chain',
+    title: 'Binance Smart Chain Testnet',
     code: 'BSC',
     rpc: 'https://speedy-nodes-nyc.moralis.io/476f8ed27ca8c180ebc32f48/bsc/testnet',
     explorer: 'https://testnet.bscscan.com',
@@ -156,7 +156,7 @@ const devSupportedChains: SupportedChainsType = {
   [SupportedChainId.POLYGON]: {
     id: 80001,
     icon: '/icons/chains/polygon.svg',
-    title: 'Polygon',
+    title: 'Polygon Mumbai Testnet',
     code: 'MATIC',
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
@@ -165,7 +165,7 @@ const devSupportedChains: SupportedChainsType = {
   [SupportedChainId.AVALANCHE]: {
     id: 43113,
     icon: '/icons/chains/avalanche.svg',
-    title: 'Avalanche',
+    title: 'Avalanche Testnet',
     code: 'AVAX',
     rpc: 'https://api.avax-test.network/ext/bc/C/rpc',
     explorer: 'https://snowtrace.io/',
@@ -174,7 +174,7 @@ const devSupportedChains: SupportedChainsType = {
   [SupportedChainId.FANTOM]: {
     id: 4002,
     icon: '/icons/chains/fantom.svg',
-    title: 'Fantom',
+    title: 'Fantom Testnet',
     code: 'FTM',
     rpc: 'https://rpc.testnet.fantom.network/',
     explorer: 'https://ftmscan.com/',
@@ -183,7 +183,7 @@ const devSupportedChains: SupportedChainsType = {
   [SupportedChainId.CRONOS]: {
     id: 338,
     icon: '/icons/chains/cronos.svg',
-    title: 'Cronos',
+    title: 'Cronos Testnet',
     code: 'CRO',
     rpc: 'https://cronos-testnet-3.crypto.org:8545/',
     explorer: 'https://cronos.crypto.org/explorer/testnet3/',
@@ -191,4 +191,6 @@ const devSupportedChains: SupportedChainsType = {
   }
 };
 
-export const SupportedChains = process.env.NODE_ENV == 'production' ? prodSupportedChains : devSupportedChains;
+const env = process.env.VERCEL_ENV || process.env.NODE_ENV;
+
+export const SupportedChains = env == 'production' ? prodSupportedChains : devSupportedChains;

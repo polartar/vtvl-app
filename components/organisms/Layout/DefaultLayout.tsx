@@ -1,9 +1,10 @@
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
+import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import Head from 'next/head';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 
 import AuthContext from '../../../providers/auth.context';
 
@@ -102,8 +103,13 @@ interface DefaultLayoutProps {
  *  This has a sidebar prop to determine if the Sidebar component should be shown or not.
  */
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
-  const { user, error, logOut, showSideBar, toggleSideBar } = useContext(AuthContext);
+  const { user, error, logOut, showSideBar, toggleSideBar, refreshUser } = useContext(AuthContext);
+  const { inProgress } = useContext(OnboardingContext);
   const { active } = useWeb3React();
+  useEffect(() => {
+    (async () => await refreshUser())();
+  }, []);
+  console.log('in progress here is ', inProgress);
   return (
     <Container>
       <Head>
@@ -118,7 +124,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout>
-        {active || sidebar || showSideBar ? <Sidebar {...SidebarProps} /> : null}
+        {(user || sidebar || showSideBar) && !inProgress ? (
+          <Sidebar {...SidebarProps} roleTitle={user?.memberInfo?.type || 'founder'} />
+        ) : null}
         <div className="flex flex-col items-center flex-grow p-8 pt-7">{props.children}</div>
       </Layout>
     </Container>

@@ -32,12 +32,12 @@ const EmptyState = ({
   ...props
 }: IEmptyStateProps) => {
   const sizes = {
-    small: 'w-28',
-    default: 'w-72',
-    large: 'w-96'
+    small: 'h-28',
+    default: 'h-72',
+    large: 'h-96'
   };
   return (
-    <div className="flex flex-col items-center justify-center max-w-md">
+    <div className="flex flex-col items-center justify-center max-w-md mx-auto">
       {image ? (
         <ImageRenderer blend={imageBlend}>
           <img src={image} alt={title} className={`mb-3.5 ${sizes[imageSize]}`} />
