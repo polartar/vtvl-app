@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
+/** @type {import('dotenv').Config} */
 
 const nextConfig = {
-  env: env,
+  env: {
+    VERCEL_ENV: process.env.VERCEL_ENV
+  },
   reactStrictMode: true,
   swcMinify: true,
   webpack(config) {
