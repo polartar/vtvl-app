@@ -6,6 +6,11 @@ import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput'
 import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import TextField from '@mui/material/TextField';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { useWeb3React } from '@web3-react/core';
 import add from 'date-fns/add';
 import format from 'date-fns/format';
@@ -242,6 +247,11 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
   };
 
+  const handleTimeChange = (e: any) => {
+    console.log('Changing time', e);
+    setValue('startDateTime', e);
+  };
+
   return (
     <>
       <div className="grid md:grid-cols-12 w-full gap-3.5">
@@ -324,12 +334,27 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                * */}
               <div>
                 {startDateTime.value ? (
-                  <Input
-                    label="Start time"
-                    required
-                    value={format(startDateTime.value, 'h:mm aa')}
-                    onFocus={handleFocusTimePicker}
-                  />
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <StaticTimePicker
+                      displayStaticWrapperAs="mobile"
+                      value={startDateTime.value}
+                      onChange={(newValue) => {
+                        handleTimeChange(newValue);
+                      }}
+                      renderInput={(params) => <TextField {...params} />}
+                      componentsProps={{
+                        actionBar: {
+                          actions: ['cancel']
+                        }
+                      }}
+                    />
+                    <TimePicker
+                      value={format(startDateTime.value, 'h:mm aa')}
+                      onChange={handleTimeChange}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                    {/* <Input label="Start time" {...field} required onFocus={handleFocusTimePicker} /> */}
+                  </LocalizationProvider>
                 ) : null}
                 {showTimePicker ? (
                   <div className="mt-5">
