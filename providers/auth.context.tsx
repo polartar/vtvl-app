@@ -18,7 +18,8 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery } from 'services/db/organization';
-import { IMember, IOrganization, IUser } from 'types/models';
+import { fetchSafeByQuery } from 'services/db/safe';
+import { IMember, IOrganization, ISafe, IUser } from 'types/models';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -27,6 +28,7 @@ export type NewLogin = {
 
 export type AuthContextData = {
   user: IUser | undefined;
+  safe: ISafe | undefined;
   organizationId: string | undefined;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
@@ -56,6 +58,7 @@ const AuthContext = createContext({} as AuthContextData);
 export function AuthContextProvider({ children }: any) {
   const [user, setUser] = useState<IUser | undefined>();
   const [organizationId, setOrganizationId] = useState<string | undefined>();
+  const [safe, setSafe] = useState<ISafe | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const tried = useEagerConnect();
@@ -262,6 +265,7 @@ export function AuthContextProvider({ children }: any) {
   const memoedValue = useMemo(
     () => ({
       user,
+      safe,
       organizationId,
       signUpWithEmail,
       signInWithEmail,
@@ -283,12 +287,13 @@ export function AuthContextProvider({ children }: any) {
       toggleSideBar,
       expandSidebar
     }),
-    [loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, user]
+    [loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, user, safe]
   );
 
   useEffect(() => {
-    if (user && user.email) {
+    if (user && user.email && user.uid) {
       fetchOrgByQuery('email', '==', user.email).then((org) => setOrganizationId(org?.id));
+      fetchSafeByQuery('user_id', '==', user.uid).then((safe) => setSafe(safe));
     }
   }, [user, organizationId]);
 

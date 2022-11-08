@@ -73,7 +73,7 @@ export function TokenContextProvider({ children }: any) {
       });
     }
   }, [organizationId]);
-  console.log({ organizationId });
+
   return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;
 }
 

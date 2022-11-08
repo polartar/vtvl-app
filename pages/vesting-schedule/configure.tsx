@@ -17,7 +17,6 @@ import Datepicker from 'react-datepicker';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
-import { fetchContractByQuery } from 'services/db/contract';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SelectOptions } from 'types/shared';
 

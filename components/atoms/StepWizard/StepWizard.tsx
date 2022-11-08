@@ -12,13 +12,14 @@ interface Props {
 }
 
 const StepWizard = ({ steps, status, size = 'default' }: Props) => {
+  console.log({ steps, status });
   return (
     <StepContainer>
       {steps.map((step, stepIndex) => (
         <StepItem key={stepIndex} isActive={status === stepIndex}>
           <DotWrapper size={size}>
             <LeftBorder cl={stepIndex} isActive={status >= stepIndex} size={size} />
-            <Circle isActive={status >= stepIndex} isLast={stepIndex + 1 === steps.length} size={size}>
+            <Circle isActive={status > stepIndex} isLast={stepIndex + 1 === steps.length} size={size}>
               {status <= stepIndex && status < steps.length - 1 ? (
                 size !== 'tiny' ? (
                   <Dot isActive={status === stepIndex} />
