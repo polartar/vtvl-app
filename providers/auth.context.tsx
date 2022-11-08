@@ -215,7 +215,13 @@ export function AuthContextProvider({ children }: any) {
     setLoading(false);
   };
 
-  const sendTeammateInvite = async (email: string, type: string, name: string, orgName: string, orgId?: string): Promise<void> => {
+  const sendTeammateInvite = async (
+    email: string,
+    type: string,
+    name: string,
+    orgName: string,
+    orgId?: string
+  ): Promise<void> => {
     setLoading(true);
     // const actionCodeSettings = {
     //   url: `${process.env.NEXT_PUBLIC_DOMAIN_NAME}/onboarding/sign-up?type=${type}&orgId=${orgId}`,

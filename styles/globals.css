@@ -550,6 +550,9 @@
   .markdown-content h2 {
     @apply my-5 font-semibold;
   }
+
+  /* Recharts override */
+  .recharts-cartesian-axis-tick-value { @apply text-xs text-neutral-800; }
 }
 
 @layer components {
