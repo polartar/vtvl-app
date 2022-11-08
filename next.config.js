@@ -1,5 +1,15 @@
 /** @type {import('next').NextConfig} */
+/** @type {import('dotenv-flow').config} */
+
+const env = {}
+Object.keys(process.env).forEach((key) => {
+  if (key.startsWith('NEXT_PUBLIC_')) {
+    env[key] = process.env[key]
+  }
+})
+
 const nextConfig = {
+  env: env,
   reactStrictMode: true,
   swcMinify: true,
   webpack(config) {
