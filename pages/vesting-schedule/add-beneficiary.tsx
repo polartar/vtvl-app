@@ -4,9 +4,10 @@ import ImportCSVFlow from '@components/organisms/Forms/ImportCSVFlow';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useVestingContext } from '@providers/vesting.context';
 import Decimal from 'decimal.js';
+import { getDownloadURL, getStorage, ref } from 'firebase/storage';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Modal, { Styles } from 'react-modal';
 import Select, { ActionMeta, OnChangeValue } from 'react-select';
@@ -148,6 +149,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
    * Handles the modal step process
    */
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [templateUrl, setTemplateUrl] = useState('');
 
   const styles: Styles = {
     overlay: {
@@ -177,7 +179,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
       title: 'Import from CSV file',
       description: "Speed up the process by uploading a CSV file containing all your recipients' details.",
       templateLabel: 'VTVL recipient template',
-      templateUrl: '/',
+      templateUrl: templateUrl,
       cancelButtonLabel: 'Cancel',
       confirmButtonLabel: 'Upload file'
     },
@@ -225,6 +227,15 @@ const AddBeneficiary: NextPageWithLayout = () => {
     console.log('New Data', newRecipients);
     setModalOpen(false);
   };
+
+  // Get download url
+  useEffect(() => {
+    const storage = getStorage();
+    const pathReference = ref(storage, 'templates/sample-add-recipient.csv');
+    getDownloadURL(pathReference).then((url) => {
+      setTemplateUrl(url);
+    });
+  }, []);
 
   return (
     <>
