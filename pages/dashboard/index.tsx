@@ -3,6 +3,7 @@ import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
 import AddVestingSchedules from '@components/organisms/DashboardPanel/AddVestingSchedules';
+import DashboardPanel from '@components/organisms/DashboardPanel/DashboardPanel';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
@@ -17,7 +18,7 @@ import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { IVesting } from 'types/models';
@@ -183,13 +184,7 @@ const Dashboard: NextPageWithLayout = () => {
             status="transferToMultisigSafe"
             className="mb-6"
           />
-          <DashboardPanel
-            type="contract"
-            contract={sampleContractDetails}
-            status="fundingRequired"
-            className="mb-6"
-            onPrimaryClick={showFundingContractModal}
-          />
+          <DashboardPanel type="contract" contract={sampleContractDetails} status="fundingRequired" className="mb-6" />
           <DashboardPanel
             type="schedule"
             schedule={sampleScheduleDetails}

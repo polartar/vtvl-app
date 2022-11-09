@@ -192,5 +192,5 @@ const devSupportedChains: SupportedChainsType = {
 };
 
 const env = process.env.VERCEL_ENV || process.env.NODE_ENV;
-console.log("env var here is ", env)
-export const SupportedChains = env === 'production' ? prodSupportedChains : devSupportedChains;
+
+export const SupportedChains = env == 'production' ? prodSupportedChains : devSupportedChains;
