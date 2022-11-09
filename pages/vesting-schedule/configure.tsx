@@ -7,18 +7,18 @@ import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/Limi
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import TextField from '@mui/material/TextField';
+import { StaticDatePicker } from '@mui/x-date-pickers';
+import { StaticTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { PickersActionBarProps } from '@mui/x-date-pickers/PickersActionBar';
 import { useWeb3React } from '@web3-react/core';
 import add from 'date-fns/add';
 import format from 'date-fns/format';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { INITIAL_VESTING_FORM_STATE, IScheduleFormState, useVestingContext } from 'providers/vesting.context';
-import { ReactElement, forwardRef, useEffect, useState } from 'react';
-import Datepicker from 'react-datepicker';
+import { ElementType, ReactElement, forwardRef, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
@@ -43,6 +43,11 @@ interface TemplateOptionTypes {
 
 interface TemplateType {
   template: SingleValue<TemplateOptionTypes>;
+}
+
+type CustomActionBarDateTimeField = 'startDate' | 'startTime' | 'endDate' | 'endTime';
+interface CustomActionBarProps {
+  field: CustomActionBarDateTimeField;
 }
 
 const ConfigureSchedule: NextPageWithLayout = () => {
@@ -116,22 +121,19 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue('amountToBeVested', e.target.value);
   };
 
-  // Handle the changes for the date pickers.
-  const handleDateTimeChange = (date: DateTimeType, field: 'startDateTime' | 'endDateTime') => {
-    setValue(field, date);
-    if (field === 'endDateTime') {
-      setShowDateCalendar(false);
-      setShowTimePicker(false);
-    }
-  };
-
-  const [showDateCalendar, setShowDateCalendar] = useState(false);
+  // These are used to show/hide the date or time pickers
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  // These will be used to store current selection of date and time
+  const [pickerStartDateTime, setPickerStartDateTime] = useState(new Date());
+  const [pickerEndDateTime, setPickerEndDateTime] = useState(new Date());
 
-  const handleFocusCalendar = () => {
-    setShowDateCalendar(true);
+  // Shows the calendar set when a date input is focused
+  const handleFocusDatePicker = () => {
+    setShowDatePicker(true);
   };
 
+  // Shows the time selection set when a time input is focused
   const handleFocusTimePicker = () => {
     setShowTimePicker(true);
   };
@@ -246,10 +248,85 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
   };
 
-  const handleTimeChange = (e: any) => {
-    console.log('Changing time', e);
-    setValue('startDateTime', e);
+  const handleDateTimeChange = (e: any, field: string) => {
+    if (field.includes('start')) {
+      setPickerStartDateTime(e);
+    }
+
+    if (field.includes('end')) {
+      setPickerEndDateTime(e);
+    }
   };
+
+  // Reset the state of the picker date time and do not update the form value
+  // close the picker
+  const handleActionBarCancel = (field: CustomActionBarDateTimeField) => {
+    // Reset the date time values
+    if ((field === 'startTime' || field === 'startDate') && startDateTime.value) {
+      setPickerStartDateTime(startDateTime.value);
+    }
+
+    if ((field === 'endTime' || field === 'endDate') && endDateTime.value) {
+      setPickerEndDateTime(endDateTime.value);
+    }
+
+    // Close the corresponding picker
+    if (field === 'startTime' || field === 'endTime') {
+      setShowTimePicker(false);
+    }
+
+    if (field === 'startDate' || field === 'endDate') {
+      setShowDatePicker(false);
+    }
+  };
+
+  // Set the value of the date time in the form into the state of selected date time
+  // Close the picker
+  const handleActionBarAccept = (field: CustomActionBarDateTimeField) => {
+    // Update the date time form values
+    if ((field === 'startTime' || field === 'startDate') && startDateTime.value) {
+      setValue('startDateTime', pickerStartDateTime);
+    }
+
+    if ((field === 'endTime' || field === 'endDate') && endDateTime.value) {
+      setValue('endDateTime', pickerEndDateTime);
+    }
+
+    // Close the corresponding picker
+    if (field === 'startTime' || field === 'endTime') {
+      setShowTimePicker(false);
+    }
+
+    if (field === 'startDate' || field === 'endDate') {
+      setShowDatePicker(false);
+    }
+  };
+
+  const CustomActionBar = ({ field }: CustomActionBarProps) => {
+    return (
+      <div className="row-center justify-end mt-3">
+        <button className="uppercase small line primary" onClick={() => handleActionBarCancel(field)}>
+          Cancel
+        </button>
+        <button className="uppercase small primary" onClick={() => handleActionBarAccept(field)}>
+          Ok
+        </button>
+      </div>
+    );
+  };
+
+  const ActionBarStartDate: ElementType<PickersActionBarProps> = () => <CustomActionBar field="startDate" />;
+  const ActionBarStartTime: ElementType<PickersActionBarProps> = () => <CustomActionBar field="startTime" />;
+  const ActionBarEndDate: ElementType<PickersActionBarProps> = () => <CustomActionBar field="endDate" />;
+  const ActionBarEndTime: ElementType<PickersActionBarProps> = () => <CustomActionBar field="endTime" />;
+
+  // Updates the current Date and Time input states when the actual form values change.
+  useEffect(() => {
+    if (startDateTime.value && endDateTime.value) {
+      setPickerStartDateTime(startDateTime.value);
+      setPickerEndDateTime(endDateTime.value);
+    }
+  }, [startDateTime.value, endDateTime.value]);
 
   return (
     <>
@@ -268,19 +345,22 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       label="Start date"
                       required
                       value={format(startDateTime.value, 'MM/dd/yyyy')}
-                      onFocus={handleFocusCalendar}
+                      onFocus={handleFocusDatePicker}
                     />
-                    {showDateCalendar ? (
-                      <div className="mt-5">
-                        <Datepicker
-                          selected={getValues('startDateTime')}
-                          onChange={(date) => handleDateTimeChange(date, 'startDateTime')}
-                          selectsStart
-                          startDate={getValues('startDateTime')}
-                          endDate={getValues('endDateTime')}
-                          inline
+                    {showDatePicker ? (
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <StaticDatePicker
+                          displayStaticWrapperAs="mobile"
+                          value={pickerStartDateTime}
+                          onChange={(newValue) => {
+                            handleDateTimeChange(newValue, 'startDate');
+                          }}
+                          renderInput={(params) => <TextField {...params} />}
+                          components={{
+                            ActionBar: ActionBarStartDate
+                          }}
                         />
-                      </div>
+                      </LocalizationProvider>
                     ) : null}
                   </>
                 ) : null}
@@ -292,25 +372,28 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       label="End date"
                       required
                       value={format(endDateTime.value, 'MM/dd/yyyy')}
-                      onFocus={handleFocusCalendar}
+                      onFocus={handleFocusDatePicker}
                     />
-                    {showDateCalendar ? (
-                      <div className="mt-5">
-                        <Datepicker
-                          selected={getValues('endDateTime')}
-                          onChange={(date) => handleDateTimeChange(date, 'endDateTime')}
-                          selectsEnd
-                          startDate={getValues('startDateTime')}
-                          endDate={getValues('endDateTime')}
-                          minDate={getValues('startDateTime')}
-                          inline
-                          className="mt-5"
+                    {showDatePicker ? (
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <StaticDatePicker
+                          displayStaticWrapperAs="mobile"
+                          value={pickerEndDateTime}
+                          onChange={(newValue) => {
+                            handleDateTimeChange(newValue, 'endDate');
+                          }}
+                          renderInput={(params) => <TextField {...params} />}
+                          components={{
+                            ActionBar: ActionBarEndDate
+                          }}
                         />
-                      </div>
+                      </LocalizationProvider>
                     ) : null}
                   </>
                 ) : null}
               </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-5 mb-5">
               {/* Date picker end */}
               <div className="md:col-span-2 row-center gap-3">
                 <div className="row-center flex-wrap">
@@ -333,72 +416,57 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                * */}
               <div>
                 {startDateTime.value ? (
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <StaticTimePicker
-                      displayStaticWrapperAs="mobile"
-                      value={startDateTime.value}
-                      onChange={(newValue) => {
-                        handleTimeChange(newValue);
-                      }}
-                      renderInput={(params) => <TextField {...params} />}
-                      componentsProps={{
-                        actionBar: {
-                          actions: ['cancel']
-                        }
-                      }}
+                  <>
+                    <Input
+                      type="text"
+                      label="Start time"
+                      required
+                      value={format(startDateTime.value, 'hh:mm a')}
+                      onFocus={handleFocusTimePicker}
                     />
-                    <TimePicker
-                      value={format(startDateTime.value, 'h:mm aa')}
-                      onChange={handleTimeChange}
-                      renderInput={(params) => <TextField {...params} />}
-                    />
-                    {/* <Input label="Start time" {...field} required onFocus={handleFocusTimePicker} /> */}
-                  </LocalizationProvider>
-                ) : null}
-                {showTimePicker ? (
-                  <div className="mt-5">
-                    <Datepicker
-                      selected={getValues('startDateTime')}
-                      onChange={(date) => handleDateTimeChange(date, 'startDateTime')}
-                      selectsStart
-                      startDate={getValues('startDateTime')}
-                      endDate={getValues('endDateTime')}
-                      inline
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeCaption="Time"
-                      dateFormat="h:mm aa"
-                      timeIntervals={15}
-                    />
-                  </div>
+                    {showTimePicker ? (
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <StaticTimePicker
+                          displayStaticWrapperAs="mobile"
+                          value={pickerStartDateTime}
+                          onChange={(newValue) => {
+                            handleDateTimeChange(newValue, 'startTime');
+                          }}
+                          renderInput={(params) => <TextField {...params} />}
+                          components={{
+                            ActionBar: ActionBarStartTime
+                          }}
+                        />
+                      </LocalizationProvider>
+                    ) : null}
+                  </>
                 ) : null}
               </div>
               <div>
                 {endDateTime.value ? (
-                  <Input
-                    label="End time"
-                    required
-                    value={format(endDateTime.value, 'h:mm aa')}
-                    onFocus={handleFocusTimePicker}
-                  />
-                ) : null}
-                {showTimePicker ? (
-                  <div className="mt-5">
-                    <Datepicker
-                      selected={getValues('endDateTime')}
-                      onChange={(date) => handleDateTimeChange(date, 'endDateTime')}
-                      selectsEnd
-                      startDate={getValues('startDateTime')}
-                      endDate={getValues('endDateTime')}
-                      minDate={getValues('startDateTime')}
-                      inline
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeCaption="Time"
-                      dateFormat="h:mm aa"
-                      timeIntervals={15}
+                  <>
+                    <Input
+                      label="End time"
+                      required
+                      value={format(endDateTime.value, 'h:mm aa')}
+                      onFocus={handleFocusTimePicker}
                     />
-                  </div>
+                    {showTimePicker ? (
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <StaticTimePicker
+                          displayStaticWrapperAs="mobile"
+                          value={pickerEndDateTime}
+                          onChange={(newValue) => {
+                            handleDateTimeChange(newValue, 'endTime');
+                          }}
+                          renderInput={(params) => <TextField {...params} />}
+                          components={{
+                            ActionBar: ActionBarEndTime
+                          }}
+                        />
+                      </LocalizationProvider>
+                    ) : null}
+                  </>
                 ) : null}
               </div>
               {/* Time picker end */}
