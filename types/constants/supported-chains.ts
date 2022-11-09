@@ -4,10 +4,10 @@ export enum SupportedChainId {
   GOERLI = 5,
   KOVAN = 42,
   BINANCE = 56,
-  POLYGON = 137,
+  POLYGON = 137 || 80001,
   AVALANCHE = 43114,
-  FANTOM = 250,
-  CRONOS = 25
+  FANTOM = 250 || 4002,
+  CRONOS = 25 || 338
 }
 
 interface Network {

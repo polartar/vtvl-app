@@ -48,11 +48,11 @@ const MintingToken: NextPageWithLayout = () => {
   const maxSupply = { value: watch('maxSupply'), state: getFieldState('maxSupply') };
 
   const handleinitialSupplyChange = (e: any) => {
-    setValue('initialSupply', e.target.value);
+    setValue('initialSupply', +e.target.value);
   };
 
   const handleMaxMintAmouont = () => {
-    setValue('maxSupply', maxSupply.value);
+    setValue('initialSupply', +maxSupply.value);
   };
 
   const handleUpload = (url: string) => {
@@ -80,8 +80,10 @@ const MintingToken: NextPageWithLayout = () => {
       title: "What's the difference between an unlimited and limited supply cap?",
       description: (
         <>
-          <strong>Unlimited supply cap</strong> indicates that there isn't a cap on the total token supply. Whereas a
-          fixed supply cap is a fixed number of total tokens that have been (or will be) created.
+          The supply cap is the total number of tokens that can or ever will be minted. With an{' '}
+          <strong>unlimited supply cap</strong> there isn't a cap on the number of tokens that can be minted and
+          additional tokens can be minted at any time. Conversely, a <strong>limited supply cap</strong> does have a
+          maximum number that can be minted. Additional tokens cannot be minted once the cap has been reached.
         </>
       )
     },
@@ -89,17 +91,28 @@ const MintingToken: NextPageWithLayout = () => {
       title: 'What is the maximum character length of token symbol?',
       description: (
         <>
-          <strong>Unlimited supply cap</strong> indicates that there isn't a cap on the total token supply. Whereas a
-          fixed supply cap is a fixed number of total tokens that have been (or will be) created.
+          The token symbol can be up to 100 characters long and contain letters, numbers and special characters, but we
+          think the shorter the better.
         </>
       )
     },
     {
-      title: 'What is supply type?',
+      title: 'Is there a minimum amount of tokens that I need to mint?',
       description: (
         <>
-          <strong>Unlimited supply cap</strong> indicates that there isn't a cap on the total token supply. Whereas a
-          fixed supply cap is a fixed number of total tokens that have been (or will be) created.
+          At least one token must be minted but you can mint more tokens in the future as long as it doesn't exceed your
+          supply cap. However, we suggest that you mint enough tokens to fund any vesting schedules that you're
+          creating.
+        </>
+      )
+    },
+    {
+      title: "How do I determine how many tokens I'll need to fund my vesting schedules?",
+      description: (
+        <>
+          Let's say you want to create a vesting schedule for new team members that started at your company this month.
+          Each recipient is awarded 100 tokens over 4 years and there are a total of 4 new team members. To create this
+          vesting schedule you'll need a total of 400 tokens - 4 (team members) X 100 (token allocation).
         </>
       )
     }
@@ -245,14 +258,16 @@ const MintingToken: NextPageWithLayout = () => {
                     label="MAX"
                     color="secondary"
                     onClick={handleMaxMintAmouont}
-                    className="absolute right-6 bottom-4"
+                    className={`absolute right-6 cursor-pointer ${
+                      initialSupply.value > maxSupply.value || errors.initialSupply ? 'bottom-9' : 'bottom-2'
+                    }`}
                   />
                 ) : null}
               </div>
               {supplyCap.value === 'LIMITED' ? (
                 <div className="mt-6">
                   <RangeSlider
-                    max={initialSupply.value ? initialSupply.value : 0}
+                    max={maxSupply.value ? maxSupply.value : 0}
                     value={initialSupply.value ? initialSupply.value : 0}
                     className="mt-5"
                     onChange={handleinitialSupplyChange}

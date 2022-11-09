@@ -5,6 +5,7 @@ import { formatNumber } from 'utils/token';
 interface LimitedSupplyProps extends React.InputHTMLAttributes<HTMLInputElement> {
   required?: boolean;
   initial: number;
+  minimum?: number;
   maximum: number;
   label?: string;
   maximumLabel?: string;
@@ -23,6 +24,7 @@ const LimitedSupply = ({
   label = '',
   maximumLabel = 'Token total supply',
   initial,
+  minimum = 1,
   maximum,
   className = '',
   onMaxChange,
@@ -46,7 +48,8 @@ const LimitedSupply = ({
           ) : null}
         </div>
         <MinMaxInput
-          min={initial}
+          initial={initial}
+          min={minimum}
           max={maximum}
           onMinChange={onMinChange}
           onMaxChange={onMaxChange}

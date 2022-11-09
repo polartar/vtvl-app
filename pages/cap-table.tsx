@@ -1,4 +1,5 @@
 import Chip from '@components/atoms/Chip/Chip';
+import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
@@ -191,41 +192,55 @@ const CapTable: NextPageWithLayout = () => {
     }
   ];
 
+  // Temporary flag for showing the cap table
+  // Integrate this with the real data logic
+  const showCapTable = false;
+
   return (
     <>
       <div className="w-full">
         <h1 className="h2 text-neutral-900 mb-2">Cap Table</h1>
         <p className="text-neutral-500 text-sm mb-5">You can find below the history of the transactions.</p>
-        <div className="p-5 mb-6 border-b border-gray-200">
-          <CapTableOverview
-            token="BICO"
-            schedules={3}
-            totalRecipients={4}
-            claimed={10000000}
-            unclaimed={40000000}
-            totalWithdrawn={5000000}
-            totalAllocation={50000000}
-          />
-        </div>
-        <label>
-          <span>Schedules</span>
-        </label>
-        <BarRadio
-          name="statuses"
-          options={schedules}
-          value={tab}
-          onChange={(e) => setTab(e.target.value)}
-          variant="tab"
-        />
-        <div className="grid sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-7 mb-8">
-          <SelectInput label="Recipient type" options={recipientTypes} />
-          <SelectInput label="Company" options={recipientTypes} />
-          <Input label="Withdrawn" placeholder="any" />
-          <Input label="Claimed" placeholder="any" />
-          <Input label="Unclaimed" placeholder="any" />
-        </div>
+        {showCapTable ? (
+          <>
+            <div className="p-5 mb-6 border-b border-gray-200">
+              <CapTableOverview
+                token="BICO"
+                schedules={3}
+                totalRecipients={4}
+                claimed={10000000}
+                unclaimed={40000000}
+                totalWithdrawn={5000000}
+                totalAllocation={50000000}
+              />
+            </div>
+            <label>
+              <span>Schedules</span>
+            </label>
+            <BarRadio
+              name="statuses"
+              options={schedules}
+              value={tab}
+              onChange={(e) => setTab(e.target.value)}
+              variant="tab"
+            />
+            <div className="grid sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-7 mb-8">
+              <SelectInput label="Recipient type" options={recipientTypes} />
+              <SelectInput label="Company" options={recipientTypes} />
+              <Input label="Withdrawn" placeholder="any" />
+              <Input label="Claimed" placeholder="any" />
+              <Input label="Unclaimed" placeholder="any" />
+            </div>
 
-        <Table columns={columns} data={data} pagination={true} exports={true} />
+            <Table columns={columns} data={data} pagination={true} exports={true} />
+          </>
+        ) : (
+          <EmptyState
+            image="/images/cryptocurrency-trading-bot.gif"
+            title="No data found"
+            description={<>Add vesting schedules first</>}
+          />
+        )}
       </div>
     </>
   );

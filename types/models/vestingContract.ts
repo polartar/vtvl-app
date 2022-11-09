@@ -6,3 +6,11 @@ export interface IVestingContract {
   createdAt: number;
   updatedAt: number;
 }
+
+export interface IFundContractProps {
+  name?: string;
+  logo?: string;
+  symbol: string;
+  address: string;
+  amount: string;
+}
