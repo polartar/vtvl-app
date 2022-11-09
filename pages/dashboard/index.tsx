@@ -2,13 +2,15 @@ import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
-import DashboardPanel from '@components/organisms/DashboardPanel/DashboardPanel';
+import AddVestingSchedules from '@components/organisms/DashboardPanel/AddVestingSchedules';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
+import CreateVestingContract from 'components/organisms/DashboardPanel/CreateVestingContract';
+import FundContract from 'components/organisms/DashboardPanel/FundContract';
 import { injected } from 'connectors';
 import VtvlVesting from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
@@ -32,7 +34,7 @@ const Dashboard: NextPageWithLayout = () => {
   const { recipients, scheduleFormState } = useVestingContext();
   const { vestings, vestingContract, transactions, ownershipTransfered, insufficientBalance, depositAmount } =
     useDashboardContext();
-
+  console.log({ insufficientBalance });
   const router = useRouter();
   const activities = [
     {
@@ -125,8 +127,13 @@ const Dashboard: NextPageWithLayout = () => {
                 className="mb-2"
               />
               <p className="text-sm font-medium text-netural-900">
-                Token address: <span className="text-neutral-500">{mintFormState.address}</span>
+                Token Address: <span className="text-neutral-500">{mintFormState.address}</span>
               </p>
+              {vestingContract && vestingContract.data?.address && (
+                <p className="text-sm font-medium text-netural-900">
+                  Vesting Contract Address: <span className="text-neutral-500">{vestingContract.data?.address}</span>
+                </p>
+              )}
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
               <button
@@ -152,9 +159,9 @@ const Dashboard: NextPageWithLayout = () => {
               ))
             : !hasVestingContract && <DashboardPanel type="contract" />} */}
 
-          {(!vestingContract?.id || !ownershipTransfered) && <DashboardPanel type="contract" />}
-          {/* {insufficientBalance && <DashboardPanel type="fundContract" />} */}
-          {vestings && vestings.length > 0 && <DashboardPanel type="schedule" />}
+          {(!vestingContract?.id || !ownershipTransfered) && <CreateVestingContract type="contract" />}
+          <FundContract />
+          {vestings && vestings.length > 0 && <AddVestingSchedules type="schedule" />}
 
           {/* <DashboardPanel
             type="schedule"

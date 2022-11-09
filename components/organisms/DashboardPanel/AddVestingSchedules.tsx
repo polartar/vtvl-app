@@ -18,6 +18,7 @@ import { useTokenContext } from 'providers/token.context';
 import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
@@ -32,7 +33,7 @@ import { getCliffAmount, getCliffDateTime, getNumberOfReleases, getProjectedEndD
 
 import FundingContractModal from '../FundingContractModal/FundingContractModal';
 
-interface IDashboardPanelProps {
+interface AddVestingSchedulesProps {
   className?: string;
   // status:
   //   | 'authRequired'
@@ -51,14 +52,14 @@ interface IDashboardPanelProps {
   type: string;
 }
 
-interface IDashboardPanelPagination {
+interface AddVestingSchedulesPagination {
   total: number;
   page: number;
   onPrevious: () => void;
   onNext: () => void;
 }
 
-interface IDashboardPanelStatuses {
+interface IAddVestingSchedulesStatuses {
   icon: string | JSX.Element | React.ReactNode;
   label: string;
   actions?: JSX.Element | React.ReactNode;
@@ -84,7 +85,7 @@ interface IDashboardPanelStatuses {
  *
  */
 
-const DashboardPanel = ({
+const AddVestingSchedules = ({
   className = '',
   type
 }: // status,
@@ -95,7 +96,7 @@ const DashboardPanel = ({
 // onPrimaryClick = () => {},
 // onSecondaryClick = () => {},
 // ...props
-IDashboardPanelProps) => {
+AddVestingSchedulesProps) => {
   // Color is not included in the statuses object because of typescript -- converts the value into a type string which will not be accepted by Chip
 
   const { account, library, activate, chainId } = useWeb3React();
@@ -172,217 +173,234 @@ IDashboardPanelProps) => {
   };
 
   const handleCreateSignTransaction = async () => {
-    if (!account || !library) {
-      activate(injected);
-      return;
-    }
-    const vesting = vestings[activeVestingIndex].data;
-    const vestingId = vestings[activeVestingIndex].id;
-    const cliffAmountPerUser =
-      getCliffAmount(
-        vesting.details.cliffDuration,
-        +vesting.details.lumpSumReleaseAfterCliff,
-        +vesting.details.amountToBeVested
-      ) / vesting.recipients.length;
-    const vestingAmountPerUser = +vesting.details.amountToBeVested / vesting.recipients.length - cliffAmountPerUser;
-    const addresses = vesting.recipients.map((recipient) => recipient.walletAddress);
-    const cliffReleaseDate = vesting.details.startDateTime
-      ? getCliffDateTime(
-          new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-          vesting.details.cliffDuration
-        )
-      : '';
-    const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
-    const numberOfReleases =
-      vesting.details.startDateTime && vesting.details.endDateTime
-        ? getNumberOfReleases(
-            vesting.details.releaseFrequency,
-            cliffReleaseDate || new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-            new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
-          )
-        : 0;
-    const actualStartDateTime =
-      vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vesting.details.startDateTime;
-    const vestingEndTimestamp =
-      vesting.details.endDateTime && actualStartDateTime
-        ? getProjectedEndDateTime(
-            actualStartDateTime,
-            new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
-            numberOfReleases,
-            DATE_FREQ_TO_TIMESTAMP[vesting.details.releaseFrequency]
-          )
-        : null;
-    const vestingStartTimestamps = new Array(vesting.recipients.length).fill(
-      cliffReleaseTimestamp
-        ? cliffReleaseTimestamp
-        : Math.floor((vesting.details.startDateTime as unknown as Timestamp).seconds)
-    );
-    const vestingEndTimestamps = new Array(vesting.recipients.length).fill(
-      Math.floor(vestingEndTimestamp!.getTime() / 1000)
-    );
-    const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
-    const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(
-      DATE_FREQ_TO_TIMESTAMP[vesting.details.releaseFrequency]
-    );
-    const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
-      parseTokenAmount(vestingAmountPerUser, 18)
-    );
-    const vestingCliffAmounts = new Array(vesting.recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
-
-    console.log({
-      addresses,
-      vestingStartTimestamps,
-      vestingEndTimestamps,
-      vestingCliffTimestamps,
-      vestingReleaseIntervals,
-      vestingLinearVestAmounts,
-      vestingCliffAmounts
-    });
-
-    const CREATE_CLAIMS_BATCH_FUNCTION =
-      'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
-    const CREATE_CLAIMS_BATCH_INTERFACE =
-      'createClaimsBatch(address[],uint40[],uint40[],uint40[],uint40[],uint112[],uint112[])';
-    const ABI = [CREATE_CLAIMS_BATCH_FUNCTION];
-    const vestingContractInterface = new ethers.utils.Interface(ABI);
-    const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [
-      addresses,
-      vestingStartTimestamps,
-      vestingEndTimestamps,
-      vestingCliffTimestamps,
-      vestingReleaseIntervals,
-      vestingLinearVestAmounts,
-      vestingCliffAmounts
-    ]);
-
-    if (safe?.address && account && chainId && organizationId) {
-      const ethAdapter = new EthersAdapter({
-        ethers: ethers,
-        signer: library?.getSigner(0)
-      });
-
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
-      const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
-      const txData = {
-        to: vestingContract?.data?.address ?? '',
-        data: createClaimsBatchEncoded,
-        value: '0'
-      };
-      console.log({ txData });
-      const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
-      const txHash = await safeSdk.getTransactionHash(safeTransaction);
-      const signature = await safeSdk.signTransactionHash(txHash);
-      safeTransaction.addSignature(signature);
-      const safeService = new SafeServiceClient({
-        txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-        ethAdapter
-      });
-      await safeService.proposeTransaction({
-        safeAddress: safe.address,
-        senderAddress: account,
-        safeTransactionData: safeTransaction.data,
-        safeTxHash: txHash,
-        senderSignature: signature.data
-      });
-      console.log({ txHash });
-      if (account && organizationId) {
-        const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
-        const transactionId = await createTransaction({
-          hash: txHash,
-          safeHash: '',
-          status: 'PENDING',
-          to: vestingContract?.data?.address ?? '',
-          type: 'ADDING_CLAIMS',
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
-          organizationId: organizationId
-        });
-        setTransaction({
-          hash: txHash,
-          safeHash: '',
-          status: 'PENDING',
-          to: vestingContract?.data?.address ?? '',
-          type: 'ADDING_CLAIMS',
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
-          organizationId: organizationId
-        });
-        updateVesting(
-          {
-            ...vesting,
-            transactionId
-          },
-          vestingId
-        );
-        setApproved(true);
+    try {
+      if (!account || !library) {
+        activate(injected);
+        return;
       }
+      const vesting = vestings[activeVestingIndex].data;
+      const vestingId = vestings[activeVestingIndex].id;
+      const cliffAmountPerUser =
+        getCliffAmount(
+          vesting.details.cliffDuration,
+          +vesting.details.lumpSumReleaseAfterCliff,
+          +vesting.details.amountToBeVested
+        ) / vesting.recipients.length;
+      const vestingAmountPerUser = +vesting.details.amountToBeVested / vesting.recipients.length - cliffAmountPerUser;
+      const addresses = vesting.recipients.map((recipient) => recipient.walletAddress);
+      const cliffReleaseDate = vesting.details.startDateTime
+        ? getCliffDateTime(
+            new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
+            vesting.details.cliffDuration
+          )
+        : '';
+      const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
+      const numberOfReleases =
+        vesting.details.startDateTime && vesting.details.endDateTime
+          ? getNumberOfReleases(
+              vesting.details.releaseFrequency,
+              cliffReleaseDate || new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
+              new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
+            )
+          : 0;
+      const actualStartDateTime =
+        vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vesting.details.startDateTime;
+      const vestingEndTimestamp =
+        vesting.details.endDateTime && actualStartDateTime
+          ? getProjectedEndDateTime(
+              actualStartDateTime,
+              new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+              numberOfReleases,
+              DATE_FREQ_TO_TIMESTAMP[vesting.details.releaseFrequency]
+            )
+          : null;
+      const vestingStartTimestamps = new Array(vesting.recipients.length).fill(
+        cliffReleaseTimestamp
+          ? cliffReleaseTimestamp
+          : Math.floor((vesting.details.startDateTime as unknown as Timestamp).seconds)
+      );
+      const vestingEndTimestamps = new Array(vesting.recipients.length).fill(
+        Math.floor(vestingEndTimestamp!.getTime() / 1000)
+      );
+      const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
+      const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(
+        DATE_FREQ_TO_TIMESTAMP[vesting.details.releaseFrequency]
+      );
+      const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
+        parseTokenAmount(vestingAmountPerUser, 18)
+      );
+      const vestingCliffAmounts = new Array(vesting.recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
+
+      console.log({
+        addresses,
+        vestingStartTimestamps,
+        vestingEndTimestamps,
+        vestingCliffTimestamps,
+        vestingReleaseIntervals,
+        vestingLinearVestAmounts,
+        vestingCliffAmounts
+      });
+
+      const CREATE_CLAIMS_BATCH_FUNCTION =
+        'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
+      const CREATE_CLAIMS_BATCH_INTERFACE =
+        'createClaimsBatch(address[],uint40[],uint40[],uint40[],uint40[],uint112[],uint112[])';
+      const ABI = [CREATE_CLAIMS_BATCH_FUNCTION];
+      const vestingContractInterface = new ethers.utils.Interface(ABI);
+      const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [
+        addresses,
+        vestingStartTimestamps,
+        vestingEndTimestamps,
+        vestingCliffTimestamps,
+        vestingReleaseIntervals,
+        vestingLinearVestAmounts,
+        vestingCliffAmounts
+      ]);
+
+      if (safe?.address && account && chainId && organizationId) {
+        const ethAdapter = new EthersAdapter({
+          ethers: ethers,
+          signer: library?.getSigner(0)
+        });
+
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        const txData = {
+          to: vestingContract?.data?.address ?? '',
+          data: createClaimsBatchEncoded,
+          value: '0'
+        };
+        console.log({ txData });
+        const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
+        const txHash = await safeSdk.getTransactionHash(safeTransaction);
+        const signature = await safeSdk.signTransactionHash(txHash);
+        safeTransaction.addSignature(signature);
+        const safeService = new SafeServiceClient({
+          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+          ethAdapter
+        });
+        await safeService.proposeTransaction({
+          safeAddress: safe.address,
+          senderAddress: account,
+          safeTransactionData: safeTransaction.data,
+          safeTxHash: txHash,
+          senderSignature: signature.data
+        });
+
+        if (account && organizationId) {
+          const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+          const transactionId = await createTransaction({
+            hash: txHash,
+            safeHash: '',
+            status: 'PENDING',
+            to: vestingContract?.data?.address ?? '',
+            type: 'ADDING_CLAIMS',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            organizationId: organizationId
+          });
+          setTransaction({
+            hash: txHash,
+            safeHash: '',
+            status: 'PENDING',
+            to: vestingContract?.data?.address ?? '',
+            type: 'ADDING_CLAIMS',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            organizationId: organizationId
+          });
+          updateVesting(
+            {
+              ...vesting,
+              transactionId
+            },
+            vestingId
+          );
+          setApproved(true);
+        }
+        toast.success('Transaction has been created successfully.');
+      }
+    } catch (err) {
+      console.log('handleCreateSignTransaction - ', err);
+      toast.error('Something went wrong. Try again later.');
     }
   };
 
   const handleApproveTransaction = async () => {
-    console.log('handleApproveTransaction');
-    if (safe?.address && chainId && transaction) {
-      const ethAdapter = new EthersAdapter({
-        ethers: ethers,
-        signer: library?.getSigner(0)
-      });
+    try {
+      if (safe?.address && chainId && transaction) {
+        const ethAdapter = new EthersAdapter({
+          ethers: ethers,
+          signer: library?.getSigner(0)
+        });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
-      const safeService = new SafeServiceClient({
-        txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-        ethAdapter
-      });
-      const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction?.hash);
-      console.log({ apiTx });
-      const safeTx = await safeSdk.createTransaction({
-        safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
-      });
-      apiTx.confirmations?.forEach((confirmation) => {
-        safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
-      });
-      const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
-      await approveTxResponse.transactionResponse?.wait();
-      fetchSafeTransactionFromHash(transaction.hash);
-      setApproved(true);
-      // const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
-      // await executeTransactionResponse.transactionResponse?.wait();
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeService = new SafeServiceClient({
+          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+          ethAdapter
+        });
+        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction?.hash);
+        console.log({ apiTx });
+        const safeTx = await safeSdk.createTransaction({
+          safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
+        });
+        apiTx.confirmations?.forEach((confirmation) => {
+          safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
+        });
+        const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
+        await approveTxResponse.transactionResponse?.wait();
+        fetchSafeTransactionFromHash(transaction.hash);
+        setApproved(true);
+        toast.success('Approved successfully.');
+        // const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
+        // await executeTransactionResponse.transactionResponse?.wait();
+      }
+    } catch (err) {
+      console.log('handleApproveTransaction - ', err);
+      toast.error('Something went wrong. Try again later.');
     }
   };
 
   const handleExecuteTransaction = async () => {
-    if (safe?.address && chainId && transaction) {
-      const ethAdapter = new EthersAdapter({
-        ethers: ethers,
-        signer: library?.getSigner(0)
-      });
+    try {
+      if (safe?.address && chainId && transaction) {
+        const ethAdapter = new EthersAdapter({
+          ethers: ethers,
+          signer: library?.getSigner(0)
+        });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
-      const safeService = new SafeServiceClient({
-        txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-        ethAdapter
-      });
-      const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction?.hash);
-      console.log({ apiTx });
-      const safeTx = await safeSdk.createTransaction({
-        safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
-      });
-      apiTx.confirmations?.forEach((confirmation) => {
-        safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
-      });
-      console.log({ safeTx });
-      // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
-      // console.log({ safeTx });
-      // await approveTxResponse.transactionResponse?.wait();
-      const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
-      await executeTransactionResponse.transactionResponse?.wait();
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeService = new SafeServiceClient({
+          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+          ethAdapter
+        });
+        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction?.hash);
+        console.log({ apiTx });
+        const safeTx = await safeSdk.createTransaction({
+          safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
+        });
+        apiTx.confirmations?.forEach((confirmation) => {
+          safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
+        });
+        console.log({ safeTx });
+        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
+        // console.log({ safeTx });
+        // await approveTxResponse.transactionResponse?.wait();
+        const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
+        await executeTransactionResponse.transactionResponse?.wait();
 
-      updateTransaction(
-        {
-          ...transaction,
-          status: 'SUCCESS'
-        },
-        vestings[activeVestingIndex].data.transactionId
-      );
+        updateTransaction(
+          {
+            ...transaction,
+            status: 'SUCCESS'
+          },
+          vestings[activeVestingIndex].data.transactionId
+        );
+        toast.success('Executed successfully.');
+      }
+    } catch (err) {
+      console.log('handleExecuteTransaction - ', err);
+      toast.error('Something went wrong. Try again later.');
     }
   };
 
@@ -390,14 +408,14 @@ IDashboardPanelProps) => {
 
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
 
-  const statuses: Record<string, IDashboardPanelStatuses> = {
+  const statuses: Record<string, IAddVestingSchedulesStatuses> = {
     createSignTransaction: {
       icon: <WarningIcon className="w-4 h-4" />,
       label: 'Authorization required',
       actions: (
         <>
           <button
-            disabled={approved || !vestingContract?.id || !ownershipTransfered}
+            disabled={approved || !vestingContract?.id || !ownershipTransfered || insufficientBalance}
             className="secondary"
             onClick={handleCreateSignTransaction}>
             {approved ? 'Approved' : 'Create and Sign the transaction'}
@@ -608,7 +626,7 @@ IDashboardPanelProps) => {
   };
 
   return (
-    <div className={`panel ${className}`}>
+    <div className={`panel ${className} mb-5`}>
       <div className="row-center justify-between border-b border-gray-200 mb-3 pb-3">
         {insufficientBalance ? (
           <Chip
@@ -703,4 +721,4 @@ IDashboardPanelProps) => {
   );
 };
 
-export default DashboardPanel;
+export default AddVestingSchedules;
