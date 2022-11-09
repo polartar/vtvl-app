@@ -28,6 +28,7 @@ export const updateToken = async (token: IToken, id: string): Promise<void> => {
 };
 
 export const createToken = async (token: IToken): Promise<string> => {
+  console.log({ token });
   const tokenRef = await addDoc(tokenCollection, token);
   return tokenRef.id;
 };

@@ -12,16 +12,19 @@ export default {
 // More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
 
 export const Usage = () => {
+  const [initial, setInitial] = useState(1);
   const [min, setMin] = useState(1);
   const [max, setMax] = useState(1);
   const handleMinChange = (e: any) => {
     console.log('Min changed', e.target.value);
-    setMin(e.target.value);
+    setInitial(e.target.value);
   };
 
   const handleMaxChange = (e: any) => {
     console.log('Max changed', e.target.value);
     setMax(e.target.value);
   };
-  return <MinMaxInput min={min} max={max} onMinChange={handleMinChange} onMaxChange={handleMaxChange} />;
+  return (
+    <MinMaxInput initial={initial} min={min} max={max} onMinChange={handleMinChange} onMaxChange={handleMaxChange} />
+  );
 };

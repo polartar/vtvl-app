@@ -34,7 +34,9 @@ const ContractOverview = ({
         <label>
           <span>Maximum supply</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{formatNumber(maxSupply)}</p>
+        <p className="paragraphy-tiny-medium neutral-text">
+          {!maxSupply && supplyCap === 'UNLIMITED' ? 'Unlimited' : formatNumber(maxSupply)}
+        </p>
       </div>
       <div>
         <label>

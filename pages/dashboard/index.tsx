@@ -4,19 +4,35 @@ import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
 import DashboardPanel from '@components/organisms/DashboardPanel/DashboardPanel';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useAuthContext } from '@providers/auth.context';
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
-import Router, { useRouter } from 'next/router';
+import { useVestingContext } from '@providers/vesting.context';
+import { useWeb3React } from '@web3-react/core';
+import { injected } from 'connectors';
+import VtvlVesting from 'contracts/abi/VtvlVesting.json';
+import { BigNumber, ethers } from 'ethers';
+import { Timestamp } from 'firebase/firestore';
+import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useState } from 'react';
+import { fetchVestingsByQuery } from 'services/db/vesting';
+import { createVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
+import { IVesting } from 'types/models';
 import { IScheduleOverviewProps, IVestingContractProps } from 'types/models/vesting';
-import { formatNumber } from 'utils/token';
+import { timestampToDateString } from 'utils/date';
+import { formatNumber, parseTokenAmount } from 'utils/token';
 
 import { NextPageWithLayout } from '../_app';
 
 const Dashboard: NextPageWithLayout = () => {
+  const { library, account, activate } = useWeb3React();
+  const { organizationId, safe } = useAuthContext();
   const { mintFormState } = useTokenContext();
+  const { recipients, scheduleFormState } = useVestingContext();
+  const { vestings, vestingContract, transactions, ownershipTransfered, insufficientBalance, depositAmount } =
+    useDashboardContext();
 
-  const [hasProject, setHasProject] = useState(true);
   const router = useRouter();
   const activities = [
     {
@@ -54,7 +70,7 @@ const Dashboard: NextPageWithLayout = () => {
   const sampleContractDetails: IVestingContractProps = {
     tokenName: 'Biconomy',
     tokenSymbol: 'BICO',
-    supplyCap: 'Limited',
+    supplyCap: 'LIMITED',
     maxSupply: 60000000,
     address: '0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5'
   };
@@ -73,10 +89,11 @@ const Dashboard: NextPageWithLayout = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   console.log(activities);
+
   return (
     <>
       {(!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED') &&
-      !hasProject ? (
+      !mintFormState.address ? (
         <>
           <h1 className="h2 font-medium text-center mb-10">My Projects</h1>
           <EmptyState
@@ -101,23 +118,45 @@ const Dashboard: NextPageWithLayout = () => {
           {/* Token details section and CTAs */}
           <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
             <div>
-              {mintFormState.logo ? <TokenProfile name="BICONOMY" logo={mintFormState.logo} className="mb-2" /> : null}
+              <TokenProfile
+                name={mintFormState.name}
+                symbol={mintFormState.symbol}
+                logo={mintFormState.logo}
+                className="mb-2"
+              />
               <p className="text-sm font-medium text-netural-900">
                 Token address: <span className="text-neutral-500">{mintFormState.address}</span>
               </p>
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
-              <button className="primary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
+              <button
+                className="primary row-center"
+                onClick={() => {
+                  router.push('/vesting-schedule/configure');
+                }}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Create Schedule</span>
               </button>
-              <button className="secondary row-center" onClick={() => Router.push('/minting-token')}>
+              <button className="secondary row-center" onClick={() => router.push('/minting-token')}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Mint Supply</span>
               </button>
             </div>
           </div>
-          <DashboardPanel
+
+          {/* {vestings
+            ? vestings.map((vesting) => (
+                <div className="panel mb-6">
+                  <DashboardPanel type="schedule" vestings={vestings} />
+                </div>
+              ))
+            : !hasVestingContract && <DashboardPanel type="contract" />} */}
+
+          {(!vestingContract?.id || !ownershipTransfered) && <DashboardPanel type="contract" />}
+          {/* {insufficientBalance && <DashboardPanel type="fundContract" />} */}
+          {vestings && vestings.length > 0 && <DashboardPanel type="schedule" />}
+
+          {/* <DashboardPanel
             type="schedule"
             schedule={sampleScheduleDetails}
             status="authRequired"
@@ -137,14 +176,20 @@ const Dashboard: NextPageWithLayout = () => {
             status="transferToMultisigSafe"
             className="mb-6"
           />
-          <DashboardPanel type="contract" contract={sampleContractDetails} status="fundingRequired" className="mb-6" />
+          <DashboardPanel
+            type="contract"
+            contract={sampleContractDetails}
+            status="fundingRequired"
+            className="mb-6"
+            onPrimaryClick={showFundingContractModal}
+          />
           <DashboardPanel
             type="schedule"
             schedule={sampleScheduleDetails}
             status="fundingInProgress"
             step={2}
             className="mb-6"
-          />
+          /> */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <DashboardInfoCard
               icon="/icons/calendar.svg"

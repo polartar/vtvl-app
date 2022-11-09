@@ -2,6 +2,7 @@ import Chip from '@components/atoms/Chip/Chip';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import Hint from '@components/atoms/Hint/Hint';
 import format from 'date-fns/format';
+import { Timestamp } from 'firebase/firestore';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   CliffDuration,
@@ -61,7 +62,10 @@ const ScheduleDetails = ({
    * Date / Time - Scheduled day and time.
    * Formats into "Fri, Oct 14, 2022 4:00 PM (GMT+8)"
    */
-  const duration = startDateTime && endDateTime ? getDuration(startDateTime, endDateTime) : '';
+  const formatDate = (date: Date) => format(date, 'E, LLL d, yyyy');
+  const formatTime = (date: Date) => format(date, 'h:mm a (O)');
+
+  const duration = startDateTime && endDateTime ? getDuration(startDateTime as Date, endDateTime) : '';
   const cliffDate = startDateTime ? getCliffDateTime(startDateTime, cliffDuration) : '';
   const cliffAmount = getCliffAmount(cliffDuration, +lumpSumReleaseAfterCliff, +amountToBeVested);
   const numberOfReleases =

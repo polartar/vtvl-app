@@ -3,6 +3,7 @@ import React from 'react';
 import { InputNumberCommas } from 'react-number-format-with-commas';
 
 interface MinMaxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  initial?: number;
   min?: number;
   max: number;
   onMinChange: (e: any) => void;
@@ -16,6 +17,7 @@ interface MinMaxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
  * Mimics the default HTML's input range.
  */
 const MinMaxInput = ({
+  initial = 1,
   min = 1,
   max,
   onMinChange = () => {},
@@ -31,8 +33,8 @@ const MinMaxInput = ({
       <InputNumberCommas
         type="text"
         className="grow w-full bg-neutral-50"
-        value={min}
-        min={1}
+        value={initial}
+        min={min}
         max={max}
         onChange={onMinChange}
       />
@@ -41,11 +43,11 @@ const MinMaxInput = ({
         type="text"
         className={`grow w-full bg-neutral-50 text-right ${maxReadOnly ? 'hidden' : ''}`}
         value={max}
-        min={1}
+        min={min}
         read-only={maxReadOnly.toString()}
         onChange={onMaxChange}
       />
-      <Chip color={min < max ? 'secondary' : 'default'} label="MAX" onClick={min < max ? onUseMax : () => {}} />
+      <Chip color={initial < max ? 'secondary' : 'default'} label="MAX" onClick={initial < max ? onUseMax : () => {}} />
     </div>
   );
 };

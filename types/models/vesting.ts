@@ -6,7 +6,12 @@ import { IRecipient } from 'types/vesting';
 export interface IVesting {
   details: IScheduleFormState;
   recipients: MultiValue<IRecipient>;
-  owner: string;
+  organizationId: string;
+  status: 'WAITING_APPROVAL' | 'APPROVED' | 'SUCCESS' | 'FAILED';
+  vestingContract?: string;
+  createdAt?: number;
+  updatedAt?: number;
+  transactionId: string;
 }
 
 export interface IScheduleOverviewProps {
@@ -30,7 +35,7 @@ export interface IScheduleSummaryProps {
 export interface IVestingContractProps {
   tokenName: string;
   tokenSymbol: string;
-  supplyCap: 'Limited' | 'Unlimited';
+  supplyCap: 'LIMITED' | 'UNLIMITED';
   maxSupply: number | Decimal;
   address: string;
 }
