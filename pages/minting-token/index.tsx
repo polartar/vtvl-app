@@ -48,11 +48,11 @@ const MintingToken: NextPageWithLayout = () => {
   const maxSupply = { value: watch('maxSupply'), state: getFieldState('maxSupply') };
 
   const handleinitialSupplyChange = (e: any) => {
-    setValue('initialSupply', e.target.value);
+    setValue('initialSupply', +e.target.value);
   };
 
   const handleMaxMintAmouont = () => {
-    setValue('maxSupply', maxSupply.value);
+    setValue('initialSupply', +maxSupply.value);
   };
 
   const handleUpload = (url: string) => {
@@ -245,7 +245,7 @@ const MintingToken: NextPageWithLayout = () => {
                     label="MAX"
                     color="secondary"
                     onClick={handleMaxMintAmouont}
-                    className={`absolute right-6 ${
+                    className={`absolute right-6 cursor-pointer ${
                       initialSupply.value > maxSupply.value || errors.initialSupply ? 'bottom-9' : 'bottom-2'
                     }`}
                   />
