@@ -26,8 +26,11 @@ import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
 import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
+import { IFundContractProps } from 'types/models/vestingContract';
 import { parseTokenAmount } from 'utils/token';
 import { getCliffAmount, getCliffDateTime, getNumberOfReleases, getProjectedEndDateTime } from 'utils/vesting';
+
+import FundingContractModal from '../FundingContractModal/FundingContractModal';
 
 interface IDashboardPanelProps {
   className?: string;
@@ -385,6 +388,8 @@ IDashboardPanelProps) => {
 
   const handleCreateFundTransaction = async () => {};
 
+  const [showFundingContractModal, setShowFundingContractModal] = useState(false);
+
   const statuses: Record<string, IDashboardPanelStatuses> = {
     createSignTransaction: {
       icon: <WarningIcon className="w-4 h-4" />,
@@ -433,7 +438,7 @@ IDashboardPanelProps) => {
     },
     transferToMultisigSafe: {
       icon: <WarningIcon className="w-4 h-4" />,
-      label: 'Transfer Ownership to Multisig',
+      label: 'Mandatory',
       actions: (
         <>
           <button className="line primary" disabled onClick={() => {}}>
@@ -441,7 +446,7 @@ IDashboardPanelProps) => {
           </button>
           <button className="black row-center" onClick={handleTransferOwnership}>
             <img src="/images/multi-sig.png" className="w-6 h-6" aria-hidden="true" />
-            Transfer ownership to Multi-sig Safe
+            Transfer ownership
           </button>
         </>
       )
@@ -451,7 +456,7 @@ IDashboardPanelProps) => {
       label: 'Funding required',
       actions: (
         <>
-          <button className="secondary" onClick={() => {}}>
+          <button className="secondary" onClick={() => setShowFundingContractModal(true)}>
             Fund contract
           </button>
           <button className="line primary" onClick={() => {}}>
@@ -593,6 +598,15 @@ IDashboardPanelProps) => {
     }
   }, [safeTransaction, account, safe]);
 
+  // SAMPLE DATA FOR THE FUNDING CONTRACT
+  const sampleFundingContractDetails: IFundContractProps = {
+    logo: '/images/biconomy-logo.png',
+    name: 'Biconomy',
+    symbol: 'BICO',
+    address: '0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5',
+    amount: '25000'
+  };
+
   return (
     <div className={`panel ${className}`}>
       <div className="row-center justify-between border-b border-gray-200 mb-3 pb-3">
@@ -604,7 +618,7 @@ IDashboardPanelProps) => {
                 {statuses.fundingRequired.label}
               </p>
             }
-            color={'warning'}
+            color={'warningAlt'}
             rounded
           />
         ) : status ? (
@@ -615,7 +629,7 @@ IDashboardPanelProps) => {
                 {statuses[status].label}
               </p>
             }
-            color={status === 'approved' ? 'success' : status === 'declined' ? 'danger' : 'warning'}
+            color={status === 'approved' ? 'successAlt' : status === 'declined' ? 'dangerAlt' : 'warningAlt'}
             rounded
           />
         ) : null}
@@ -639,9 +653,13 @@ IDashboardPanelProps) => {
             <ScheduleOverview {...vestings[activeVestingIndex].data} />
           ) : null
         ) : null}
-        {/* {type === 'fundContract' && (
-          <FundContract address={vestingContract?.data?.address || ''} amount={depositAmount} />
-        )} */}
+        {type === 'fundContract' && (
+          <FundContract
+            address={vestingContract?.data?.address || ''}
+            amount={depositAmount}
+            symbol={mintFormState.symbol}
+          />
+        )}
         {type === 'contract' ? (
           <ContractOverview
             tokenName={mintFormState.name}
@@ -676,6 +694,11 @@ IDashboardPanelProps) => {
           </div>
         )}
       </div>
+      <FundingContractModal
+        isOpen={showFundingContractModal}
+        onClose={() => setShowFundingContractModal(false)}
+        contract={sampleFundingContractDetails}
+      />
     </div>
   );
 };
