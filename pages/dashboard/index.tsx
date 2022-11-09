@@ -144,7 +144,7 @@ const Dashboard: NextPageWithLayout = () => {
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Create Schedule</span>
               </button>
-              <button className="secondary row-center" onClick={() => router.push('/vesting-schedule/configure')}>
+              <button className="secondary row-center" onClick={() => router.push('/minting-token')}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Mint Supply</span>
               </button>

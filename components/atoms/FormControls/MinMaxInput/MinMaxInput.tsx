@@ -1,5 +1,6 @@
 import Chip from '@components/atoms/Chip/Chip';
 import React from 'react';
+import { InputNumberCommas } from 'react-number-format-with-commas';
 
 interface MinMaxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   initial?: number;
@@ -29,10 +30,17 @@ const MinMaxInput = ({
     <div
       className={`minMaxInput flex items-center gap-2 relative border rounded-3xl py-3.5 px-6 h-10 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all ${props.className} `}>
       {/* minimum */}
-      <input type="number" className="grow w-full bg-neutral-50" value={initial} min={min} onChange={onMinChange} />
+      <InputNumberCommas
+        type="text"
+        className="grow w-full bg-neutral-50"
+        value={initial}
+        min={min}
+        max={max}
+        onChange={onMinChange}
+      />
       {/* maximum */}
-      <input
-        type="number"
+      <InputNumberCommas
+        type="text"
         className={`grow w-full bg-neutral-50 text-right ${maxReadOnly ? 'hidden' : ''}`}
         value={max}
         min={min}

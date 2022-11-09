@@ -1,4 +1,5 @@
 import React from 'react';
+import { InputNumberCommas } from 'react-number-format-with-commas';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   required?: boolean;
@@ -42,7 +43,11 @@ const Input = ({
       <div className={`input-component__container ${success ? 'success' : ''} ${error ? 'error' : ''}`}>
         <div className="input-component__input">
           {icon ? <img src={icon} alt={label?.toString() || 'Input icon'} className="w-6 h-6 fill-current" /> : null}
-          <input type="text" {...props} className="grow w-full outline-0 border-0 bg-transparent" />
+          {props.type === 'number' ? (
+            <InputNumberCommas {...props} type="text" className="grow w-full outline-0 border-0 bg-transparent" />
+          ) : (
+            <input type="text" {...props} className="grow w-full outline-0 border-0 bg-transparent" />
+          )}
         </div>
         {message ? <p className="input-component__message">{message}</p> : null}
       </div>

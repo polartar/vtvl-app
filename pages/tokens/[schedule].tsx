@@ -41,7 +41,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   const claimable = { value: watch('claimable'), state: getFieldState('claimable') };
 
   const handleMinChange = (e: any) => {
-    setValue('toClaim', e.target.value);
+    setValue('toClaim', +e.target.value);
   };
 
   const handleMaxChange = () => {

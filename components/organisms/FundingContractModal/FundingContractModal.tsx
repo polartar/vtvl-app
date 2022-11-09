@@ -123,7 +123,7 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
    * -- the Amount to be funded in the contract.
    */
   const handleMinChange = (e: any) => {
-    setValue('amount', e.target.value);
+    setValue('amount', +e.target.value);
   };
 
   /**
