@@ -1,3 +1,4 @@
+import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import MyTokenDetails from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
@@ -21,6 +22,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
     setTab(e.target.value);
   };
 
+  const showTokens = false;
   const tokens = [
     {
       token: {
@@ -64,16 +66,26 @@ const MyTokenStatus: NextPageWithLayout = () => {
     <div className="w-full">
       <div className="max-w-4xl xl:max-w-full">
         <h1 className="text-neutral-900 mb-9">My Tokens</h1>
-        <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
-        <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {tokens.map((token, tokenIndex) => (
-            <MyTokenDetails key={`my-token-${tokenIndex}`} {...token} viewDetailsUrl="/tokens/schedule-001" />
-          ))}
-        </div>
-        {/* Probably need a condition to check if there are more records */}
-        <button type="button" className="primary line mx-auto flex py-1.5 my-5">
-          Load more
-        </button>
+        {showTokens ? (
+          <>
+            <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
+            <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {tokens.map((token, tokenIndex) => (
+                <MyTokenDetails key={`my-token-${tokenIndex}`} {...token} viewDetailsUrl="/tokens/schedule-001" />
+              ))}
+            </div>
+            {/* Probably need a condition to check if there are more records */}
+            <button type="button" className="primary line mx-auto flex py-1.5 my-5">
+              Load more
+            </button>
+          </>
+        ) : (
+          <EmptyState
+            image="/images/cryptocurrency-trading-bot.gif"
+            title="No claimable tokens"
+            description={<>Come back again next time.</>}
+          />
+        )}
       </div>
     </div>
   );
