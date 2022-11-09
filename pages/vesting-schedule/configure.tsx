@@ -1,3 +1,4 @@
+import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Form from '@components/atoms/FormControls/Form/Form';
@@ -14,6 +15,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { PickersActionBarProps } from '@mui/x-date-pickers/PickersActionBar';
 import { useWeb3React } from '@web3-react/core';
 import add from 'date-fns/add';
+import differenceInSeconds from 'date-fns/differenceInSeconds';
 import format from 'date-fns/format';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -22,7 +24,7 @@ import { ElementType, ReactElement, forwardRef, useEffect, useState } from 'reac
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
-import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
+import { CLIFFDURATION_TIMESTAMP, CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SelectOptions } from 'types/shared';
 
 type DateTimeType = Date | null;
@@ -53,6 +55,9 @@ interface CustomActionBarProps {
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { account } = useWeb3React();
   const { scheduleFormState, updateScheduleFormState } = useVestingContext();
+  const [formError, setFormError] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
+  const [formMessage, setFormMessage] = useState('');
   // Use form to initially assign default values
   const {
     control,
@@ -328,11 +333,38 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
   }, [startDateTime.value, endDateTime.value]);
 
+  // Update form error message when the dates and cliff duration does not match
+  useEffect(() => {
+    if (startDateTime.value && endDateTime.value && cliffDuration.value !== 'no-cliff') {
+      // Compute duration of start and end dates
+      const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
+      const cliffSeconds = CLIFFDURATION_TIMESTAMP[cliffDuration.value];
+      console.log('Difference', cliffSeconds, diffSeconds);
+      // Compare to cliff duration
+      if (cliffSeconds > diffSeconds) {
+        // Error
+        setFormError(true);
+        setFormSuccess(false);
+        setFormMessage('Cliff duration should be within the Start date and End date');
+      } else {
+        setFormError(false);
+        setFormSuccess(true);
+        setFormMessage('');
+      }
+    }
+  }, [startDateTime.value, endDateTime.value, cliffDuration.value]);
+
   return (
     <>
       <div className="grid md:grid-cols-12 w-full gap-3.5">
         <div className="md:col-span-7">
-          <Form isSubmitting={isSubmitting} className="w-full mb-6" onSubmit={handleSubmit(onSubmit)}>
+          <Form
+            isSubmitting={isSubmitting}
+            className="w-full mb-6"
+            onSubmit={handleSubmit(onSubmit)}
+            error={formError}
+            success={formSuccess}
+            message={formMessage}>
             <div className="grid md:grid-cols-2 gap-5 mb-5">
               {/**
                * Date picker start
@@ -536,9 +568,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               </div>
             </div>
             <div className="flex flex-row justify-end items-center border-t border-neutral-200 pt-5">
-              <button className="primary" type="submit">
+              <Button className="primary" type="submit" loading={isSubmitting} disabled={formError}>
                 Continue
-              </button>
+              </Button>
             </div>
           </Form>
         </div>
