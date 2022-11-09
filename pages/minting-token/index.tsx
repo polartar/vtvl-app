@@ -240,12 +240,12 @@ const MintingToken: NextPageWithLayout = () => {
                       type="number"
                       error={
                         Boolean(errors.initialSupply) ||
-                        (initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED')
+                        (+initialSupply.value > +maxSupply.value && supplyCap.value === 'LIMITED')
                       }
                       message={
                         errors.initialSupply
                           ? 'Please enter amount to mint'
-                          : initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED'
+                          : +initialSupply.value > +maxSupply.value && supplyCap.value === 'LIMITED'
                           ? 'Amount to mint should be smaller than the maximum amount'
                           : ''
                       }
@@ -259,7 +259,7 @@ const MintingToken: NextPageWithLayout = () => {
                     color="secondary"
                     onClick={handleMaxMintAmouont}
                     className={`absolute right-6 cursor-pointer ${
-                      initialSupply.value > maxSupply.value || errors.initialSupply ? 'bottom-9' : 'bottom-2'
+                      +initialSupply.value > +maxSupply.value || errors.initialSupply ? 'bottom-9' : 'bottom-2'
                     }`}
                   />
                 ) : null}
@@ -267,8 +267,8 @@ const MintingToken: NextPageWithLayout = () => {
               {supplyCap.value === 'LIMITED' ? (
                 <div className="mt-6">
                   <RangeSlider
-                    max={maxSupply.value ? maxSupply.value : 0}
-                    value={initialSupply.value ? initialSupply.value : 0}
+                    max={+maxSupply.value ? +maxSupply.value : 0}
+                    value={+initialSupply.value ? +initialSupply.value : 0}
                     className="mt-5"
                     onChange={handleinitialSupplyChange}
                   />

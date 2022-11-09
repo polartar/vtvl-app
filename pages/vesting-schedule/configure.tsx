@@ -527,10 +527,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 <LimitedSupply
                   label="Amount to be vested"
                   required
-                  initial={amountToBeVested.value}
-                  maximum={tokenSupply}
+                  initial={+amountToBeVested.value}
+                  maximum={+tokenSupply}
                   onMinChange={handleMinChange}
-                  onUseMax={() => setValue('amountToBeVested', tokenSupply)}
+                  onUseMax={() => setValue('amountToBeVested', +tokenSupply)}
                   maxReadOnly
                 />
               </div>
