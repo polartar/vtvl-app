@@ -15,7 +15,7 @@ import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, useState } from 'react';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { IVesting } from 'types/models';
@@ -74,6 +74,21 @@ const Dashboard: NextPageWithLayout = () => {
     maxSupply: 60000000,
     address: '0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5'
   };
+
+  // Samples for showing previous and next items via buttons
+  const showPreviousSchedule = () => {
+    console.log('Load and show the previous schedule here');
+    setCurrentPage((previous) => previous - 1);
+  };
+
+  const showNextSchedule = () => {
+    console.log('Load and show the next schedule here');
+    setCurrentPage((previous) => previous + 1);
+  };
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  console.log(activities);
 
   return (
     <>
@@ -161,7 +176,13 @@ const Dashboard: NextPageWithLayout = () => {
             status="transferToMultisigSafe"
             className="mb-6"
           />
-          <DashboardPanel type="contract" contract={sampleContractDetails} status="fundingRequired" className="mb-6" />
+          <DashboardPanel
+            type="contract"
+            contract={sampleContractDetails}
+            status="fundingRequired"
+            className="mb-6"
+            onPrimaryClick={showFundingContractModal}
+          />
           <DashboardPanel
             type="schedule"
             schedule={sampleScheduleDetails}
