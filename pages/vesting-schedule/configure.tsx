@@ -346,7 +346,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         setFormError(true);
         setFormSuccess(false);
         setFormMessage('Cliff duration should be within the Start date and End date');
-      } else {
+      } else if (formError) {
+        // Convert to successful if the state came from an error
         setFormError(false);
         setFormSuccess(true);
         setFormMessage('');
