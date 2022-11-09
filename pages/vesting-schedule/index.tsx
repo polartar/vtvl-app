@@ -20,7 +20,7 @@ import { formatNumber } from 'utils/token';
  * This page should have an async fetch feature that gets the product details from the database.
  */
 const VestingScheduleProject: NextPageWithLayout = () => {
-  const [hasVestingSchedule, setHasVestingSchedule] = useState(true);
+  const [hasVestingSchedule, setHasVestingSchedule] = useState(false);
   const [selected, setSelected] = useState('manual');
 
   const userAction = {
