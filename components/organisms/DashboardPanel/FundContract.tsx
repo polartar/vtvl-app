@@ -17,8 +17,15 @@ import { useTokenContext } from 'providers/token.context';
 import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 import { fetchOrgByQuery } from 'services/db/organization';
-import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
+import {
+  createTransaction,
+  fetchTransaction,
+  fetchTransactionByQuery,
+  fetchTransactionsByQuery,
+  updateTransaction
+} from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
@@ -27,6 +34,8 @@ import { ITransaction } from 'types/models';
 import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
 import { parseTokenAmount } from 'utils/token';
 import { getCliffAmount, getCliffDateTime, getNumberOfReleases, getProjectedEndDateTime } from 'utils/vesting';
+
+import FundingContractModal from '../FundingContractModal/FundingContractModal';
 
 interface IFundContractStatuses {
   icon: string | JSX.Element | React.ReactNode;
@@ -56,15 +65,191 @@ const FundContract = () => {
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
   const [status, setStatus] = useState('fundingRequired');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
-  const [transaction, setTransaction] = useState<ITransaction | undefined>();
+  const [transaction, setTransaction] = useState<{ id: string; data: ITransaction } | undefined>();
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
+  const [showFundingContractModal, setShowFundingContractModal] = useState(false);
 
   const handleCreateSignTransaction = () => {};
-  const handleExecuteTransaction = () => {};
-  const handleApproveTransaction = () => {};
-  const handleDeployVestingContract = () => {};
-  const handleTransferOwnership = () => {};
+
+  const handleExecuteTransaction = async () => {
+    try {
+      if (safe?.address && chainId && transaction) {
+        const ethAdapter = new EthersAdapter({
+          ethers: ethers,
+          signer: library?.getSigner(0)
+        });
+
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeService = new SafeServiceClient({
+          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+          ethAdapter
+        });
+        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction.data.hash);
+        const safeTx = await safeSdk.createTransaction({
+          safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
+        });
+        apiTx.confirmations?.forEach((confirmation) => {
+          safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
+        });
+        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
+        // console.log({ safeTx });
+        // await approveTxResponse.transactionResponse?.wait();
+        const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
+        await executeTransactionResponse.transactionResponse?.wait();
+
+        updateTransaction(
+          {
+            ...transaction.data,
+            status: 'SUCCESS'
+          },
+          transaction.id
+        );
+        toast.success('Executed successfully.');
+      }
+    } catch (err) {
+      console.log('handleExecuteTransaction - ', err);
+      toast.error('Something went wrong. Try again later.');
+    }
+  };
+
+  const handleApproveTransaction = async () => {
+    try {
+      if (safe?.address && chainId && transaction) {
+        const ethAdapter = new EthersAdapter({
+          ethers: ethers,
+          signer: library?.getSigner(0)
+        });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeService = new SafeServiceClient({
+          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+          ethAdapter
+        });
+        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction.data.hash);
+        const safeTx = await safeSdk.createTransaction({
+          safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
+        });
+        apiTx.confirmations?.forEach((confirmation) => {
+          safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
+        });
+        const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
+        await approveTxResponse.transactionResponse?.wait();
+        fetchSafeTransactionFromHash(transaction.data.hash);
+        setApproved(true);
+        toast.success('Approved successfully.');
+      }
+    } catch (err) {
+      console.log('handleApproveTransaction - ', err);
+      toast.error('Something went wrong. Try again later.');
+    }
+  };
+
+  const handleFundContract = async (type: string, amount: string) => {
+    try {
+      if (!account) {
+        // activate(injected);
+        toast.info('Connect your wallet and try again.');
+        return;
+      }
+
+      if (type === 'Metamask') {
+        const tokenContract = new ethers.Contract(
+          mintFormState.address,
+          [
+            // Read-Only Functions
+            'function balanceOf(address owner) view returns (uint256)',
+            'function decimals() view returns (uint8)',
+            'function symbol() view returns (string)',
+            // Authenticated Functions
+            'function transfer(address to, uint amount) returns (bool)',
+            // Events
+            'event Transfer(address indexed from, address indexed to, uint amount)'
+          ],
+          library.getSigner()
+        );
+        const fundTransaction = await tokenContract.transfer(
+          vestingContract?.data?.address,
+          BigNumber.from(amount)
+            .mul(BigNumber.from((10 ** 18).toString()))
+            .toString()
+        );
+        await fundTransaction.wait();
+        toast.success('Token deposited successfully');
+      } else {
+        const tokenContractInterface = new ethers.utils.Interface([
+          'function transfer(address to, uint amount) returns (bool)',
+          // Events
+          'event Transfer(address indexed from, address indexed to, uint amount)'
+        ]);
+        const transferEncoded = tokenContractInterface.encodeFunctionData('transfer', [
+          vestingContract?.data?.address,
+          BigNumber.from(amount)
+            .mul(BigNumber.from((10 ** 18).toString()))
+            .toString()
+        ]);
+        if (safe?.address && account && chainId && organizationId) {
+          if (safe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())) {
+            const ethAdapter = new EthersAdapter({
+              ethers: ethers,
+              signer: library?.getSigner(0)
+            });
+            const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+            const txData = {
+              to: mintFormState.address,
+              data: transferEncoded,
+              value: '0'
+            };
+            const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
+            const txHash = await safeSdk.getTransactionHash(safeTransaction);
+            const signature = await safeSdk.signTransactionHash(txHash);
+            safeTransaction.addSignature(signature);
+            const safeService = new SafeServiceClient({
+              txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+              ethAdapter
+            });
+            await safeService.proposeTransaction({
+              safeAddress: safe.address,
+              senderAddress: account,
+              safeTransactionData: safeTransaction.data,
+              safeTxHash: txHash,
+              senderSignature: signature.data
+            });
+            const transactionId = await createTransaction({
+              hash: txHash,
+              safeHash: '',
+              status: 'PENDING',
+              to: vestingContract?.data?.address ?? '',
+              type: 'FUNDING_CONTRACT',
+              createdAt: Math.floor(new Date().getTime() / 1000),
+              updatedAt: Math.floor(new Date().getTime() / 1000),
+              organizationId: organizationId
+            });
+            setApproved(true);
+            setTransaction({
+              id: transactionId,
+              data: {
+                hash: txHash,
+                safeHash: '',
+                status: 'PENDING',
+                to: vestingContract?.data?.address ?? '',
+                type: 'FUNDING_CONTRACT',
+                createdAt: Math.floor(new Date().getTime() / 1000),
+                updatedAt: Math.floor(new Date().getTime() / 1000),
+                organizationId: organizationId
+              }
+            });
+            fetchSafeTransactionFromHash(txHash);
+          } else {
+            toast.error('You are not a signer of this multisig wallet.');
+            return;
+          }
+        }
+      }
+      setShowFundingContractModal(false);
+    } catch (err: any) {
+      toast.error(err.reason ? err.reason : 'Something went wrong. Try again later.');
+    }
+  };
 
   const statuses: Record<string, IFundContractStatuses> = {
     createSignTransaction: {
@@ -90,7 +275,7 @@ const FundContract = () => {
       actions: (
         <>
           <button
-            disabled={(approved && !executable) || insufficientBalance}
+            disabled={approved && !executable}
             className="secondary"
             onClick={executable ? handleExecuteTransaction : handleApproveTransaction}>
             {executable ? 'Execute' : 'Sign and authorize'}
@@ -101,38 +286,12 @@ const FundContract = () => {
         </>
       )
     },
-    vestingContractRequired: {
-      icon: <WarningIcon className="w-4 h-4" />,
-      label: 'Vesting contract required',
-      actions: (
-        <>
-          <button className="secondary" onClick={handleDeployVestingContract}>
-            Create vesting contract
-          </button>
-        </>
-      )
-    },
-    transferToMultisigSafe: {
-      icon: <WarningIcon className="w-4 h-4" />,
-      label: 'Transfer Ownership to Multisig',
-      actions: (
-        <>
-          <button className="line primary" disabled onClick={() => {}}>
-            Create vesting contract
-          </button>
-          <button className="black row-center" onClick={handleTransferOwnership}>
-            <img src="/images/multi-sig.png" className="w-6 h-6" aria-hidden="true" />
-            Transfer ownership to Multi-sig Safe
-          </button>
-        </>
-      )
-    },
     fundingRequired: {
       icon: <WarningIcon className="w-4 h-4" />,
       label: 'Funding required',
       actions: (
         <>
-          <button className="secondary" onClick={() => {}}>
+          <button className="secondary" onClick={() => setShowFundingContractModal(true)}>
             Fund contract
           </button>
           <button className="line primary" onClick={() => {}}>
@@ -188,7 +347,6 @@ const FundContract = () => {
         ethAdapter
       });
       const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(txHash);
-      console.log({ apiTx });
       const safeTx = await safeSdk.createTransaction({
         safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
       });
@@ -198,6 +356,24 @@ const FundContract = () => {
       setSafeTransaction({ ...safeTx });
     }
   };
+
+  useEffect(() => {
+    if (organizationId) {
+      fetchTransactionsByQuery('organizationId', '==', organizationId).then((res) => {
+        setTransaction(
+          res.find(
+            (transaction) => transaction.data.status === 'PENDING' && transaction.data.type === 'FUNDING_CONTRACT'
+          )
+        );
+      });
+    }
+  }, [organizationId]);
+
+  useEffect(() => {
+    if (transaction) {
+      fetchSafeTransactionFromHash(transaction.data.hash);
+    }
+  }, [transaction]);
 
   useEffect(() => {
     if (account && safeTransaction && safe) {
@@ -268,6 +444,12 @@ const FundContract = () => {
       <div className="border-t mt-3 pt-3 row-center justify-between">
         <div className="row-center">{status ? statuses[status].actions : ''}</div>
       </div>
+      <FundingContractModal
+        isOpen={showFundingContractModal}
+        handleFundContract={handleFundContract}
+        hideModal={() => setShowFundingContractModal(false)}
+        depositAmount={depositAmount}
+      />
     </div>
   ) : null;
 };

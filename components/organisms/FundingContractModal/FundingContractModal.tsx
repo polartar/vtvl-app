@@ -5,13 +5,19 @@ import Radio from '@components/atoms/FormControls/Radio/Radio';
 import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
 import WalletRadioButton from '@components/molecules/FormControls/WalletRadioButton/WalletRadioButton';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
+import { useAuthContext } from '@providers/auth.context';
+import { useDashboardContext } from '@providers/dashboard.context';
+import { useWeb3React } from '@web3-react/core';
+import { BigNumber, ethers } from 'ethers';
+import { useTokenContext } from 'providers/token.context';
 import CopyIcon from 'public/icons/copy-to-clipboard.svg';
 import { useEffect, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Modal, { Styles } from 'react-modal';
+import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IFundContractProps } from 'types/models/vestingContract';
-import { formatNumber } from 'utils/token';
+import { formatNumber, parseTokenAmount } from 'utils/token';
 
 interface IFundSource {
   selectedFundSource: string;
@@ -19,47 +25,21 @@ interface IFundSource {
 
 interface IFundingContractModalProps {
   isOpen?: boolean;
-  onClose?: () => void;
-  contract?: IFundContractProps;
+  handleFundContract: (type: string, amount: string) => void;
+  hideModal: () => void;
+  depositAmount: string;
 }
 
-const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: IFundingContractModalProps) => {
-  const sampleWalletBalances = [
-    {
-      address: '0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5',
-      balance: 1839832399029,
-      icon: '/icons/wallets/metamask.svg'
-    },
-    {
-      address: '0x123445Ec340d86AE5d8341A030Cee62eCb140753',
-      balance: 333666999,
-      icon: '/images/multi-sig.png'
-    }
-    // {
-    //   address: '0x37213DEc340d86AE5d8341A030Cee62eCbFf0KK8',
-    //   balance: 32399029,
-    //   icon: '/icons/wallets/coinbase.png'
-    // },
-    // {
-    //   address: '0x12313DEc340d86AE5d8341A030Cee62eCbFf0Lb2',
-    //   balance: 398323990,
-    //   icon: '/icons/wallets/ledger.png'
-    // },
-    // {
-    //   address: '0x98373DEc340d86AE5d8341A030Cee62eCbFf0xX3',
-    //   balance: 398323,
-    //   icon: '/icons/wallets/trezor.png'
-    // },
-    // {
-    //   address: '0x99373DEc340d86AE5d8341A030Cee62eCbFf0MM4',
-    //   balance: 98737735,
-    //   icon: '/icons/wallets/walletconnect.svg'
-    // },
-    // {
-    //   address: '0x36633DEc340d86AE5d8341A030Cee62eCbFf0n7D',
-    //   balance: 1237833
-    // }
-  ];
+const FundingContractModal = ({
+  isOpen = false,
+  handleFundContract,
+  depositAmount,
+  hideModal
+}: IFundingContractModalProps) => {
+  const { account, chainId } = useWeb3React();
+  const { vestingContract } = useDashboardContext();
+  const { mintFormState } = useTokenContext();
+  const { safe } = useAuthContext();
 
   // Make Modal styles scrollable when exceeding the device view height
   const modalStyles: Styles = {
@@ -108,13 +88,19 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
   const selectedFundSource = { value: watch('selectedFundSource'), fieldState: getFieldState('selectedFundSource') };
   const fundingMethod = { value: watch('fundingMethod'), fieldState: getFieldState('fundingMethod') };
   const amount = { value: watch('amount'), fieldState: getFieldState('amount') };
+
+  const [copied, setCopied] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [contractBalance, setContractBalance] = useState(0);
+
   const cancelFundSource = () => {
     setValue('selectedFundSource', '');
-    onClose();
+    hideModal();
   };
   const onSubmit: SubmitHandler<IFundSource> = (data) => {
     // Do the actual funding here...
     console.log('Submitting data', data);
+    handleFundContract(data.selectedFundSource, amount.value.toString());
     return;
   };
 
@@ -135,8 +121,6 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
     setValue('amount', maxValue);
   };
 
-  const [copied, setCopied] = useState(false);
-
   // Update copied state when the contract address is copied to clipboard.
   useEffect(() => {
     if (copied === true) {
@@ -147,39 +131,79 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
   // Update the form values that rely on the contract object from the parent caller.
   // Update the amount in the form when updating the method of funding.
   useEffect(() => {
-    if (contract && fundingMethod.value !== 'CUSTOM_AMOUNT') {
-      setValue('amount', +contract.amount);
+    if (depositAmount && fundingMethod.value !== 'CUSTOM_AMOUNT') {
+      setValue('amount', parseFloat(depositAmount));
     }
-  }, [contract, fundingMethod.value]);
+  }, [depositAmount, fundingMethod.value]);
+
+  useEffect(() => {
+    if (vestingContract && account) {
+      const tokenContract = new ethers.Contract(
+        mintFormState.address,
+        [
+          // Read-Only Functions
+          'function balanceOf(address owner) view returns (uint256)',
+          'function decimals() view returns (uint8)',
+          'function symbol() view returns (string)',
+          // Authenticated Functions
+          'function transfer(address to, uint amount) returns (bool)',
+          // Events
+          'event Transfer(address indexed from, address indexed to, uint amount)'
+        ],
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+      // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
+      tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
+        setContractBalance(parseFloat(BigNumber.from(res).toString()) / 10 ** 18);
+      });
+      tokenContract.balanceOf(account).then((res: string) => {
+        setWalletBalance(parseFloat(BigNumber.from(res).toString()) / 10 ** 18);
+      });
+    }
+  }, [chainId, account]);
 
   return (
     <>
-      {contract ? (
+      {depositAmount ? (
         <Modal isOpen={isOpen} className="z-50 max-w-lg w-full" style={modalStyles}>
           <Form isSubmitting={isSubmitting} onSubmit={handleSubmit(onSubmit)}>
             <h2 className="h5 mb-3 text-neutral-800 font-medium">Fund contract</h2>
             <h3 className="h6 text-neutral-800 font-medium">Select Wallet</h3>
             <p className="paragraphy-small neutral-text mb-3">The wallet you wish to use to fund the contract</p>
-            {sampleWalletBalances.map((wallet, walletIndex) => (
-              <Controller
-                key={`wallet-radio-button-${walletIndex}`}
-                name="selectedFundSource"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <WalletRadioButton
-                    icon={wallet.icon}
-                    address={wallet.address}
-                    balance={wallet.balance}
-                    symbol={contract.symbol}
-                    className="mb-3"
-                    checked={wallet.address === selectedFundSource.value}
-                    {...field}
-                    value={wallet.address}
-                  />
-                )}
-              />
-            ))}
+            <Controller
+              name="selectedFundSource"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <WalletRadioButton
+                  icon={'/icons/wallets/metamask.svg'}
+                  address={account ?? ''}
+                  balance={walletBalance}
+                  symbol={mintFormState.symbol}
+                  className="mb-3"
+                  checked={selectedFundSource.value === 'Metamask'}
+                  {...field}
+                  value={'Metamask'}
+                />
+              )}
+            />
+            <Controller
+              name="selectedFundSource"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <WalletRadioButton
+                  icon={'/images/multi-sig.png'}
+                  address={safe?.address ?? ''}
+                  balance={contractBalance}
+                  symbol={mintFormState.symbol}
+                  className="mb-3"
+                  checked={selectedFundSource.value === 'Multisig'}
+                  {...field}
+                  value={'Multisig'}
+                />
+              )}
+            />
             {/* RADIO SECTIONS FOR SELECTING THE METHOD OF FUNDING */}
             {selectedFundSource.value ? (
               <div className="pt-5 mt-5 border-t border-neutral-200">
@@ -199,7 +223,7 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
                             Fund based on schedule <Chip label="Fixed" color="gray" rounded size="small" />
                           </span>
                           <span>
-                            {formatNumber(+contract.amount)} <strong>{contract.symbol}</strong>
+                            {formatNumber(+depositAmount)} <strong>{mintFormState.symbol}</strong>
                           </span>
                         </div>
                       }
@@ -221,7 +245,7 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
                         <div className="row-center justify-between">
                           <span>Fund as you want</span>
                           <span>
-                            {formatNumber(+amount.value)} <strong>{contract.symbol}</strong>
+                            {formatNumber(+amount.value)} <strong>{mintFormState.symbol}</strong>
                           </span>
                         </div>
                       }
@@ -243,7 +267,7 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
                         <div className="row-center justify-between">
                           <span>Fund manually</span>
                           <span>
-                            {formatNumber(+contract.amount)} <strong>{contract.symbol}</strong>
+                            {formatNumber(+depositAmount)} <strong>{mintFormState.symbol}</strong>
                           </span>
                         </div>
                       }
@@ -261,7 +285,7 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
                       maximumLabel="Total token supply"
                       required
                       initial={+amount.value}
-                      minimum={+contract.amount}
+                      minimum={+depositAmount}
                       maximum={maxValue}
                       onMinChange={handleMinChange}
                       onUseMax={handleMaxChange}
@@ -271,12 +295,12 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
                 ) : null}
                 {/* MANUAL FUNDING SECTION */}
                 {fundingMethod.value === 'MANUAL' ? (
-                  <CopyToClipboard text={contract.address} onCopy={() => setCopied(true)}>
+                  <CopyToClipboard text={mintFormState.address} onCopy={() => setCopied(true)}>
                     <div className="mt-5 pt-3 px-3 flex flex-col items-center cursor-pointer relative">
-                      <TokenProfile logo={contract.logo} name={contract.name} symbol={contract.symbol} />
+                      <TokenProfile logo={mintFormState.logo} name={mintFormState.name} symbol={mintFormState.symbol} />
                       <div className="row-center mt-2">
                         <CopyIcon className="fill-current h-4" />
-                        <p className="paragraphy-small neutral-text">{contract.address}</p>
+                        <p className="paragraphy-small neutral-text">{mintFormState.address}</p>
                       </div>
                       {copied ? (
                         <div className="absolute z-50 bottom-3 text-center w-full">
@@ -298,7 +322,7 @@ const FundingContractModal = ({ isOpen = false, onClose = () => {}, contract }: 
               <Button
                 type="submit"
                 className="secondary"
-                disabled={!selectedFundSource.value || !+amount.value || +amount.value < +contract.amount}
+                disabled={!selectedFundSource.value || !+amount.value || +amount.value < +depositAmount}
                 loading={isSubmitting}>
                 Continue
               </Button>
