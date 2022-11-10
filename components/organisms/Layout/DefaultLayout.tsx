@@ -44,43 +44,50 @@ const SidebarProps = {
       title: 'Dashboard',
       icon: '/icons/s_dashboard.svg',
       hoverIcon: '/icons/s_dashboard2.svg',
-      route: '/dashboard'
+      route: '/dashboard',
+      available: true
     },
     {
       title: 'Vesting schedule',
       icon: '/icons/s_vestingSchedule.svg',
       hoverIcon: '/icons/s_vestingSchedule2.svg',
-      route: '/vesting-schedule'
+      route: '/vesting-schedule',
+      available: true
     },
     {
       title: 'Token performance',
       icon: '/icons/s_tokenPerformance.svg',
       hoverIcon: '/icons/s_tokenPerformance2.svg',
-      route: '/token-performance'
+      route: '/token-performance',
+      available: true
     },
     {
       title: 'Cap table',
       icon: '/icons/s_capTable.svg',
       hoverIcon: '/icons/s_capTable2.svg',
-      route: '/cap-table'
+      route: '/cap-table',
+      available: true
     },
     {
       title: 'Tokenomics',
       icon: '/icons/s_tokenomics.svg',
       hoverIcon: '/icons/s_tokenomics2.svg',
-      route: '/tokenomics'
+      route: '/tokenomics',
+      available: true
     },
     {
       title: 'Transactions',
       icon: '/icons/s_transactions.svg',
       hoverIcon: '/icons/s_transactions2.svg',
-      route: '/transactions'
+      route: '/transactions',
+      available: true
     },
     {
       title: 'Claims Portal',
       icon: '/icons/s_dashboard.svg',
       hoverIcon: '/icons/s_dashboard2.svg',
-      route: '/tokens'
+      route: '/tokens',
+      available: true
     }
   ],
   submenuList: [

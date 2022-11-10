@@ -12,12 +12,14 @@ import { useAuthContext } from 'providers/auth.context';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { createToken } from 'services/db/token';
+import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 interface IImportToken {
   tokenAddress: string;
 }
 
 const DashboardImportToken: NextPageWithLayout = () => {
+  const { chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
 
   const defaultValues: IImportToken = {
@@ -89,9 +91,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
           'function symbol() view returns (string)',
           'function name() view returns (string)'
         ],
-        ethers.getDefaultProvider(
-          `https://${process.env.NEXT_PUBLIC_TEST_NETWORK_NAME}.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`
-        )
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
       const symbol = await tokenContract.symbol();
       const name = await tokenContract.name();
@@ -152,11 +152,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
             <TokenDetails
               title={`${tokenName} - ${tokenSymbol}`}
               address={tokenAddress.value}
-              url={`https://${
-                process.env.NEXT_PUBLIC_TEST_NETWORK_NAME === 'mainnet'
-                  ? ''
-                  : `${process.env.NEXT_PUBLIC_TEST_NETWORK_NAME}.`
-              }etherscan.io/token/${tokenAddress.value}`}
+              url={SupportedChains[chainId as SupportedChainId].explorer}
             />
           </div>
         ) : null}

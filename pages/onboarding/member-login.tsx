@@ -1,3 +1,5 @@
+import Button from '@components/atoms/Button/Button';
+import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -27,7 +29,7 @@ const MemberLoginPage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
-    formState: { errors, isValid, isDirty, isSubmitted }
+    formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
       memberEmail: ''
@@ -60,9 +62,11 @@ const MemberLoginPage: NextPage = () => {
 
       await sendLoginLink(values.memberEmail);
       toast.success('Please check your email for the link to login');
+      return;
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);
+      return;
     }
   };
 
@@ -75,7 +79,10 @@ const MemberLoginPage: NextPage = () => {
         Only registered team members are allowed to access this site.
       </p>
 
-      <div className="w-full my-6 panel flex flex-col items-center">
+      <Form
+        isSubmitting={isSubmitting}
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full my-6 flex flex-col items-center">
         <button
           onClick={async () => await googleSignIn()}
           className="line flex flex-row items-center justify-center gap-2.5 w-full">
@@ -90,7 +97,7 @@ const MemberLoginPage: NextPage = () => {
           <hr className="border-t border-neutral-200 w-1/4 sm:w-1/3" />
         </div>
         <div className="w-full mb-5">
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-center">
+          <div className="flex flex-col items-center">
             <Controller
               name="memberEmail"
               control={control}
@@ -107,19 +114,19 @@ const MemberLoginPage: NextPage = () => {
                 />
               )}
             />
-            <button className="secondary mt-5" type="submit">
+            <Button className="secondary mt-5" type="submit" loading={isSubmitting}>
               Login
-            </button>
-          </form>
+            </Button>
+          </div>
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
-        <span className="font-medium text-xs text-neutral-800">
+        <div className="font-medium text-xs text-neutral-800 text-center ">
           Don&apos;t have an account?{' '}
-          <span className="text-primary-900" onClick={() => router.replace('/onboarding/sign-up')}>
+          <span className="text-primary-900 cursor-pointer" onClick={() => router.replace('/onboarding/sign-up')}>
             Create an account.
           </span>
-        </span>
-      </div>
+        </div>
+      </Form>
     </div>
   );
 };

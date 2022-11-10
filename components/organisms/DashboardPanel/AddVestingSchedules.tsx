@@ -118,20 +118,11 @@ AddVestingSchedulesProps) => {
   const [status, setStatus] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
   const [insufficientBalance, setInsufficientBalance] = useState(false);
-  const [transaction, setTransaction] = useState<ITransaction | undefined>();
+  const [transaction, setTransaction] = useState<{ id: string; data: ITransaction | undefined }>();
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
 
-  // const totalVestingAmount = useMemo(() => {
-  //   let result = 0;
-  //   vestings
-  //     .filter((vesting) => vesting.data.status !== 'SUCCESS')
-  //     .forEach((vesting) => (result += parseFloat(vesting.data.details.amountToBeVested as unknown as string)));
-  //   return result;
-  // }, [vestings]);
-  // console.log({ totalVestingAmount, vestings });
   const handleDeployVestingContract = async () => {
-    console.log('handleDeployVestingContract');
     if (!account) {
       activate(injected);
       return;
@@ -231,16 +222,6 @@ AddVestingSchedulesProps) => {
       );
       const vestingCliffAmounts = new Array(vesting.recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
 
-      console.log({
-        addresses,
-        vestingStartTimestamps,
-        vestingEndTimestamps,
-        vestingCliffTimestamps,
-        vestingReleaseIntervals,
-        vestingLinearVestAmounts,
-        vestingCliffAmounts
-      });
-
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
       const CREATE_CLAIMS_BATCH_INTERFACE =
@@ -270,7 +251,6 @@ AddVestingSchedulesProps) => {
           data: createClaimsBatchEncoded,
           value: '0'
         };
-        console.log({ txData });
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
         const signature = await safeSdk.signTransactionHash(txHash);
@@ -300,14 +280,17 @@ AddVestingSchedulesProps) => {
             organizationId: organizationId
           });
           setTransaction({
-            hash: txHash,
-            safeHash: '',
-            status: 'PENDING',
-            to: vestingContract?.data?.address ?? '',
-            type: 'ADDING_CLAIMS',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
-            organizationId: organizationId
+            id: transactionId,
+            data: {
+              hash: txHash,
+              safeHash: '',
+              status: 'PENDING',
+              to: vestingContract?.data?.address ?? '',
+              type: 'ADDING_CLAIMS',
+              createdAt: Math.floor(new Date().getTime() / 1000),
+              updatedAt: Math.floor(new Date().getTime() / 1000),
+              organizationId: organizationId
+            }
           });
           updateVesting(
             {
@@ -339,17 +322,19 @@ AddVestingSchedulesProps) => {
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
         });
-        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction?.hash);
-        console.log({ apiTx });
+        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
+          transaction?.data?.hash as string
+        );
+
         const safeTx = await safeSdk.createTransaction({
           safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
         });
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
+        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.hash as string);
         await approveTxResponse.transactionResponse?.wait();
-        fetchSafeTransactionFromHash(transaction.hash);
+        fetchSafeTransactionFromHash(transaction?.data?.hash as string);
         setApproved(true);
         toast.success('Approved successfully.');
         // const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
@@ -374,28 +359,29 @@ AddVestingSchedulesProps) => {
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
         });
-        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction?.hash);
-        console.log({ apiTx });
+        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
+          transaction?.data?.hash as string
+        );
+
         const safeTx = await safeSdk.createTransaction({
           safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
         });
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        console.log({ safeTx });
-        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
+        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         await executeTransactionResponse.transactionResponse?.wait();
-
-        updateTransaction(
-          {
-            ...transaction,
-            status: 'SUCCESS'
-          },
-          vestings[activeVestingIndex].data.transactionId
-        );
+        if (transaction.data)
+          updateTransaction(
+            {
+              ...transaction.data,
+              status: 'SUCCESS'
+            },
+            vestings[activeVestingIndex].data.transactionId
+          );
         toast.success('Executed successfully.');
       }
     } catch (err) {
@@ -456,7 +442,7 @@ AddVestingSchedulesProps) => {
     },
     transferToMultisigSafe: {
       icon: <WarningIcon className="w-4 h-4" />,
-      label: 'Mandatory',
+      label: 'Transfer Ownership to Multisig',
       actions: (
         <>
           <button className="line primary" disabled onClick={() => {}}>
@@ -464,7 +450,7 @@ AddVestingSchedulesProps) => {
           </button>
           <button className="black row-center" onClick={handleTransferOwnership}>
             <img src="/images/multi-sig.png" className="w-6 h-6" aria-hidden="true" />
-            Transfer ownership
+            Transfer ownership to Multi-sig Safe
           </button>
         </>
       )
@@ -474,7 +460,7 @@ AddVestingSchedulesProps) => {
       label: 'Funding required',
       actions: (
         <>
-          <button className="secondary" onClick={() => setShowFundingContractModal(true)}>
+          <button className="secondary" onClick={() => {}}>
             Fund contract
           </button>
           <button className="line primary" onClick={() => {}}>
@@ -530,7 +516,6 @@ AddVestingSchedulesProps) => {
         ethAdapter
       });
       const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(txHash);
-      console.log({ apiTx });
       const safeTx = await safeSdk.createTransaction({
         safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
       });
@@ -545,7 +530,7 @@ AddVestingSchedulesProps) => {
     if (vestings && vestings.length > 0 && type !== 'fundContract') {
       const vesting = vestings[activeVestingIndex].data;
       if (vesting && vesting.transactionId) {
-        fetchTransaction(vesting.transactionId).then((res) => setTransaction(res));
+        fetchTransaction(vesting.transactionId).then((res) => setTransaction({ id: vesting.transactionId, data: res }));
       } else if (!vesting.transactionId) {
         setTransaction(undefined);
         setSafeTransaction(undefined);
@@ -557,8 +542,8 @@ AddVestingSchedulesProps) => {
   }, [vestings, activeVestingIndex, type]);
 
   useEffect(() => {
-    if (transaction?.hash) {
-      fetchSafeTransactionFromHash(transaction.hash);
+    if (transaction?.data?.hash) {
+      fetchSafeTransactionFromHash(transaction.data.hash);
     }
   }, [transaction, account]);
 
@@ -579,32 +564,34 @@ AddVestingSchedulesProps) => {
   }, [type, transaction]);
 
   useEffect(() => {
-    if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address) {
-      const vesting = vestings[activeVestingIndex];
-      const tokenContract = new ethers.Contract(
-        mintFormState.address,
-        [
-          // Read-Only Functions
-          'function balanceOf(address owner) view returns (uint256)',
-          'function decimals() view returns (uint8)',
-          'function symbol() view returns (string)',
-          // Authenticated Functions
-          'function transfer(address to, uint amount) returns (bool)',
-          // Events
-          'event Transfer(address indexed from, address indexed to, uint amount)'
-        ],
-        ethers.getDefaultProvider(
-          `https://${process.env.NEXT_PUBLIC_TEST_NETWORK_NAME}.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`
-        )
-      );
-      // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
-      tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
-        if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
-          setInsufficientBalance(true);
-        }
-      });
+    if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {
+      try {
+        const vesting = vestings[activeVestingIndex];
+        const tokenContract = new ethers.Contract(
+          mintFormState.address,
+          [
+            // Read-Only Functions
+            'function balanceOf(address owner) view returns (uint256)',
+            'function decimals() view returns (uint8)',
+            'function symbol() view returns (string)',
+            // Authenticated Functions
+            'function transfer(address to, uint amount) returns (bool)',
+            // Events
+            'event Transfer(address indexed from, address indexed to, uint amount)'
+          ],
+          ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+        );
+        // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
+        tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
+          if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
+            setInsufficientBalance(true);
+          }
+        });
+      } catch (err) {
+        console.log('vestingContract balance - ', err);
+      }
     }
-  }, [vestingContract, activeVestingIndex, vestings, mintFormState]);
+  }, [vestingContract, activeVestingIndex, vestings, mintFormState, chainId]);
 
   useEffect(() => {
     if (account && safeTransaction && safe) {
@@ -612,18 +599,11 @@ AddVestingSchedulesProps) => {
       if (safeTransaction.signatures.size === safe?.owners.length) {
         setExecutable(true);
       }
-      setStatus('authRequired');
+      if (transaction?.data?.status === 'SUCCESS') {
+        setStatus('success');
+      } else setStatus('authRequired');
     }
-  }, [safeTransaction, account, safe]);
-
-  // SAMPLE DATA FOR THE FUNDING CONTRACT
-  const sampleFundingContractDetails: IFundContractProps = {
-    logo: '/images/biconomy-logo.png',
-    name: 'Biconomy',
-    symbol: 'BICO',
-    address: '0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5',
-    amount: '25000'
-  };
+  }, [safeTransaction, account, safe, transaction]);
 
   return (
     <div className={`panel ${className} mb-5`}>
@@ -636,7 +616,7 @@ AddVestingSchedulesProps) => {
                 {statuses.fundingRequired.label}
               </p>
             }
-            color={'warningAlt'}
+            color={'warning'}
             rounded
           />
         ) : status ? (
@@ -671,13 +651,9 @@ AddVestingSchedulesProps) => {
             <ScheduleOverview {...vestings[activeVestingIndex].data} />
           ) : null
         ) : null}
-        {type === 'fundContract' && (
-          <FundContract
-            address={vestingContract?.data?.address || ''}
-            amount={depositAmount}
-            symbol={mintFormState.symbol}
-          />
-        )}
+        {/* {type === 'fundContract' && (
+          <FundContract address={vestingContract?.data?.address || ''} amount={depositAmount} />
+        )} */}
         {type === 'contract' ? (
           <ContractOverview
             tokenName={mintFormState.name}
@@ -712,11 +688,6 @@ AddVestingSchedulesProps) => {
           </div>
         )}
       </div>
-      <FundingContractModal
-        isOpen={showFundingContractModal}
-        onClose={() => setShowFundingContractModal(false)}
-        contract={sampleFundingContractDetails}
-      />
     </div>
   );
 };

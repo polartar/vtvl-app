@@ -45,7 +45,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   };
 
   const handleMaxChange = () => {
-    setValue('toClaim', getValues('claimable'));
+    setValue('toClaim', +getValues('claimable'));
   };
 
   const [error, setError] = useState(false);
@@ -284,8 +284,8 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                 label="Claimable tokens"
                 maximumLabel="Total claimable tokens"
                 required
-                initial={toClaim.value}
-                maximum={claimable.value}
+                initial={+toClaim.value}
+                maximum={+claimable.value}
                 onMinChange={handleMinChange}
                 onUseMax={handleMaxChange}
                 maxReadOnly

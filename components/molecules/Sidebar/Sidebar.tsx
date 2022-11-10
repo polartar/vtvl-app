@@ -12,6 +12,7 @@ interface SubMenuItemProps {
   title: string;
   icon: string;
   route: string;
+  available?: boolean;
 }
 
 interface MenuItemProps extends SubMenuItemProps {
@@ -42,7 +43,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
         src="/icons/collapse-btn.svg"
         alt="toggle sidebar"
         onClick={expandSidebar}
-        className={`absolute top-8 -right-2 h-4 w-4 cursor-pointer transform-gpu transition-all ${
+        className={`absolute top-8 -right-2 h-4 w-4 cursor-pointer transform-gpu transition-all rounded-full ${
           sidebarIsExpanded ? 'rotate-180' : ''
         }`}
         data-tip="Toggle sidebar"
@@ -54,27 +55,29 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
             key={index}
             selected={selectedRoute.includes(menu.route)}
             hovered={false}
-            onClick={() => handleMenuClick(menu.route)}
+            onClick={() => menu.available ? handleMenuClick(menu.route) : {}}
             icon={menu.icon}
             hoverIcon={menu.hoverIcon}
-            className={`${sidebarIsExpanded ? 'w-60' : ''}`}>
+            className={`${sidebarIsExpanded ? 'w-60' : ''} ${!menu.available ? 'opacity-40' : ''}`}>
             <span
               className={`transition-width overflow-hidden whitespace-nowrap ${
                 sidebarIsExpanded ? '' : 'opacity-0 w-0'
               }`}>
-              {menu.title}
+              <p>{menu.title}</p>
+              { !menu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null }
             </span>
           </SidebarItem>
         ))}
       </div>
       <div>
         {submenuList.map((submenu, index) => (
-          <IconText key={index} sideIcon={submenu.icon}>
+          <IconText key={index} sideIcon={submenu.icon} className={`${!submenu.available ? 'opacity-40' : ''}`}>
             <span
               className={`transition-width overflow-hidden whitespace-nowrap ${
                 sidebarIsExpanded ? '' : 'opacity-0 w-0'
               }`}>
-              {submenu.title}
+              <p>{submenu.title}</p>
+              { !submenu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null }
             </span>
           </IconText>
         ))}

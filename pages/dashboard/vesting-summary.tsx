@@ -5,6 +5,7 @@ import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/Limi
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import ScheduleSummary from '@components/molecules/ScheduleSummary/ScheduleSummary';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useTokenContext } from '@providers/token.context';
 import Router, { useRouter } from 'next/router';
 import { ReactElement, useEffect, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -17,6 +18,7 @@ interface IVestingSummaryData {
 }
 
 const DashboardVestingSummary: NextPageWithLayout = () => {
+  const { mintFormState } = useTokenContext();
   // Use form to initially assign default values
   const {
     handleSubmit,
@@ -79,7 +81,7 @@ const DashboardVestingSummary: NextPageWithLayout = () => {
     token: 'BICO'
   };
 
-  const tokenSupply = 100000;
+  const tokenSupply = mintFormState.initialSupply || 100000;
 
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
 
@@ -128,7 +130,7 @@ const DashboardVestingSummary: NextPageWithLayout = () => {
         <div className="py-5 mb-5 border-b border-neutral-200">
           <ScheduleDetails
             {...sampleSchedule}
-            token="BICO"
+            token={mintFormState.symbol || 'Token'}
             cliffDuration="1-day"
             releaseFrequency="weekly"
             hint={false}
@@ -147,10 +149,10 @@ const DashboardVestingSummary: NextPageWithLayout = () => {
             <LimitedSupply
               label="Amount to be vested"
               required
-              initial={amountToBeVested.value}
-              maximum={tokenSupply}
+              initial={+amountToBeVested.value}
+              maximum={+tokenSupply}
               onMinChange={handleMinChange}
-              onUseMax={() => setValue('amountToBeVested', tokenSupply)}
+              onUseMax={() => setValue('amountToBeVested', +tokenSupply)}
               maxReadOnly
             />
           </div>

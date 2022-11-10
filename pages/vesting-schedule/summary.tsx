@@ -264,10 +264,10 @@ const ScheduleSummary: NextPageWithLayout = () => {
           </label>
         </div>
         <div className="py-5 border-b border-neutral-200">
-          <ScheduleDetails {...scheduleFormState} token="BICO" />
+          <ScheduleDetails {...scheduleFormState} token={mintFormState.symbol || 'Token'} />
         </div>
         <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-          <BackButton label="Return to add recipient" onClick={() => {}} />
+          <BackButton label="Return to add recipient" href="/vesting-schedule/add-beneficiary" />
           <button
             className="primary"
             type="button"

@@ -66,7 +66,7 @@ const Button = (props: ButtonProps) => {
   return (
     <button
       {...props}
-      className={`relative ${getClassNames()} ${props.className}`}
+      className={`relative ${getClassNames()} ${props.className} ${props.loading ? 'loading' : ''}`}
       disabled={props.loading || props.disabled}>
       {/* Used opacity to preserve the current width of the button when it is doing the loading state */}
       <span className={`transition-all block transform-gpu ${props.loading ? 'opacity-0 translate-x-1.5' : ''}`}>
