@@ -297,8 +297,8 @@
     @apply py-3 py-6 text-lg;
   }
 
-  button[disabled]:not(.wallet-button),
-  button:disabled:not(.wallet-button) {
+  button[disabled]:not(.wallet-button):not(.loading),
+  button:disabled:not(.wallet-button):not(.loading) {
     @apply bg-primary-50 border border-primary-400 text-primary-300 !important;
   }
 
@@ -445,7 +445,7 @@
   }
 
   .form > fieldset {
-    @apply bg-white p-6 rounded-3xl;
+    @apply bg-white p-6 rounded-3xl w-full;
   }
 
   label > div.error > input,
