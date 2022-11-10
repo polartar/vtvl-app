@@ -13,6 +13,7 @@ import { StaticTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { PickersActionBarProps } from '@mui/x-date-pickers/PickersActionBar';
+import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import add from 'date-fns/add';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
@@ -55,6 +56,7 @@ interface CustomActionBarProps {
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { account } = useWeb3React();
   const { scheduleFormState, updateScheduleFormState } = useVestingContext();
+  const { mintFormState } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formMessage, setFormMessage] = useState('');
@@ -94,7 +96,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
 
   // Supporting variables
-  const tokenSupply = 100000;
+  const tokenSupply = mintFormState.initialSupply || 100000;
 
   const cliffOptions = [
     { label: 'No cliff', value: 'no-cliff' },
@@ -597,10 +599,11 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     <CreatableSelect
                       onCreateOption={onCreateTemplate}
                       options={templateOptions}
+                      isClearable
                       {...field}
                       value={field.value}
                       onChange={onTemplateChange}
-                      placeholder="Find or create template"
+                      placeholder="Find or type to create template"
                       noOptionsMessage={() => 'Type to create a template'}
                       className="select-container"
                       classNamePrefix="select"
@@ -612,7 +615,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 )}
               />
             </div>
-            <ScheduleDetails {...getValues()} token="BICO" layout="small" />
+            <ScheduleDetails {...getValues()} token={mintFormState.symbol || 'Token'} layout="small" />
           </div>
         </div>
       </div>

@@ -4,11 +4,12 @@ import React from 'react';
 interface Props {
   sideIcon?: string;
   children: string | JSX.Element;
+  className?: string;
 }
 
-const IconText = ({ sideIcon, children }: Props) => {
+const IconText = ({ sideIcon, children, className='' }: Props) => {
   return (
-    <IconTextContainer>
+    <IconTextContainer className={className}>
       <img src={sideIcon ? sideIcon : '/icons/sidebarItem.svg'} alt="sideIcon" />
       {children}
     </IconTextContainer>

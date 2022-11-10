@@ -14,7 +14,7 @@ const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
       <img
         src={profilePhoto || '/images/user.png'}
         alt="userImg"
-        className={`transition-all ${compact ? 'mx-1' : 'mx-3'}`}
+        className={`transition-all rounded-full ${compact ? 'mx-1' : 'mx-3'}`}
       />
       <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
         <p>{userName}</p>
