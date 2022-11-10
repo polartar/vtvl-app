@@ -18,7 +18,7 @@ const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
       />
       <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
         <p>{userName}</p>
-        <p>{role}</p>
+        <p className="capitalize">{role}</p>
       </div>
     </UserContainer>
   );
