@@ -13,7 +13,8 @@ export const injected = new InjectedConnector({
     SupportedChainId.POLYGON,
     SupportedChainId.AVALANCHE,
     SupportedChainId.FANTOM,
-    SupportedChainId.CRONOS
+    SupportedChainId.CRONOS,
+    SupportedChainId.MUMBAI
   ]
 });
 
@@ -29,7 +30,8 @@ export const network = new NetworkConnector({
     [SupportedChainId.POLYGON]: SupportedChains[SupportedChainId.POLYGON].rpc,
     [SupportedChainId.AVALANCHE]: SupportedChains[SupportedChainId.AVALANCHE].rpc,
     [SupportedChainId.FANTOM]: SupportedChains[SupportedChainId.FANTOM].rpc,
-    [SupportedChainId.CRONOS]: SupportedChains[SupportedChainId.CRONOS].rpc
+    [SupportedChainId.CRONOS]: SupportedChains[SupportedChainId.CRONOS].rpc,
+    [SupportedChainId.MUMBAI]: SupportedChains[SupportedChainId.MUMBAI].rpc
   },
   defaultChainId: 1
 });

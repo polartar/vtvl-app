@@ -8,6 +8,7 @@ import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
+import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction, IVesting, IVestingContract } from 'types/models';
 import { IRecipient } from 'types/vesting';
 import { parseTokenAmount } from 'utils/token';
@@ -31,7 +32,7 @@ interface IDashboardData {
 const DashboardContext = createContext({} as IDashboardData);
 
 export function DashboardContextProvider({ children }: any) {
-  const { account } = useWeb3React();
+  const { account, chainId } = useWeb3React();
   const { mintFormState } = useTokenContext();
   const { organizationId, safe } = useAuthContext();
 
@@ -43,7 +44,7 @@ export function DashboardContextProvider({ children }: any) {
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
-  console.log({ depositAmount });
+
   const fetchDashboardVestingContract = () => {
     if (organizationId)
       fetchVestingContractByQuery('organizationId', '==', organizationId).then((res) => {
@@ -85,7 +86,7 @@ export function DashboardContextProvider({ children }: any) {
   }, [organizationId]);
 
   useEffect(() => {
-    if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address) {
+    if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {
       let totalVestingAmount = 0;
       vestings
         .filter((vesting) => vesting.data.status !== 'SUCCESS')
@@ -104,13 +105,10 @@ export function DashboardContextProvider({ children }: any) {
           // Events
           'event Transfer(address indexed from, address indexed to, uint amount)'
         ],
-        ethers.getDefaultProvider(
-          `https://${process.env.NEXT_PUBLIC_TEST_NETWORK_NAME}.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`
-        )
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
       // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
       tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
-        console.log({ res });
         if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(totalVestingAmount)))) {
           setInsufficientBalance(true);
           setDepositAmount(
@@ -129,22 +127,20 @@ export function DashboardContextProvider({ children }: any) {
     }
     setInsufficientBalance(false);
     setDepositAmount('');
-  }, [vestingContract, vestings, mintFormState]);
+  }, [vestingContract, vestings, mintFormState, chainId]);
 
   useEffect(() => {
-    if (vestingContract?.data && safe?.address) {
+    if (vestingContract?.data && safe?.address && chainId) {
       const VestingContract = new ethers.Contract(
         vestingContract.data.address,
         VTVL_VESTING_ABI.abi,
-        ethers.getDefaultProvider(
-          `https://${process.env.NEXT_PUBLIC_TEST_NETWORK_NAME}.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`
-        )
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
       VestingContract.isAdmin(safe.address).then((res: any) => {
         setOwnershipTransfered(res);
       });
     }
-  }, [organizationId, vestingContract, safe, ownershipTransfered]);
+  }, [organizationId, vestingContract, safe, ownershipTransfered, chainId]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

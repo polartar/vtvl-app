@@ -3,7 +3,6 @@ import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
 import AddVestingSchedules from '@components/organisms/DashboardPanel/AddVestingSchedules';
-import DashboardPanel from '@components/organisms/DashboardPanel/DashboardPanel';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
@@ -35,7 +34,7 @@ const Dashboard: NextPageWithLayout = () => {
   const { recipients, scheduleFormState } = useVestingContext();
   const { vestings, vestingContract, transactions, ownershipTransfered, insufficientBalance, depositAmount } =
     useDashboardContext();
-  console.log({ insufficientBalance });
+
   const router = useRouter();
   const activities = [
     {
