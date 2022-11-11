@@ -35,7 +35,7 @@ const Complete: NextPageWithLayout = () => {
           Continue later
           <ArrowIcon className="fill-current transform rotate-180" />
         </a>
-        <button className="primary" type="button" onClick={() => Router.push('/vesting-schedule/configure')}>
+        <button className="primary" type="button" onClick={() => Router.push('/dashboard')}>
           Create vesting contract
         </button>
       </div>
