@@ -42,6 +42,7 @@ const SignUpPage: NextPage = () => {
   const googleSignIn = async () => {
     try {
       const newLogin = await signInWithGoogle();
+      if (newLogin?.isFirstLogin) startOnboarding(Step.SignUp);
       onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
     } catch (error) {
       console.error(error);

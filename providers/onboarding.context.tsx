@@ -91,7 +91,6 @@ export function OnboardingContextProvider({ children }: any) {
   const onPrevious = () => {
     if (!currentStep) throw new Error('invalid route onboarding context');
     const prevstep = currentStep == Step.ChainSetup ? currentStep : currentStep - 1;
-    if (!States[prevstep as Step].route) throw new Error('invalid route onboarding context');
     if (!States[prevstep as Step].route) return;
     setCurrentStep(prevstep);
     router.replace(States[prevstep as Step].route);
@@ -111,7 +110,7 @@ export function OnboardingContextProvider({ children }: any) {
 
     if (currentStep === Step.ChainSetup) setInProgress(true);
 
-    if (currentStep === Step.SignUp && !isNewUser) {
+    if (currentStep === Step.SignUp && !isFirstTimeUser) {
       completeOnboarding();
       return;
     }
