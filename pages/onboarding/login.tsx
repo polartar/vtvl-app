@@ -1,6 +1,6 @@
 import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
-import OnboardingContext from '@providers/onboarding.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import { useContext } from 'react';
@@ -14,7 +14,7 @@ type LoginForm = {
 
 const LoginPage: NextPage = () => {
   const { signInWithEmail, signInWithGoogle, anonymousSignIn } = useContext(AuthContext);
-  const { onNext } = useContext(OnboardingContext);
+  const { onNext, startOnboarding } = useContext(OnboardingContext);
 
   const {
     control,
@@ -53,9 +53,8 @@ const LoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    console.log('is this a new user???....', newLogin?.isFirstLogin);
-    console.log('completing setup');
-    await onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
+    if(newLogin?.isFirstLogin) startOnboarding(Step.SignUp);
+    onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   return (

@@ -5,19 +5,20 @@ import {
   getAdditionalUserInfo,
   isSignInWithEmailLink,
   onAuthStateChanged,
-  sendSignInLinkToEmail,
   signInAnonymously,
   signInWithEmailAndPassword,
   signInWithEmailLink,
   signInWithPopup,
-  signOut
+  signOut,
+  setPersistence,
+  browserSessionPersistence
 } from 'firebase/auth';
 import useEagerConnect from 'hooks/useEagerConnect';
 import Router from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
-import { createOrg, fetchOrg, fetchOrgByQuery } from 'services/db/organization';
+import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
 import { fetchSafeByQuery } from 'services/db/safe';
 import { IMember, IOrganization, ISafe, IUser } from 'types/models';
 
@@ -78,10 +79,13 @@ export function AuthContextProvider({ children }: any) {
 
   const signInWithGoogle = async (): Promise<NewLogin | undefined> => {
     setLoading(true);
+
+    await setPersistence(auth, browserSessionPersistence);
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
     const additionalInfo = getAdditionalUserInfo(credential);
     const memberInfo = await fetchMember(credential.user.uid);
-    if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
+    console.log("FOR CRYING OUT LOUD IS THIS ANEW USER OR NOT!!! ", additionalInfo?.isNewUser)
+    if (additionalInfo?.isNewUser) {
       await newMember(credential.user.uid, {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
@@ -97,6 +101,7 @@ export function AuthContextProvider({ children }: any) {
 
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true);
+    await setPersistence(auth, browserSessionPersistence)
     const credential = await signInWithEmailAndPassword(auth, email, password);
     const memberInfo = await fetchMember(credential.user.uid);
     const additionalInfo = getAdditionalUserInfo(credential);
@@ -108,10 +113,11 @@ export function AuthContextProvider({ children }: any) {
 
   const signUpWithEmail = async (email: string, password: string) => {
     setLoading(true);
+    await setPersistence(auth, browserSessionPersistence)
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     const memberInfo = await fetchMember(credential.user.uid);
     const additionalInfo = getAdditionalUserInfo(credential);
-    if (!memberInfo || (additionalInfo?.isNewUser && credential.user.email)) {
+    if (additionalInfo?.isNewUser) {
       await newMember(credential.user.uid, {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
@@ -131,19 +137,25 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     if (!user) throw new Error('please sign in to setup your account');
 
-    const orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
+    const existingOrg = await fetchOrgByQuery('email', '==', user?.email || '');
+    let orgId;
+    if(existingOrg?.id) {
+      await updateOrg({ name: org.name, email: org.email, user_id: user?.uid }, existingOrg.id)
+    } else {
+      orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
+    }
 
     const memberInfo: IMember = {
       email: member.email || '',
       companyEmail: member.email || user.email || '',
       name: user.displayName || '',
       type: member.type,
-      org_id: orgId,
+      org_id: existingOrg?.id || orgId,
       joined: Math.floor(new Date().getTime() / 1000)
     };
 
     await newMember(user.uid, memberInfo);
-    setOrganizationId(orgId);
+    setOrganizationId(existingOrg?.id || orgId);
     setUser({ ...user, memberInfo });
     setIsNewUser(true);
     setLoading(false);
@@ -152,6 +164,8 @@ export function AuthContextProvider({ children }: any) {
   const emailSignUp = async (email: string, type: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
+    await setPersistence(auth, browserSessionPersistence)
+
     const isValidLink = isSignInWithEmailLink(auth, url || '');
     if (!isValidLink || !email) throw new Error('invalid sign url');
 
@@ -177,6 +191,8 @@ export function AuthContextProvider({ children }: any) {
   const teammateSignIn = async (email: string, type: string, orgId: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
+    await setPersistence(auth, browserSessionPersistence)
+
     const isValidLink = isSignInWithEmailLink(auth, url || '');
     if (!isValidLink || !email) throw new Error('invalid sign url');
 

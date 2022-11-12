@@ -4,10 +4,10 @@ export enum SupportedChainId {
   GOERLI = 5,
   KOVAN = 42,
   BINANCE = 56,
-  POLYGON = 137 || 80001,
+  POLYGON = 137,
   AVALANCHE = 43114,
-  FANTOM = 250,
-  CRONOS = 25,
+  FANTOM = 250 || 4002,
+  CRONOS = 25 || 338,
   MUMBAI = 80001
 }
 
@@ -24,7 +24,7 @@ type SupportedChainsType = {
   [P in SupportedChainId]: Network;
 };
 
-export const SupportedChains: SupportedChainsType = {
+export const prodSupportedChains: SupportedChainsType = {
   [SupportedChainId.MAINNET]: {
     id: 1,
     icon: '/icons/chains/ethereum.svg',
@@ -117,89 +117,98 @@ export const SupportedChains: SupportedChainsType = {
   }
 };
 
-// const devSupportedChains: SupportedChainsType = {
-//   [SupportedChainId.MAINNET]: {
-//     id: 5,
-//     icon: '/icons/chains/ethereum.svg',
-//     title: 'Mainnet-Test',
-//     code: 'ETH',
-//     rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-//     explorer: 'https://goerli.etherscan.io',
-//     multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
-//   },
-//   [SupportedChainId.ROPSTEN]: {
-//     id: 3,
-//     icon: '/icons/chains/ethereum.svg',
-//     title: 'Ropsten',
-//     code: 'ETH',
-//     rpc: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-//     explorer: 'https://ropsten.etherscan.io',
-//     multisigTxUrl: ''
-//   },
-//   [SupportedChainId.GOERLI]: {
-//     id: 5,
-//     icon: '/icons/chains/ethereum.svg',
-//     title: 'Goerli',
-//     code: 'ETH',
-//     rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-//     explorer: 'https://goerli.etherscan.io',
-//     multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
-//   },
-//   [SupportedChainId.KOVAN]: {
-//     id: 42,
-//     icon: '/icons/chains/ethereum.svg',
-//     title: 'Kovan',
-//     code: 'ETH',
-//     rpc: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-//     explorer: 'https://kovan.etherscan.io',
-//     multisigTxUrl: ''
-//   },
-//   [SupportedChainId.BINANCE]: {
-//     id: 56,
-//     icon: '/icons/chains/bsc.svg',
-//     title: 'Binance Smart Chain Testnet',
-//     code: 'BSC',
-//     rpc: 'https://speedy-nodes-nyc.moralis.io/476f8ed27ca8c180ebc32f48/bsc/testnet',
-//     explorer: 'https://testnet.bscscan.com',
-//     multisigTxUrl: ''
-//   },
-//   [SupportedChainId.MUMBAI]: {
-//     id: 80001,
-//     icon: '/icons/chains/polygon.svg',
-//     title: 'Polygon Mumbai Testnet',
-//     code: 'MATIC',
-//     rpc: 'https://rpc-mumbai.maticvigil.com',
-//     explorer: 'https://mumbai.polygonscan.com',
-//     multisigTxUrl: ''
-//   },
-//   [SupportedChainId.AVALANCHE]: {
-//     id: 43113,
-//     icon: '/icons/chains/avalanche.svg',
-//     title: 'Avalanche Testnet',
-//     code: 'AVAX',
-//     rpc: 'https://api.avax-test.network/ext/bc/C/rpc',
-//     explorer: 'https://snowtrace.io/',
-//     multisigTxUrl: ''
-//   },
-//   [SupportedChainId.FANTOM]: {
-//     id: 4002,
-//     icon: '/icons/chains/fantom.svg',
-//     title: 'Fantom Testnet',
-//     code: 'FTM',
-//     rpc: 'https://rpc.testnet.fantom.network/',
-//     explorer: 'https://ftmscan.com/',
-//     multisigTxUrl: ''
-//   },
-//   [SupportedChainId.CRONOS]: {
-//     id: 338,
-//     icon: '/icons/chains/cronos.svg',
-//     title: 'Cronos Testnet',
-//     code: 'CRO',
-//     rpc: 'https://cronos-testnet-3.crypto.org:8545/',
-//     explorer: 'https://cronos.crypto.org/explorer/testnet3/',
-//     multisigTxUrl: ''
-//   }
-// };
+const devSupportedChains: SupportedChainsType = {
+  [SupportedChainId.MAINNET]: {
+    id: 5,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Mainnet-Test',
+    code: 'ETH',
+    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    explorer: 'https://goerli.etherscan.io',
+    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
+  },
+  [SupportedChainId.ROPSTEN]: {
+    id: 3,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Ropsten',
+    code: 'ETH',
+    rpc: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    explorer: 'https://ropsten.etherscan.io',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.GOERLI]: {
+    id: 5,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Goerli',
+    code: 'ETH',
+    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    explorer: 'https://goerli.etherscan.io',
+    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
+  },
+  [SupportedChainId.KOVAN]: {
+    id: 42,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Kovan',
+    code: 'ETH',
+    rpc: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    explorer: 'https://kovan.etherscan.io',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.BINANCE]: {
+    id: 56,
+    icon: '/icons/chains/bsc.svg',
+    title: 'Binance Smart Chain Testnet',
+    code: 'BSC',
+    rpc: 'https://speedy-nodes-nyc.moralis.io/476f8ed27ca8c180ebc32f48/bsc/testnet',
+    explorer: 'https://testnet.bscscan.com',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.POLYGON]: {
+    id: 80001,
+    icon: '/icons/chains/polygon.svg',
+    title: 'Polygon Mumbai Testnet',
+    code: 'MATIC',
+    rpc: 'https://rpc-mumbai.maticvigil.com',
+    explorer: 'https://mumbai.polygonscan.com',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.AVALANCHE]: {
+    id: 43113,
+    icon: '/icons/chains/avalanche.svg',
+    title: 'Avalanche Testnet',
+    code: 'AVAX',
+    rpc: 'https://api.avax-test.network/ext/bc/C/rpc',
+    explorer: 'https://snowtrace.io/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.FANTOM]: {
+    id: 4002,
+    icon: '/icons/chains/fantom.svg',
+    title: 'Fantom Testnet',
+    code: 'FTM',
+    rpc: 'https://rpc.testnet.fantom.network/',
+    explorer: 'https://ftmscan.com/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.CRONOS]: {
+    id: 338,
+    icon: '/icons/chains/cronos.svg',
+    title: 'Cronos Testnet',
+    code: 'CRO',
+    rpc: 'https://cronos-testnet-3.crypto.org:8545/',
+    explorer: 'https://cronos.crypto.org/explorer/testnet3/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.MUMBAI]: {
+    id: 80001,
+    icon: '/icons/chains/polygon.svg',
+    title: 'Polygon Mumbai Testnet',
+    code: 'MATIC',
+    rpc: 'https://rpc-mumbai.maticvigil.com',
+    explorer: 'https://mumbai.polygonscan.com',
+    multisigTxUrl: ''
+  }
+};
 
 const env = process.env.VERCEL_ENV || process.env.NODE_ENV;
-console.log('env var here is ', env);
+export const SupportedChains = env === 'production' ? prodSupportedChains : devSupportedChains;
