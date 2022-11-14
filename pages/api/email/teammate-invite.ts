@@ -1,9 +1,9 @@
+import dotenv from 'dotenv';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
 import SendMail, { MailTemplates } from 'utils/email';
-import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
 type Data = {
   message: string;

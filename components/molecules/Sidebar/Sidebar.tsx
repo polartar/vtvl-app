@@ -55,7 +55,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
             key={index}
             selected={selectedRoute.includes(menu.route)}
             hovered={false}
-            onClick={() => menu.available ? handleMenuClick(menu.route) : {}}
+            onClick={() => (menu.available ? handleMenuClick(menu.route) : {})}
             icon={menu.icon}
             hoverIcon={menu.hoverIcon}
             className={`${sidebarIsExpanded ? 'w-60' : ''} ${!menu.available ? 'opacity-40' : ''}`}>
@@ -64,7 +64,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
                 sidebarIsExpanded ? '' : 'opacity-0 w-0'
               }`}>
               <p>{menu.title}</p>
-              { !menu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null }
+              {!menu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
             </span>
           </SidebarItem>
         ))}
@@ -77,7 +77,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
                 sidebarIsExpanded ? '' : 'opacity-0 w-0'
               }`}>
               <p>{submenu.title}</p>
-              { !submenu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null }
+              {!submenu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
             </span>
           </IconText>
         ))}

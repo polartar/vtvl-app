@@ -41,11 +41,12 @@ const userTypes = {
 
 const SelectUserTypePage: NextPage = () => {
   const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
-  const { emailSignUp, user, isNewUser } = useContext(AuthContext);
+  const { emailSignUp, user } = useContext(AuthContext);
   const { active } = useWeb3React();
   const [selected, setSelected] = React.useState('');
   const [orgId, setOrgId] = React.useState('');
   const [userName, setUserName] = React.useState('');
+  const [isNewUser, setIsNewUser] = React.useState(false);
 
   useEffect(() => {
     startOnboarding(Step.UserTypeSetup);
@@ -53,16 +54,18 @@ const SelectUserTypePage: NextPage = () => {
     const name = params.searchParams.get('name');
     const orgId = params.searchParams.get('orgId');
     const email = params.searchParams.get('email');
+    const newUser: boolean = params.searchParams.get('newUser');
     setOrgId(orgId);
     setUserName(name);
-    if (email) loginWithUrl(email);
+    setIsNewUser(newUser);
+    if (email) loginWithUrl(email, newUser);
   }, []);
 
-  const loginWithUrl = async (email: string) => {
+  const loginWithUrl = async (email: string, newUser: boolean) => {
     try {
       await emailSignUp(email, '', window.location.toString());
-      if (!isNewUser) completeOnboarding();
-    } catch (error) {
+      if (!newUser) completeOnboarding();
+    } catch (error: any) {
       console.log('error ', error);
     }
   };

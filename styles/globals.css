@@ -552,7 +552,9 @@
   }
 
   /* Recharts override */
-  .recharts-cartesian-axis-tick-value { @apply text-xs text-neutral-800; }
+  .recharts-cartesian-axis-tick-value {
+    @apply text-xs text-neutral-800;
+  }
 }
 
 @layer components {

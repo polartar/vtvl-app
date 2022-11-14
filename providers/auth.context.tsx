@@ -1,17 +1,17 @@
 import axios from 'axios';
 import {
   GoogleAuthProvider,
+  browserSessionPersistence,
   createUserWithEmailAndPassword,
   getAdditionalUserInfo,
   isSignInWithEmailLink,
   onAuthStateChanged,
+  setPersistence,
   signInAnonymously,
   signInWithEmailAndPassword,
   signInWithEmailLink,
   signInWithPopup,
-  signOut,
-  setPersistence,
-  browserSessionPersistence
+  signOut
 } from 'firebase/auth';
 import useEagerConnect from 'hooks/useEagerConnect';
 import Router from 'next/router';
@@ -84,7 +84,7 @@ export function AuthContextProvider({ children }: any) {
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
     const additionalInfo = getAdditionalUserInfo(credential);
     const memberInfo = await fetchMember(credential.user.uid);
-    console.log("FOR CRYING OUT LOUD IS THIS ANEW USER OR NOT!!! ", additionalInfo?.isNewUser)
+    console.log('FOR CRYING OUT LOUD IS THIS ANEW USER OR NOT!!! ', additionalInfo?.isNewUser);
     if (additionalInfo?.isNewUser) {
       await newMember(credential.user.uid, {
         email: credential.user.email || '',
@@ -101,7 +101,7 @@ export function AuthContextProvider({ children }: any) {
 
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true);
-    await setPersistence(auth, browserSessionPersistence)
+    await setPersistence(auth, browserSessionPersistence);
     const credential = await signInWithEmailAndPassword(auth, email, password);
     const memberInfo = await fetchMember(credential.user.uid);
     const additionalInfo = getAdditionalUserInfo(credential);
@@ -113,7 +113,7 @@ export function AuthContextProvider({ children }: any) {
 
   const signUpWithEmail = async (email: string, password: string) => {
     setLoading(true);
-    await setPersistence(auth, browserSessionPersistence)
+    await setPersistence(auth, browserSessionPersistence);
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     const memberInfo = await fetchMember(credential.user.uid);
     const additionalInfo = getAdditionalUserInfo(credential);
@@ -139,8 +139,8 @@ export function AuthContextProvider({ children }: any) {
 
     const existingOrg = await fetchOrgByQuery('email', '==', user?.email || '');
     let orgId;
-    if(existingOrg?.id) {
-      await updateOrg({ name: org.name, email: org.email, user_id: user?.uid }, existingOrg.id)
+    if (existingOrg?.id) {
+      await updateOrg({ name: org.name, email: org.email, user_id: user?.uid }, existingOrg.id);
     } else {
       orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
     }
@@ -164,7 +164,7 @@ export function AuthContextProvider({ children }: any) {
   const emailSignUp = async (email: string, type: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
-    await setPersistence(auth, browserSessionPersistence)
+    await setPersistence(auth, browserSessionPersistence);
 
     const isValidLink = isSignInWithEmailLink(auth, url || '');
     if (!isValidLink || !email) throw new Error('invalid sign url');
@@ -191,7 +191,7 @@ export function AuthContextProvider({ children }: any) {
   const teammateSignIn = async (email: string, type: string, orgId: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
-    await setPersistence(auth, browserSessionPersistence)
+    await setPersistence(auth, browserSessionPersistence);
 
     const isValidLink = isSignInWithEmailLink(auth, url || '');
     if (!isValidLink || !email) throw new Error('invalid sign url');
@@ -226,7 +226,8 @@ export function AuthContextProvider({ children }: any) {
     console.log('sending login link here ', member);
     //TODO: abstract api calls
     await axios.post(`${window.location.origin || process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/email/login`, {
-      email
+      email,
+      newUser: member ? false : true
     });
     setLoading(false);
   };

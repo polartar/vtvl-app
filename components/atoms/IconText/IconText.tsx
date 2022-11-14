@@ -7,7 +7,7 @@ interface Props {
   className?: string;
 }
 
-const IconText = ({ sideIcon, children, className='' }: Props) => {
+const IconText = ({ sideIcon, children, className = '' }: Props) => {
   return (
     <IconTextContainer className={className}>
       <img src={sideIcon ? sideIcon : '/icons/sidebarItem.svg'} alt="sideIcon" />
