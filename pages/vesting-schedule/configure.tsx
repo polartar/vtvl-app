@@ -1,5 +1,6 @@
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
+import CreateLabel from '@components/atoms/CreateLabel/CreateLabel';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
@@ -13,20 +14,24 @@ import { StaticTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { PickersActionBarProps } from '@mui/x-date-pickers/PickersActionBar';
+import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import add from 'date-fns/add';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import format from 'date-fns/format';
+import { Timestamp } from 'firebase/firestore';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { INITIAL_VESTING_FORM_STATE, IScheduleFormState, useVestingContext } from 'providers/vesting.context';
+import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
 import { ElementType, ReactElement, forwardRef, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
+import { toast } from 'react-toastify';
+import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
 import { CLIFFDURATION_TIMESTAMP, CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
-import { SelectOptions } from 'types/shared';
+import { IVestingTemplate } from 'types/models';
 
 type DateTimeType = Date | null;
 
@@ -39,13 +44,8 @@ interface ScheduleFormTypes {
   amountToBeVested: number;
 }
 
-interface TemplateOptionTypes {
-  label: string | number;
-  value: string | number;
-}
-
 interface TemplateType {
-  template: SingleValue<TemplateOptionTypes>;
+  template?: SingleValue<IVestingTemplate> | undefined;
 }
 
 type CustomActionBarDateTimeField = 'startDate' | 'startTime' | 'endDate' | 'endTime';
@@ -54,6 +54,8 @@ interface CustomActionBarProps {
 }
 
 const ConfigureSchedule: NextPageWithLayout = () => {
+  const { organizationId } = useAuthContext();
+  // const organizationId = 'MYvgDyXEY5kCfxdIvtY8'; // Mock org id to test
   const { account } = useWeb3React();
   const { scheduleFormState, updateScheduleFormState } = useVestingContext();
   const { mintFormState } = useTokenContext();
@@ -68,13 +70,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     getFieldState,
     getValues,
     setValue,
-    formState: { errors, isSubmitted, isSubmitting }
+    formState: { errors, isValid, isValidating, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: scheduleFormState
   });
 
   // Set the default values for the template form
-  const defaultTemplateValue: TemplateType = { template: { label: '', value: '' } };
+  const defaultTemplateValue: TemplateType = {};
 
   // Use for to initially assign default values
   const { control: control2, setValue: setValue2 } = useForm({
@@ -92,6 +94,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const startDateTime = { value: watch('startDateTime'), state: getFieldState('startDateTime') };
   const endDateTime = { value: watch('endDateTime'), state: getFieldState('endDateTime') };
   const cliffDuration = { value: watch('cliffDuration'), state: getFieldState('cliffDuration') };
+  const lumpSumReleaseAfterCliff = {
+    value: watch('lumpSumReleaseAfterCliff'),
+    state: getFieldState('lumpSumReleaseAfterCliff')
+  };
   const releaseFrequency = { value: watch('releaseFrequency'), state: getFieldState('releaseFrequency') };
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
 
@@ -150,9 +156,32 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const createTemplate = (label: string) => ({ label, value: label.toLocaleLowerCase().replace(/W/g, '') });
   // Sets the initial default recipient options -- will probably need to adjust this later on.
   // Should base from data fetched from firestore
-  const templateDefaultOptions: SelectOptions[] = [];
+  const templateDefaultOptions: IVestingTemplate[] = [];
 
   const [templateOptions, setTemplateOptions] = useState(templateDefaultOptions);
+  const [templateLoading, setTemplateLoading] = useState(false);
+
+  // This function lets us parse the correct date format before displaying and using it across the schedule form and chart.
+  const getActualDateTime = (data: {
+    startDateTime: Date | null | undefined;
+    endDateTime: Date | null | undefined;
+  }) => {
+    let startDate;
+    let endDate;
+    try {
+      // Try first with the presumption that the dates provided are in Timestamp -- came from firebase.
+      startDate = new Date((data.startDateTime as unknown as Timestamp).toMillis());
+      endDate = new Date((data.endDateTime as unknown as Timestamp).toMillis());
+    } catch (err) {
+      // Catch it with the default as if it came from current form data
+      startDate = data.startDateTime;
+      endDate = data.endDateTime;
+    }
+    return {
+      startDate,
+      endDate
+    };
+  };
 
   /**
    * From https://react-select.com/creatable
@@ -162,30 +191,87 @@ const ConfigureSchedule: NextPageWithLayout = () => {
    * @param actionMeta
    */
   const onTemplateChange = (
-    newValue: OnChangeValue<TemplateOptionTypes, false>,
-    actionMeta: ActionMeta<TemplateOptionTypes>
+    newValue: OnChangeValue<IVestingTemplate, false>,
+    actionMeta: ActionMeta<IVestingTemplate>
   ) => {
-    console.group('Value Changed');
-    console.log(newValue);
-    console.log(`action: ${actionMeta.action}`);
-    console.groupEnd();
-    setValue2('template', newValue);
+    if (newValue) {
+      console.group('Value Changed');
+      console.log(newValue);
+      console.log(`action: ${actionMeta.action}`);
+      console.groupEnd();
+      setValue2('template', newValue);
+      handleTemplateChange(newValue?.details);
+    }
+    // To do Arvin: Update the vesting schedule configuration form values based on the template values
+  };
+
+  // This function updates the current form based on the selected template.
+  const handleTemplateChange = (details: IScheduleFormState) => {
+    // Due to dates are typed as Timestamps in firebase, we need to use a function for that.
+    const actualDateTime = getActualDateTime(details);
+    console.log('Changing template', actualDateTime.startDate, actualDateTime.endDate);
+    setValue('amountToBeVested', details.amountToBeVested);
+    setValue('startDateTime', actualDateTime.startDate);
+    setValue('endDateTime', actualDateTime.endDate);
+    setValue('releaseFrequency', details.releaseFrequency);
+    setValue('cliffDuration', details.cliffDuration);
+    setValue('lumpSumReleaseAfterCliff', details.lumpSumReleaseAfterCliff);
   };
 
   /**
    * From react-select
-   * Handles the onCreateOption event of the recipient type -- when the user tries to select own value.
-   * Automatically lowercase and remove spaces for the value key.
-   * To do: Save the newly added option to the database -- for all the recipient types data
+   * Handles the onCreateOption event of the template -- when the user tries to select own value.
+   * Save the newly added option to the database -- includes the vesting schedule configuration form datas a name and timestamps.
    * @param inputValue
    */
-  const onCreateTemplate = (inputValue: string) => {
-    const newOptions = createTemplate(inputValue);
-    setTemplateOptions([...templateOptions, newOptions]);
-    setValue2('template', newOptions);
+  const onCreateTemplate = async (inputValue: string) => {
+    setTemplateLoading(true);
+    try {
+      // Validate current values of the form
+      // Should not be the default values
+      if (organizationId && endDateTime.value && startDateTime.value) {
+        setValue2('template', null);
+        const selectOption = createTemplate(inputValue);
+        const newOption = {
+          name: selectOption.label,
+          label: selectOption.label,
+          value: selectOption.value,
+          details: {
+            startDateTime: startDateTime.value,
+            endDateTime: endDateTime.value,
+            cliffDuration: cliffDuration.value,
+            lumpSumReleaseAfterCliff: lumpSumReleaseAfterCliff.value,
+            releaseFrequency: releaseFrequency.value,
+            amountToBeVested: amountToBeVested.value
+          },
+          createdAt: Math.floor(new Date().getTime() / 1000),
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          organizationId: organizationId
+        };
+        const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
+        if (amountToBeVested.value && diffSeconds) {
+          const vestingTemplate = await createVestingTemplate(newOption);
+          console.log('Vesting template status', vestingTemplate);
+          setTemplateOptions([...templateOptions, newOption]);
+          setValue2('template', newOption);
+          setTemplateLoading(false);
+          toast.success(`Template ${newOption.label} saved!`);
+        } else {
+          // Show error message about the values being default
+          setFormError(true);
+          setFormMessage(
+            'Please fill in the form. Dates should be different, Amount to be vested should be greater than 0'
+          );
+          setTemplateLoading(false);
+          toast.error('Template not saved! Please fill in the form.');
+        }
+      } else throw 'No organizationId';
+    } catch (err) {
+      // Something went wrong in creating a template
+      setTemplateLoading(false);
+      toast.error('Oops! something went wrong');
+    }
   };
-
-  console.log('Schedule Configuration', watch());
 
   // useEffect(() => {
   //   if (account) {
@@ -197,7 +283,26 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   //     });
   //   }
   // }, [account]);
-  console.log({ scheduleFormState });
+
+  // Fetch the list of templates available
+  useEffect(() => {
+    if (organizationId) {
+      fetchVestingTemplatesByQuery('organizationId', '==', organizationId).then((res) => {
+        // Update option list for the template
+        const transformedDatas = res.map((record) => {
+          // Due to dates are typed as Timestamps in firebase, we need to use a function for that.
+          const actualDateTime = getActualDateTime(record.data.details);
+          return {
+            id: record.id,
+            ...record.data,
+            startDateTime: actualDateTime.startDate,
+            endDateTime: actualDateTime.endDate
+          };
+        });
+        setTemplateOptions(transformedDatas);
+      });
+    }
+  }, [organizationId]);
 
   const quickDates = [
     { label: '+ 1 month', value: '1-month' },
@@ -333,7 +438,15 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       setPickerStartDateTime(startDateTime.value);
       setPickerEndDateTime(endDateTime.value);
     }
+    // Remove formErrors if any when these data changes
+    setFormError(false);
+    setFormMessage('');
   }, [startDateTime.value, endDateTime.value]);
+
+  useEffect(() => {
+    setFormError(false);
+    setFormMessage('');
+  }, [amountToBeVested.value]);
 
   // Update form error message when the dates and cliff duration does not match
   useEffect(() => {
@@ -356,6 +469,15 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       }
     }
   }, [startDateTime.value, endDateTime.value, cliffDuration.value]);
+
+  /**
+   * This section is used for anything that regards the Vesting Schedule templates
+   * Should feature the ff:
+   * 1. Fetch all available template for a particular organizationId.
+   * 2. Selecting a template will automatically populate the configuration form.
+   * 2.1 Prompt the user first that the configuration form will be overwritten.
+   * 3. Typing / Creating a template will save the current configuration form data into the new template document.
+   */
 
   return (
     <>
@@ -597,19 +719,22 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   <label className="required md:col-span-2">
                     <span>Vesting template</span>
                     <CreatableSelect
+                      isLoading={templateLoading}
+                      allowCreateWhileLoading
+                      formatCreateLabel={(inputValue: string) => <CreateLabel inputValue={inputValue} />}
                       onCreateOption={onCreateTemplate}
                       options={templateOptions}
                       isClearable
                       {...field}
-                      value={field.value}
+                      value={field.value || null}
                       onChange={onTemplateChange}
-                      placeholder="Find or type to create template"
+                      placeholder={templateLoading ? `Saving template...` : 'Find or type to create template'}
                       noOptionsMessage={() => 'Type to create a template'}
                       className="select-container"
                       classNamePrefix="select"
                     />
                     {fieldState.error ? (
-                      <div className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a recipient</div>
+                      <div className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a template</div>
                     ) : null}
                   </label>
                 )}

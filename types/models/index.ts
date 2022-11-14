@@ -5,6 +5,7 @@ import { IToken } from './token';
 import { ITransaction } from './transaction';
 import { IVesting } from './vesting';
 import { IVestingContract } from './vestingContract';
+import { IVestingTemplate } from './vestingTemplate';
 
 export type {
   IOrganization,
@@ -14,6 +15,7 @@ export type {
   IUser,
   IAddress,
   IVesting,
+  IVestingTemplate,
   IToken,
   IInvitee,
   IVestingContract,
