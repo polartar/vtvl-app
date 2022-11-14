@@ -212,11 +212,9 @@ const ImportCSVFlow = ({
     const newData = csvData.map((data) => {
       const newObject: Record<string, unknown> = {};
       Object.entries(data).forEach(([key, value]) => {
-        console.log('key', key, csvMapData);
         const findMapDataField: any = csvMapData.find((mdata: any) => mdata.csvField.value === key);
         if (findMapDataField) {
           const newKey = findMapDataField.vtvlField.value;
-          console.log('KEY VALUE', key, value, findMapDataField);
           newObject[newKey] = value;
         }
       });

@@ -1,4 +1,5 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
+import CreateLabel from '@components/atoms/CreateLabel/CreateLabel';
 import Input from '@components/atoms/FormControls/Input/Input';
 import ImportCSVFlow from '@components/organisms/Forms/ImportCSVFlow';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
@@ -95,7 +96,11 @@ const AddBeneficiary: NextPageWithLayout = () => {
   const beneficiaryTypeDefaultOptions = [
     convertLabelToOption('Founder'),
     convertLabelToOption('Investor'),
-    convertLabelToOption('Employee')
+    convertLabelToOption('Employee'),
+    convertLabelToOption('Advisor'),
+    convertLabelToOption('Community'),
+    convertLabelToOption('Partner'),
+    convertLabelToOption('Other')
   ];
 
   // Set the default beneficiary type options
@@ -336,6 +341,8 @@ const AddBeneficiary: NextPageWithLayout = () => {
                 <span>Recipient type</span>
                 <CreatableSelect
                   isMulti
+                  allowCreateWhileLoading
+                  formatCreateLabel={(inputValue: string) => <CreateLabel inputValue={inputValue} />}
                   onCreateOption={onCreateRecipientType}
                   options={beneficiaryTypeOptions}
                   {...field}

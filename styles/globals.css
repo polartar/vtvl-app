@@ -650,7 +650,7 @@
   }
   .select__option--is-focused,
   .select__option--is-selected {
-    @apply text-neutral-50 bg-primary-500 !important;
+    @apply text-neutral-800 bg-neutral-50 !important;
   }
 
   /* Progress bar customization */

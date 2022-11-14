@@ -123,7 +123,6 @@ const ScheduleDetails = ({
         dateFormat = 'yyyy';
         break;
     }
-    console.log('value', value);
     return format(new Date(value), dateFormat);
   };
 
