@@ -26,7 +26,12 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
 
   if (invitee) await deleteDoc(invitee.ref);
 
-  const memberRef = doc(memberCollection, uid);
+  const m = query(memberCollection, where('email', '==', member.email), limit(1));
+  const existingMemberQuerySnapshot = await getDocs(m);
+  const existingMember = existingMemberQuerySnapshot?.docs.at(0);
+
+  const path = existingMember ? existingMember.id : uid;
+  const memberRef = doc(memberCollection, path);
   await setDoc(memberRef, {
     ...invitee?.data(),
     email: member.email || '',

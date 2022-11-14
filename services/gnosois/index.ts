@@ -22,7 +22,7 @@ export const fetchSafes = async (
   chainId: SupportedChainId
 ): Promise<OwnerResponse | undefined> => {
   if (!provider || !address) return;
-  if (!SupportedChains[chainId].multisigTxUrl) throw new Error('multisig not supported on this chain');
+  if (!SupportedChains[chainId].multisigTxUrl) throw new Error('Multisig is not supported on this chain.');
 
   const ethAdapter = new EthersAdapter({
     ethers: ethers,

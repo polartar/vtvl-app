@@ -112,42 +112,49 @@ const AccountSetupPage: NextPage = () => {
     setFormError(false);
     setFormMessage('');
 
-    if (!user) {
-      console.log('');
-      setFormError(true);
-      setFormMessage('Oh no! something went wrong!');
-      return;
-    }
-
-    await registerNewMember(
-      {
-        name: values.name,
-        email: user.email || '',
-        companyEmail: values.companyEmail,
-        type: info?.accountType || ''
-      },
-      { name: values.company, email: values.companyEmail }
-    );
-
-    console.log('user org id now is ', user.memberInfo?.org_id);
-
-    if (values.contributors && values.contributors.length > 0) {
-      values.contributors.map(async (contributor) => {
-        await addInvitee({
-          name: contributor.name,
-          email: contributor.email,
-          org_id: user.memberInfo?.org_id || ''
-        });
-        await sendTeammateInvite(
-          contributor.email,
-          'employee',
-          contributor.name,
-          values.company,
-          user.memberInfo?.org_id
+    try {
+      if (!user) {
+        console.log('no user found');
+        setFormError(true);
+        setFormMessage(
+          'Sorry, you have to be logged in to setup your account information. Please try logging in again.'
         );
-      });
+        return;
+      }
+
+      await registerNewMember(
+        {
+          name: values.name,
+          email: user.email || '',
+          companyEmail: values.companyEmail,
+          type: info?.accountType || ''
+        },
+        { name: values.company, email: values.companyEmail }
+      );
+
+      if (values.contributors && values.contributors.length > 0) {
+        values.contributors.map(async (contributor) => {
+          await addInvitee({
+            name: contributor.name,
+            email: contributor.email,
+            org_id: user.memberInfo?.org_id || ''
+          });
+          await sendTeammateInvite(
+            contributor.email,
+            'employee',
+            contributor.name,
+            values.company,
+            user.memberInfo?.org_id
+          );
+        });
+      }
+      setFormSuccess(true);
+      return onNext({ orgId: user.memberInfo?.org_id });
+    } catch (error: any) {
+      console.error(error);
+      setFormError(true);
+      setFormMessage(error.message);
     }
-    return onNext({ orgId: user.memberInfo?.org_id });
   };
 
   // Recommended by React hook forms when using field array https://react-hook-form.com/api/usefieldarray

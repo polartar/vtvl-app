@@ -53,7 +53,7 @@ const LoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    if(newLogin?.isFirstLogin) startOnboarding(Step.SignUp);
+    if (newLogin?.isFirstLogin) startOnboarding(Step.SignUp);
     onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 

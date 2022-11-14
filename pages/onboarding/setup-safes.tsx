@@ -15,13 +15,19 @@ const YourSafesPage: NextPage = () => {
   const { user } = useContext(AuthContext);
   const { onPrevious, onNext } = useContext(OnboardingContext);
   const [safes, setSafes] = useState<string[]>();
+  const [importSafeError, setImportSafeError] = useState();
 
   useEffect(() => {
     if (account && library && chainId) {
       (async () => {
-        const resp = await fetchSafes(library, account, chainId);
-        console.log('fetched safes here ', resp);
-        if (resp) setSafes(resp.safes);
+        try {
+          const resp = await fetchSafes(library, account, chainId);
+          console.log('fetched safes here ', resp);
+          if (resp) setSafes(resp.safes);
+        } catch (error: any) {
+          console.error(error);
+          setImportSafeError(error.message);
+        }
       })();
     }
   }, [account]);
@@ -56,10 +62,14 @@ const YourSafesPage: NextPage = () => {
             /* Else, display empty */
             <>
               <div className="flex items-center justify-center mt-12 mb-6">
-                <EmptyState title="No safes found" />
+                <EmptyState title={importSafeError ? importSafeError : 'No safes found'} />
               </div>
               <div className="border-b border-neutral-200 pb-5 flex items-center justify-center">
-                <button className="primary" type="button" onClick={() => Router.push('/onboarding/new-safe')}>
+                <button
+                  className="primary"
+                  type="button"
+                  disabled={importSafeError}
+                  onClick={() => Router.push('/onboarding/new-safe')}>
                   Create New Safe
                 </button>
               </div>

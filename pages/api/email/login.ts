@@ -10,11 +10,11 @@ type Data = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { email } = req.body;
+  const { email, newUser } = req.body;
   const baseUrl = process.env.NEXT_PUBLIC_DOMAIN_NAME;
 
   const actionCodeSettings = {
-    url: `${baseUrl}/onboarding/select-user-type?email=${email}`,
+    url: `${baseUrl}/onboarding/select-user-type?email=${email}&newUser=${newUser}`,
     handleCodeInApp: true
   };
 
