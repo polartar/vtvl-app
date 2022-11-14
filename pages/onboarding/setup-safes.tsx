@@ -2,7 +2,7 @@ import BackButton from '@components/atoms/BackButton/BackButton';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
 import AuthContext from '@providers/auth.context';
-import OnboardingContext from '@providers/onboarding.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import Router from 'next/router';
@@ -13,11 +13,12 @@ import { fetchSafes } from 'services/gnosois';
 const YourSafesPage: NextPage = () => {
   const { active, account, chainId, library } = useWeb3React();
   const { user } = useContext(AuthContext);
-  const { onPrevious, onNext } = useContext(OnboardingContext);
+  const { onPrevious, onNext, inProgress, startOnboarding } = useContext(OnboardingContext);
   const [safes, setSafes] = useState<string[]>();
   const [importSafeError, setImportSafeError] = useState();
 
   useEffect(() => {
+    if (!inProgress) startOnboarding(Step.SafeSetup);
     if (account && library && chainId) {
       (async () => {
         try {
