@@ -5,7 +5,7 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import AuthContext from '@providers/auth.context';
-import OnboardingContext from '@providers/onboarding.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -30,7 +30,7 @@ type ConfirmationForm = {
 const NewSafePage: NextPage = () => {
   const { active, library, chainId } = useWeb3React();
   const { user } = useContext(AuthContext);
-  const { onNext, onPrevious } = useContext(OnboardingContext);
+  const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
   const { query } = useRouter();
   const [importedSafe, setImportedSafe] = useState<Safe>();
   const [owners, setOwners] = useState<{ name: string; address: string; email: string }[]>([
@@ -43,7 +43,8 @@ const NewSafePage: NextPage = () => {
   const [safeRef, setSafeRef] = useState<string>();
 
   useEffect(() => {
-    console.log('safe address here is ', query.address?.toString());
+    console.log('we have imported safe here ', importedSafe);
+    if (!inProgress) startOnboarding(Step.SafeSetup);
     if (query.address) {
       (async () => {
         await importSafe(query.address?.toString() || '');
@@ -292,7 +293,7 @@ const NewSafePage: NextPage = () => {
                     label="Owner address"
                     placeholder="Enter owner address"
                     required
-                    disabled={importedSafe !== null ? true : false}
+                    disabled={importedSafe ? true : false}
                     error={Boolean(getOwnersState(ownerIndex).address.state.error)}
                     message={getOwnersState(ownerIndex).address.state.error ? 'Please enter owner address' : ''}
                     className="md:col-span-2"
@@ -346,7 +347,7 @@ const NewSafePage: NextPage = () => {
                         return { label: num + 1, value: num + 1 };
                       })}
                       required
-                      disabled={importedSafe !== null ? true : false}
+                      disabled={importedSafe ? true : false}
                       error={Boolean(errors.authorizedUsers)}
                       message={errors.authorizedUsers ? 'Please select how many' : ''}
                       {...field}

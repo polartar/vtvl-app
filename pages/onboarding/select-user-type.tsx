@@ -40,7 +40,7 @@ const userTypes = {
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
+  const { onNext, startOnboarding, completeOnboarding, inProgress } = useContext(OnboardingContext);
   const { emailSignUp, user } = useContext(AuthContext);
   const { active } = useWeb3React();
   const [selected, setSelected] = React.useState('');

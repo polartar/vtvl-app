@@ -5,11 +5,11 @@ import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import AuthContext from '@providers/auth.context';
-import OnboardingContext from '@providers/onboarding.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
@@ -29,10 +29,14 @@ type AccountForm = {
 
 const AccountSetupPage: NextPage = () => {
   const { sendTeammateInvite, user, registerNewMember } = useContext(AuthContext);
-  const { onPrevious, onNext, info } = useContext(OnboardingContext);
+  const { onPrevious, onNext, info, inProgress, startOnboarding } = useContext(OnboardingContext);
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!inProgress) startOnboarding(Step.AccountSetup);
+  }, []);
   // Get to use the react-hook-form and set default values
   const {
     control,
