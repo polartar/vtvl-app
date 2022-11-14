@@ -251,6 +251,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
         if (amountToBeVested.value && diffSeconds) {
           const vestingTemplate = await createVestingTemplate(newOption);
+          console.log('Vesting template status', vestingTemplate);
           setTemplateOptions([...templateOptions, newOption]);
           setValue2('template', newOption);
           setTemplateLoading(false);
@@ -264,11 +265,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           setTemplateLoading(false);
           toast.error('Template not saved! Please fill in the form.');
         }
-      }
+      } else throw 'No organizationId';
     } catch (err) {
       // Something went wrong in creating a template
-      setFormError(true);
-      setFormMessage('Something went wrong');
       setTemplateLoading(false);
       toast.error('Oops! something went wrong');
     }
