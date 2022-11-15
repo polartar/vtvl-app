@@ -30,7 +30,12 @@ import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
-import { CLIFFDURATION_TIMESTAMP, CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
+import {
+  CLIFFDURATION_TIMESTAMP,
+  CliffDuration,
+  DATE_FREQ_TO_TIMESTAMP,
+  ReleaseFrequency
+} from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
 
 type DateTimeType = Date | null;
@@ -70,7 +75,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     getFieldState,
     getValues,
     setValue,
-    formState: { errors, isValid, isValidating, isSubmitted, isSubmitting }
+    formState: { errors, isSubmitting }
   } = useForm({
     defaultValues: scheduleFormState
   });
@@ -251,7 +256,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
         if (amountToBeVested.value && diffSeconds) {
           const vestingTemplate = await createVestingTemplate(newOption);
-          console.log('Vesting template status', vestingTemplate);
           setTemplateOptions([...templateOptions, newOption]);
           setValue2('template', newOption);
           setTemplateLoading(false);
@@ -453,14 +457,16 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     if (startDateTime.value && endDateTime.value && cliffDuration.value !== 'no-cliff') {
       // Compute duration of start and end dates
       const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
+      const releaseFreqSeconds = DATE_FREQ_TO_TIMESTAMP[releaseFrequency.value];
       const cliffSeconds = CLIFFDURATION_TIMESTAMP[cliffDuration.value];
-      console.log('Difference', cliffSeconds, diffSeconds);
+      const idealScheduleDuration = cliffSeconds + releaseFreqSeconds;
+      console.log('Difference', idealScheduleDuration, diffSeconds);
       // Compare to cliff duration
-      if (cliffSeconds > diffSeconds) {
+      if (idealScheduleDuration > diffSeconds) {
         // Error
         setFormError(true);
         setFormSuccess(false);
-        setFormMessage('Cliff duration should be within the Start date and End date');
+        setFormMessage('Cliff duration and at least one release frequency should be within the schedule dates');
       } else if (formError) {
         // Convert to successful if the state came from an error
         setFormError(false);

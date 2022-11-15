@@ -29,7 +29,8 @@ const Signing = styled.div`
 
 const Vesting = styled.div`
   border-radius: 0 26px 26px 0;
-  background: url('/images/background.png');
+  background-color: #202b8b;
+  background: url('/images/background.png'), linear-gradient(0deg, #e65e43 -40%, #202b8b 70%, #202b8b 100%);
   background-size: cover;
 `;
 

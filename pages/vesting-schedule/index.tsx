@@ -33,7 +33,13 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       {
         image: '/images/vesting-import.svg',
         value: 'import',
-        label: <>I want to upload a CSV</>
+        label: (
+          <>
+            I want to upload a CSV <br />
+            <small className="text-secondary-900 text-xs font-bold">Coming soon!</small>
+          </>
+        ),
+        disabled: true
       }
     ],
     name: 'userAction'
@@ -319,6 +325,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               <CardRadio
                 key={`card-radio-${option.value}-${optionIndex}`}
                 {...option}
+                disabled={option.disabled}
                 checked={selected === option.value}
                 name="grouped-radio"
                 onChange={() => setSelected(option.value)}

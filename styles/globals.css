@@ -380,8 +380,8 @@
   }
 
   /* Other disabled styles */
-  :disabled:not(fieldset),
-  [disabled]:not(fieldset) {
+  :disabled:not(fieldset):not(.card-radio),
+  [disabled]:not(fieldset):not(.card-radio) {
     @apply opacity-80;
   }
 
