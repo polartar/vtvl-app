@@ -30,7 +30,12 @@ import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
-import { CLIFFDURATION_TIMESTAMP, CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
+import {
+  CLIFFDURATION_TIMESTAMP,
+  CliffDuration,
+  DATE_FREQ_TO_TIMESTAMP,
+  ReleaseFrequency
+} from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
 
 type DateTimeType = Date | null;
@@ -54,8 +59,8 @@ interface CustomActionBarProps {
 }
 
 const ConfigureSchedule: NextPageWithLayout = () => {
-  const { organizationId } = useAuthContext();
-  // const organizationId = 'MYvgDyXEY5kCfxdIvtY8'; // Mock org id to test
+  // const { organizationId } = useAuthContext();
+  const organizationId = 'MYvgDyXEY5kCfxdIvtY8'; // Mock org id to test
   const { account } = useWeb3React();
   const { scheduleFormState, updateScheduleFormState } = useVestingContext();
   const { mintFormState } = useTokenContext();
@@ -70,7 +75,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     getFieldState,
     getValues,
     setValue,
-    formState: { errors, isValid, isValidating, isSubmitted, isSubmitting }
+    formState: { errors, isSubmitting }
   } = useForm({
     defaultValues: scheduleFormState
   });
@@ -251,7 +256,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
         if (amountToBeVested.value && diffSeconds) {
           const vestingTemplate = await createVestingTemplate(newOption);
-          console.log('Vesting template status', vestingTemplate);
           setTemplateOptions([...templateOptions, newOption]);
           setValue2('template', newOption);
           setTemplateLoading(false);
@@ -434,33 +438,44 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Updates the current Date and Time input states when the actual form values change.
   useEffect(() => {
-    if (startDateTime.value && endDateTime.value) {
-      setPickerStartDateTime(startDateTime.value);
-      setPickerEndDateTime(endDateTime.value);
+    if (isScheduleValid()) {
+      if (startDateTime.value && endDateTime.value) {
+        setPickerStartDateTime(startDateTime.value);
+        setPickerEndDateTime(endDateTime.value);
+      }
+      // Remove formErrors if any when these data changes
+      setFormError(false);
+      setFormMessage('');
     }
-    // Remove formErrors if any when these data changes
-    setFormError(false);
-    setFormMessage('');
   }, [startDateTime.value, endDateTime.value]);
 
   useEffect(() => {
-    setFormError(false);
-    setFormMessage('');
+    if (isScheduleValid()) {
+      setFormError(false);
+      setFormMessage('');
+    }
   }, [amountToBeVested.value]);
 
   // Update form error message when the dates and cliff duration does not match
   useEffect(() => {
+    const validity = isScheduleValid();
+  }, [startDateTime.value, endDateTime.value, cliffDuration.value]);
+
+  const isScheduleValid = () => {
     if (startDateTime.value && endDateTime.value && cliffDuration.value !== 'no-cliff') {
       // Compute duration of start and end dates
       const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
+      const releaseFreqSeconds = DATE_FREQ_TO_TIMESTAMP[releaseFrequency.value];
       const cliffSeconds = CLIFFDURATION_TIMESTAMP[cliffDuration.value];
-      console.log('Difference', cliffSeconds, diffSeconds);
+      const idealScheduleDuration = cliffSeconds + releaseFreqSeconds;
+      console.log('Difference', idealScheduleDuration, diffSeconds);
       // Compare to cliff duration
-      if (cliffSeconds > diffSeconds) {
+      if (idealScheduleDuration > diffSeconds) {
         // Error
         setFormError(true);
         setFormSuccess(false);
-        setFormMessage('Cliff duration should be within the Start date and End date');
+        setFormMessage('Cliff duration and at least one release frequency should be within the schedule dates');
+        return false;
       } else if (formError) {
         // Convert to successful if the state came from an error
         setFormError(false);
@@ -468,7 +483,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         setFormMessage('');
       }
     }
-  }, [startDateTime.value, endDateTime.value, cliffDuration.value]);
+    return true;
+  };
 
   /**
    * This section is used for anything that regards the Vesting Schedule templates

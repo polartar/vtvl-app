@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import React from 'react';
 
-const Label = styled.label`
+const Label = styled.label<{ disabled?: boolean }>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -21,16 +21,10 @@ const Label = styled.label`
   cursor: pointer;
   transition: border-color 0.5s ease, box-shadow 0.5s ease, transform 0.3s ease;
 
-  &:hover,
-  &.selected {
-    border-color: #1b369a;
-    box-shadow: 0 10px 20px -15px rgba(56, 56, 56, 0.6);
-    transform: translateY(-2px);
-  }
-
-  & > img {
-    max-width: 220px;
-  }
+  ${({ disabled }) =>
+    disabled
+      ? 'opacity: 0.6;'
+      : '&:hover, &.selected { border-color: #1b369a; box-shadow: 0 10px 20px -15px rgba(56, 56, 56, 0.6); transform: translateY(-2px);}'}
 `;
 
 const Check = styled.div`
@@ -49,7 +43,7 @@ const Check = styled.div`
 `;
 
 const RadioImage = styled.img`
-  max-height: 156px;
+  height: 156px;
 `;
 
 interface CardRadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -66,7 +60,7 @@ interface CardRadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const CardRadio = ({ image, label, value, name, ...props }: CardRadioProps) => {
   // const [selected, setSelected] = useState('');
   return (
-    <Label>
+    <Label disabled={props.disabled} className={`card-radio ${props.checked ? 'selected' : ''}`}>
       <RadioImage src={image} alt={name} aria-hidden="true" />
       <p className="font-semibold h-11">{label}</p>
       <Check className={props.checked ? 'selected' : ''}>
