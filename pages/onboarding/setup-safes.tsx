@@ -1,33 +1,61 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
+import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import Router from 'next/router';
-import React from 'react';
+import ArrowIcon from 'public/icons/arrow-small-left.svg';
+import React, { useContext, useEffect, useState } from 'react';
+import { fetchSafes } from 'services/gnosois';
 
 const YourSafesPage: NextPage = () => {
-  // Comment/uncomment to see the two states
-  // const safes: string[] = [];
-  const safes = ['239kadf987a8df798a7f98a09f7a9fa', '07234nh123ahdkjfaiuueiuy8123121'];
+  const { active, account, chainId, library } = useWeb3React();
+  const { user } = useContext(AuthContext);
+  const { onPrevious, onNext, inProgress, startOnboarding } = useContext(OnboardingContext);
+  const [safes, setSafes] = useState<string[]>();
+  const [importSafeError, setImportSafeError] = useState();
+
+  useEffect(() => {
+    if (!inProgress) startOnboarding(Step.SafeSetup);
+    if (account && library && chainId) {
+      (async () => {
+        try {
+          const resp = await fetchSafes(library, account, chainId);
+          console.log('fetched safes here ', resp);
+          if (resp) setSafes(resp.safes);
+        } catch (error: any) {
+          console.error(error);
+          setImportSafeError(error.message);
+        }
+      })();
+    }
+  }, [account]);
+
+  const importSafe = async (address: string) => {
+    Router.push({
+      pathname: '/onboarding/new-safe',
+      query: { address }
+    });
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
-      <h1 className="text-neutral-900">Setup your safe</h1>
+    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
+      <h1 className="text-neutral-900">Setup your multi-sig safe</h1>
       <div className="w-full my-6 panel">
         <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
-        <p className="text-sm text-neutral-500">
-          You can natively create new, import or login to your existing gnisis safe multisig.
-        </p>
+        <p className="text-sm text-neutral-500">Natively create a new Safe or login to your existing one</p>
         <div className="mt-5">
-          <p className="text-sm text-neutral-500">List of {safes.length} safes</p>
-          {safes.length ? (
+          <p className="text-sm text-neutral-500">List of {safes?.length} safes</p>
+          {safes?.length ? (
             /* Display all safes to import */
             <div className="flex flex-col gap-5 mt-5">
               {safes.map((safe, safeIndex) => (
                 <SafesListItem
                   key={`safe-${safe}-${safeIndex}`}
                   label={safe}
-                  onClick={() => Router.push('/onboarding/setup-safes')}
+                  onClick={async () => await importSafe(safe)}
                 />
               ))}
             </div>
@@ -35,17 +63,14 @@ const YourSafesPage: NextPage = () => {
             /* Else, display empty */
             <>
               <div className="flex items-center justify-center mt-12 mb-6">
-                <EmptyState
-                  title="No safes found"
-                  description={[
-                    'Setup a new multi-signature wallet. Get started by clicking on "',
-                    <strong>Create New Safe</strong>,
-                    '".'
-                  ]}
-                />
+                <EmptyState title={importSafeError ? importSafeError : 'No safes found'} />
               </div>
-              <div className="border-t border-b border-neutral-200 p-3 flex items-center justify-center">
-                <button className="line primary" type="button" onClick={() => Router.push('/onboarding/setup-safes')}>
+              <div className="border-b border-neutral-200 pb-5 flex items-center justify-center">
+                <button
+                  className="primary"
+                  type="button"
+                  disabled={importSafeError}
+                  onClick={() => Router.push('/onboarding/new-safe')}>
                   Create New Safe
                 </button>
               </div>
@@ -54,13 +79,15 @@ const YourSafesPage: NextPage = () => {
         </div>
 
         <div className="flex flex-row justify-between items-center mt-6">
-          <BackButton label="Return to account setup" href="/onboarding/account-setup" />
-          <button className="flex flex-row items-center gap-2 primary group" type="button">
-            Skip{' '}
-            <img
-              src="/icons/arrow-small-right-white.svg"
+          <BackButton label="Back to account setup" onClick={() => onPrevious()} />
+          <button
+            className="flex flex-row items-center gap-2 primary line group transition-all transform"
+            type="button"
+            onClick={() => onNext({})}>
+            I'm good without multi-sig{' '}
+            <ArrowIcon
               alt="Proceed"
-              className="transition-all w-6 h-6 group-hover:translate-x-1 fill-current text-white"
+              className="rotate-180 transform transition-all w-3 h-3 group-hover:translate-x-1 fill-current stroke-current text-primary-900 group-hover:text-white"
             />
           </button>
         </div>

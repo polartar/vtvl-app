@@ -32,12 +32,18 @@ module.exports = {
         h3: '1.625rem',
         h4: '1.5rem',
         h5: '1.25rem',
-        h6: '1rem'
+        h6: '1rem',
+        xxs: '0.625rem'
       },
       spacing: {
         13: '3.25rem'
       }
     }
   },
-  plugins: []
+  plugins: [],
+  variants: {
+    extend: {
+      translate: ['group-hover']
+    }
+  }
 };

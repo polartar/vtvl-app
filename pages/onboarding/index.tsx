@@ -1,21 +1,17 @@
+import Carousel from '@components/atoms/Carousel/Carousel';
+import Consent from '@components/molecules/Consent/Consent';
+import Wallets from '@components/molecules/Wallets/Wallets';
 import styled from '@emotion/styled';
-import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
-import React from 'react';
-
-import Carousel from '../../components/atoms/Carousel/Carousel';
-import Chip from '../../components/atoms/Chip/Chip';
-import WalletButton from '../../components/atoms/WalletButton/WalletButton';
-import MultiSigWallet from '../../components/multisig';
-import { injected, walletconnect } from '../../connectors';
+import Router from 'next/router';
+import AstroHelmet from 'public/icons/astronaut-helmet.svg';
 
 const OnboardingContainer = styled.section`
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 26px;
   box-shadow: 0 10px 20px -15px rgba(56, 56, 56, 0.6);
-  max-width: 1200px;
+  max-width: 1152px;
   font-weight: medium;
 `;
 const Signing = styled.div`
@@ -33,110 +29,28 @@ const Signing = styled.div`
 
 const Vesting = styled.div`
   border-radius: 0 26px 26px 0;
-  background: url('/images/background.png');
-`;
-
-const Description = styled.p`
-  font-size: 0.875rem;
-`;
-
-const Text = styled.span`
-  font-size: 0.75rem;
-`;
-
-const Link = styled.a`
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: #1b369a;
-  text-decoration: none;
-`;
-
-const CTAContainer = styled.div`
-  width: 100%;
-  padding: 14px;
-
-  &.split {
-    margin-top: 32px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  &:not(.no-border) {
-    border-top: 1px solid #d0d5dd;
-    border-bottom: 1px solid #d0d5dd;
-  }
+  background-color: #202b8b;
+  background: url('/images/background.png'), linear-gradient(0deg, #e65e43 -40%, #202b8b 70%, #202b8b 100%);
+  background-size: cover;
 `;
 
 const WalletContainer = styled.div`
   width: 100%;
 `;
 
-const Wallets = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-`;
-
-interface Wallet {
-  name: string;
-  image: string;
-  subLabel?: unknown;
-  disabled?: boolean;
-  onClick?: () => void;
-}
-
-const ConnectWalletPage: NextPage = () => {
-  const { active, activate, account, deactivate } = useWeb3React();
-  const [wallet, setWallet] = React.useState('');
-  const router = useRouter();
-
-  function metamaskActivate() {
-    activate(injected, (err) => console.log('error connecting ', err));
-    router.push('/onboarding/select-user-type');
-  }
-
-  function walletConnectActivate() {
-    activate(walletconnect, (err) => console.log('error connecting ', err));
-    router.push('/onboarding/select-user-type');
-  }
-
+const SelectLoginTypePage: NextPage = () => {
   const wallets = [
     {
-      name: 'MetaMask',
-      image: '/icons/wallets/metamask.svg',
-      onClick: metamaskActivate
+      name: 'Member',
+      image: <AstroHelmet className="w-10 h-10 text-primary-900 mb-3" />,
+      // Change this based on where the flow it should be
+      onClick: () => Router.push('/onboarding/connect-wallet')
     },
     {
-      name: 'Wallet Connect',
-      image: '/icons/wallets/walletconnect.svg',
-      onClick: walletConnectActivate
-    },
-    {
-      name: 'Members Login',
-      image: '/icons/wallets/space-suit.svg'
-    },
-    {
-      name: 'Coinbase Wallet',
-      image: '/icons/wallets/coinbase.png',
-      subLabel: 'Soon',
-      disabled: true
-    },
-    {
-      name: 'Ledger',
-      image: '/icons/wallets/ledger.png',
-      subLabel: 'Soon',
-      disabled: true
-    },
-    {
-      name: 'Trezor',
-      image: '/icons/wallets/trezor.png',
-      subLabel: 'Soon',
-      disabled: true
+      name: 'Guest',
+      image: <AstroHelmet className="w-10 h-10 text-secondary-900 mb-3" />,
+      // Change this based on where the flow it should be
+      onClick: () => Router.push('/onboarding/connect-wallet')
     }
   ];
   const carouselItems = [
@@ -167,55 +81,27 @@ const ConnectWalletPage: NextPage = () => {
     }
   ];
 
-  const renderWallets = (wallets: Array<Wallet>) => {
-    return wallets.map((wallet: Wallet, walletIndex: number) => (
-      <WalletButton
-        key={`wallet-button-${wallet.name}-${walletIndex}`}
-        label={wallet.name}
-        image={wallet.image}
-        subLabel={
-          wallet.subLabel ? <Chip size="small" color="primary" rounded={true} label={wallet.subLabel as string} /> : ''
-        }
-        disabled={wallet.disabled}
-        onClick={wallet.onClick}
-      />
-    ));
-  };
   return (
     <OnboardingContainer>
       <Signing>
         <div>
-          <h1 className="font-medium">Connect to your wallet</h1>
-          <p className="text-sm text-neutral-500">Please select a wallet to connect to this app</p>
+          <h1 className="font-medium">Access VTVL as</h1>
+          <p className="text-sm font-medium text-neutral-500">
+            Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
+            <strong>Guest</strong> to test our platform.
+          </p>
         </div>
         <WalletContainer>
-          <Wallets>{renderWallets(wallets)}</Wallets>
-          <div className="my-5 text-xs text-neutral-600 font-medium">
-            <span>Can&apos;t find your wallet?</span>&nbsp;
-            <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
-              Suggest Wallet
-            </a>
-          </div>
-          <div className="text-xs text-neutral-600 font-medium leading-5">
-            <Text>
-              By connecting a wallet, you agree to VTVL{' '}
-              <Link href="/" className="font-bold text-primary-900 no-underline">
-                Terms of Service
-              </Link>{' '}
-              and acknowledge that you have read and understand the{' '}
-              <Link href="/" className="font-bold text-primary-900 no-underline">
-                Privacy Policy
-              </Link>
-              .
-            </Text>
+          <div className="max-w-sm mx-auto mb-11">
+            <Wallets wallets={wallets} />
           </div>
         </WalletContainer>
       </Signing>
-      <Vesting className="flex flex-col items-center justify-start pt-24 pb-14">
+      <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
         <Carousel variant="dark" items={carouselItems} />
       </Vesting>
     </OnboardingContainer>
   );
 };
 
-export default ConnectWalletPage;
+export default SelectLoginTypePage;

@@ -1,13 +1,11 @@
+import AuthContext from '@providers/auth.context';
 import { useWeb3React } from '@web3-react/core';
+import { injected, walletconnect } from 'connectors';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import React, { useContext, useState } from 'react';
-
-import MultiSigWallet from '../components/multisig';
-import { injected, walletconnect } from '../connectors';
-import AuthContext from '../providers/auth.context';
-import styles from '../styles/Home.module.css';
+import styles from 'styles/Home.module.css';
 
 const Home: NextPage = () => {
   const { user, error, signInWithEmail, signInWithGoogle, signUpWithEmail, anonymousSignIn, logOut } =
@@ -29,7 +27,6 @@ const Home: NextPage = () => {
           <>
             <p> your wallet {account} is connected</p>
             <button onClick={() => deactivate()}> disconnect</button>
-            <MultiSigWallet />
           </>
         ) : (
           <>

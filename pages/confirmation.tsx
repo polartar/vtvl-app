@@ -3,6 +3,7 @@ import Breadcrumb from '@components/atoms/Breadcrumb/Breadcrumb';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import { NextPage } from 'next';
+import Router from 'next/router';
 import { useState } from 'react';
 
 const crumbSteps = [
@@ -56,7 +57,7 @@ const ConfirmationImportedSafesPage: NextPage = () => {
               <label>
                 <span>Schedule</span>
               </label>
-              <div className="inline-flex items-center px-6 py-3 h-13 border border-primary-900 rounded-3xl">
+              <div className="inline-flex items-center px-6 py-3 h-10 border border-primary-900 rounded-3xl">
                 VOYAGER 0123
               </div>
             </div>
@@ -64,7 +65,7 @@ const ConfirmationImportedSafesPage: NextPage = () => {
               <label>
                 <span>Vesting Contract</span>
               </label>
-              <div className="inline-flex items-center px-0 py-3 h-13 text-primary-900 font-medium text-lg">
+              <div className="inline-flex items-center px-0 py-3 h-10 text-primary-900 font-medium text-lg">
                 0x4657....cBA61efb0a263
               </div>
             </div>
@@ -112,7 +113,7 @@ const ConfirmationImportedSafesPage: NextPage = () => {
             />
           </div>
           <div className="flex flex-row justify-between items-center mt-6">
-            <BackButton label="Return to summary" href="/" />
+            <BackButton label="Return to summary" onClick={() => Router.push('/')} />
             <button className="flex flex-row items-center gap-2 primary">
               Sign and Authorize{' '}
               <img

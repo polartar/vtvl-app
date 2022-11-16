@@ -1,6 +1,6 @@
 import React from 'react';
 
-import './Button.css';
+import DotLoader from '../DotLoader/DotLoader';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /**
@@ -35,6 +35,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
    * Button contents
    */
   label?: string;
+  /**
+   * loading state
+   */
+  loading?: boolean;
 }
 
 /**
@@ -52,7 +56,7 @@ const Button = (props: ButtonProps) => {
     let className = '';
     if (primary) className += ' primary ';
     if (secondary) className += ' secondary ';
-    if (outline) className += ' outline ';
+    if (outline) className += ' line ';
     if (danger) className += ' danger ';
     if (success) className += ' success ';
     if (warning) className += ' warning ';
@@ -60,8 +64,21 @@ const Button = (props: ButtonProps) => {
     return className;
   };
   return (
-    <button className={getClassNames()} {...props}>
-      {label || props.children}
+    <button
+      {...props}
+      className={`relative ${getClassNames()} ${props.className} ${props.loading ? 'loading' : ''}`}
+      disabled={props.loading || props.disabled}>
+      {/* Used opacity to preserve the current width of the button when it is doing the loading state */}
+      <span className={`transition-all block transform-gpu ${props.loading ? 'opacity-0 translate-x-1.5' : ''}`}>
+        {label || props.children}
+      </span>
+      <span
+        className={`absolute flex items-center justify-center inset-0 transition-all transform-gpu ${
+          props.loading ? '' : 'opacity-0 -translate-x-5'
+        }`}
+        aria-hidden="true">
+        <DotLoader className={`${getClassNames()}`} />
+      </span>
     </button>
   );
 };

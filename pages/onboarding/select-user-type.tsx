@@ -1,9 +1,13 @@
+import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import styled from '@emotion/styled';
+import AuthContext from '@providers/auth.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
+import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
-import React from 'react';
-
-import CardRadio from '../../components/atoms/CardRadio/CardRadio';
+import Router from 'next/router';
+import React, { useContext, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import { newMember } from 'services/db/member';
 
 const Container = styled.div`
   width: 100%;
@@ -14,36 +18,89 @@ const Container = styled.div`
 const userTypes = {
   options: [
     {
-      image: '/images/onboarding-user-type-employee.svg',
-      value: 'employee',
-      label: "I'm an employee looking to check my assets"
-    },
-    {
       image: '/images/onboarding-user-type-founder.svg',
       value: 'founder',
-      label: "I'm a founder who will setup the vesting schedule"
+      label: (
+        <>
+          I'm a <span className="text-secondary-900">founder</span> of a web3 project
+        </>
+      )
     },
     {
       image: '/images/onboarding-user-type-investor.svg',
       value: 'investor',
-      label: "I'm an investor looking to check my assets"
+      label: (
+        <>
+          I’m an <span className="text-secondary-900">employee / investor</span> looking to claim my tokens
+        </>
+      )
     }
   ],
   name: 'userType'
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const router = useRouter();
-
+  const { onNext, startOnboarding, completeOnboarding, inProgress } = useContext(OnboardingContext);
+  const { emailSignUp, user } = useContext(AuthContext);
+  const { active } = useWeb3React();
   const [selected, setSelected] = React.useState('');
+  const [orgId, setOrgId] = React.useState('');
+  const [userName, setUserName] = React.useState('');
+  const [isNewUser, setIsNewUser] = React.useState(false);
+
+  useEffect(() => {
+    startOnboarding(Step.UserTypeSetup);
+    const params: any = new URL(window.location.toString());
+    const name = params.searchParams.get('name');
+    const orgId = params.searchParams.get('orgId');
+    const email = params.searchParams.get('email');
+    const newUser: boolean = params.searchParams.get('newUser');
+    setOrgId(orgId);
+    setUserName(name);
+    setIsNewUser(newUser);
+    if (email) loginWithUrl(email, newUser);
+  }, []);
+
+  const loginWithUrl = async (email: string, newUser: boolean) => {
+    try {
+      await emailSignUp(email, '', window.location.toString());
+      if (!newUser) completeOnboarding();
+    } catch (error: any) {
+      console.log('error ', error);
+    }
+  };
+
+  const handleContinue = async () => {
+    try {
+      if (selected === 'founder') {
+        onNext({ accountType: selected });
+        return;
+      }
+      active ? completeOnboarding() : Router.push('/member');
+      if (user) {
+        await newMember(user.uid, {
+          email: user.email || '',
+          companyEmail: user.email || '',
+          name: userName || user.displayName || '',
+          type: selected,
+          org_id: orgId
+        });
+        active ? completeOnboarding() : Router.push('/member');
+        return;
+      }
+      // invalid email sign up link
+      toast.error('Invalid link please go to the sign up page and try again.');
+    } catch (error) {
+      console.log(error);
+      toast.error('Oops something went wrong. Please go to the sign up page and try again.');
+    }
+  };
 
   return (
     <Container>
-      <h1>Tell us a little bit about yourself.</h1>
-      <p className="text-sm">
-        Select the options that best describe your role. Don&apos;t worry, you can explore other options later.
-      </p>
-      <div className="my-6">
+      <h1 className="text-neutral-900 mb-3">Tell us a little bit about yourself.</h1>
+      <p className="text-sm text-neutral-500">Select the profile that best describes your role</p>
+      <div className="mt-10 mb-6">
         <div role="radiogroup" className="flex flex-row items-center justify-center gap-5">
           {userTypes.options.map((option, optionIndex) => (
             <CardRadio
@@ -56,7 +113,7 @@ const SelectUserTypePage: NextPage = () => {
           ))}
         </div>
       </div>
-      <button className="secondary" onClick={() => router.push('/onboarding/account-setup')}>
+      <button className="secondary" onClick={() => handleContinue()}>
         Continue
       </button>
     </Container>

@@ -18,11 +18,14 @@
     "baseUrl": ".",
     "paths": {
       "@assets/*": ["assets/*"],
-      "@components/*": ["components/*"]
+      "@components/*": ["components/*"],
+      "@contracts/*": ["contracts/*"],
+      "@connectors/*": ["connectors/*"],
+      "@providers/*": ["providers/*"]
     },
     "outDir": "./dist",
     "incremental": true
   },
   "exclude": ["./**/*.stories.@(mdx,tsx)", "./node_modules", "./storybook-static"],
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.json"]
 }

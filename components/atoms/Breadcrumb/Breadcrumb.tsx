@@ -1,6 +1,7 @@
-import { Colors } from '../../CommonStyles';
+import { Colors } from '@components/CommonStyles';
 import styled from '@emotion/styled';
-import React from 'react';
+import Router from 'next/router';
+import React, { Fragment } from 'react';
 
 interface Props {
   steps: { title: string; route: string }[];
@@ -20,10 +21,12 @@ const Breadcrumb = ({ steps }: Props) => {
     <BreadcrumbContainer>
       <img src={getSrc(steps[0].title)} alt="start-icon" />
       {steps.map((step: { title: string; route: string }, index: number) => (
-        <>
+        <Fragment key={index}>
           <ChevronIcon src="/icons/chevron-down.svg" alt="next" />
-          <StepLabel lastRoute={steps.length === index + 1}>{step.title}</StepLabel>
-        </>
+          <StepLabel lastRoute={steps.length === index + 1} onClick={() => Router.push(step.route)}>
+            {step.title}
+          </StepLabel>
+        </Fragment>
       ))}
     </BreadcrumbContainer>
   );

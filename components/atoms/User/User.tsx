@@ -1,18 +1,24 @@
-import React from 'react';
 import styled from '@emotion/styled';
+import React from 'react';
 
 interface Props {
   userName: string;
   role: string;
+  compact: boolean;
+  profilePhoto?: string;
 }
 
-const User = ({ userName, role }: Props) => {
+const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
   return (
     <UserContainer>
-      <img src="/images/user.png" alt="userImg" />
-      <div>
+      <img
+        src={profilePhoto || '/images/user.png'}
+        alt="userImg"
+        className={`transition-all rounded-full ${compact ? 'mx-1' : 'mx-3'}`}
+      />
+      <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
         <p>{userName}</p>
-        <p>{role}</p>
+        <p className="capitalize">{role}</p>
       </div>
     </UserContainer>
   );
@@ -31,7 +37,6 @@ const UserContainer = styled.div`
     cursor: pointer;
   }
   img {
-    margin: 0 12px;
     width: 40px;
     height: 40px;
   }
