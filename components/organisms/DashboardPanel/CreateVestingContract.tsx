@@ -133,9 +133,11 @@ AddVestingSchedulesProps) => {
       activate(injected);
       return;
     } else if (organizationId) {
+      const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI.abi);
+      const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
       const VestingFactory = new ethers.ContractFactory(
         VTVL_VESTING_ABI.abi,
-        '0x' + VTVL_VESTING_ABI.bytecode,
+        '0x' + VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
         library.getSigner()
       );
       const vestingContract = await VestingFactory.deploy(mintFormState.address);
@@ -149,7 +151,9 @@ AddVestingSchedulesProps) => {
         updatedAt: Math.floor(new Date().getTime() / 1000)
       });
       fetchDashboardVestingContract();
-      setStatus('transferToMultisigSafe');
+      if (!safe?.address) {
+        setStatus('success');
+      } else setStatus('transferToMultisigSafe');
     }
   };
 
@@ -609,14 +613,6 @@ AddVestingSchedulesProps) => {
         ) : null}
       </div>
       <div>
-        {type === 'schedule' && vestings && vestings.length > 0 ? (
-          vestings[activeVestingIndex].data ? (
-            <ScheduleOverview {...vestings[activeVestingIndex].data} />
-          ) : null
-        ) : null}
-        {/* {type === 'fundContract' && (
-          <FundContract address={vestingContract?.data?.address || ''} amount={depositAmount} />
-        )} */}
         {type === 'contract' ? (
           <ContractOverview
             tokenName={mintFormState.name}
@@ -629,27 +625,6 @@ AddVestingSchedulesProps) => {
       </div>
       <div className="border-t mt-3 pt-3 row-center justify-between">
         <div className="row-center">{status ? statuses[status].actions : ''}</div>
-        {vestings && vestings.length > 0 && type !== 'fundingRequired' && (
-          <div className="row-center text-sm font-medium">
-            <button
-              className="primary py-2 text-sm font-medium"
-              disabled={activeVestingIndex === 0}
-              onClick={() => {
-                setActiveVestingIndex(activeVestingIndex - 1);
-              }}>
-              Previous
-            </button>
-            <span>
-              {activeVestingIndex + 1} of {vestings.length}
-            </span>
-            <button
-              className="primary py-2 text-sm font-medium"
-              disabled={activeVestingIndex === vestings.length - 1}
-              onClick={() => setActiveVestingIndex(activeVestingIndex + 1)}>
-              Next
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

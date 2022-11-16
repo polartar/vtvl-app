@@ -268,7 +268,6 @@ AddVestingSchedulesProps) => {
         });
 
         if (account && organizationId) {
-          const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
           const transactionId = await createTransaction({
             hash: txHash,
             safeHash: '',
@@ -302,6 +301,51 @@ AddVestingSchedulesProps) => {
           setApproved(true);
         }
         toast.success('Transaction has been created successfully.');
+      } else if (account && chainId && organizationId) {
+        const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        const vestingContractInstance = new ethers.Contract(
+          vestingContract?.data?.address ?? '',
+          VTVL_VESTING_ABI.abi,
+          library.getSigner()
+        );
+        const addingClaimsTransaction = await vestingContractInstance.createClaimsBatch(
+          addresses,
+          vestingStartTimestamps,
+          vestingEndTimestamps,
+          vestingCliffTimestamps,
+          vestingReleaseIntervals,
+          vestingLinearVestAmounts,
+          vestingCliffAmounts
+        );
+        const transactionData: ITransaction = {
+          hash: addingClaimsTransaction.hash,
+          safeHash: '',
+          status: 'PENDING',
+          to: vestingContract?.data?.address ?? '',
+          type: 'ADDING_CLAIMS',
+          createdAt: Math.floor(new Date().getTime() / 1000),
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          organizationId: organizationId
+        };
+        const transactionId = await createTransaction(transactionData);
+        updateVesting(
+          {
+            ...vesting,
+            transactionId
+          },
+          vestingId
+        );
+        await addingClaimsTransaction.wait();
+        updateTransaction(
+          {
+            ...transactionData,
+            status: 'SUCCESS',
+            updatedAt: Math.floor(new Date().getTime() / 1000)
+          },
+          transactionId
+        );
+        setStatus('success');
+        toast.success('Added schedules successfully.');
       }
     } catch (err) {
       console.log('handleCreateSignTransaction - ', err);
@@ -404,7 +448,7 @@ AddVestingSchedulesProps) => {
             disabled={approved || !vestingContract?.id || !ownershipTransfered || insufficientBalance}
             className="secondary"
             onClick={handleCreateSignTransaction}>
-            {approved ? 'Approved' : 'Create and Sign the transaction'}
+            {approved ? 'Approved' : safe?.address ? 'Create and Sign the transaction' : 'Create Schedule'}
           </button>
           <button className="line primary" onClick={() => {}}>
             View details
@@ -560,6 +604,8 @@ AddVestingSchedulesProps) => {
   useEffect(() => {
     if (type === 'schedule' && !transaction) {
       setStatus('createSignTransaction');
+    } else if (transaction && transaction.data?.status === 'SUCCESS') {
+      setStatus('success');
     }
   }, [type, transaction]);
 
@@ -650,18 +696,6 @@ AddVestingSchedulesProps) => {
           vestings[activeVestingIndex].data ? (
             <ScheduleOverview {...vestings[activeVestingIndex].data} />
           ) : null
-        ) : null}
-        {/* {type === 'fundContract' && (
-          <FundContract address={vestingContract?.data?.address || ''} amount={depositAmount} />
-        )} */}
-        {type === 'contract' ? (
-          <ContractOverview
-            tokenName={mintFormState.name}
-            tokenSymbol={mintFormState.symbol}
-            supplyCap={mintFormState.supplyCap}
-            maxSupply={mintFormState.maxSupply ? mintFormState.maxSupply : 0}
-            address={mintFormState.address}
-          />
         ) : null}
       </div>
       <div className="border-t mt-3 pt-3 row-center justify-between">
