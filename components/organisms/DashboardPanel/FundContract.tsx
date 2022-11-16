@@ -175,6 +175,7 @@ const FundContract = () => {
         );
         await fundTransaction.wait();
         toast.success('Token deposited successfully');
+        setStatus('success');
       } else {
         const tokenContractInterface = new ethers.utils.Interface([
           'function transfer(address to, uint amount) returns (bool)',

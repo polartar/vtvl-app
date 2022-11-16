@@ -50,7 +50,6 @@ const Summary: NextPageWithLayout = () => {
         await tokenContract.deployed();
 
         updateMintFormState({ ...mintFormState, contractAddress: tokenContract.address });
-
         createToken({
           name: name,
           symbol: symbol,

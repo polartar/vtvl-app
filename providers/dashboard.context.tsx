@@ -139,6 +139,8 @@ export function DashboardContextProvider({ children }: any) {
       VestingContract.isAdmin(safe.address).then((res: any) => {
         setOwnershipTransfered(res);
       });
+    } else if (vestingContract?.data && vestingContract.data.status === 'SUCCESS' && !safe?.address) {
+      setOwnershipTransfered(true);
     }
   }, [organizationId, vestingContract, safe, ownershipTransfered, chainId]);
 

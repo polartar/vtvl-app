@@ -153,14 +153,16 @@ const FundingContractModal = ({
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
       // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
-      tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
-        setContractBalance(parseFloat(BigNumber.from(res).toString()) / 10 ** 18);
-      });
+      if (safe?.address) {
+        tokenContract.balanceOf(safe?.address).then((res: string) => {
+          setContractBalance(parseFloat(BigNumber.from(res).toString()) / 10 ** 18);
+        });
+      }
       tokenContract.balanceOf(account).then((res: string) => {
         setWalletBalance(parseFloat(BigNumber.from(res).toString()) / 10 ** 18);
       });
     }
-  }, [chainId, account]);
+  }, [chainId, account, safe]);
 
   return (
     <>
