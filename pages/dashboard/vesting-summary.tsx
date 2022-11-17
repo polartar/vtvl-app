@@ -77,8 +77,7 @@ const DashboardVestingSummary: NextPageWithLayout = () => {
     startDateTime: new Date(2022, 10, 2, 1, 30),
     endDateTime: new Date(2022, 11, 25, 12),
     lumpSumReleaseAfterCliff: 25,
-    amountToBeVested: 50000,
-    token: 'BICO'
+    amountToBeVested: 50000
   };
 
   const tokenSupply = mintFormState.initialSupply || 100000;
@@ -105,7 +104,9 @@ const DashboardVestingSummary: NextPageWithLayout = () => {
   const SuccessToast = () => (
     <div>
       <p className="paragraphy-small-medium">Amount vested updated!</p>
-      <p className="paragraphy-small">New total vested amount is {amountToBeVested.value} BICO</p>
+      <p className="paragraphy-small">
+        New total vested amount is {amountToBeVested.value} {mintFormState.symbol || 'Token'}
+      </p>
     </div>
   );
 

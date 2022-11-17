@@ -255,12 +255,15 @@ const ScheduleSummary: NextPageWithLayout = () => {
                   .div(new Decimal(recipients.length))
                   .toDP(6, Decimal.ROUND_UP)
               )}{' '}
-              BICO
+              {mintFormState.symbol || 'Token'}
             </p>
           </label>
           <label>
             <span>Total locked tokens</span>
-            <p>{formatNumber(new Decimal(scheduleFormState.amountToBeVested).toDP(6, Decimal.ROUND_UP))} BICO</p>
+            <p>
+              {formatNumber(new Decimal(scheduleFormState.amountToBeVested).toDP(6, Decimal.ROUND_UP))}{' '}
+              {mintFormState.symbol || 'Token'}
+            </p>
           </label>
         </div>
         <div className="py-5 border-b border-neutral-200">

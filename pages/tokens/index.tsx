@@ -22,7 +22,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
     setTab(e.target.value);
   };
 
-  const showTokens = false;
+  const [showTokens, setShowTokens] = useState(false);
   const tokens = [
     {
       token: {

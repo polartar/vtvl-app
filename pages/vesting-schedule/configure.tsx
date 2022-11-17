@@ -59,8 +59,7 @@ interface CustomActionBarProps {
 }
 
 const ConfigureSchedule: NextPageWithLayout = () => {
-  // const { organizationId } = useAuthContext();
-  const organizationId = 'MYvgDyXEY5kCfxdIvtY8'; // Mock org id to test
+  const { organizationId } = useAuthContext();
   const { account } = useWeb3React();
   const { scheduleFormState, updateScheduleFormState } = useVestingContext();
   const { mintFormState } = useTokenContext();
@@ -106,6 +105,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const releaseFrequency = { value: watch('releaseFrequency'), state: getFieldState('releaseFrequency') };
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
 
+  console.log('Lumpsum release', lumpSumReleaseAfterCliff.value);
   // Supporting variables
   const tokenSupply = mintFormState.initialSupply || 100000;
 
@@ -486,6 +486,15 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     return true;
   };
 
+  // Update the lumpsum value after cliff on change.
+  // Currently, react-number-format returns it's value as a string with % sign.
+  // To do: Refactor this later and move it's responsibility to the <Input type="percent" /> component.
+  useEffect(() => {
+    if (typeof lumpSumReleaseAfterCliff.value === 'string' && lumpSumReleaseAfterCliff.value !== '') {
+      setValue('lumpSumReleaseAfterCliff', +lumpSumReleaseAfterCliff.value.slice(0, -1));
+    }
+  }, [lumpSumReleaseAfterCliff.value]);
+
   /**
    * This section is used for anything that regards the Vesting Schedule templates
    * Should feature the ff:
@@ -674,6 +683,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         error={Boolean(fieldState.error)}
                         message={fieldState.error ? 'Please enter lump sum amount' : ''}
                         {...field}
+                        type="percent"
                       />
                     )}
                   />
