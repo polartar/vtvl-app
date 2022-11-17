@@ -48,9 +48,9 @@ const YourSafesPage: NextPage = () => {
         <p className="text-sm text-neutral-500">Natively create a new Safe or login to your existing one</p>
         <div className="mt-5">
           <p className="text-sm text-neutral-500">List of {safes?.length} safes</p>
-          {safes?.length ? (
+          {safes?.length && (
             /* Display all safes to import */
-            <div className="flex flex-col gap-5 mt-5">
+            <div className="flex flex-col gap-5 mt-5" style={{ marginBottom: '1.5em' }}>
               {safes.map((safe, safeIndex) => (
                 <SafesListItem
                   key={`safe-${safe}-${safeIndex}`}
@@ -59,23 +59,23 @@ const YourSafesPage: NextPage = () => {
                 />
               ))}
             </div>
-          ) : (
-            /* Else, display empty */
-            <>
+          )}
+          <>
+            {(!safes || safes?.length == 0) && (
               <div className="flex items-center justify-center mt-12 mb-6">
                 <EmptyState title={importSafeError ? importSafeError : 'No safes found'} />
               </div>
-              <div className="border-b border-neutral-200 pb-5 flex items-center justify-center">
-                <button
-                  className="primary"
-                  type="button"
-                  disabled={importSafeError}
-                  onClick={() => Router.push('/onboarding/new-safe')}>
-                  Create New Safe
-                </button>
-              </div>
-            </>
-          )}
+            )}
+            <div className="border-b border-neutral-200 pb-5 flex items-center justify-center">
+              <button
+                className="primary"
+                type="button"
+                disabled={importSafeError}
+                onClick={() => Router.push('/onboarding/new-safe')}>
+                Create New Safe
+              </button>
+            </div>
+          </>
         </div>
 
         <div className="flex flex-row justify-between items-center mt-6">

@@ -18,7 +18,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   };
 
   const emailLink = await firebaseAdmin?.auth().generateSignInWithEmailLink(email, actionCodeSettings);
-  console.log('sign in link generated is ', emailLink);
   await SendMail({
     to: email,
     data: { emailLink, orgName, name },
