@@ -3,6 +3,7 @@ import CreateLabel from '@components/atoms/CreateLabel/CreateLabel';
 import Input from '@components/atoms/FormControls/Input/Input';
 import ImportCSVFlow from '@components/organisms/Forms/ImportCSVFlow';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import Decimal from 'decimal.js';
 import { getDownloadURL, getStorage, ref } from 'firebase/storage';
@@ -17,6 +18,7 @@ import { IRecipient, IRecipientFormState, IRecipientType } from 'types/vesting';
 import { convertLabelToOption } from 'utils/shared';
 
 const AddBeneficiary: NextPageWithLayout = () => {
+  const { mintFormState } = useTokenContext();
   // Get to use the react-hook-form and set default values
   // This is for the dynamic changing of the recipient detail forms
   const defaultRecipientValues: IRecipient = {
@@ -262,7 +264,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
                           .toDP(6, Decimal.ROUND_UP)
                           .toString()
                       : 0}{' '}
-                    <strong>BICO</strong>
+                    <strong>{mintFormState.symbol || 'Token'}</strong>
                   </p>
                 </div>
                 <Select

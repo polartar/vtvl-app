@@ -1,4 +1,5 @@
 import React from 'react';
+import { NumericFormat } from 'react-number-format';
 import { InputNumberCommas } from 'react-number-format-with-commas';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -45,6 +46,19 @@ const Input = ({
           {icon ? <img src={icon} alt={label?.toString() || 'Input icon'} className="w-6 h-6 fill-current" /> : null}
           {props.type === 'number' ? (
             <InputNumberCommas {...props} type="text" className="grow w-full outline-0 border-0 bg-transparent" />
+          ) : props.type === 'percent' ? (
+            <NumericFormat
+              {...props}
+              defaultValue={props.defaultValue as string | number}
+              value={props.value as string | number}
+              type="text"
+              suffix="%"
+              className="grow w-full outline-0 border-0 bg-transparent"
+              isAllowed={(values) => {
+                const { formattedValue, floatValue } = values;
+                return formattedValue === '' || (floatValue ? floatValue >= 0 && floatValue <= 99 : false);
+              }}
+            />
           ) : (
             <input type="text" {...props} className="grow w-full outline-0 border-0 bg-transparent" />
           )}

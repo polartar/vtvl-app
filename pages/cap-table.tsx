@@ -7,6 +7,7 @@ import ToggleSwitch from '@components/atoms/FormControls/ToggleSwitch/ToggleSwit
 import CapTableOverview from '@components/molecules/CapTableOverview/CapTableOverview';
 import Table from '@components/molecules/Table/Table';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useTokenContext } from '@providers/token.context';
 import RecipientsIcon from 'public/icons/cap-table-recipients.svg';
 import { ReactElement, useMemo, useState } from 'react';
 import { convertAllToOptions, minifyAddress } from 'utils/shared';
@@ -15,6 +16,7 @@ import { formatNumber } from 'utils/token';
 import { NextPageWithLayout } from './_app';
 
 const CapTable: NextPageWithLayout = () => {
+  const { mintFormState } = useTokenContext();
   const schedules = [
     { label: 'All', value: 'all' },
     { label: 'Viking-0132', value: 'viking-0132' }
@@ -205,7 +207,7 @@ const CapTable: NextPageWithLayout = () => {
           <>
             <div className="p-5 mb-6 border-b border-gray-200">
               <CapTableOverview
-                token="BICO"
+                token={mintFormState.symbol || 'Token'}
                 schedules={3}
                 totalRecipients={4}
                 claimed={10000000}

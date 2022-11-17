@@ -6,6 +6,7 @@ import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement } from 'react';
 
 const ClaimTokenComplete: NextPageWithLayout = () => {
+  const { mintFormState } = useTokenContext();
   return (
     <>
       <h1 className="h2 font-medium text-center mb-10">My Tokens</h1>
@@ -16,7 +17,7 @@ const ClaimTokenComplete: NextPageWithLayout = () => {
         title="Claim complete"
         description={
           <>
-            You have successfully withdrawn <strong>500</strong> BICO tokens.
+            You have successfully withdrawn <strong>500</strong> {mintFormState.symbol || ''} tokens.
             <br />
             Your claimed tokens should appear in your wallet in a few minutes.
           </>

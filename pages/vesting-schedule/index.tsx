@@ -9,6 +9,7 @@ import Table from '@components/molecules/Table/Table';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import VestingOverview from '@components/molecules/VestingOverview/VestingOverview';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useTokenContext } from '@providers/token.context';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import PlusIcon from 'public/icons/plus.svg';
@@ -20,6 +21,7 @@ import { formatNumber } from 'utils/token';
  * This page should have an async fetch feature that gets the product details from the database.
  */
 const VestingScheduleProject: NextPageWithLayout = () => {
+  const { mintFormState } = useTokenContext();
   const [hasVestingSchedule, setHasVestingSchedule] = useState(false);
   const [selected, setSelected] = useState('manual');
 
@@ -277,9 +279,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
           <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
             <div>
-              <TokenProfile name="BICONOMY" logo="/images/biconomy-logo.png" symbol="BICO" className="mb-2" />
+              <TokenProfile {...mintFormState} className="mb-2" />
               <p className="text-sm font-medium text-netural-900">
-                Contract address: <span className="text-neutral-500">0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5</span>
+                Contract address: <span className="text-neutral-500">{mintFormState.address}</span>
               </p>
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
@@ -291,7 +293,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           </div>
           <div className="p-5 mb-6 border-b border-gray-200">
             <VestingOverview
-              token="BICO"
+              token={mintFormState.symbol || 'Token'}
               totalSchedules={3}
               pendingSchedules={10}
               pendingApprovals={3}

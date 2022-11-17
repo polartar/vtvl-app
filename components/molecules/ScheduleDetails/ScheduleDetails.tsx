@@ -149,7 +149,7 @@ const ScheduleDetails = ({
               allowDataOverflow={true}
               dataKey="value"
               domain={[0, amountToBeVested]}
-              tickFormatter={(value) => formatNumber(value, 0)}
+              tickFormatter={(value) => formatNumber(value, 0).toString()}
             />
             <Tooltip />
             <Line
