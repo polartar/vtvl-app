@@ -3,6 +3,7 @@ import Router from 'next/router';
 import RecipientsIcon from 'public/icons/cap-table-recipients.svg';
 import SchedulesIcon from 'public/icons/cap-table-schedules.svg';
 import PlusIcon from 'public/icons/plus.svg';
+import { convertToUSD } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 
 interface CapTableOverviewProps {
@@ -27,9 +28,6 @@ const CapTableOverview = ({
   totalAllocation
 }: CapTableOverviewProps) => {
   // Create a function here that converts the token amounts into currency ie., USD ($) etc.
-  const convertToUSD = (amount: number | Decimal) => {
-    return formatNumber(typeof amount === 'number' ? amount * 0.0001 : amount.mul(0.0001));
-  };
   return (
     <>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">

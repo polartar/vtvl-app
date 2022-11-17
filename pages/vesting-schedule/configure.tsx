@@ -37,6 +37,7 @@ import {
   ReleaseFrequency
 } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
+import { getActualDateTime } from 'utils/shared';
 
 type DateTimeType = Date | null;
 
@@ -165,28 +166,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   const [templateOptions, setTemplateOptions] = useState(templateDefaultOptions);
   const [templateLoading, setTemplateLoading] = useState(false);
-
-  // This function lets us parse the correct date format before displaying and using it across the schedule form and chart.
-  const getActualDateTime = (data: {
-    startDateTime: Date | null | undefined;
-    endDateTime: Date | null | undefined;
-  }) => {
-    let startDate;
-    let endDate;
-    try {
-      // Try first with the presumption that the dates provided are in Timestamp -- came from firebase.
-      startDate = new Date((data.startDateTime as unknown as Timestamp).toMillis());
-      endDate = new Date((data.endDateTime as unknown as Timestamp).toMillis());
-    } catch (err) {
-      // Catch it with the default as if it came from current form data
-      startDate = data.startDateTime;
-      endDate = data.endDateTime;
-    }
-    return {
-      startDate,
-      endDate
-    };
-  };
 
   /**
    * From https://react-select.com/creatable
