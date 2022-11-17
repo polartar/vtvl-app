@@ -29,13 +29,28 @@ import { NextPageWithLayout } from '../_app';
 
 const Dashboard: NextPageWithLayout = () => {
   const { library, account, activate } = useWeb3React();
-  const { organizationId, safe } = useAuthContext();
+  const { organizationId, safe, emailSignUp } = useAuthContext();
   const { mintFormState } = useTokenContext();
   const { recipients, scheduleFormState } = useVestingContext();
   const { vestings, vestingContract, transactions, ownershipTransfered, insufficientBalance, depositAmount } =
     useDashboardContext();
 
   const router = useRouter();
+
+  useEffect(() => {
+    const params: any = new URL(window.location.toString());
+    const email = params.searchParams.get('email');
+    if (email) loginWithUrl(email);
+  }, []);
+
+  const loginWithUrl = async (email: string) => {
+    try {
+      await emailSignUp(email, '', window.location.toString());
+    } catch (error: any) {
+      console.log('error ', error);
+    }
+  };
+
   const activities = [
     {
       icon: 'success',

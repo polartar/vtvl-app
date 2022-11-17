@@ -210,7 +210,7 @@ const NewSafePage: NextPage = () => {
 
       if (!safe) {
         console.log('invalid safe configurations ');
-        setFormMessage('Invalid safe configurations');
+        setFormMessage(importedSafe !== null ? 'Could not import safe, invalid configurations.' : '');
         setFormError(true);
         return;
       }
