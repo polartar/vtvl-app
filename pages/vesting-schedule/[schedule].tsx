@@ -130,11 +130,11 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
             <div className="border-t border-gray-200 py-6 mt-6 grid sm:grid-cols-2 md:grid-cols-5 gap-3">
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Token per user</span>
-                <p className="paragraphy-small-medium text-neutral-900">5,250 BICO</p>
+                <p className="paragraphy-small-medium text-neutral-900">5,250 {mintFormState.symbol || 'Token'}</p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Total locked token</span>
-                <p className="paragraphy-small-medium text-neutral-900">10,000,000 BICO</p>
+                <p className="paragraphy-small-medium text-neutral-900">10,000,000 {mintFormState.symbol || 'Token'}</p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Beneficiaries</span>

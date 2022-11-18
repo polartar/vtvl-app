@@ -49,7 +49,7 @@ const AccountSetupPage: NextPage = () => {
     defaultValues: {
       name: '',
       company: '',
-      companyEmail: '',
+      companyEmail: user?.memberInfo?.email || '',
       type: 'organization',
       contributors: [
         {

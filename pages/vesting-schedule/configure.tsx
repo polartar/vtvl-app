@@ -178,7 +178,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     newValue: OnChangeValue<IVestingTemplate, false>,
     actionMeta: ActionMeta<IVestingTemplate>
   ) => {
-    if (newValue) {
+    console.log('Changing vaule', newValue, actionMeta);
+    if (actionMeta.action === 'clear') {
+      // remove selection
+      setValue2('template', null);
+      handleTemplateChange(scheduleFormState);
+    } else if (newValue) {
       console.group('Value Changed');
       console.log(newValue);
       console.log(`action: ${actionMeta.action}`);
@@ -186,7 +191,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       setValue2('template', newValue);
       handleTemplateChange(newValue?.details);
     }
-    // To do Arvin: Update the vesting schedule configuration form values based on the template values
   };
 
   // This function updates the current form based on the selected template.
@@ -724,13 +728,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   <label className="required md:col-span-2">
                     <span>Vesting template</span>
                     <CreatableSelect
+                      {...field}
                       isLoading={templateLoading}
                       allowCreateWhileLoading
                       formatCreateLabel={(inputValue: string) => <CreateLabel inputValue={inputValue} />}
                       onCreateOption={onCreateTemplate}
                       options={templateOptions}
                       isClearable
-                      {...field}
                       value={field.value || null}
                       onChange={onTemplateChange}
                       placeholder={templateLoading ? `Saving template...` : 'Find or type to create template'}

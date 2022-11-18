@@ -175,7 +175,18 @@ const ScheduleDetails = ({
           </LineChart>
         </ResponsiveContainer>
       ) : (
-        <EmptyState image="/images/blockchain-technology.gif" imageSize="small" description="No schedule details yet" />
+        <EmptyState
+          image="/images/blockchain-technology.gif"
+          imageSize="small"
+          title="No schedule details yet"
+          description={
+            <>
+              Make sure that the vesting schedule
+              <br />
+              fields are filled correctly.
+            </>
+          }
+        />
       )}
       <div className={`grid gap-3 mt-5 ${layout === 'small' ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4 '}`}>
         <label>

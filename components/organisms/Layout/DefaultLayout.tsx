@@ -60,31 +60,10 @@ const SidebarProps = {
       available: true
     },
     {
-      title: 'Token performance',
-      icon: '/icons/s_tokenPerformance.svg',
-      hoverIcon: '/icons/s_tokenPerformance2.svg',
-      route: '/token-performance',
-      available: true
-    },
-    {
       title: 'Cap table',
       icon: '/icons/s_capTable.svg',
       hoverIcon: '/icons/s_capTable2.svg',
       route: '/cap-table',
-      available: true
-    },
-    {
-      title: 'Tokenomics',
-      icon: '/icons/s_tokenomics.svg',
-      hoverIcon: '/icons/s_tokenomics2.svg',
-      route: '/tokenomics',
-      available: true
-    },
-    {
-      title: 'Transactions',
-      icon: '/icons/s_transactions.svg',
-      hoverIcon: '/icons/s_transactions2.svg',
-      route: '/transactions',
       available: true
     },
     {
@@ -93,6 +72,27 @@ const SidebarProps = {
       hoverIcon: '/icons/s_dashboard2.svg',
       route: '/tokens',
       available: true
+    },
+    {
+      title: 'Token performance',
+      icon: '/icons/s_tokenPerformance.svg',
+      hoverIcon: '/icons/s_tokenPerformance2.svg',
+      route: '/token-performance',
+      available: false
+    },
+    {
+      title: 'Tokenomics',
+      icon: '/icons/s_tokenomics.svg',
+      hoverIcon: '/icons/s_tokenomics2.svg',
+      route: '/tokenomics',
+      available: false
+    },
+    {
+      title: 'Transactions',
+      icon: '/icons/s_transactions.svg',
+      hoverIcon: '/icons/s_transactions2.svg',
+      route: '/transactions',
+      available: false
     }
   ],
   submenuList: [
