@@ -37,6 +37,7 @@ import {
   ReleaseFrequency
 } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
+import { getActualDateTime } from 'utils/shared';
 
 type DateTimeType = Date | null;
 
@@ -166,28 +167,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const [templateOptions, setTemplateOptions] = useState(templateDefaultOptions);
   const [templateLoading, setTemplateLoading] = useState(false);
 
-  // This function lets us parse the correct date format before displaying and using it across the schedule form and chart.
-  const getActualDateTime = (data: {
-    startDateTime: Date | null | undefined;
-    endDateTime: Date | null | undefined;
-  }) => {
-    let startDate;
-    let endDate;
-    try {
-      // Try first with the presumption that the dates provided are in Timestamp -- came from firebase.
-      startDate = new Date((data.startDateTime as unknown as Timestamp).toMillis());
-      endDate = new Date((data.endDateTime as unknown as Timestamp).toMillis());
-    } catch (err) {
-      // Catch it with the default as if it came from current form data
-      startDate = data.startDateTime;
-      endDate = data.endDateTime;
-    }
-    return {
-      startDate,
-      endDate
-    };
-  };
-
   /**
    * From https://react-select.com/creatable
    * Handle the onChange event of the recipient type -- when the user selects from the options.
@@ -199,7 +178,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     newValue: OnChangeValue<IVestingTemplate, false>,
     actionMeta: ActionMeta<IVestingTemplate>
   ) => {
-    if (newValue) {
+    console.log('Changing vaule', newValue, actionMeta);
+    if (actionMeta.action === 'clear') {
+      // remove selection
+      setValue2('template', null);
+      handleTemplateChange(scheduleFormState);
+    } else if (newValue) {
       console.group('Value Changed');
       console.log(newValue);
       console.log(`action: ${actionMeta.action}`);
@@ -207,7 +191,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       setValue2('template', newValue);
       handleTemplateChange(newValue?.details);
     }
-    // To do Arvin: Update the vesting schedule configuration form values based on the template values
   };
 
   // This function updates the current form based on the selected template.
@@ -745,13 +728,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   <label className="required md:col-span-2">
                     <span>Vesting template</span>
                     <CreatableSelect
+                      {...field}
                       isLoading={templateLoading}
                       allowCreateWhileLoading
                       formatCreateLabel={(inputValue: string) => <CreateLabel inputValue={inputValue} />}
                       onCreateOption={onCreateTemplate}
                       options={templateOptions}
                       isClearable
-                      {...field}
                       value={field.value || null}
                       onChange={onTemplateChange}
                       placeholder={templateLoading ? `Saving template...` : 'Find or type to create template'}

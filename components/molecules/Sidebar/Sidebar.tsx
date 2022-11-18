@@ -95,7 +95,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
   );
 };
 
-const SidebarContainer = styled.div<{
+const SidebarContainer = styled.aside<{
   isExpanded: boolean;
 }>`
   width: ${({ isExpanded }) => (isExpanded ? '279px' : '80px')};

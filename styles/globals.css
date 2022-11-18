@@ -195,7 +195,7 @@
   /* Button component */
   /* Defaults to primary */
   button {
-    @apply rounded-full inline-block text-base py-2 px-5 bg-neutral-100;
+    @apply rounded-full inline-block text-base py-2 px-5 bg-neutral-100 border border-transparent;
   }
 
   button,

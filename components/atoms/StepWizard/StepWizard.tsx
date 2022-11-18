@@ -6,25 +6,27 @@ import React from 'react';
 
 type IStepWizardSize = 'tiny' | 'small' | 'default' | 'large';
 interface Props {
-  steps: { title: string; desc: string }[];
+  steps: { title: string; desc: string | string[] | JSX.Element | JSX.Element[] }[];
   status: number;
   size?: IStepWizardSize;
+  className?: string;
+  showAllLabels?: boolean;
 }
 
-const StepWizard = ({ steps, status, size = 'default' }: Props) => {
+const StepWizard = ({ steps, status, size = 'default', className = '', showAllLabels = false }: Props) => {
   console.log({ steps, status });
   return (
-    <StepContainer>
+    <StepContainer className={className}>
       {steps.map((step, stepIndex) => (
         <StepItem key={stepIndex} isActive={status === stepIndex}>
           <DotWrapper size={size}>
             <LeftBorder cl={stepIndex} isActive={status >= stepIndex} size={size} />
             <Circle isActive={status > stepIndex} isLast={stepIndex + 1 === steps.length} size={size}>
               {status <= stepIndex && status < steps.length - 1 ? (
-                size !== 'tiny' ? (
+                size !== 'tiny' && size !== 'small' ? (
                   <Dot isActive={status === stepIndex} />
                 ) : null
-              ) : size === 'tiny' ? (
+              ) : size === 'tiny' || size === 'small' ? (
                 <div className="text-success-500">
                   <SuccessIcon className="fill-current" />
                 </div>
@@ -35,7 +37,9 @@ const StepWizard = ({ steps, status, size = 'default' }: Props) => {
             <RightBorder cl={stepIndex + 1 < steps.length ? 1 : 0} isActive={status > stepIndex} size={size} />
           </DotWrapper>
           <Title isActive={status === stepIndex}>{step.title}</Title>
-          {status >= stepIndex ? <Description isActive={status === stepIndex}>{step.desc}</Description> : null}
+          {status >= stepIndex || (showAllLabels && step.desc) ? (
+            <Description isActive={status === stepIndex}>{step.desc}</Description>
+          ) : null}
         </StepItem>
       ))}
     </StepContainer>
@@ -45,6 +49,7 @@ const StepWizard = ({ steps, status, size = 'default' }: Props) => {
 const StepContainer = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: center;
 `;
 const StepItem = styled.div<{ isActive: boolean }>`
   display: flex;
@@ -64,7 +69,7 @@ const DotWrapper = styled.div<{ size: IStepWizardSize }>`
   ${({ size }) => (size === 'tiny' ? '' : 'margin-bottom: 14px;')}
 `;
 const LeftBorder = styled.hr<{ cl: number; isActive: boolean; size: IStepWizardSize }>`
-  width: ${({ size }) => (size === 'tiny' ? '8px' : '112px')};
+  width: ${({ size }) => (size === 'tiny' ? '8px' : size === 'small' ? '90px' : '112px')};
   border: none;
   border-top: 2px solid
     ${({ cl, isActive, size }) => (cl ? (isActive && size !== 'tiny' ? Colors.primary : Colors.border) : 'transparent')};

@@ -1,5 +1,6 @@
 import format from 'date-fns/format';
 import Decimal from 'decimal.js';
+import { Timestamp } from 'firebase/firestore';
 
 import { formatNumber } from './token';
 
@@ -42,6 +43,29 @@ export const minifyAddress = (address: string) =>
 /**
  * Conversion to currency -- currently used as sample might update this later
  */
-export const convertToUSD = (amount: number | Decimal) => {
-  return formatNumber(typeof amount === 'number' ? amount * 0.0001 : amount.mul(0.0001));
+export const convertToUSD = (amount: number | Decimal | string) => {
+  console.log('CONVERT TO USD', typeof amount);
+  return formatNumber(typeof amount === 'number' || typeof amount === 'string' ? +amount * 0.0001 : amount.mul(0.0001));
+};
+
+// This function lets us parse the correct date format before displaying and using it across the schedule form and chart.
+export const getActualDateTime = (data: {
+  startDateTime: Date | null | undefined;
+  endDateTime: Date | null | undefined;
+}) => {
+  let startDate;
+  let endDate;
+  try {
+    // Try first with the presumption that the dates provided are in Timestamp -- came from firebase.
+    startDate = new Date((data.startDateTime as unknown as Timestamp).toMillis());
+    endDate = new Date((data.endDateTime as unknown as Timestamp).toMillis());
+  } catch (err) {
+    // Catch it with the default as if it came from current form data
+    startDate = data.startDateTime;
+    endDate = data.endDateTime;
+  }
+  return {
+    startDate,
+    endDate
+  };
 };

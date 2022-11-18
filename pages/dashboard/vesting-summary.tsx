@@ -123,7 +123,7 @@ const DashboardVestingSummary: NextPageWithLayout = () => {
         onSubmit={handleSubmit(onSubmit)}>
         <ScheduleSummary
           name="Voyager-0123"
-          tokenPerUser="6,250 BICO"
+          tokenPerUser={`6,250 ${mintFormState.symbol || 'Token'}`}
           beneficiaries={4}
           totalPeriod="4 days, 3 hours"
           createdBy="Satoshi S."

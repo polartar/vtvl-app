@@ -33,3 +33,20 @@ export const createVesting = async (vesting: IVesting): Promise<string> => {
   const vestingRef = await addDoc(vestingCollection, vesting);
   return vestingRef.id;
 };
+
+/**
+ * To return records based on organizationId
+ * @param orgId
+ * @returns
+ */
+export const fetchVestingSchedules = async (orgId: string): Promise<IVesting[] | undefined> => {
+  // Query the vesting collection with the right organization id
+  const q = query(vestingCollection, where('organizationId', '==', orgId));
+  const querySnapshot = await getDocs(q);
+  // Create a new array for the data and loop through the fetched data from firestore
+  const records: IVesting[] = [];
+  querySnapshot.docs.forEach((item) => {
+    records.push(item.data());
+  });
+  return records;
+};

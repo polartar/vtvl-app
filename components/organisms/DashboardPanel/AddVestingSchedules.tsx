@@ -179,12 +179,13 @@ AddVestingSchedulesProps) => {
         ) / vesting.recipients.length;
       const vestingAmountPerUser = +vesting.details.amountToBeVested / vesting.recipients.length - cliffAmountPerUser;
       const addresses = vesting.recipients.map((recipient) => recipient.walletAddress);
-      const cliffReleaseDate = vesting.details.startDateTime
-        ? getCliffDateTime(
-            new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-            vesting.details.cliffDuration
-          )
-        : '';
+      const cliffReleaseDate =
+        vesting.details.startDateTime && vesting.details.cliffDuration !== 'no-cliff'
+          ? getCliffDateTime(
+              new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
+              vesting.details.cliffDuration
+            )
+          : '';
       const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
       const numberOfReleases =
         vesting.details.startDateTime && vesting.details.endDateTime
@@ -448,7 +449,7 @@ AddVestingSchedulesProps) => {
             disabled={approved || !vestingContract?.id || !ownershipTransfered || insufficientBalance}
             className="secondary"
             onClick={handleCreateSignTransaction}>
-            {approved ? 'Approved' : safe?.address ? 'Create and Sign the transaction' : 'Create Schedule'}
+            {approved ? 'Approved' : safe?.address ? 'Create and Sign the transaction' : 'Add Schedule'}
           </button>
           <button className="line primary" onClick={() => {}}>
             View details

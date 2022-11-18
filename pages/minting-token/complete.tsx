@@ -23,6 +23,7 @@ const Complete: NextPageWithLayout = () => {
       {/* <p className="text-gray-500 text-sm mb-9">
         Your delegated employee will received a notification and can proceed to create the vesting schedules.
       </p> */}
+      {/* This next paragraph is displayed only when the user uses multi-sig to mint. */}
       <p className="text-gray-500 text-sm mb-9">
         The token creation is still in progress. In order to complete this step, 2 out of 3 owners is required to
         confirm this transaction.
