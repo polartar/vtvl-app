@@ -54,7 +54,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
           <SearchInput placeholder="Search" />
         </div>
       </div>
-      {!asPath.includes('/onboarding') && (
+      {['/onboarding/connect-wallet', '/onboarding'].every((o) => asPath !== o) && (
         <div className="flex flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5">
           <div className="flex flex-row items-center gap-1 sm:gap-2">
             <img src="/icons/gas.svg" alt="Gas" className="w-4" />
