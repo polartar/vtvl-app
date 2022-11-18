@@ -86,7 +86,6 @@ export function AuthContextProvider({ children }: any) {
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
     const additionalInfo = getAdditionalUserInfo(credential);
     const memberInfo = await fetchMember(credential.user.uid);
-    console.log('FOR CRYING OUT LOUD IS THIS ANEW USER OR NOT!!! ', additionalInfo?.isNewUser);
     if (additionalInfo?.isNewUser) {
       await newMember(credential.user.uid, {
         email: credential.user.email || '',

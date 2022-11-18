@@ -57,7 +57,7 @@ const NewSafePage: NextPage = () => {
       console.log('Please login with metamask to create safe');
       return;
     }
-    console.log('getting safe details ');
+
     if (!user) {
       console.log('Please login to import safe');
       return;
@@ -70,7 +70,7 @@ const NewSafePage: NextPage = () => {
         );
         return;
       }
-      console.log('we have gotten safe dtails her ', safe);
+
       setImportedSafe(safe);
       const o = (await safe.getOwners()).map((o) => {
         return { name: '', address: o, email: '' };
@@ -128,14 +128,14 @@ const NewSafePage: NextPage = () => {
   };
 
   const currentOwnerCount = +getValues('owners').length + 1;
-  const [options, setOptions] = useState(currentOwnerCount);
+  const [options, setOptions] = useState(getValues('owners').length);
 
   console.log('Values', errors, isValid, isDirty, isSubmitted);
 
   // Add a contributor to the list
   const addOwner = () => {
-    setOptions((prev) => prev + 1);
     append({ name: '', address: '', email: '' });
+    setOptions(getValues('owners').length);
   };
 
   const importSafe = async (address: string) => {
@@ -169,7 +169,7 @@ const NewSafePage: NextPage = () => {
       defaultValues.owners = o;
       defaultValues.authorizedUsers = await safe.getThreshold();
       //populate with existing safe if we have it stored
-      const savedSafe = await fetchSafeByAddress(await safe.getAddress());
+      const savedSafe = await fetchSafeByAddress(safe.getAddress());
       if (savedSafe) {
         defaultValues.owners = savedSafe.owners;
         defaultValues.organizationName = savedSafe.org_name;
@@ -206,11 +206,13 @@ const NewSafePage: NextPage = () => {
         return;
       }
 
-      const safe = importedSafe !== null ? importedSafe : await deploySafe(library, owners, values.authorizedUsers);
+      const safe = importedSafe ? importedSafe : await deploySafe(library, owners, values.authorizedUsers);
 
       if (!safe) {
         console.log('invalid safe configurations ');
-        setFormMessage(importedSafe !== null ? 'Could not import safe, invalid configurations.' : '');
+        setFormMessage(
+          importedSafe ? 'Error importing safe. Please try again.' : 'Error creating safe. Please try again.'
+        );
         setFormError(true);
         return;
       }
@@ -228,9 +230,9 @@ const NewSafePage: NextPage = () => {
         safeRef
       );
       return await onNext({ safeAddress: safe.getAddress() });
-    } catch (error) {
-      console.log('error getting safe info ', error);
-      setFormMessage('Error getting safe info');
+    } catch (error: any) {
+      console.error('error getting safe info ', error);
+      setFormMessage(`Multisig error: ${error.message}`);
       setFormError(true);
       return;
     }
@@ -320,7 +322,10 @@ const NewSafePage: NextPage = () => {
             </div>
             <TrashIcon
               className="stroke-current text-neutral-700 w-5 h-5 cursor-pointer transition-all transform-gpu hover:-translate-y-0.5"
-              onClick={() => remove(ownerIndex)}
+              onClick={() => {
+                remove(ownerIndex);
+                setOptions(getValues('owners').length);
+              }}
             />
           </div>
         ))}
@@ -354,7 +359,7 @@ const NewSafePage: NextPage = () => {
                     />
                   )}
                 />
-                <span className="paragraphy-small-medium text-neutral-800">out of {options - 1} owner(s)</span>
+                <span className="paragraphy-small-medium text-neutral-800">out of {options} owner(s)</span>
               </div>
             </div>
           </div>
