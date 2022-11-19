@@ -50,8 +50,8 @@ const SignUpPage: NextPage = () => {
   };
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
-    const values = getValues();
     try {
+      const values = getValues();
       const params: any = new URL(window.location.toString() || '');
       const type = params.searchParams.get('type');
       const orgId = params.searchParams.get('orgId');
