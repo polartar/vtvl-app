@@ -1,16 +1,50 @@
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
 import AuthContext from '@providers/auth.context';
-import OnboardingContext from '@providers/onboarding.context';
+import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
+import { IMember } from 'types/models';
 
 const MemberWalletPage: NextPage = () => {
-  const { completeOnboarding } = useContext(OnboardingContext);
-  const { user } = useContext(AuthContext);
+  const { completeOnboarding, startOnboarding } = useContext(OnboardingContext);
+  const { user, emailSignUp } = useContext(AuthContext);
   const { activate } = useWeb3React();
+  const [member, setMember] = React.useState<IMember>();
+
+  useEffect(() => {
+    startOnboarding(Step.ChainSetup);
+    const params: any = new URL(window.location.toString());
+    const name = params.searchParams.get('name');
+    const orgId = params.searchParams.get('orgId');
+    const email = params.searchParams.get('email');
+    const type = params.searchParams.get('type');
+    setMember({
+      email,
+      companyEmail: email,
+      org_id: orgId,
+      name,
+      type
+    });
+    if (email)
+      loginWithUrl({
+        email,
+        companyEmail: email,
+        org_id: orgId,
+        name,
+        type
+      });
+  }, []);
+
+  const loginWithUrl = async (mem: IMember) => {
+    try {
+      await emailSignUp(mem, window.location.toString());
+    } catch (error: any) {
+      console.log('error ', error);
+    }
+  };
 
   async function metamaskActivate() {
     try {
@@ -64,7 +98,7 @@ const MemberWalletPage: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-8 max-w-2xl px-9 py-10 text-center">
       <div>
-        <h1 className="font-medium mb-4">Hey {user?.memberInfo?.name}</h1>
+        <h1 className="font-medium mb-4">Hey {member?.name || user?.memberInfo?.name}</h1>
         <p className="text-sm text-neutral-500">
           We're glad to have you onboard.
           <br />
