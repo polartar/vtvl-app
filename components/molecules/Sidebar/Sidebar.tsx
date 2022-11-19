@@ -83,7 +83,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
         ))}
         <UserContainer>
           <User
-            userName={user?.displayName || 'John Doe'}
+            userName={user?.memberInfo?.name || user?.displayName || 'John Doe'}
             profilePhoto={user?.photoURL || ''}
             role={user?.memberInfo?.type || 'founder'}
             compact={!sidebarIsExpanded}

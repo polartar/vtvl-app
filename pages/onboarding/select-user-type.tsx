@@ -8,6 +8,7 @@ import Router from 'next/router';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { newMember } from 'services/db/member';
+import { IMember } from 'types/models';
 
 const Container = styled.div`
   width: 100%;
@@ -44,9 +45,7 @@ const SelectUserTypePage: NextPage = () => {
   const { emailSignUp, user } = useContext(AuthContext);
   const { active } = useWeb3React();
   const [selected, setSelected] = React.useState('');
-  const [orgId, setOrgId] = React.useState('');
-  const [userName, setUserName] = React.useState('');
-  const [isNewUser, setIsNewUser] = React.useState(false);
+  const [member, setMember] = React.useState<IMember>();
 
   useEffect(() => {
     startOnboarding(Step.UserTypeSetup);
@@ -55,15 +54,27 @@ const SelectUserTypePage: NextPage = () => {
     const orgId = params.searchParams.get('orgId');
     const email = params.searchParams.get('email');
     const newUser: boolean = params.searchParams.get('newUser');
-    setOrgId(orgId);
-    setUserName(name);
-    setIsNewUser(newUser);
-    if (email) loginWithUrl(email, newUser);
+    setMember({
+      org_id: orgId,
+      name,
+      email,
+      companyEmail: email
+    });
+    if (email)
+      loginWithUrl(
+        {
+          org_id: orgId,
+          name,
+          email,
+          companyEmail: email
+        },
+        newUser
+      );
   }, []);
 
-  const loginWithUrl = async (email: string, newUser: boolean) => {
+  const loginWithUrl = async (member: IMember, newUser: boolean) => {
     try {
-      await emailSignUp(email, '', window.location.toString());
+      await emailSignUp(member, window.location.toString());
       if (!newUser) completeOnboarding();
     } catch (error: any) {
       console.log('error ', error);
@@ -79,11 +90,11 @@ const SelectUserTypePage: NextPage = () => {
       active ? completeOnboarding() : Router.push('/member');
       if (user) {
         await newMember(user.uid, {
-          email: user.email || '',
-          companyEmail: user.email || '',
-          name: userName || user.displayName || '',
+          email: user.email || member?.email,
+          companyEmail: user.email || member?.email,
+          name: user.displayName || member?.name,
           type: selected,
-          org_id: orgId
+          org_id: member?.org_id
         });
         active ? completeOnboarding() : Router.push('/member');
         return;

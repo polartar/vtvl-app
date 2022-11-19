@@ -49,7 +49,7 @@ const AccountSetupPage: NextPage = () => {
     defaultValues: {
       name: '',
       company: '',
-      companyEmail: user?.memberInfo?.email || '',
+      companyEmail: user?.email || user?.memberInfo?.email || '',
       type: 'organization',
       contributors: [
         {
@@ -126,7 +126,7 @@ const AccountSetupPage: NextPage = () => {
         return;
       }
 
-      await registerNewMember(
+      const org_id = await registerNewMember(
         {
           name: values.name,
           email: user.email || '',
@@ -148,7 +148,7 @@ const AccountSetupPage: NextPage = () => {
             'employee',
             contributor.name,
             values.company,
-            user.memberInfo?.org_id
+            user.memberInfo?.org_id || org_id
           );
         });
       }
@@ -260,6 +260,7 @@ const AccountSetupPage: NextPage = () => {
                 placeholder="Enter your company email address"
                 className="md:col-span-2"
                 required
+                disabled={true}
                 error={Boolean(errors.companyEmail)}
                 message={errors.companyEmail ? 'Please enter your company email' : ''}
                 {...field}
