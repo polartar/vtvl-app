@@ -45,7 +45,7 @@ const Dashboard: NextPageWithLayout = () => {
 
   const loginWithUrl = async (email: string) => {
     try {
-      await emailSignUp(email, '', window.location.toString());
+      await emailSignUp({email}, window.location.toString());
     } catch (error: any) {
       console.log('error ', error);
     }
