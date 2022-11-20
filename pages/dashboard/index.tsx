@@ -120,7 +120,16 @@ const Dashboard: NextPageWithLayout = () => {
 
   // Check loading statuses
   useEffect(() => {
-    console.log('Loaders', isTokenLoading, transactionsLoading, vestingContractLoading, vestingsLoading);
+    console.log(
+      'Loaders',
+      isTokenLoading,
+      transactionsLoading,
+      vestingContractLoading,
+      vestingsLoading,
+      vestingContract,
+      vestings,
+      mintFormState
+    );
     setIsPageLoading(true);
     if (
       (!isTokenLoading || !mintFormState.address) &&
