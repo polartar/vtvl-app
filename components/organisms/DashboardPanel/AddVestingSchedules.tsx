@@ -13,6 +13,7 @@ import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
+import Router from 'next/router';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
 import SuccessIcon from 'public/icons/success.svg';
@@ -21,7 +22,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
-import { updateVesting } from 'services/db/vesting';
+import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
@@ -419,7 +420,7 @@ AddVestingSchedulesProps) => {
         // await approveTxResponse.transactionResponse?.wait();
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         await executeTransactionResponse.transactionResponse?.wait();
-        if (transaction.data)
+        if (transaction.data) {
           updateTransaction(
             {
               ...transaction.data,
@@ -427,12 +428,31 @@ AddVestingSchedulesProps) => {
             },
             vestings[activeVestingIndex].data.transactionId
           );
+          const batchVestings = await fetchVestingsByQuery('transactionId', '==', transaction.id);
+
+          await Promise.all(
+            batchVestings.map(async (vesting) => {
+              await updateVesting(
+                {
+                  ...vesting.data,
+                  status: 'COMPLETED'
+                },
+                vesting.id
+              );
+            })
+          );
+        }
         toast.success('Executed successfully.');
       }
     } catch (err) {
       console.log('handleExecuteTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
     }
+  };
+
+  const handleViewDetails = () => {
+    const vesting = vestings[activeVestingIndex];
+    Router.push(`/vesting-schedule/${vesting.id}`);
   };
 
   const handleCreateFundTransaction = async () => {};
@@ -451,7 +471,7 @@ AddVestingSchedulesProps) => {
             onClick={handleCreateSignTransaction}>
             {approved ? 'Approved' : safe?.address ? 'Create and Sign the transaction' : 'Add Schedule'}
           </button>
-          <button className="line primary" onClick={() => {}}>
+          <button className="line primary" onClick={handleViewDetails}>
             View details
           </button>
         </>
@@ -468,7 +488,7 @@ AddVestingSchedulesProps) => {
             onClick={executable ? handleExecuteTransaction : handleApproveTransaction}>
             {executable ? 'Execute' : 'Sign and authorize'}
           </button>
-          <button className="line primary" onClick={() => {}}>
+          <button className="line primary" onClick={handleViewDetails}>
             View details
           </button>
         </>
@@ -508,7 +528,7 @@ AddVestingSchedulesProps) => {
           <button className="secondary" onClick={() => {}}>
             Fund contract
           </button>
-          <button className="line primary" onClick={() => {}}>
+          <button className="line primary" onClick={handleViewDetails}>
             View details
           </button>
         </>
@@ -522,7 +542,7 @@ AddVestingSchedulesProps) => {
           <button className="primary" disabled>
             Funding contract pending
           </button>
-          <button className="line primary" onClick={() => {}}>
+          <button className="line primary" onClick={handleViewDetails}>
             View details
           </button>
         </>

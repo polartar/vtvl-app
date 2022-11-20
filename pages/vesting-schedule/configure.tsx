@@ -457,7 +457,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         // Error
         setFormError(true);
         setFormSuccess(false);
-        setFormMessage('Cliff duration and at least one release frequency should be within the schedule dates');
+        setFormMessage(
+          'Cliff duration and release frequency should fall within the Start date and End date of the schedule.'
+        );
         return false;
       } else if (formError) {
         // Convert to successful if the state came from an error

@@ -1,4 +1,5 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
+import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
@@ -30,10 +31,19 @@ import { NextPageWithLayout } from '../_app';
 const Dashboard: NextPageWithLayout = () => {
   const { library, account, activate } = useWeb3React();
   const { organizationId, safe, emailSignUp } = useAuthContext();
-  const { mintFormState } = useTokenContext();
+  const { mintFormState, isTokenLoading } = useTokenContext();
   const { recipients, scheduleFormState } = useVestingContext();
-  const { vestings, vestingContract, transactions, ownershipTransfered, insufficientBalance, depositAmount } =
-    useDashboardContext();
+  const {
+    vestings,
+    vestingContract,
+    transactions,
+    ownershipTransfered,
+    insufficientBalance,
+    depositAmount,
+    vestingContractLoading,
+    vestingsLoading,
+    transactionsLoading
+  } = useDashboardContext();
 
   const router = useRouter();
 
@@ -45,7 +55,7 @@ const Dashboard: NextPageWithLayout = () => {
 
   const loginWithUrl = async (email: string) => {
     try {
-      await emailSignUp({email}, window.location.toString());
+      await emailSignUp({ email }, window.location.toString());
     } catch (error: any) {
       console.log('error ', error);
     }
@@ -104,13 +114,30 @@ const Dashboard: NextPageWithLayout = () => {
   };
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   console.log(activities);
 
+  // Check loading statuses
+  useEffect(() => {
+    console.log('Loaders', isTokenLoading, transactionsLoading, vestingContractLoading, vestingsLoading);
+    setIsPageLoading(true);
+    if (
+      (!isTokenLoading || !mintFormState.address) &&
+      !transactionsLoading &&
+      !vestingContractLoading &&
+      !vestingsLoading
+    ) {
+      setIsPageLoading(false);
+    }
+  }, [isTokenLoading, transactionsLoading, vestingContractLoading, vestingsLoading, mintFormState.address]);
+
   return (
     <>
-      {(!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED') &&
-      !mintFormState.address ? (
+      {isPageLoading ? (
+        <PageLoader />
+      ) : (!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED') &&
+        !mintFormState.address ? (
         <>
           <h1 className="h2 font-medium text-center mb-10">My Projects</h1>
           <EmptyState
@@ -159,7 +186,7 @@ const Dashboard: NextPageWithLayout = () => {
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Create Schedule</span>
               </button>
-              <button className="secondary row-center" onClick={() => router.push('/minting-token')}>
+              <button className="secondary row-center" onClick={() => router.push('/dashboard/mint-supply')}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Mint Supply</span>
               </button>

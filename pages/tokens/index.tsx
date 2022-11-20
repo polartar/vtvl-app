@@ -1,10 +1,11 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
+import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import MyTokenDetails from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 
 const MyTokenStatus: NextPageWithLayout = () => {
   // Fetch token based on status at initial load
@@ -62,32 +63,46 @@ const MyTokenStatus: NextPageWithLayout = () => {
     }
   ];
 
+  const [isPageLoading, setIsPageLoading] = useState(true);
+
+  // Remove this once there is an integration happening with the backend,
+  // but make sure to setIsPageLoading to false once actual data is loaded.
+  useEffect(() => {
+    setTimeout(() => setIsPageLoading(false), 5000);
+  }, []);
+
   return (
-    <div className="w-full">
-      <div className="max-w-4xl xl:max-w-full">
-        <h1 className="text-neutral-900 mb-9">My Tokens</h1>
-        {showTokens ? (
-          <>
-            <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
-            <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-              {tokens.map((token, tokenIndex) => (
-                <MyTokenDetails key={`my-token-${tokenIndex}`} {...token} viewDetailsUrl="/tokens/schedule-001" />
-              ))}
-            </div>
-            {/* Probably need a condition to check if there are more records */}
-            <button type="button" className="primary line mx-auto flex py-1.5 my-5">
-              Load more
-            </button>
-          </>
-        ) : (
-          <EmptyState
-            image="/images/cryptocurrency-trading-bot.gif"
-            title="No claimable tokens"
-            description={<>Come back again next time.</>}
-          />
-        )}
-      </div>
-    </div>
+    <>
+      {isPageLoading ? (
+        <PageLoader />
+      ) : (
+        <div className="w-full">
+          <div className="max-w-4xl xl:max-w-full">
+            <h1 className="text-neutral-900 mb-9">My Tokens</h1>
+            {showTokens ? (
+              <>
+                <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
+                <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {tokens.map((token, tokenIndex) => (
+                    <MyTokenDetails key={`my-token-${tokenIndex}`} {...token} viewDetailsUrl="/tokens/schedule-001" />
+                  ))}
+                </div>
+                {/* Probably need a condition to check if there are more records */}
+                <button type="button" className="primary line mx-auto flex py-1.5 my-5">
+                  Load more
+                </button>
+              </>
+            ) : (
+              <EmptyState
+                image="/images/cryptocurrency-trading-bot.gif"
+                title="No claimable tokens"
+                description={<>Come back again next time.</>}
+              />
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

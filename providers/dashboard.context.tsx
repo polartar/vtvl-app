@@ -14,6 +14,7 @@ import { IRecipient } from 'types/vesting';
 import { parseTokenAmount } from 'utils/token';
 
 import { useAuthContext } from './auth.context';
+import { useSharedContext } from './shared.context';
 import { useTokenContext } from './token.context';
 
 interface IDashboardData {
@@ -23,6 +24,9 @@ interface IDashboardData {
   ownershipTransfered: boolean;
   insufficientBalance: boolean;
   depositAmount: string;
+  vestingsLoading: boolean;
+  vestingContractLoading: boolean;
+  transactionsLoading: boolean;
   fetchDashboardVestingContract: () => void;
   fetchDashboardVestings: () => void;
   fetchDashboardTransactions: () => void;
@@ -44,21 +48,47 @@ export function DashboardContextProvider({ children }: any) {
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
+  const [vestingsLoading, setVestingsLoading] = useState(true);
+  const [vestingContractLoading, setVestingContractLoading] = useState(true);
+  const [transactionsLoading, setTransactionsLoading] = useState(true);
 
   const fetchDashboardVestingContract = () => {
-    if (organizationId)
-      fetchVestingContractByQuery('organizationId', '==', organizationId).then((res) => {
-        setVestingContract(res);
-      });
+    if (organizationId) {
+      fetchVestingContractByQuery('organizationId', '==', organizationId)
+        .then((res) => {
+          setVestingContract(res);
+          setVestingContractLoading(false);
+        })
+        .catch((err) => setVestingContractLoading(false));
+    } else {
+      setVestingContractLoading(false);
+    }
   };
 
   const fetchDashboardVestings = () => {
-    if (organizationId) fetchVestingsByQuery('organizationId', '==', organizationId).then((res) => setVestings(res));
+    if (organizationId) {
+      fetchVestingsByQuery('organizationId', '==', organizationId)
+        .then((res) => {
+          setVestings(res);
+          setVestingsLoading(false);
+        })
+        .catch((err) => setVestingsLoading(false));
+    } else {
+      setVestingsLoading(false);
+    }
   };
 
   const fetchDashboardTransactions = () => {
-    if (organizationId)
-      fetchTransactionsByQuery('organizationId', '==', organizationId).then((res) => setTransactions(res));
+    if (organizationId) {
+      fetchTransactionsByQuery('organizationId', '==', organizationId)
+        .then((res) => {
+          setTransactions(res);
+          setTransactionsLoading(false);
+        })
+        .catch((err) => setTransactionsLoading(false));
+    } else {
+      setTransactionsLoading(false);
+    }
   };
 
   const value = useMemo(
@@ -69,20 +99,31 @@ export function DashboardContextProvider({ children }: any) {
       ownershipTransfered,
       insufficientBalance,
       depositAmount,
+      vestingsLoading,
+      vestingContractLoading,
+      transactionsLoading,
       fetchDashboardVestingContract,
       fetchDashboardVestings,
       fetchDashboardTransactions,
       setOwnershipTransfered
     }),
-    [vestings, vestingContract, transactions, ownershipTransfered, insufficientBalance, depositAmount]
+    [
+      vestings,
+      vestingContract,
+      transactions,
+      ownershipTransfered,
+      insufficientBalance,
+      depositAmount,
+      vestingsLoading,
+      vestingContractLoading,
+      transactionsLoading
+    ]
   );
 
   useEffect(() => {
-    if (organizationId) {
-      fetchDashboardVestings();
-      fetchDashboardVestingContract();
-      fetchDashboardTransactions();
-    }
+    fetchDashboardVestings();
+    fetchDashboardVestingContract();
+    fetchDashboardTransactions();
   }, [organizationId]);
 
   useEffect(() => {

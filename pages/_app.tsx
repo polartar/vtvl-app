@@ -12,6 +12,8 @@ import React, { ReactElement, ReactNode } from 'react';
 // Todo: Arvin #18 - Explore styles that can be customized / override to conform with VTVL branding.
 // React datepicker initial styling.
 import 'react-datepicker/dist/react-datepicker.css';
+// Skeleton loader styles
+import 'react-loading-skeleton/dist/skeleton.css';
 import Modal from 'react-modal';
 import { ToastContainer } from 'react-toastify';
 // Toast initial styling.
