@@ -24,6 +24,7 @@ interface IDashboardData {
   ownershipTransfered: boolean;
   insufficientBalance: boolean;
   depositAmount: string;
+  loaders: { vestings: boolean; vestingContract: boolean; transactions: boolean };
   fetchDashboardVestingContract: () => void;
   fetchDashboardVestings: () => void;
   fetchDashboardTransactions: () => void;
@@ -36,7 +37,6 @@ export function DashboardContextProvider({ children }: any) {
   const { account, chainId } = useWeb3React();
   const { mintFormState } = useTokenContext();
   const { organizationId, safe } = useAuthContext();
-  const { setPageLoading } = useSharedContext();
 
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
   const [vestingContract, setVestingContract] = useState<
@@ -90,6 +90,7 @@ export function DashboardContextProvider({ children }: any) {
       ownershipTransfered,
       insufficientBalance,
       depositAmount,
+      loaders,
       fetchDashboardVestingContract,
       fetchDashboardVestings,
       fetchDashboardTransactions,
@@ -164,13 +165,6 @@ export function DashboardContextProvider({ children }: any) {
       setOwnershipTransfered(true);
     }
   }, [organizationId, vestingContract, safe, ownershipTransfered, chainId]);
-
-  // Check for loading state based on different fetches
-  useEffect(() => {
-    if (!loaders.vestings && !loaders.vestingContract && !loaders.transactions) {
-      setPageLoading(false);
-    }
-  }, [loaders]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { fetchTokenByQuery } from 'services/db/token';
 
 import { useAuthContext } from './auth.context';
+import { useSharedContext } from './shared.context';
 
 export interface IMintFormState {
   name: string;
@@ -20,6 +21,7 @@ export interface IMintFormState {
 
 interface ITokenContextData {
   mintFormState: IMintFormState;
+  isTokenLoading: boolean;
   updateMintFormState: (v: any) => void;
 }
 
@@ -27,6 +29,7 @@ const TokenContext = createContext({} as ITokenContextData);
 
 export function TokenContextProvider({ children }: any) {
   const { organizationId } = useAuthContext();
+  const [isTokenLoading, setIsTokenLoading] = useState(true);
 
   const [mintFormState, setMintFormState] = useState<IMintFormState>({
     name: '',
@@ -46,31 +49,36 @@ export function TokenContextProvider({ children }: any) {
   const value = useMemo(
     () => ({
       mintFormState,
+      isTokenLoading,
       updateMintFormState: setMintFormState
     }),
     [mintFormState]
   );
 
   useEffect(() => {
+    setIsTokenLoading(true);
     if (organizationId) {
-      fetchTokenByQuery('organizationId', '==', organizationId).then((res) => {
-        if (res)
-          setMintFormState((mintFormState) => ({
-            ...mintFormState,
-            name: res.data?.name || '',
-            symbol: res.data?.symbol || '',
-            logo: res.data?.logo || '',
-            supplyCap: res.data?.supplyCap || ('UNLIMITED' as any),
-            maxSupply: res.data && res.data.maxSupply ? res.data?.maxSupply : 0,
-            initialSupply: res.data && res.data.initialSupply ? res.data?.initialSupply : 0,
-            decimals: 18,
-            address: res.data?.address || '',
-            imported: res.data?.imported || false,
-            createdAt: res.data?.createdAt ? res.data?.createdAt : Math.floor(new Date().getTime() / 1000),
-            updatedAt: res.data?.updatedAt ? res.data?.createdAt : Math.floor(new Date().getTime() / 1000),
-            status: res.data?.status ? res.data?.status : 'PENDING'
-          }));
-      });
+      fetchTokenByQuery('organizationId', '==', organizationId)
+        .then((res) => {
+          if (res)
+            setMintFormState((mintFormState) => ({
+              ...mintFormState,
+              name: res.data?.name || '',
+              symbol: res.data?.symbol || '',
+              logo: res.data?.logo || '',
+              supplyCap: res.data?.supplyCap || ('UNLIMITED' as any),
+              maxSupply: res.data && res.data.maxSupply ? res.data?.maxSupply : 0,
+              initialSupply: res.data && res.data.initialSupply ? res.data?.initialSupply : 0,
+              decimals: 18,
+              address: res.data?.address || '',
+              imported: res.data?.imported || false,
+              createdAt: res.data?.createdAt ? res.data?.createdAt : Math.floor(new Date().getTime() / 1000),
+              updatedAt: res.data?.updatedAt ? res.data?.createdAt : Math.floor(new Date().getTime() / 1000),
+              status: res.data?.status ? res.data?.status : 'PENDING'
+            }));
+          setIsTokenLoading(false);
+        })
+        .catch((err) => setIsTokenLoading(false));
     }
   }, [organizationId]);
 
