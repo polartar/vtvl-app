@@ -166,8 +166,10 @@ const NewSafePage: NextPage = () => {
 
       setImportedSafe(safe);
       const defaultValues: any = {};
+      const authThreshold = await safe.getThreshold();
       defaultValues.owners = o;
-      defaultValues.authorizedUsers = await safe.getThreshold();
+      // Use the correct value for authorized users by checking on the threshold.
+      defaultValues.authorizedUsers = o.length > authThreshold ? authThreshold : o.length;
       //populate with existing safe if we have it stored
       const savedSafe = await fetchSafeByAddress(safe.getAddress());
       if (savedSafe) {
@@ -175,7 +177,9 @@ const NewSafePage: NextPage = () => {
         defaultValues.organizationName = savedSafe.org_name;
         setSafeRef(savedSafe?.id);
       }
-      setOptions(defaultValues.authorizedUsers);
+      // Set the options depending on the number of owners
+      // setOptions(defaultValues.authorizedUsers);
+      setOptions(o.length);
       reset({ ...defaultValues });
     } catch (error: any) {
       console.log('error importing safe ', error);
