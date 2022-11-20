@@ -131,22 +131,16 @@ const Dashboard: NextPageWithLayout = () => {
       mintFormState
     );
     setIsPageLoading(true);
-    if (
-      (!isTokenLoading || !mintFormState.address) &&
-      !transactionsLoading &&
-      !vestingContractLoading &&
-      !vestingsLoading
-    ) {
-      setIsPageLoading(false);
+    if (!isTokenLoading && !transactionsLoading && !vestingContractLoading && !vestingsLoading) {
+      setTimeout(() => setIsPageLoading(false), 1000);
     }
-  }, [isTokenLoading, transactionsLoading, vestingContractLoading, vestingsLoading, mintFormState.address]);
+  }, [isTokenLoading, transactionsLoading, vestingContractLoading, vestingsLoading, mintFormState]);
 
   return (
     <>
       {isPageLoading ? (
         <PageLoader />
-      ) : (!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED') &&
-        !mintFormState.address ? (
+      ) : !mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED' ? (
         <>
           <h1 className="h2 font-medium text-center mb-10">My Projects</h1>
           <EmptyState
