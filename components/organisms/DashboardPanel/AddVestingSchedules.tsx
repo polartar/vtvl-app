@@ -21,7 +21,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
-import { updateVesting } from 'services/db/vesting';
+import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
@@ -419,7 +419,7 @@ AddVestingSchedulesProps) => {
         // await approveTxResponse.transactionResponse?.wait();
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         await executeTransactionResponse.transactionResponse?.wait();
-        if (transaction.data)
+        if (transaction.data) {
           updateTransaction(
             {
               ...transaction.data,
@@ -427,6 +427,20 @@ AddVestingSchedulesProps) => {
             },
             vestings[activeVestingIndex].data.transactionId
           );
+          const batchVestings = await fetchVestingsByQuery('transactionId', '==', transaction.id);
+
+          await Promise.all(
+            batchVestings.map(async (vesting) => {
+              await updateVesting(
+                {
+                  ...vesting.data,
+                  status: 'COMPLETED'
+                },
+                vesting.id
+              );
+            })
+          );
+        }
         toast.success('Executed successfully.');
       }
     } catch (err) {
