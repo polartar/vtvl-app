@@ -13,6 +13,7 @@ import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
+import Router from 'next/router';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
 import SuccessIcon from 'public/icons/success.svg';
@@ -449,6 +450,11 @@ AddVestingSchedulesProps) => {
     }
   };
 
+  const handleViewDetails = () => {
+    const vesting = vestings[activeVestingIndex];
+    Router.push(`/vesting-schedule/${vesting.id}`);
+  };
+
   const handleCreateFundTransaction = async () => {};
 
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
@@ -465,7 +471,7 @@ AddVestingSchedulesProps) => {
             onClick={handleCreateSignTransaction}>
             {approved ? 'Approved' : safe?.address ? 'Create and Sign the transaction' : 'Add Schedule'}
           </button>
-          <button className="line primary" onClick={() => {}}>
+          <button className="line primary" onClick={handleViewDetails}>
             View details
           </button>
         </>
@@ -482,7 +488,7 @@ AddVestingSchedulesProps) => {
             onClick={executable ? handleExecuteTransaction : handleApproveTransaction}>
             {executable ? 'Execute' : 'Sign and authorize'}
           </button>
-          <button className="line primary" onClick={() => {}}>
+          <button className="line primary" onClick={handleViewDetails}>
             View details
           </button>
         </>
@@ -522,7 +528,7 @@ AddVestingSchedulesProps) => {
           <button className="secondary" onClick={() => {}}>
             Fund contract
           </button>
-          <button className="line primary" onClick={() => {}}>
+          <button className="line primary" onClick={handleViewDetails}>
             View details
           </button>
         </>
@@ -536,7 +542,7 @@ AddVestingSchedulesProps) => {
           <button className="primary" disabled>
             Funding contract pending
           </button>
-          <button className="line primary" onClick={() => {}}>
+          <button className="line primary" onClick={handleViewDetails}>
             View details
           </button>
         </>
