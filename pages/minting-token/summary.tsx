@@ -34,7 +34,7 @@ const Summary: NextPageWithLayout = () => {
     try {
       if (!library) {
         activate(injected);
-      } else {
+      } else if (organizationId) {
         setLoading(true);
         const tokenTemplate = supplyCap === 'LIMITED' ? VariableSupplyERC20Token : FullPremintERC20Token;
         const TokenFactory = new ethers.ContractFactory(tokenTemplate.abi, tokenTemplate.bytecode, library.getSigner());
@@ -56,7 +56,7 @@ const Summary: NextPageWithLayout = () => {
           symbol: symbol,
           address: tokenContract.address,
           logo: logo,
-          organizationId: organizationId!,
+          organizationId: organizationId,
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           imported: false,
