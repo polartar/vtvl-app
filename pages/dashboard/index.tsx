@@ -1,4 +1,5 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
+import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
@@ -45,7 +46,7 @@ const Dashboard: NextPageWithLayout = () => {
 
   const loginWithUrl = async (email: string) => {
     try {
-      await emailSignUp({email}, window.location.toString());
+      await emailSignUp({ email }, window.location.toString());
     } catch (error: any) {
       console.log('error ', error);
     }
@@ -104,13 +105,23 @@ const Dashboard: NextPageWithLayout = () => {
   };
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   console.log(activities);
 
+  // Loading state check
+  useEffect(() => {
+    if (mintFormState) {
+      setIsPageLoading(false);
+    }
+  }, [mintFormState]);
+
   return (
     <>
-      {(!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED') &&
-      !mintFormState.address ? (
+      {isPageLoading ? (
+        <PageLoader />
+      ) : (!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED') &&
+        !mintFormState.address ? (
         <>
           <h1 className="h2 font-medium text-center mb-10">My Projects</h1>
           <EmptyState

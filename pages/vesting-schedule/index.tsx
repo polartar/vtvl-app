@@ -3,6 +3,7 @@ import Chip from '@components/atoms/Chip/Chip';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import Loader from '@components/atoms/Loader/Loader';
+import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ProgressCircle from '@components/atoms/ProgressCircle/ProgressCircle';
 import StatusIndicator from '@components/atoms/StatusIndicator/StatusIndicator';
 import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
@@ -34,7 +35,6 @@ interface IVestingSchedules {
  */
 const VestingScheduleProject: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
-  const [isFetchingToken, setIsFetchingToken] = useState(true);
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
   const [vestingScheduleDataCounts, setVestingScheduleDataCounts] = useState({
     totalSchedules: 0,
@@ -44,23 +44,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     progress: { current: 0, total: 0 }
   });
 
-  // First we need to get the contract
-  const [vestingToken, setVestingToken] = useState<IToken | undefined>();
-  const getVestingContract = async () => {
-    try {
-      if (organizationId) {
-        const token = await fetchTokenByQuery('organizationId', '==', organizationId);
-        setVestingToken(token?.data);
-        setIsFetchingToken(false);
-        console.log('Vesting contract', token);
-      } else throw 'Organization id does not exist';
-    } catch (err) {
-      console.log('Error on getting vesting contract', err);
-      setIsFetchingToken(false);
-    }
-  };
-
-  // Then get the schedules
+  // We get the schedules
   const [vestingSchedules, setVestingSchedules] = useState<IVestingSchedules[]>();
 
   const getVestings = async () => {
@@ -97,7 +81,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   };
 
   useEffect(() => {
-    getVestingContract();
     getVestings();
   }, []);
 
@@ -383,11 +366,21 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     console.log('Here are the selected rows', selectedRows);
   };
 
+  // Handle loading state
+  const [isPageLoading, setIsPageLoading] = useState(true);
+
+  // Check if fetching schedules and token are complete
+  useEffect(() => {
+    if (isFetchingSchedules) {
+      setIsPageLoading(false);
+    }
+  }, [isFetchingSchedules]);
+
   return (
     <>
-      {isFetchingToken || isFetchingSchedules ? (
-        <Loader progress={90} />
-      ) : vestingSchedules?.length && vestingToken ? (
+      {isPageLoading ? (
+        <PageLoader />
+      ) : vestingSchedules?.length && mintFormState ? (
         <div className="w-full">
           <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
           <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
@@ -406,10 +399,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           </div>
           <div className="p-5 mb-6 border-b border-gray-200">
             <VestingOverview
-              token={vestingToken.symbol}
+              token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
               remainingAllocation={10000000}
-              totalAllocation={vestingToken.initialSupply || 0}
+              totalAllocation={mintFormState.initialSupply || 0}
             />
           </div>
           <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
