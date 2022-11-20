@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { fetchTokenByQuery } from 'services/db/token';
 
 import { useAuthContext } from './auth.context';
+import { useSharedContext } from './shared.context';
 
 export interface IMintFormState {
   name: string;
