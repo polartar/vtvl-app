@@ -32,10 +32,19 @@ import { NextPageWithLayout } from '../_app';
 const Dashboard: NextPageWithLayout = () => {
   const { library, account, activate } = useWeb3React();
   const { organizationId, safe, emailSignUp } = useAuthContext();
-  const { mintFormState } = useTokenContext();
+  const { mintFormState, isTokenLoading } = useTokenContext();
   const { recipients, scheduleFormState } = useVestingContext();
-  const { vestings, vestingContract, transactions, ownershipTransfered, insufficientBalance, depositAmount } =
-    useDashboardContext();
+  const {
+    vestings,
+    vestingContract,
+    transactions,
+    ownershipTransfered,
+    insufficientBalance,
+    depositAmount,
+    vestingContractLoading,
+    vestingsLoading,
+    transactionsLoading
+  } = useDashboardContext();
 
   const router = useRouter();
 
@@ -106,9 +115,23 @@ const Dashboard: NextPageWithLayout = () => {
   };
 
   const [currentPage, setCurrentPage] = useState(1);
-  const { isPageLoading } = useSharedContext();
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   console.log(activities);
+
+  // Check loading statuses
+  useEffect(() => {
+    console.log('Loaders', isTokenLoading, transactionsLoading, vestingContractLoading, vestingsLoading);
+    setIsPageLoading(true);
+    if (
+      (!isTokenLoading || !mintFormState.address) &&
+      !transactionsLoading &&
+      !vestingContractLoading &&
+      !vestingsLoading
+    ) {
+      setIsPageLoading(false);
+    }
+  }, [isTokenLoading, transactionsLoading, vestingContractLoading, vestingsLoading, mintFormState.address]);
 
   return (
     <>

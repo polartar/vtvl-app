@@ -55,7 +55,6 @@ interface IVestingSchedules {
 const VestingScheduleProject: NextPageWithLayout = () => {
   const { account, library, activate, chainId } = useWeb3React();
   const { organizationId, safe } = useAuthContext();
-  const [isFetchingToken, setIsFetchingToken] = useState(true);
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
   const [vestingScheduleDataCounts, setVestingScheduleDataCounts] = useState({
     totalSchedules: 0,
@@ -105,7 +104,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     getVestings();
   }, []);
 
-  const { mintFormState } = useTokenContext();
+  const { mintFormState, isTokenLoading } = useTokenContext();
   const [selected, setSelected] = useState('manual');
 
   const userAction = {
@@ -598,7 +597,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Check if fetching schedules and token are complete
   useEffect(() => {
-    if (isFetchingSchedules) {
+    if (!isFetchingSchedules && !isTokenLoading) {
       setIsPageLoading(false);
     }
   }, [isFetchingSchedules]);
@@ -632,7 +631,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               totalAllocation={mintFormState.initialSupply || 0}
             />
           </div>
-          <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
+          {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
             <Input
               label="Schedule name"
               placeholder="Enter schedule"
@@ -644,7 +643,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <SelectInput label="Cliff release" options={recipientTypes} />
             <SelectInput label="Status" options={recipientTypes} />
             <Input label="Amount" placeholder="Enter the amount" className="lg:col-span-2" />
-          </div>
+          </div> */}
           <Table
             columns={columns}
             data={vestingSchedules}
