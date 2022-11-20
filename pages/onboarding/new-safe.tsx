@@ -167,7 +167,9 @@ const NewSafePage: NextPage = () => {
       setImportedSafe(safe);
       const defaultValues: any = {};
       defaultValues.owners = o;
-      defaultValues.authorizedUsers = await safe.getThreshold();
+      // Commenting this out as sometimes it's weird that what is fetched in
+      // the getThreshold is greater than the number of owners listed resulting to e.g, 3 out of 2 owners
+      // defaultValues.authorizedUsers = await safe.getThreshold();
       //populate with existing safe if we have it stored
       const savedSafe = await fetchSafeByAddress(safe.getAddress());
       if (savedSafe) {
@@ -175,7 +177,9 @@ const NewSafePage: NextPage = () => {
         defaultValues.organizationName = savedSafe.org_name;
         setSafeRef(savedSafe?.id);
       }
-      setOptions(defaultValues.authorizedUsers);
+      // Set the options depending on the number of owners
+      // setOptions(defaultValues.authorizedUsers);
+      setOptions(o.length);
       reset({ ...defaultValues });
     } catch (error: any) {
       console.log('error importing safe ', error);
