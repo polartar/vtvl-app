@@ -62,7 +62,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
       details: scheduleFormState,
       recipients,
       organizationId: organizationId!,
-      status: 'WAITING_APPROVAL',
+      status: 'INITIALIZED',
       createdAt: Math.floor(new Date().getTime() / 1000),
       updatedAt: Math.floor(new Date().getTime() / 1000),
       transactionId: ''

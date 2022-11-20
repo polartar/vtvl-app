@@ -7,6 +7,7 @@ export interface IVesting {
   details: IScheduleFormState;
   recipients: MultiValue<IRecipient>;
   status?:
+    | 'INITIALIZED'
     | 'WAITING_APPROVAL'
     | 'WAITING_FUNDS'
     | 'LIVE'
