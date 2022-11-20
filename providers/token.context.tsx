@@ -52,14 +52,14 @@ export function TokenContextProvider({ children }: any) {
       isTokenLoading,
       updateMintFormState: setMintFormState
     }),
-    [mintFormState]
+    [mintFormState, isTokenLoading]
   );
 
   const fetchToken = () => {
     if (organizationId) {
       fetchTokenByQuery('organizationId', '==', organizationId)
         .then((res) => {
-          if (res)
+          if (res) {
             setMintFormState((mintFormState) => ({
               ...mintFormState,
               name: res.data?.name || '',
@@ -75,6 +75,7 @@ export function TokenContextProvider({ children }: any) {
               updatedAt: res.data?.updatedAt ? res.data?.createdAt : Math.floor(new Date().getTime() / 1000),
               status: res.data?.status ? res.data?.status : 'PENDING'
             }));
+          }
           setIsTokenLoading(false);
         })
         .catch((err) => setIsTokenLoading(false));
