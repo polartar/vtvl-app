@@ -5,11 +5,10 @@ import Link from 'next/link';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, useEffect } from 'react';
 
 const Complete: NextPageWithLayout = () => {
   const { mintFormState, isTokenLoading } = useTokenContext();
-  const [isPageLoading, setIsPageLoading] = useState(true);
 
   useEffect(() => {
     if (!mintFormState) {
@@ -17,16 +16,9 @@ const Complete: NextPageWithLayout = () => {
     }
   }, [mintFormState]);
 
-  // Remove loader when token is fetched
-  useEffect(() => {
-    if (!isTokenLoading || !mintFormState.address) setIsPageLoading(false);
-  }, [isTokenLoading]);
-
   return (
     <>
-      {isPageLoading ? (
-        <PageLoader />
-      ) : (
+      <PageLoader isLoading={isTokenLoading}>
         <div className="panel rounded-lg mx-auto w-full max-w-lg mt-14 text-center">
           <h2 className="h4 text-neutral-900 mb-3">
             <strong>{mintFormState?.symbol}</strong> token created successfully!
@@ -48,7 +40,7 @@ const Complete: NextPageWithLayout = () => {
             </Link>
           </div>
         </div>
-      )}
+      </PageLoader>
     </>
   );
 };

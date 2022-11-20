@@ -73,9 +73,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
 
   return (
     <>
-      {isPageLoading ? (
-        <PageLoader />
-      ) : (
+      <PageLoader isLoading={isPageLoading}>
         <div className="w-full">
           <div className="max-w-4xl xl:max-w-full">
             <h1 className="text-neutral-900 mb-9">My Tokens</h1>
@@ -101,7 +99,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
             )}
           </div>
         </div>
-      )}
+      </PageLoader>
     </>
   );
 };
