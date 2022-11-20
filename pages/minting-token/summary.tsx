@@ -89,14 +89,14 @@ const Summary: NextPageWithLayout = () => {
         <span>Contract Address</span>
       </label>
       <Skeleton />
-      <progress
+      {/* <progress
         value={
           supplyCap === 'LIMITED' ? (parseInt(initialSupply.toString()) / parseInt(maxSupply.toString())) * 100 : 100
         }
         max="100"
         className="w-full">
         75%
-      </progress>
+      </progress> */}
       <div className="border-y border-gray-300 mt-5 py-5 grid md:grid-cols-3">
         <label>
           <span>Supply cap</span>
