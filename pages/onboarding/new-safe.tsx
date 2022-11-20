@@ -166,10 +166,10 @@ const NewSafePage: NextPage = () => {
 
       setImportedSafe(safe);
       const defaultValues: any = {};
+      const authThreshold = await safe.getThreshold();
       defaultValues.owners = o;
-      // Commenting this out as sometimes it's weird that what is fetched in
-      // the getThreshold is greater than the number of owners listed resulting to e.g, 3 out of 2 owners
-      // defaultValues.authorizedUsers = await safe.getThreshold();
+      // Use the correct value for authorized users by checking on the threshold.
+      defaultValues.authorizedUsers = o.length > authThreshold ? authThreshold : o.length;
       //populate with existing safe if we have it stored
       const savedSafe = await fetchSafeByAddress(safe.getAddress());
       if (savedSafe) {
