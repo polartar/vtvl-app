@@ -116,9 +116,8 @@ const FundingContractModal = ({
    * Function used to update the current value and turn it into the Maximum allowable value in the <LimitedSupply> component
    * -- the Amount to be funded in the contract.
    */
-  const maxValue = 1000000;
   const handleMaxChange = () => {
-    setValue('amount', maxValue);
+    setValue('amount', +mintFormState.maxSupply);
   };
 
   // Update copied state when the contract address is copied to clipboard.
@@ -288,7 +287,7 @@ const FundingContractModal = ({
                       required
                       initial={+amount.value}
                       minimum={+depositAmount}
-                      maximum={maxValue}
+                      maximum={+mintFormState.maxSupply}
                       onMinChange={handleMinChange}
                       onUseMax={handleMaxChange}
                       maxReadOnly
