@@ -21,6 +21,7 @@ export interface IMintFormState {
 
 interface ITokenContextData {
   mintFormState: IMintFormState;
+  tokenId: string;
   isTokenLoading: boolean;
   updateMintFormState: (v: any) => void;
 }
@@ -46,9 +47,12 @@ export function TokenContextProvider({ children }: any) {
     status: 'PENDING'
   });
 
+  const [tokenId, setTokenId] = useState('');
+
   const value = useMemo(
     () => ({
       mintFormState,
+      tokenId,
       isTokenLoading,
       updateMintFormState: setMintFormState
     }),
@@ -75,6 +79,7 @@ export function TokenContextProvider({ children }: any) {
               updatedAt: res.data?.updatedAt ? res.data?.createdAt : Math.floor(new Date().getTime() / 1000),
               status: res.data?.status ? res.data?.status : 'PENDING'
             }));
+            setTokenId(res.id);
           }
           setIsTokenLoading(false);
         })

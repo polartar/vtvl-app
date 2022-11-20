@@ -3,6 +3,7 @@ import Button from '@components/atoms/Button/Button';
 import DotLoader from '@components/atoms/DotLoader/DotLoader';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { Skeleton } from '@mui/material';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
@@ -87,6 +88,7 @@ const Summary: NextPageWithLayout = () => {
       <label className="mt-5">
         <span>Contract Address</span>
       </label>
+      <Skeleton />
       <progress
         value={
           supplyCap === 'LIMITED' ? (parseInt(initialSupply.toString()) / parseInt(maxSupply.toString())) * 100 : 100

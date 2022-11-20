@@ -7,7 +7,6 @@ import AddVestingSchedules from '@components/organisms/DashboardPanel/AddVesting
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
-import { useSharedContext } from '@providers/shared.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
@@ -187,7 +186,7 @@ const Dashboard: NextPageWithLayout = () => {
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Create Schedule</span>
               </button>
-              <button className="secondary row-center" onClick={() => router.push('/minting-token')}>
+              <button className="secondary row-center" onClick={() => router.push('/dashboard/mint-supply')}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Mint Supply</span>
               </button>
