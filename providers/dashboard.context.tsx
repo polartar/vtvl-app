@@ -14,6 +14,7 @@ import { IRecipient } from 'types/vesting';
 import { parseTokenAmount } from 'utils/token';
 
 import { useAuthContext } from './auth.context';
+import { useSharedContext } from './shared.context';
 import { useTokenContext } from './token.context';
 
 interface IDashboardData {
@@ -35,6 +36,7 @@ export function DashboardContextProvider({ children }: any) {
   const { account, chainId } = useWeb3React();
   const { mintFormState } = useTokenContext();
   const { organizationId, safe } = useAuthContext();
+  const { setPageLoading } = useSharedContext();
 
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
   const [vestingContract, setVestingContract] = useState<
@@ -44,21 +46,40 @@ export function DashboardContextProvider({ children }: any) {
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
+  const [loaders, setLoaders] = useState({
+    vestingContract: true,
+    vestings: true,
+    transactions: true
+  });
 
   const fetchDashboardVestingContract = () => {
     if (organizationId)
-      fetchVestingContractByQuery('organizationId', '==', organizationId).then((res) => {
-        setVestingContract(res);
-      });
+      fetchVestingContractByQuery('organizationId', '==', organizationId)
+        .then((res) => {
+          setVestingContract(res);
+          setLoaders({ ...loaders, vestingContract: false });
+        })
+        .catch((err) => setLoaders({ ...loaders, vestingContract: false }));
   };
 
   const fetchDashboardVestings = () => {
-    if (organizationId) fetchVestingsByQuery('organizationId', '==', organizationId).then((res) => setVestings(res));
+    if (organizationId)
+      fetchVestingsByQuery('organizationId', '==', organizationId)
+        .then((res) => {
+          setVestings(res);
+          setLoaders({ ...loaders, vestings: false });
+        })
+        .catch((err) => setLoaders({ ...loaders, vestings: false }));
   };
 
   const fetchDashboardTransactions = () => {
     if (organizationId)
-      fetchTransactionsByQuery('organizationId', '==', organizationId).then((res) => setTransactions(res));
+      fetchTransactionsByQuery('organizationId', '==', organizationId)
+        .then((res) => {
+          setTransactions(res);
+          setLoaders({ ...loaders, transactions: false });
+        })
+        .catch((err) => setLoaders({ ...loaders, transactions: false }));
   };
 
   const value = useMemo(
@@ -143,6 +164,13 @@ export function DashboardContextProvider({ children }: any) {
       setOwnershipTransfered(true);
     }
   }, [organizationId, vestingContract, safe, ownershipTransfered, chainId]);
+
+  // Check for loading state based on different fetches
+  useEffect(() => {
+    if (!loaders.vestings && !loaders.vestingContract && !loaders.transactions) {
+      setPageLoading(false);
+    }
+  }, [loaders]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

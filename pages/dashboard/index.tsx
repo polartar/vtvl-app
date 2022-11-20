@@ -7,6 +7,7 @@ import AddVestingSchedules from '@components/organisms/DashboardPanel/AddVesting
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useSharedContext } from '@providers/shared.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
@@ -105,16 +106,9 @@ const Dashboard: NextPageWithLayout = () => {
   };
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [isPageLoading, setIsPageLoading] = useState(true);
+  const { isPageLoading } = useSharedContext();
 
   console.log(activities);
-
-  // Loading state check
-  useEffect(() => {
-    if (mintFormState) {
-      setIsPageLoading(false);
-    }
-  }, [mintFormState]);
 
   return (
     <>
