@@ -55,8 +55,7 @@ export function TokenContextProvider({ children }: any) {
     [mintFormState]
   );
 
-  useEffect(() => {
-    setIsTokenLoading(true);
+  const fetchToken = () => {
     if (organizationId) {
       fetchTokenByQuery('organizationId', '==', organizationId)
         .then((res) => {
@@ -79,7 +78,13 @@ export function TokenContextProvider({ children }: any) {
           setIsTokenLoading(false);
         })
         .catch((err) => setIsTokenLoading(false));
+    } else {
+      setIsTokenLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchToken();
   }, [organizationId]);
 
   return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;
