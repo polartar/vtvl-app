@@ -10596,6 +10596,18 @@ loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.4.0:
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
 
+lottie-react@^2.3.1:
+  version "2.3.1"
+  resolved "https://registry.npmjs.org/lottie-react/-/lottie-react-2.3.1.tgz#697060417bab027edb57ed45bda9d62e920d4040"
+  integrity sha512-8cxd6XZZtECT6LoAhCftRdYrEpHxiouvB5EPiYA+TtCG5LHNYAdMS9IVIHcxKtWnpo7x16QfCLj1XLXZpaN81A==
+  dependencies:
+    lottie-web "^5.9.4"
+
+lottie-web@^5.9.4:
+  version "5.9.6"
+  resolved "https://registry.npmjs.org/lottie-web/-/lottie-web-5.9.6.tgz#62ae68563355d3e04aa75d53dec3dd4bea0e57c9"
+  integrity sha512-JFs7KsHwflugH5qIXBpB4905yC1Sub2MZWtl/elvO/QC6qj1ApqbUZJyjzJseJUtVpgiDaXQLjBlIJGS7UUUXA==
+
 loud-rejection@^1.0.0:
   version "1.6.0"
   resolved "https://registry.npmjs.org/loud-rejection/-/loud-rejection-1.6.0.tgz#5b46f80147edee578870f086d04821cf998e551f"
@@ -12812,6 +12824,11 @@ react-lifecycles-compat@^3.0.0, react-lifecycles-compat@^3.0.4:
   resolved "https://registry.npmjs.org/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
 
+react-loading-skeleton@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.npmjs.org/react-loading-skeleton/-/react-loading-skeleton-3.1.0.tgz#ce22942f1af77bfd60854417075792367f54f41e"
+  integrity sha512-j1U1CWWs68nBPOg7tkQqnlFcAMFF6oEK6MgqAo15f8A5p7mjH6xyKn2gHbkcimpwfO0VQXqxAswnSYVr8lWzjw==
+
 react-markdown@^8.0.3:
   version "8.0.3"
   resolved "https://registry.npmjs.org/react-markdown/-/react-markdown-8.0.3.tgz#e8aba0d2f5a1b2124d476ee1fff9448a2f57e4b3"
@@ -12852,6 +12869,13 @@ react-number-format-with-commas@^0.0.3:
   version "0.0.3"
   resolved "https://registry.npmjs.org/react-number-format-with-commas/-/react-number-format-with-commas-0.0.3.tgz#004a939f2517f037a88461da50933127f4871ce3"
   integrity sha512-Z5wq7ulJ/Xoa4nCixee1dT/8NJpx2ANnMCfmkA4n8Ahnbntg4X93NxqDn7/v4K0Arh+H5eX11uL7/EXhFdkzmg==
+
+react-number-format@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.npmjs.org/react-number-format/-/react-number-format-5.1.1.tgz#8a36555e1041b833fbf39e9c07f3f24f58b66a51"
+  integrity sha512-wLRUP9G0B79hZrTRgj380/ygtKRJWrCnTBIlQkoYAp/AMNQK7qGkUAWM5EpS1YRxz1w003UmZoon8WRutnlFuw==
+  dependencies:
+    prop-types "^15.7.2"
 
 react-onclickoutside@^6.12.0:
   version "6.12.2"

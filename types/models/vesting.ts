@@ -6,8 +6,18 @@ import { IRecipient } from 'types/vesting';
 export interface IVesting {
   details: IScheduleFormState;
   recipients: MultiValue<IRecipient>;
+  status?:
+    | 'INITIALIZED'
+    | 'WAITING_APPROVAL'
+    | 'WAITING_FUNDS'
+    | 'LIVE'
+    | 'CREATING'
+    | 'CREATED'
+    | 'COMPLETED'
+    | 'APPROVED'
+    | 'SUCCESS'
+    | 'FAILED';
   organizationId: string;
-  status: 'WAITING_APPROVAL' | 'APPROVED' | 'SUCCESS' | 'FAILED';
   vestingContract?: string;
   createdAt?: number;
   updatedAt?: number;

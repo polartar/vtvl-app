@@ -6,7 +6,7 @@ import TokenDetails from '@components/atoms/TokenDetails/TokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { ReactElement, useEffect, useState } from 'react';
@@ -21,6 +21,7 @@ interface IImportToken {
 const DashboardImportToken: NextPageWithLayout = () => {
   const { chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
+  const router = useRouter();
 
   const defaultValues: IImportToken = {
     tokenAddress: ''
@@ -68,6 +69,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
         status: 'SUCCESS'
       });
       setLoading(false);
+      router.push('/dashboard');
     }
   };
 

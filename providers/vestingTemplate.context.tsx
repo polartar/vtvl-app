@@ -15,7 +15,6 @@ const VestingTemplatesContext = createContext({} as IVestingTemplateData);
 export function VestingTemplatesContextProvider({ children }: any) {
   const { account } = useWeb3React();
   const { organizationId } = useAuthContext();
-  // const organizationId = 'MYvgDyXEY5kCfxdIvtY8'; // Mock org id to test
 
   const [vestingTemplates, setVestingTemplates] = useState<{ id: string; data: IVestingTemplate }[]>([]);
 

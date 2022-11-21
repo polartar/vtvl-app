@@ -37,6 +37,7 @@ import {
   ReleaseFrequency
 } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
+import { getActualDateTime } from 'utils/shared';
 
 type DateTimeType = Date | null;
 
@@ -59,8 +60,7 @@ interface CustomActionBarProps {
 }
 
 const ConfigureSchedule: NextPageWithLayout = () => {
-  // const { organizationId } = useAuthContext();
-  const organizationId = 'MYvgDyXEY5kCfxdIvtY8'; // Mock org id to test
+  const { organizationId } = useAuthContext();
   const { account } = useWeb3React();
   const { scheduleFormState, updateScheduleFormState } = useVestingContext();
   const { mintFormState } = useTokenContext();
@@ -106,6 +106,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const releaseFrequency = { value: watch('releaseFrequency'), state: getFieldState('releaseFrequency') };
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
 
+  console.log('Lumpsum release', lumpSumReleaseAfterCliff.value);
   // Supporting variables
   const tokenSupply = mintFormState.initialSupply || 100000;
 
@@ -166,28 +167,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const [templateOptions, setTemplateOptions] = useState(templateDefaultOptions);
   const [templateLoading, setTemplateLoading] = useState(false);
 
-  // This function lets us parse the correct date format before displaying and using it across the schedule form and chart.
-  const getActualDateTime = (data: {
-    startDateTime: Date | null | undefined;
-    endDateTime: Date | null | undefined;
-  }) => {
-    let startDate;
-    let endDate;
-    try {
-      // Try first with the presumption that the dates provided are in Timestamp -- came from firebase.
-      startDate = new Date((data.startDateTime as unknown as Timestamp).toMillis());
-      endDate = new Date((data.endDateTime as unknown as Timestamp).toMillis());
-    } catch (err) {
-      // Catch it with the default as if it came from current form data
-      startDate = data.startDateTime;
-      endDate = data.endDateTime;
-    }
-    return {
-      startDate,
-      endDate
-    };
-  };
-
   /**
    * From https://react-select.com/creatable
    * Handle the onChange event of the recipient type -- when the user selects from the options.
@@ -199,7 +178,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     newValue: OnChangeValue<IVestingTemplate, false>,
     actionMeta: ActionMeta<IVestingTemplate>
   ) => {
-    if (newValue) {
+    console.log('Changing vaule', newValue, actionMeta);
+    if (actionMeta.action === 'clear') {
+      // remove selection
+      setValue2('template', null);
+      handleTemplateChange(scheduleFormState);
+    } else if (newValue) {
       console.group('Value Changed');
       console.log(newValue);
       console.log(`action: ${actionMeta.action}`);
@@ -207,7 +191,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       setValue2('template', newValue);
       handleTemplateChange(newValue?.details);
     }
-    // To do Arvin: Update the vesting schedule configuration form values based on the template values
   };
 
   // This function updates the current form based on the selected template.
@@ -474,7 +457,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         // Error
         setFormError(true);
         setFormSuccess(false);
-        setFormMessage('Cliff duration and at least one release frequency should be within the schedule dates');
+        setFormMessage(
+          'Cliff duration and release frequency should fall within the Start date and End date of the schedule.'
+        );
         return false;
       } else if (formError) {
         // Convert to successful if the state came from an error
@@ -485,6 +470,15 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
     return true;
   };
+
+  // Update the lumpsum value after cliff on change.
+  // Currently, react-number-format returns it's value as a string with % sign.
+  // To do: Refactor this later and move it's responsibility to the <Input type="percent" /> component.
+  useEffect(() => {
+    if (typeof lumpSumReleaseAfterCliff.value === 'string' && lumpSumReleaseAfterCliff.value !== '') {
+      setValue('lumpSumReleaseAfterCliff', +lumpSumReleaseAfterCliff.value.slice(0, -1));
+    }
+  }, [lumpSumReleaseAfterCliff.value]);
 
   /**
    * This section is used for anything that regards the Vesting Schedule templates
@@ -674,6 +668,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         error={Boolean(fieldState.error)}
                         message={fieldState.error ? 'Please enter lump sum amount' : ''}
                         {...field}
+                        type="percent"
                       />
                     )}
                   />
@@ -735,13 +730,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   <label className="required md:col-span-2">
                     <span>Vesting template</span>
                     <CreatableSelect
+                      {...field}
                       isLoading={templateLoading}
                       allowCreateWhileLoading
                       formatCreateLabel={(inputValue: string) => <CreateLabel inputValue={inputValue} />}
                       onCreateOption={onCreateTemplate}
                       options={templateOptions}
                       isClearable
-                      {...field}
                       value={field.value || null}
                       onChange={onTemplateChange}
                       placeholder={templateLoading ? `Saving template...` : 'Find or type to create template'}

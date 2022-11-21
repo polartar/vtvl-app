@@ -23,6 +23,7 @@ interface IMyTokenSchedule {
 }
 
 const MyTokenSchedule: NextPageWithLayout = () => {
+  const { mintFormState } = useTokenContext();
   const defaultClaimableValue: IMyTokenSchedule = { toClaim: 0, claimable: 1000 };
   const {
     control,
@@ -81,7 +82,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
     {
       text: (
         <>
-          <strong>AAVE</strong> [Schedule-001] schedule unlocks every x based on x period.
+          <strong>{mintFormState.symbol || 'Token'}</strong> [Schedule-001] schedule unlocks every x based on x period.
         </>
       ),
       icon: 'success'
@@ -89,7 +90,8 @@ const MyTokenSchedule: NextPageWithLayout = () => {
     {
       text: (
         <>
-          You can claim <strong>AAVE</strong> after the unlocking period by clicking the "Claim AAVE" button.
+          You can claim <strong>{mintFormState.symbol || 'Token'}</strong> after the unlocking period by clicking the
+          "Claim {mintFormState.symbol || 'Token'}" button.
         </>
       ),
       icon: 'success'
@@ -123,7 +125,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
       text: (
         <>
           <strong>Important</strong>: please remember that you must have Polygon <strong>MATIC</strong> in your wallet
-          to cover the gas fees each time you claim <strong>AAVE</strong>.
+          to cover the gas fees each time you claim <strong>{mintFormState.symbol || 'Token'}</strong>.
         </>
       ),
       icon: 'warning'
@@ -161,7 +163,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
       <div className="max-w-4xl xl:max-w-full">
         <h1 className="text-neutral-900 mb-2">Schedule-001</h1>
         <p className="paragraphy-small text-neutral-500 mb-4">
-          Withdraw your <strong>AAVE</strong> tokens from this vesting schedule.
+          Withdraw your <strong>{mintFormState.symbol || 'Token'}</strong> tokens from this vesting schedule.
         </p>
         <div className="grid md:grid-cols-12 gap-6">
           <div className="md:col-span-7">
@@ -187,7 +189,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     textAnchor="middle"
                     dominantBaseline="middle"
                     className="paragraphy-medium-medium fill-neutral-900">
-                    {formatNumber(10000)} AAVE
+                    {formatNumber(10000)} {mintFormState.symbol || 'Token'}
                   </text>
                   <text
                     x={'50%'}
@@ -228,21 +230,21 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                   <p className="paragraphy-small-medium text-neutral-500 mb-2">Claimed</p>
                   <div className="paragraphy-small-semibold text-neutral-600 row-center">
                     <div className="w-3 h-3 rounded-full bg-secondary-900"></div>
-                    {formatNumber(1000)} BICO
+                    {formatNumber(1000)} {mintFormState.symbol || 'Token'}
                   </div>
                 </div>
                 <div>
                   <p className="paragraphy-small-medium text-neutral-500 mb-2">Unclaimed</p>
                   <div className="paragraphy-small-semibold text-neutral-600 row-center">
                     <div className="w-3 h-3 rounded-full bg-primary-900"></div>
-                    {formatNumber(500)} BICO
+                    {formatNumber(500)} {mintFormState.symbol || 'Token'}
                   </div>
                 </div>
                 <div>
                   <p className="paragraphy-small-medium text-neutral-500 mb-2">Remaining</p>
                   <div className="paragraphy-small-semibold text-neutral-600 row-center">
                     <div className="w-3 h-3 rounded-full bg-success-500"></div>
-                    {formatNumber(9630)} BICO
+                    {formatNumber(9630)} {mintFormState.symbol || 'Token'}
                   </div>
                 </div>
                 <div>
@@ -295,7 +297,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                 className="primary w-full mt-6"
                 loading={isSubmitting}
                 disabled={toClaim.value === 0}>
-                Claim <strong>{formatNumber(toClaim.value)}</strong> BICO
+                Claim <strong>{formatNumber(toClaim.value)}</strong> {mintFormState.symbol || 'Token'}
               </Button>
             </Form>
           </div>
@@ -303,10 +305,15 @@ const MyTokenSchedule: NextPageWithLayout = () => {
             <div className="panel p-0 h-48 mb-9 relative flex items-end">
               <div className="flex flex-col justify-between h-full items-stretch p-4 absolute inset-0 z-10">
                 <div className="flex flex-row items-start justify-between">
-                  <TokenProfile logo="/images/biconomy-logo.png" name="Biconomy" symbol="BICO" size="small" />
+                  <TokenProfile
+                    logo={mintFormState.logo || '/images/biconomy-logo.png'}
+                    name={mintFormState.name || 'Token'}
+                    symbol={mintFormState.symbol || 'Token'}
+                    size="small"
+                  />
                   <div className="text-right">
                     <p className="text-xxs text-neutral-500">
-                      <strong>BICO/USD</strong> Price
+                      <strong>{mintFormState.symbol || 'Token'}/USD</strong> Price
                     </p>
                     <p className="paragraphy-large-semibold text-neutral-900">${formatNumber(0.493627)}</p>
                   </div>
@@ -343,7 +350,9 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <p className="paragraphy-small-semibol text-secondary-900 mb-5">AAVE holders</p>
+            <p className="paragraphy-small-semibol text-secondary-900 mb-5">
+              {mintFormState.symbol || 'Token'} holders
+            </p>
             <h3 className="font-semibold text-neutral-900 inter mb-5">Additional Information</h3>
             <AdditionalInformation activities={additionalInformation} />
           </div>
@@ -360,7 +369,7 @@ MyTokenSchedule.getLayout = function getLayout(page: ReactElement) {
   const crumbSteps = [
     { title: 'My tokens', route: '/tokens' },
     // Update the title of this into the actual token name
-    { title: mintFormState?.name || 'AAVE', route: '/tokens/001' },
+    { title: mintFormState?.name || 'Token', route: '/tokens/001' },
     // Update the title of this into the actual schedule name
     { title: 'Schedule-01', route: '/tokens/001' }
   ];

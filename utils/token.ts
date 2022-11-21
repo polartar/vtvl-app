@@ -8,8 +8,10 @@ export const parseTokenAmount = (amountTokens: string | number, decimals?: numbe
 
 /** This is intended to format numbers for DISPLAY only */
 export const formatNumber = (number: number | Decimal, decimalPlaces?: number) => {
-  return Number(number).toLocaleString('en', {
+  const formattedNumber = Number(number).toLocaleString('en', {
     minimumFractionDigits: 0,
     maximumFractionDigits: typeof decimalPlaces === undefined ? 6 : decimalPlaces
   });
+  if (formattedNumber === 'NaN') return 0;
+  return formattedNumber;
 };

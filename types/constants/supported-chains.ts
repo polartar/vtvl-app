@@ -113,7 +113,7 @@ export const prodSupportedChains: SupportedChainsType = {
     code: 'MATIC',
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
-    multisigTxUrl: ''
+    multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
   }
 };
 
@@ -170,7 +170,7 @@ const devSupportedChains: SupportedChainsType = {
     code: 'MATIC',
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
-    multisigTxUrl: ''
+    multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
   },
   [SupportedChainId.AVALANCHE]: {
     id: 43113,
@@ -206,7 +206,7 @@ const devSupportedChains: SupportedChainsType = {
     code: 'MATIC',
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
-    multisigTxUrl: ''
+    multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
   }
 };
 

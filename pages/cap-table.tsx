@@ -4,17 +4,20 @@ import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import ToggleSwitch from '@components/atoms/FormControls/ToggleSwitch/ToggleSwitch';
+import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import CapTableOverview from '@components/molecules/CapTableOverview/CapTableOverview';
 import Table from '@components/molecules/Table/Table';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useTokenContext } from '@providers/token.context';
 import RecipientsIcon from 'public/icons/cap-table-recipients.svg';
-import { ReactElement, useMemo, useState } from 'react';
+import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { convertAllToOptions, minifyAddress } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 
 import { NextPageWithLayout } from './_app';
 
 const CapTable: NextPageWithLayout = () => {
+  const { mintFormState } = useTokenContext();
   const schedules = [
     { label: 'All', value: 'all' },
     { label: 'Viking-0132', value: 'viking-0132' }
@@ -196,52 +199,61 @@ const CapTable: NextPageWithLayout = () => {
   // Integrate this with the real data logic
   const showCapTable = false;
 
+  const [isPageLoading, setPageLoading] = useState(true);
+
+  // Remove this once there is an integration with the backend
+  useEffect(() => {
+    setTimeout(() => setPageLoading(false), 5000);
+  }, []);
+
   return (
     <>
-      <div className="w-full">
-        <h1 className="h2 text-neutral-900 mb-2">Cap Table</h1>
-        <p className="text-neutral-500 text-sm mb-5">You can find below the history of the transactions.</p>
-        {showCapTable ? (
-          <>
-            <div className="p-5 mb-6 border-b border-gray-200">
-              <CapTableOverview
-                token="BICO"
-                schedules={3}
-                totalRecipients={4}
-                claimed={10000000}
-                unclaimed={40000000}
-                totalWithdrawn={5000000}
-                totalAllocation={50000000}
+      <PageLoader isLoading={isPageLoading}>
+        <div className="w-full">
+          <h1 className="h2 text-neutral-900 mb-2">Cap Table</h1>
+          <p className="text-neutral-500 text-sm mb-5">You can find below the history of the transactions.</p>
+          {showCapTable ? (
+            <>
+              <div className="p-5 mb-6 border-b border-gray-200">
+                <CapTableOverview
+                  token={mintFormState.symbol || 'Token'}
+                  schedules={3}
+                  totalRecipients={4}
+                  claimed={10000000}
+                  unclaimed={40000000}
+                  totalWithdrawn={5000000}
+                  totalAllocation={50000000}
+                />
+              </div>
+              <label>
+                <span>Schedules</span>
+              </label>
+              <BarRadio
+                name="statuses"
+                options={schedules}
+                value={tab}
+                onChange={(e) => setTab(e.target.value)}
+                variant="tab"
               />
-            </div>
-            <label>
-              <span>Schedules</span>
-            </label>
-            <BarRadio
-              name="statuses"
-              options={schedules}
-              value={tab}
-              onChange={(e) => setTab(e.target.value)}
-              variant="tab"
-            />
-            <div className="grid sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-7 mb-8">
-              <SelectInput label="Recipient type" options={recipientTypes} />
-              <SelectInput label="Company" options={recipientTypes} />
-              <Input label="Withdrawn" placeholder="any" />
-              <Input label="Claimed" placeholder="any" />
-              <Input label="Unclaimed" placeholder="any" />
-            </div>
+              <div className="grid sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-7 mb-8">
+                <SelectInput label="Recipient type" options={recipientTypes} />
+                <SelectInput label="Company" options={recipientTypes} />
+                <Input label="Withdrawn" placeholder="any" />
+                <Input label="Claimed" placeholder="any" />
+                <Input label="Unclaimed" placeholder="any" />
+              </div>
 
-            <Table columns={columns} data={data} pagination={true} exports={true} />
-          </>
-        ) : (
-          <EmptyState
-            image="/images/cryptocurrency-trading-bot.gif"
-            title="No data found"
-            description={<>Add vesting schedules first</>}
-          />
-        )}
-      </div>
+              <Table columns={columns} data={data} pagination={true} exports={true} />
+            </>
+          ) : (
+            <EmptyState
+              image="/images/cryptocurrency-trading-bot.gif"
+              title="No data found"
+              description={<>Add vesting schedules first</>}
+            />
+          )}
+        </div>
+      </PageLoader>
     </>
   );
 };
