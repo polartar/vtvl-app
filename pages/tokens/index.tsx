@@ -55,7 +55,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
     claimable?: IClaimable
   }
 
-  const [showTokens, setShowTokens] = useState(true);
+  const [showTokens, setShowTokens] = useState(false);
   const [tokens, setTokens] = useState<IMyTokenDetails[]>();
   const _tokens = [
     {
@@ -113,7 +113,8 @@ const MyTokenStatus: NextPageWithLayout = () => {
       const t = await fetchTokenByQuery('organizationId', '==', orgId);
       if(t && t.data){
         // const newT: any = tokens?.push({ token: t?.data })
-        setTokens([{ token: t?.data }])
+        setTokens([{ token: t?.data }]);
+        setShowTokens(true);
         console.log("we have tokens for org here ", t?.data)
       }
       setIsPageLoading(false)

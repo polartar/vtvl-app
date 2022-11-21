@@ -12,20 +12,26 @@ import { useTokenContext } from '@providers/token.context';
 import RecipientsIcon from 'public/icons/cap-table-recipients.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { convertAllToOptions, minifyAddress } from 'utils/shared';
+import { fetchVestingsByQuery } from 'services/db/vesting';
 import { formatNumber } from 'utils/token';
-
 import { NextPageWithLayout } from './_app';
+import { IVesting } from 'types/models';
+import { useAuthContext } from 'providers/auth.context';
+import { fetchMember } from 'services/db/member';
 
 const CapTable: NextPageWithLayout = () => {
+
   const { mintFormState } = useTokenContext();
+  const { user } = useAuthContext();
+  const [showCapTable, setShowCapTable] = useState(false);
+  const [tab, setTab] = useState('all');
+  const [vestingData, setVestingsData] = useState<IVesting[]>([]);
+  const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
+
   const schedules = [
     { label: 'All', value: 'all' },
     { label: 'Viking-0132', value: 'viking-0132' }
   ];
-
-  const [tab, setTab] = useState('all');
-
-  const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
 
   // Renderer for the recipient types for UI purpose
   const CellRecipientType = ({ value }: any) => <Chip label={value} rounded size="small" color="gray" />;
@@ -197,13 +203,20 @@ const CapTable: NextPageWithLayout = () => {
 
   // Temporary flag for showing the cap table
   // Integrate this with the real data logic
-  const showCapTable = false;
 
   const [isPageLoading, setPageLoading] = useState(true);
 
-  // Remove this once there is an integration with the backend
   useEffect(() => {
-    setTimeout(() => setPageLoading(false), 5000);
+    (async () => {
+      const memberInfo = user?.memberInfo?.org_id ? user?.memberInfo : user ? await fetchMember(user?.uid || ''): undefined;
+      const data = await fetchVestingsByQuery('organizationId', '==', memberInfo?.org_id || '');
+      console.log("vesting data here is ", data)
+      if (data) {
+        setVestingsData(data.map((v)=> v.data));
+        setShowCapTable(true);
+      }
+      setPageLoading(false)
+    })();
   }, []);
 
   return (
@@ -243,7 +256,7 @@ const CapTable: NextPageWithLayout = () => {
                 <Input label="Unclaimed" placeholder="any" />
               </div>
 
-              <Table columns={columns} data={data} pagination={true} exports={true} />
+              <Table columns={columns} data={vestingData} pagination={true} exports={true} />
             </>
           ) : (
             <EmptyState
