@@ -592,6 +592,16 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     }
   };
 
+  // Handle loading state
+  const [isPageLoading, setIsPageLoading] = useState(true);
+
+  // Check if fetching schedules and token are complete
+  useEffect(() => {
+    if (!isFetchingSchedules && !isTokenLoading) {
+      setIsPageLoading(false);
+    }
+  }, [isFetchingSchedules]);
+
   return (
     <>
       <PageLoader isLoading={isFetchingSchedules || isTokenLoading}>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
-import { ReactElement, useEffect } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 
 const Complete: NextPageWithLayout = () => {
   const { mintFormState, isTokenLoading } = useTokenContext();
