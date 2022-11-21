@@ -63,7 +63,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
   const { account } = useWeb3React();
   const { scheduleFormState, updateScheduleFormState } = useVestingContext();
-  const { mintFormState } = useTokenContext();
+  const { mintFormState, tokenId } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formMessage, setFormMessage] = useState('');
@@ -230,7 +230,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             cliffDuration: cliffDuration.value,
             lumpSumReleaseAfterCliff: lumpSumReleaseAfterCliff.value,
             releaseFrequency: releaseFrequency.value,
-            amountToBeVested: amountToBeVested.value
+            amountToBeVested: amountToBeVested.value,
+            tokenId
           },
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),

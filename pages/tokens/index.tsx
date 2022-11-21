@@ -101,7 +101,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
   // Remove this once there is an integration happening with the backend,
   // but make sure to setIsPageLoading to false once actual data is loaded.
   useEffect(() => {
-    setTimeout(() => setIsPageLoading(false), 5000);
+    // setTimeout(() => setIsPageLoading(false), 5000);
 
     console.log("user org id is ", user?.memberInfo?.org_id);
 
@@ -116,6 +116,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
         setTokens([{ token: t?.data }])
         console.log("we have tokens for org here ", t?.data)
       }
+      setIsPageLoading(false)
     })();
   }, []);
 
