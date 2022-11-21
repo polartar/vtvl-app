@@ -8,16 +8,6 @@ export const fetchVesting = async (id: string): Promise<IVesting | undefined> =>
   return vestingDoc.data();
 };
 
-export const fetchAllVestings = async (): Promise<IVesting[] | []> => {
-  const querySnapshot = await getDocs(vestingCollection);
-  const result: any = [];
-
-  if (querySnapshot && !querySnapshot.empty) {
-    querySnapshot.forEach((doc) => result.push(transformVastingDoc({ ...doc.data(), id: doc.id })));
-  }
-  return result;
-};
-
 export const fetchVestingsByQuery = async (
   field: string,
   syntax: WhereFilterOp,
@@ -60,17 +50,3 @@ export const fetchVestingSchedules = async (orgId: string): Promise<IVesting[] |
   });
   return records;
 };
-
-const transformVastingDoc = (doc: any) => ({
-  id: doc?.id || '',
-  recipientType: doc?.recipients[0]?.recipientType[0]?.value || '',
-  company: doc?.recipients[0]?.company || '',
-  token: doc?.details.token || 'BICO',
-  address: doc?.recipients[0]?.walletAddress || '',
-  name: doc?.recipients[0]?.name || '',
-  totalAllocation: doc?.details?.amountToBeVested || 0,
-  claimed: doc?.claimed || 0,
-  unclaimed: doc?.unclaimed || 0,
-  withdrawn: doc?.withdrawn || 0,
-  alert: doc?.alert || false
-});
