@@ -9,7 +9,6 @@ import { ReactElement, useEffect, useState } from 'react';
 
 const Complete: NextPageWithLayout = () => {
   const { mintFormState, isTokenLoading } = useTokenContext();
-  const [isPageLoading, setIsPageLoading] = useState(true);
 
   useEffect(() => {
     if (!mintFormState) {
@@ -17,16 +16,9 @@ const Complete: NextPageWithLayout = () => {
     }
   }, [mintFormState]);
 
-  // Remove loader when token is fetched
-  useEffect(() => {
-    if (!isTokenLoading || !mintFormState.address) setIsPageLoading(false);
-  }, [isTokenLoading]);
-
   return (
     <>
-      {isPageLoading ? (
-        <PageLoader />
-      ) : (
+      <PageLoader isLoading={isTokenLoading}>
         <div className="panel rounded-lg mx-auto w-full max-w-lg mt-14 text-center">
           <h2 className="h4 text-neutral-900 mb-3">
             <strong>{mintFormState?.symbol}</strong> token created successfully!
@@ -40,13 +32,15 @@ const Complete: NextPageWithLayout = () => {
             <button className="primary" type="button" onClick={() => Router.push('/vesting-schedule/configure')}>
               Create schedule
             </button>
-            <Link href="/dashboard" className="flex flex-row items-center gap-3 text-neutral-500">
-              Continue later
-              <ArrowIcon className="fill-current transform rotate-180" />
+            <Link href="/dashboard">
+              <span className="flex flex-row items-center gap-3 text-neutral-500">
+                Continue later
+                <ArrowIcon className="fill-current transform rotate-180" />
+              </span>
             </Link>
           </div>
         </div>
-      )}
+      </PageLoader>
     </>
   );
 };

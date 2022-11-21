@@ -604,34 +604,33 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   return (
     <>
-      {isPageLoading ? (
-        <PageLoader />
-      ) : vestingSchedules?.length && mintFormState ? (
-        <div className="w-full">
-          <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
-          <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
-            <div>
-              <TokenProfile {...mintFormState} className="mb-2" />
-              <p className="text-sm font-medium text-netural-900">
-                Contract address: <span className="text-neutral-500">{mintFormState.address}</span>
-              </p>
+      <PageLoader isLoading={isFetchingSchedules || isTokenLoading}>
+        {vestingSchedules?.length && mintFormState ? (
+          <div className="w-full">
+            <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
+            <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
+              <div>
+                <TokenProfile {...mintFormState} className="mb-2" />
+                <p className="text-sm font-medium text-netural-900">
+                  Contract address: <span className="text-neutral-500">{mintFormState.address}</span>
+                </p>
+              </div>
+              <div className="flex flex-row items-center justify-start gap-2">
+                <button className="secondary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
+                  <PlusIcon className="w-5 h-5" />
+                  <span className="whitespace-nowrap">Create Schedule</span>
+                </button>
+              </div>
             </div>
-            <div className="flex flex-row items-center justify-start gap-2">
-              <button className="secondary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
-                <PlusIcon className="w-5 h-5" />
-                <span className="whitespace-nowrap">Create Schedule</span>
-              </button>
+            <div className="p-5 mb-6 border-b border-gray-200">
+              <VestingOverview
+                token={mintFormState.symbol}
+                {...vestingScheduleDataCounts}
+                remainingAllocation={10000000}
+                totalAllocation={mintFormState.initialSupply || 0}
+              />
             </div>
-          </div>
-          <div className="p-5 mb-6 border-b border-gray-200">
-            <VestingOverview
-              token={mintFormState.symbol}
-              {...vestingScheduleDataCounts}
-              remainingAllocation={10000000}
-              totalAllocation={mintFormState.initialSupply || 0}
-            />
-          </div>
-          {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
+            {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
             <Input
               label="Schedule name"
               placeholder="Enter schedule"
@@ -644,39 +643,40 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <SelectInput label="Status" options={recipientTypes} />
             <Input label="Amount" placeholder="Enter the amount" className="lg:col-span-2" />
           </div> */}
-          <Table
-            columns={columns}
-            data={vestingSchedules}
-            getTrProps={getTrProps}
-            selectable
-            pagination
-            batchOptions={{
-              label: 'Batch transactions',
-              onBatchProcessClick: handleBatchProcess
-            }}
-          />
-        </div>
-      ) : (
-        <>
-          <h1 className="h2 font-medium text-center">Create your first vesting schedule</h1>
-          <p className="text-sm text-neutral-500 mb-6">Please select one of the options below:</p>
-          <div role="radiogroup" className="flex flex-row items-center justify-center gap-5 mb-10">
-            {userAction.options.map((option, optionIndex) => (
-              <CardRadio
-                key={`card-radio-${option.value}-${optionIndex}`}
-                {...option}
-                disabled={option.disabled}
-                checked={selected === option.value}
-                name="grouped-radio"
-                onChange={() => setSelected(option.value)}
-              />
-            ))}
+            <Table
+              columns={columns}
+              data={vestingSchedules}
+              getTrProps={getTrProps}
+              selectable
+              pagination
+              batchOptions={{
+                label: 'Batch transactions',
+                onBatchProcessClick: handleBatchProcess
+              }}
+            />
           </div>
-          <button className="primary" onClick={() => Router.push(selections[selected].url)}>
-            {selections[selected].label}
-          </button>
-        </>
-      )}
+        ) : (
+          <>
+            <h1 className="h2 font-medium text-center">Create your first vesting schedule</h1>
+            <p className="text-sm text-neutral-500 mb-6">Please select one of the options below:</p>
+            <div role="radiogroup" className="flex flex-row items-center justify-center gap-5 mb-10">
+              {userAction.options.map((option, optionIndex) => (
+                <CardRadio
+                  key={`card-radio-${option.value}-${optionIndex}`}
+                  {...option}
+                  disabled={option.disabled}
+                  checked={selected === option.value}
+                  name="grouped-radio"
+                  onChange={() => setSelected(option.value)}
+                />
+              ))}
+            </div>
+            <button className="primary" onClick={() => Router.push(selections[selected].url)}>
+              {selections[selected].label}
+            </button>
+          </>
+        )}
+      </PageLoader>
     </>
   );
 };
