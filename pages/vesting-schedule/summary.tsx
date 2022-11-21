@@ -52,7 +52,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { organizationId, safe } = useAuthContext();
   const { recipients, scheduleFormState, resetVestingState } = useVestingContext();
-  const { mintFormState } = useTokenContext();
+  const { mintFormState, tokenId } = useTokenContext();
 
   const handleCreateSchedule = async () => {
     const PERFORM_CREATE_FUNCTION = 'function performCreate(uint256 value, bytes memory deploymentData)';
@@ -65,7 +65,9 @@ const ScheduleSummary: NextPageWithLayout = () => {
       status: 'INITIALIZED',
       createdAt: Math.floor(new Date().getTime() / 1000),
       updatedAt: Math.floor(new Date().getTime() / 1000),
-      transactionId: ''
+      transactionId: '',
+      tokenAddress: mintFormState.address,
+      tokenId
     });
     resetVestingState();
     Router.push('/vesting-schedule/success');

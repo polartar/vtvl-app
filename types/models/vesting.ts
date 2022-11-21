@@ -18,6 +18,8 @@ export interface IVesting {
     | 'SUCCESS'
     | 'FAILED';
   organizationId: string;
+  tokenAddress?: string;
+  tokenId?: string;
   vestingContract?: string;
   createdAt?: number;
   updatedAt?: number;

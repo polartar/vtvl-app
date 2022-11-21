@@ -1,13 +1,22 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
-import MyTokenDetails from '@components/molecules/MyTokenDetails/MyTokenDetails';
+import MyTokenDetails, { IClaimable, IMyTokenDetails, ITokenDetails } from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import AuthContext from '@providers/auth.context';
+import { NumberMatcher } from 'cypress/types/net-stubbing';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { ReactElement, useEffect, useState } from 'react';
+import { stringify } from 'querystring';
+import { ReactElement, useContext, useEffect, useState } from 'react';
+import { fetchTokenByQuery } from 'services/db/token';
+import { IToken, IVesting } from 'types/models';
 
 const MyTokenStatus: NextPageWithLayout = () => {
+
+  const { user } = useContext(AuthContext);
+
+
   // Fetch token based on status at initial load
   // Statuses are: All / Claimed / Unclaimed
   const statuses = [
@@ -23,8 +32,32 @@ const MyTokenStatus: NextPageWithLayout = () => {
     setTab(e.target.value);
   };
 
-  const [showTokens, setShowTokens] = useState(false);
-  const tokens = [
+
+  interface ITokenSummary {
+    name: string,
+    logo: string,
+    symbol: string,
+    address: string
+  }
+
+  interface IVestingSummary {
+    name: string,
+    totalAllocation: number,
+    totalVested: number,
+    claimed: number,
+    unclaimed: number,
+    startDateTime: string,
+    endDateTime: string,
+  }
+  interface ITokenInfo {
+    token?: ITokenDetails,
+    vesting?: IVestingSummary,
+    claimable?: IClaimable
+  }
+
+  const [showTokens, setShowTokens] = useState(true);
+  const [tokens, setTokens] = useState<IMyTokenDetails[]>();
+  const _tokens = [
     {
       token: {
         name: 'Biconomy',
@@ -69,6 +102,21 @@ const MyTokenStatus: NextPageWithLayout = () => {
   // but make sure to setIsPageLoading to false once actual data is loaded.
   useEffect(() => {
     setTimeout(() => setIsPageLoading(false), 5000);
+
+    console.log("user org id is ", user?.memberInfo?.org_id);
+
+    //TODO: get user organization
+    // get organization vesting schedules
+    console.log("user member info here is ", user?.memberInfo);
+    (async () => {
+      const orgId = user?.memberInfo?.org_id || ''
+      const t = await fetchTokenByQuery('organizationId', '==', orgId);
+      if(t && t.data){
+        // const newT: any = tokens?.push({ token: t?.data })
+        setTokens([{ token: t?.data }])
+        console.log("we have tokens for org here ", t?.data)
+      }
+    })();
   }, []);
 
   return (
@@ -81,7 +129,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
               <>
                 <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
                 <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {tokens.map((token, tokenIndex) => (
+                  {tokens?.map((token, tokenIndex) => (
                     <MyTokenDetails key={`my-token-${tokenIndex}`} {...token} viewDetailsUrl="/tokens/schedule-001" />
                   ))}
                 </div>

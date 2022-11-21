@@ -11,7 +11,7 @@ import {
   signInWithEmailAndPassword,
   signInWithEmailLink,
   signInWithPopup,
-  signOut
+  signOut,
 } from 'firebase/auth';
 import useEagerConnect from 'hooks/useEagerConnect';
 import Router from 'next/router';
@@ -77,6 +77,17 @@ export function AuthContextProvider({ children }: any) {
     });
 
     return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    console.log("current user here is ", auth.currentUser);
+
+    (async()=>{
+      if(auth.currentUser) {
+        const memberInfo = await fetchMember(auth.currentUser.uid);
+        if(memberInfo) setUser({...auth.currentUser, memberInfo });
+      }
+    })()
   }, []);
 
   const signInWithGoogle = async (): Promise<NewLogin | undefined> => {
@@ -309,7 +320,7 @@ export function AuthContextProvider({ children }: any) {
       toggleSideBar,
       expandSidebar
     }),
-    [loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, user, safe]
+    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe]
   );
 
   useEffect(() => {
