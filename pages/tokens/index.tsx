@@ -4,7 +4,7 @@ import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import MyTokenDetails, { IClaimable, IMyTokenDetails, ITokenDetails } from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import AuthContext from '@providers/auth.context';
-import { NumberMatcher } from 'cypress/types/net-stubbing';
+// import { NumberMatcher } from 'cypress/types/net-stubbing';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { stringify } from 'querystring';
