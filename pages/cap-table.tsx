@@ -15,9 +15,10 @@ import { convertAllToOptions, minifyAddress } from 'utils/shared';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { formatNumber } from 'utils/token';
 import { NextPageWithLayout } from './_app';
-import { IVesting } from 'types/models';
+import { IVesting, } from 'types/models';
 import { useAuthContext } from 'providers/auth.context';
 import { fetchMember } from 'services/db/member';
+import { any } from 'cypress/types/bluebird';
 
 const CapTable: NextPageWithLayout = () => {
 
@@ -25,7 +26,7 @@ const CapTable: NextPageWithLayout = () => {
   const { user } = useAuthContext();
   const [showCapTable, setShowCapTable] = useState(false);
   const [tab, setTab] = useState('all');
-  const [vestingData, setVestingsData] = useState<IVesting[]>([]);
+  const [vestingData, setVestingsData] = useState<any[]>([]);
   const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
 
   const schedules = [
@@ -209,10 +210,25 @@ const CapTable: NextPageWithLayout = () => {
   useEffect(() => {
     (async () => {
       const memberInfo = user?.memberInfo?.org_id ? user?.memberInfo : user ? await fetchMember(user?.uid || ''): undefined;
-      const data = await fetchVestingsByQuery('organizationId', '==', memberInfo?.org_id || '');
-      console.log("vesting data here is ", data)
-      if (data) {
-        setVestingsData(data.map((v)=> v.data));
+      const vestingData = await fetchVestingsByQuery('organizationId', '==', memberInfo?.org_id || '');
+      console.log("vesting data here is ", vestingData)
+
+      if (vestingData) {
+        const transformedVestings = [...vestingData].reduce((acc: any, obj: {id: string, data: IVesting}) => {
+          const o = [...obj.data.recipients].reduce((a: any, o: any) => {
+            return [...a, {
+              name: o.name,
+              company: o.company,
+              recipientType: o.recipientType[0]?.label,
+              address: o.walletAddress,
+              totalAllocation: obj.data.details.amountToBeVested
+            }]
+          }, [])
+          return [...acc, ...o]
+         }, [])
+
+        console.log("transformed vestings ", transformedVestings)
+        setVestingsData(transformedVestings);
         setShowCapTable(true);
       }
       setPageLoading(false)
@@ -231,7 +247,7 @@ const CapTable: NextPageWithLayout = () => {
                 <CapTableOverview
                   token={mintFormState.symbol || 'Token'}
                   schedules={3}
-                  totalRecipients={4}
+                  totalRecipients={vestingData.length}
                   claimed={10000000}
                   unclaimed={40000000}
                   totalWithdrawn={5000000}

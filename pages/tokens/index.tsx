@@ -1,9 +1,10 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
-import MyTokenDetails, { IClaimable, IMyTokenDetails, ITokenDetails } from '@components/molecules/MyTokenDetails/MyTokenDetails';
+import MyTokenDetails, { IClaimable, ITokenDetails } from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import AuthContext from '@providers/auth.context';
+import { useWeb3React } from '@web3-react/core';
 // import { NumberMatcher } from 'cypress/types/net-stubbing';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -14,8 +15,8 @@ import { IToken, IVesting } from 'types/models';
 
 const MyTokenStatus: NextPageWithLayout = () => {
 
+  const { account, library } = useWeb3React();
   const { user } = useContext(AuthContext);
-
 
   // Fetch token based on status at initial load
   // Statuses are: All / Claimed / Unclaimed
@@ -56,7 +57,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
   }
 
   const [showTokens, setShowTokens] = useState(false);
-  const [tokens, setTokens] = useState<IMyTokenDetails[]>();
+  const [tokens, setTokens] = useState<ITokenInfo[]>();
   const _tokens = [
     {
       token: {
@@ -101,10 +102,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
   // Remove this once there is an integration happening with the backend,
   // but make sure to setIsPageLoading to false once actual data is loaded.
   useEffect(() => {
-    // setTimeout(() => setIsPageLoading(false), 5000);
-
     console.log("user org id is ", user?.memberInfo?.org_id);
-
     //TODO: get user organization
     // get organization vesting schedules
     console.log("user member info here is ", user?.memberInfo);
@@ -112,14 +110,39 @@ const MyTokenStatus: NextPageWithLayout = () => {
       const orgId = user?.memberInfo?.org_id || ''
       const t = await fetchTokenByQuery('organizationId', '==', orgId);
       if(t && t.data){
-        // const newT: any = tokens?.push({ token: t?.data })
-        setTokens([{ token: t?.data }]);
+        setTokens([{ token: {
+          name: t.data.name,
+          symbol: t.data.symbol,
+          logo: t.data.logo,
+          address: t.data.address,
+          decimals: t.data.decimals?.toString() || ''
+        } }]);
         setShowTokens(true);
         console.log("we have tokens for org here ", t?.data)
       }
       setIsPageLoading(false)
     })();
   }, []);
+
+  const importToken = async (token: ITokenDetails) => {
+    try {
+      if(!library || !account || !token) return;
+      await library.provider.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20', // Initially only supports ERC20, but eventually more!
+          options: {
+            address: token.address,
+            symbol: token.symbol,
+            decimals: token.decimals || 18,
+            image: token.logo,
+          },
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   return (
     <>
@@ -132,7 +155,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
                 <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
                 <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
                   {tokens?.map((token, tokenIndex) => (
-                    <MyTokenDetails key={`my-token-${tokenIndex}`} {...token} viewDetailsUrl="/tokens/schedule-001" />
+                    token.token && <MyTokenDetails importToken={importToken} key={`my-token-${tokenIndex}`} token={token?.token} viewDetailsUrl="/tokens/schedule-001" />
                   ))}
                 </div>
                 {/* Probably need a condition to check if there are more records */}
