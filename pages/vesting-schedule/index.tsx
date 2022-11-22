@@ -14,6 +14,7 @@ import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
+import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
@@ -24,6 +25,7 @@ import { Timestamp } from 'firebase/firestore';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
+import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -55,6 +57,11 @@ interface IVestingSchedules {
 const VestingScheduleProject: NextPageWithLayout = () => {
   const { account, library, activate, chainId } = useWeb3React();
   const { organizationId, safe } = useAuthContext();
+  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { showLoading, hideLoading } = useLoaderContext();
+  const { mintFormState, isTokenLoading } = useTokenContext();
+
+  const [selected, setSelected] = useState('manual');
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
   const [vestingScheduleDataCounts, setVestingScheduleDataCounts] = useState({
     totalSchedules: 0,
@@ -68,11 +75,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const [vestingSchedules, setVestingSchedules] = useState<IVestingSchedules[]>();
 
   const getVestings = async () => {
+    setIsFetchingSchedules(true);
     try {
       if (organizationId) {
         const schedules = await fetchVestingsByQuery('organizationId', '==', organizationId);
         setVestingSchedules(schedules);
-        setIsFetchingSchedules(false);
         // Manually count all necessary data since we're fetching all of the schedules for this particular organization
         let inProgress = 0;
         let pendingSchedules = 0;
@@ -92,8 +99,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           totalRecipients: totalRecipients,
           progress: { current: inProgress, total: schedules?.length || 0 }
         });
-        console.log('Schedules', schedules, vestingSchedules);
-      } else throw 'Organization id does not exist';
+        setIsFetchingSchedules(false);
+      } else {
+        setIsFetchingSchedules(true);
+      }
     } catch (err) {
       console.log('error', err);
       setIsFetchingSchedules(false);
@@ -102,10 +111,15 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   useEffect(() => {
     getVestings();
-  }, []);
+  }, [organizationId]);
 
-  const { mintFormState, isTokenLoading } = useTokenContext();
-  const [selected, setSelected] = useState('manual');
+  useEffect(() => {
+    if (isFetchingSchedules || isTokenLoading) {
+      showLoading();
+    } else {
+      hideLoading();
+    }
+  }, [isFetchingSchedules, isTokenLoading]);
 
   const userAction = {
     options: [
@@ -390,6 +404,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         activate(injected);
         return;
       }
+      setTransactionStatus('PENDING');
       let addresses: any = [];
       let vestingStartTimestamps: any = [];
       let vestingEndTimestamps: any = [];
@@ -494,6 +509,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
         const signature = await safeSdk.signTransactionHash(txHash);
+        setTransactionStatus('IN_PROGRESS');
         safeTransaction.addSignature(signature);
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
@@ -534,7 +550,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           );
         }
         toast.success('Transaction has been created successfully.');
+        setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
+        setTransactionStatus('PENDING');
         const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
         const vestingContractInstance = new ethers.Contract(
           vestingContract?.data?.address ?? '',
@@ -575,6 +593,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             );
           })
         );
+        setTransactionStatus('IN_PROGRESS');
         await addingClaimsTransaction.wait();
         updateTransaction(
           {
@@ -585,27 +604,19 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           transactionId
         );
         toast.success('Added schedules successfully.');
+        setTransactionStatus('SUCCESS');
       }
     } catch (err) {
       console.log('handleCreateSignTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 
-  // Handle loading state
-  const [isPageLoading, setIsPageLoading] = useState(true);
-
-  // Check if fetching schedules and token are complete
-  useEffect(() => {
-    if (!isFetchingSchedules && !isTokenLoading) {
-      setIsPageLoading(false);
-    }
-  }, [isFetchingSchedules]);
-
   return (
     <>
-      <PageLoader isLoading={isFetchingSchedules || isTokenLoading}>
-        {vestingSchedules?.length && mintFormState ? (
+      {vestingSchedules?.length && mintFormState ? (
+        <>
           <div className="w-full h-full">
             <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
             <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
@@ -622,15 +633,22 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                 </button>
               </div>
             </div>
-            <div className="p-5 mb-6 border-b border-gray-200">
-              <VestingOverview
-                token={mintFormState.symbol}
-                {...vestingScheduleDataCounts}
-                remainingAllocation={10000000}
-                totalAllocation={mintFormState.initialSupply || 0}
-              />
+            <div className="flex flex-row items-center justify-start gap-2">
+              <button className="secondary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
+                <PlusIcon className="w-5 h-5" />
+                <span className="whitespace-nowrap">Create Schedule</span>
+              </button>
             </div>
-            {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
+          </div>
+          <div className="p-5 mb-6 border-b border-gray-200">
+            <VestingOverview
+              token={mintFormState.symbol}
+              {...vestingScheduleDataCounts}
+              remainingAllocation={10000000}
+              totalAllocation={mintFormState.initialSupply || 0}
+            />
+          </div>
+          {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
             <Input
               label="Schedule name"
               placeholder="Enter schedule"
@@ -643,40 +661,39 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <SelectInput label="Status" options={recipientTypes} />
             <Input label="Amount" placeholder="Enter the amount" className="lg:col-span-2" />
           </div> */}
-            <Table
-              columns={columns}
-              data={vestingSchedules}
-              getTrProps={getTrProps}
-              selectable
-              pagination
-              batchOptions={{
-                label: 'Batch transactions',
-                onBatchProcessClick: handleBatchProcess
-              }}
-            />
+          <Table
+            columns={columns}
+            data={vestingSchedules}
+            getTrProps={getTrProps}
+            selectable
+            pagination
+            batchOptions={{
+              label: 'Batch transactions',
+              onBatchProcessClick: handleBatchProcess
+            }}
+          />
+        </>
+      ) : (
+        <>
+          <h1 className="h2 font-medium text-center">Create your first vesting schedule</h1>
+          <p className="text-sm text-neutral-500 mb-6">Please select one of the options below:</p>
+          <div role="radiogroup" className="flex flex-row items-center justify-center gap-5 mb-10">
+            {userAction.options.map((option, optionIndex) => (
+              <CardRadio
+                key={`card-radio-${option.value}-${optionIndex}`}
+                {...option}
+                disabled={option.disabled}
+                checked={selected === option.value}
+                name="grouped-radio"
+                onChange={() => setSelected(option.value)}
+              />
+            ))}
           </div>
-        ) : (
-          <>
-            <h1 className="h2 font-medium text-center">Create your first vesting schedule</h1>
-            <p className="text-sm text-neutral-500 mb-6">Please select one of the options below:</p>
-            <div role="radiogroup" className="flex flex-row items-center justify-center gap-5 mb-10">
-              {userAction.options.map((option, optionIndex) => (
-                <CardRadio
-                  key={`card-radio-${option.value}-${optionIndex}`}
-                  {...option}
-                  disabled={option.disabled}
-                  checked={selected === option.value}
-                  name="grouped-radio"
-                  onChange={() => setSelected(option.value)}
-                />
-              ))}
-            </div>
-            <button className="primary" onClick={() => Router.push(selections[selected].url)}>
-              {selections[selected].label}
-            </button>
-          </>
-        )}
-      </PageLoader>
+          <button className="primary" onClick={() => Router.push(selections[selected].url)}>
+            {selections[selected].label}
+          </button>
+        </>
+      )}
     </>
   );
 };

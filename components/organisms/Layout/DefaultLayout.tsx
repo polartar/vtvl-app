@@ -1,9 +1,11 @@
+import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
 import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import Head from 'next/head';
+import { useLoaderContext } from 'providers/loader.context';
 import React, { useContext, useEffect } from 'react';
 
 import AuthContext from '../../../providers/auth.context';
@@ -117,6 +119,7 @@ interface DefaultLayoutProps {
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const { user, error, logOut, showSideBar, sidebarIsExpanded, toggleSideBar, refreshUser } = useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
+  const { loading } = useLoaderContext();
   const { active } = useWeb3React();
   useEffect(() => {
     (async () => await refreshUser())();
@@ -139,12 +142,15 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         {(user || sidebar || showSideBar) && !inProgress ? (
           <Sidebar {...SidebarProps} roleTitle={user?.memberInfo?.type || 'founder'} />
         ) : null}
-        <Main
-          sidebarIsExpanded={sidebarIsExpanded}
-          sidebarIsShown={(user || sidebar || showSideBar) && !inProgress}
-          className="flex flex-col items-center p-8 pt-7">
-          {props.children}
-        </Main>
+        <div className="relative">
+          {loading && <PageLoader />}
+          <Main
+            sidebarIsExpanded={sidebarIsExpanded}
+            sidebarIsShown={(user || sidebar || showSideBar) && !inProgress}
+            className="flex flex-col items-center p-8 pt-7">
+            {props.children}
+          </Main>
+        </div>
       </Layout>
     </Container>
   );

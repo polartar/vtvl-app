@@ -6,6 +6,7 @@ import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { Skeleton } from '@mui/material';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
+import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { injected } from 'connectors';
@@ -17,6 +18,7 @@ import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useEffect } from 'react';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 import { db } from 'services/auth/firebase';
 import { createToken, fetchTokenByQuery } from 'services/db/token';
 import { formatNumber, parseTokenAmount } from 'utils/token';
@@ -25,6 +27,7 @@ const Summary: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
   const { library, account, activate } = useWeb3React();
   const { mintFormState, updateMintFormState } = useTokenContext();
+  const { setTransactionStatus } = useTransactionLoaderContext();
 
   const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply } = mintFormState;
 
@@ -35,6 +38,7 @@ const Summary: NextPageWithLayout = () => {
       if (!library) {
         activate(injected);
       } else if (organizationId) {
+        setTransactionStatus('PENDING');
         setLoading(true);
         const tokenTemplate = supplyCap === 'LIMITED' ? VariableSupplyERC20Token : FullPremintERC20Token;
         const TokenFactory = new ethers.ContractFactory(tokenTemplate.abi, tokenTemplate.bytecode, library.getSigner());
@@ -48,9 +52,9 @@ const Summary: NextPageWithLayout = () => {
                 parseTokenAmount(maxSupply, decimals)
               )
             : await TokenFactory.deploy(name, symbol, parseTokenAmount(initialSupply, decimals));
+        setTransactionStatus('IN_PROGRESS');
         await tokenContract.deployed();
 
-        updateMintFormState({ ...mintFormState, contractAddress: tokenContract.address });
         createToken({
           name: name,
           symbol: symbol,
@@ -66,13 +70,17 @@ const Summary: NextPageWithLayout = () => {
           status: 'SUCCESS'
         });
 
-        console.log('Deployed an ERC Token for testing.');
+        updateMintFormState({ ...mintFormState, contractAddress: tokenContract.address, status: 'SUCCESS' });
+
         console.log('Address:', tokenContract.address);
+        toast.success('Token created successfully');
         setLoading(false);
+        setTransactionStatus('SUCCESS');
         Router.push('/minting-token/complete');
       }
     } catch (err) {
-      console.log('err - ', err);
+      console.log('handleCreateToken - ', err);
+      setTransactionStatus('ERROR');
     }
   };
 
