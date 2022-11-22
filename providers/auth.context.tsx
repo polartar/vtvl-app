@@ -311,13 +311,16 @@ export function AuthContextProvider({ children }: any) {
     }),
     [loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, user, safe]
   );
-
+  console.log('organzationId - ', organizationId);
   useEffect(() => {
     if (user && user.email && user.uid) {
-      fetchOrgByQuery('email', '==', user.email).then((org) => setOrganizationId(org?.id));
+      fetchOrgByQuery('email', '==', user.email).then((org) => {
+        console.log({ org });
+        setOrganizationId(org?.id);
+      });
       fetchSafeByQuery('user_id', '==', user.uid).then((safe) => setSafe(safe));
     }
-  }, [user, organizationId]);
+  }, [user]);
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;
 }
