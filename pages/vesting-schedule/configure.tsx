@@ -195,15 +195,17 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // This function updates the current form based on the selected template.
   const handleTemplateChange = (details: IScheduleFormState) => {
+    // Need to create the details as new so as to not bind the current template values, which makes these datas still editable and customizable.
+    const newDetails = { ...details };
     // Due to dates are typed as Timestamps in firebase, we need to use a function for that.
-    const actualDateTime = getActualDateTime(details);
+    const actualDateTime = getActualDateTime(newDetails);
     console.log('Changing template', actualDateTime.startDate, actualDateTime.endDate);
-    setValue('amountToBeVested', details.amountToBeVested);
+    setValue('amountToBeVested', newDetails.amountToBeVested);
     setValue('startDateTime', actualDateTime.startDate);
     setValue('endDateTime', actualDateTime.endDate);
-    setValue('releaseFrequency', details.releaseFrequency);
-    setValue('cliffDuration', details.cliffDuration);
-    setValue('lumpSumReleaseAfterCliff', details.lumpSumReleaseAfterCliff);
+    setValue('releaseFrequency', newDetails.releaseFrequency);
+    setValue('cliffDuration', newDetails.cliffDuration);
+    setValue('lumpSumReleaseAfterCliff', newDetails.lumpSumReleaseAfterCliff);
   };
 
   /**

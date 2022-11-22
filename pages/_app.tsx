@@ -4,6 +4,7 @@ import { AuthContextProvider } from '@providers/auth.context';
 import { DashboardContextProvider } from '@providers/dashboard.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
 import { TokenContextProvider } from '@providers/token.context';
+import { TransactionalLoaderContextProvider } from '@providers/transactional-loader.context';
 import { VestingContextProvider } from '@providers/vesting.context';
 import { Web3ReactProvider } from '@web3-react/core';
 import { NextPage } from 'next';
@@ -52,17 +53,19 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             <OnboardingContextProvider>
               <VestingContextProvider>
                 <DashboardContextProvider>
-                  {/* <DefaultLayout sidebar={true} connected={true}> */}
-                  <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                  <ToastContainer />
-                  <ReactTooltip
-                    effect="solid"
-                    type="dark"
-                    place="top"
-                    multiline
-                    delayShow={300}
-                    backgroundColor="var(--neutral-700)"
-                  />
+                  <TransactionalLoaderContextProvider>
+                    {/* <DefaultLayout sidebar={true} connected={true}> */}
+                    <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                    <ToastContainer />
+                    <ReactTooltip
+                      effect="solid"
+                      type="dark"
+                      place="top"
+                      multiline
+                      delayShow={300}
+                      backgroundColor="var(--neutral-700)"
+                    />
+                  </TransactionalLoaderContextProvider>
                 </DashboardContextProvider>
               </VestingContextProvider>
             </OnboardingContextProvider>
