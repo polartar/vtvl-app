@@ -1,6 +1,6 @@
 import { useWeb3React } from '@web3-react/core';
 import { Timestamp } from 'firebase/firestore';
-import React, { SetStateAction, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
@@ -15,7 +15,11 @@ export interface IScheduleFormState {
   cliffDuration: CliffDuration;
   lumpSumReleaseAfterCliff: string | number;
   releaseFrequency: ReleaseFrequency;
+  tokenId?: string;
+  tokenAddress?: string;
   amountToBeVested: number;
+  amountClaimed: number;
+  amountUnclaimed: number;
 }
 
 export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
@@ -24,7 +28,9 @@ export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
   cliffDuration: 'no-cliff',
   lumpSumReleaseAfterCliff: 25,
   releaseFrequency: 'continuous',
-  amountToBeVested: 0
+  amountToBeVested: 0,
+  amountClaimed: 0,
+  amountUnclaimed: 0
 };
 
 const INITIAL_RECIPIENT_FORM_STATE = [] as MultiValue<IRecipient>;

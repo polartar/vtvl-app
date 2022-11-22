@@ -1,3 +1,5 @@
+import Button from '@components/atoms/Button/Button';
+import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -22,7 +24,7 @@ const LoginPage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
-    formState: { errors, isValid, isDirty, isSubmitted }
+    formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
       userEmail: '',
@@ -65,6 +67,7 @@ const LoginPage: NextPage = () => {
       </p>
       <div className="w-full my-6 panel flex flex-col items-center">
         <button
+          type="button"
           onClick={async () => await googleSignIn()}
           className="line flex flex-row items-center justify-center gap-2.5 w-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
@@ -76,7 +79,7 @@ const LoginPage: NextPage = () => {
           <hr className="border-t border-neutral-200 w-full grow" />
         </div>
         <div className="w-full my-6">
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <Form isSubmitting={isSubmitting} onSubmit={handleSubmit(onSubmit)}>
             <Controller
               name="userEmail"
               control={control}
@@ -108,10 +111,10 @@ const LoginPage: NextPage = () => {
                 />
               )}
             />
-            <button className="secondary mt-5" type="submit">
+            <Button className="secondary mt-5" type="submit" loading={isSubmitting}>
               Login
-            </button>
-          </form>
+            </Button>
+          </Form>
         </div>
         <button className="outlined mt-5" onClick={async () => await skipSignIn()}>
           Skip

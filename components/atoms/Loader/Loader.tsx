@@ -26,7 +26,13 @@ const Loader = ({
     warning: 'var(--warning-500)'
   };
   return (
-    <LoadingBar {...props} progress={progress} color={colors[color] || colors.primary} onLoaderFinished={onComplete} />
+    <LoadingBar
+      {...props}
+      progress={progress}
+      color={colors[color] || colors.primary}
+      onLoaderFinished={onComplete}
+      height={4}
+    />
   );
 };
 

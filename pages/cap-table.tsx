@@ -9,8 +9,12 @@ import CapTableOverview from '@components/molecules/CapTableOverview/CapTableOve
 import Table from '@components/molecules/Table/Table';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
+import { useAuthContext } from 'providers/auth.context';
 import RecipientsIcon from 'public/icons/cap-table-recipients.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
+import { fetchMember } from 'services/db/member';
+import { fetchVestingsByQuery } from 'services/db/vesting';
+import { IVesting } from 'types/models';
 import { convertAllToOptions, minifyAddress } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 
@@ -18,14 +22,24 @@ import { NextPageWithLayout } from './_app';
 
 const CapTable: NextPageWithLayout = () => {
   const { mintFormState } = useTokenContext();
+  const { user } = useAuthContext();
+  const [showCapTable, setShowCapTable] = useState(false);
+  const [tab, setTab] = useState('all');
+  const [vestingData, setVestingsData] = useState<any[]>([]);
+  const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
+  const [isPageLoading, setPageLoading] = useState(true);
+  const [totalClaimed, setTotalClaimed] = useState(0);
+  const [totalUnClaimed, setTotalUnClaimed] = useState(0);
+  const [totalAllocation, setTotalAllocation] = useState(0);
+
   const schedules = [
-    { label: 'All', value: 'all' },
-    { label: 'Viking-0132', value: 'viking-0132' }
+    { label: 'All', value: 'all' }
+    // { label: 'Viking-0132', value: 'viking-0132' }
   ];
 
-  const [tab, setTab] = useState('all');
-
-  const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
+  useEffect(() => {
+    setUpCapTable();
+  }, []);
 
   // Renderer for the recipient types for UI purpose
   const CellRecipientType = ({ value }: any) => <Chip label={value} rounded size="small" color="gray" />;
@@ -195,21 +209,58 @@ const CapTable: NextPageWithLayout = () => {
     }
   ];
 
-  // Temporary flag for showing the cap table
-  // Integrate this with the real data logic
-  const showCapTable = false;
+  const setUpCapTable = async () => {
+    const memberInfo = user?.memberInfo?.org_id
+      ? user?.memberInfo
+      : user
+      ? await fetchMember(user?.uid || '')
+      : undefined;
 
-  const [isPageLoading, setPageLoading] = useState(true);
+    const vestingData = await fetchVestingsByQuery('organizationId', '==', memberInfo?.org_id || '');
+    console.log('vesting data here is ', vestingData);
 
-  // Remove this once there is an integration with the backend
-  useEffect(() => {
-    setTimeout(() => setPageLoading(false), 5000);
-  }, []);
+    if (!vestingData || vestingData.length == 0) {
+      console.log('no vesting table details');
+      setPageLoading(false);
+      return;
+    }
+
+    let sumClaimed = 0;
+    let sumUnclaimed = 0;
+    let sumAllocation = 0;
+
+    const transformedVestings = [...vestingData].reduce((acc: any, obj: { id: string; data: IVesting }) => {
+      const o = [...obj.data.recipients].reduce((a: any, o: any) => {
+        sumAllocation += obj.data.details.amountToBeVested;
+        sumUnclaimed += obj.data.details.amountClaimed;
+        sumClaimed += obj.data.details.amountUnclaimed;
+        return [
+          ...a,
+          {
+            name: o.name,
+            company: o.company,
+            recipientType: o.recipientType[0]?.label,
+            address: o.walletAddress,
+            totalAllocation: obj.data.details.amountToBeVested
+          }
+        ];
+      }, []);
+      return [...acc, ...o];
+    }, []);
+
+    setTotalClaimed(sumClaimed);
+    setTotalUnClaimed(sumUnclaimed);
+    setTotalAllocation(sumAllocation);
+    console.log('transformed vestings ', transformedVestings);
+    setVestingsData(transformedVestings);
+    setShowCapTable(true);
+    setPageLoading(false);
+  };
 
   return (
     <>
       <PageLoader isLoading={isPageLoading}>
-        <div className="w-full">
+        <div className="w-full h-full">
           <h1 className="h2 text-neutral-900 mb-2">Cap Table</h1>
           <p className="text-neutral-500 text-sm mb-5">You can find below the history of the transactions.</p>
           {showCapTable ? (
@@ -217,12 +268,12 @@ const CapTable: NextPageWithLayout = () => {
               <div className="p-5 mb-6 border-b border-gray-200">
                 <CapTableOverview
                   token={mintFormState.symbol || 'Token'}
-                  schedules={3}
-                  totalRecipients={4}
-                  claimed={10000000}
-                  unclaimed={40000000}
-                  totalWithdrawn={5000000}
-                  totalAllocation={50000000}
+                  schedules={vestingData.length}
+                  totalRecipients={vestingData.length}
+                  claimed={totalClaimed}
+                  unclaimed={totalUnClaimed}
+                  totalWithdrawn={0}
+                  totalAllocation={totalAllocation}
                 />
               </div>
               <label>
@@ -243,7 +294,7 @@ const CapTable: NextPageWithLayout = () => {
                 <Input label="Unclaimed" placeholder="any" />
               </div>
 
-              <Table columns={columns} data={data} pagination={true} exports={true} />
+              <Table columns={columns} data={vestingData} pagination={true} exports={true} />
             </>
           ) : (
             <EmptyState

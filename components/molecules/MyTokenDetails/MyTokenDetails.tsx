@@ -1,21 +1,25 @@
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import VestingProgress from '@components/atoms/VestingProgress/VestingProgress';
+import { useWeb3React } from '@web3-react/core';
 import Link from 'next/link';
 import CopyIcon from 'public/icons/copy-to-clipboard.svg';
+import CopyToClipboard from 'react-copy-to-clipboard';
 import Countdown from 'react-countdown';
 import { formatDate, formatTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 
 import TokenProfile from '../TokenProfile/TokenProfile';
 
-interface ITokenDetails {
+export interface ITokenDetails {
   name: string;
   symbol?: string;
   logo: string;
   address: string;
+  decimals: string;
 }
 
-interface IVestingInfo {
+export interface IVestingInfo {
   name: string;
   totalAllocation: number;
   totalVested: number;
@@ -25,44 +29,68 @@ interface IVestingInfo {
   endDateTime: Date;
 }
 
-interface IClaimable {
+export interface IClaimable {
   token: number;
   isClaimable: boolean;
 }
 
-interface IMyTokenDetails {
+export interface IMyTokenDetails {
   token: ITokenDetails;
-  vesting: IVestingInfo;
-  claimable: IClaimable;
-  viewDetailsUrl: string;
+  vesting?: IVestingInfo;
+  claimable?: IClaimable;
+  viewDetailsUrl?: string;
   onClaim?: () => void;
 }
 
 const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: IMyTokenDetails) => {
+  const { library } = useWeb3React();
+
+  const importToken = async () => {
+    try {
+      if (!library || !props.token) return;
+      await library.provider.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20', // Initially only supports ERC20, but eventually more!
+          options: {
+            address: props.token.address,
+            symbol: props.token.symbol,
+            decimals: props.token.decimals || 18,
+            image: props.token.logo
+          }
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="panel p-0">
       <div className="p-6">
         <div className="row-center justify-between gap-3 mb-4">
           <TokenProfile logo={props.token.logo} name={props.token.name} symbol={props.token.symbol} size="small" />
-          <Chip label={props.vesting.name} color="gray" rounded />
+          <Chip label={props?.vesting?.name || ''} color="gray" rounded />
         </div>
         <div className="row-center gap-2 text-xxs text-neutral-500 mb-3">
           <CopyIcon className="fill-current h-4 cursor-pointer" />
           <p>{props.token.address}</p>
         </div>
-        <button className="secondary py-1 mb-6">Import token to your wallet</button>
+        <button onClick={() => importToken()} className="secondary py-1 mb-6">
+          Import token to your wallet
+        </button>
         <VestingProgress duration="30 days left" progress={50} />
         <div className="mt-6 grid grid-cols-2 pb-4 border-b border-gray-200">
           <div>
             <p className="text-xs font-medium text-neutral-500 mb-1">Your total allocation</p>
             <p className="text-sm font-semibold text-neutral-600">
-              {formatNumber(props.vesting.totalAllocation)} {props.token.symbol}
+              {formatNumber(props?.vesting?.totalAllocation || 0)} {props.token.symbol}
             </p>
           </div>
           <div>
             <p className="text-xs font-medium text-neutral-500 mb-1">Total vested</p>
             <p className="text-sm font-semibold text-neutral-600">
-              {formatNumber(props.vesting.totalVested)} {props.token.symbol}
+              {formatNumber(props?.vesting?.totalVested || 0)} {props.token.symbol}
             </p>
           </div>
         </div>
@@ -70,13 +98,13 @@ const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: I
           <div>
             <p className="text-xs font-medium text-neutral-500 mb-1">Claimed</p>
             <p className="text-sm font-semibold text-neutral-600">
-              {formatNumber(props.vesting.claimed)} {props.token.symbol}
+              {formatNumber(props?.vesting?.claimed || 0)} {props.token.symbol}
             </p>
           </div>
           <div>
             <p className="text-xs font-medium text-neutral-500 mb-1">Unclaimed</p>
             <p className="text-sm font-semibold text-neutral-600">
-              {formatNumber(props.vesting.unclaimed)} {props.token.symbol}
+              {formatNumber(props?.vesting?.unclaimed || 0)} {props.token.symbol}
             </p>
           </div>
           <div>
@@ -104,9 +132,9 @@ const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: I
             <p className="flex flex-row items-start gap-2 text-xs font-semibold text-neutral-600">
               <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
               <>
-                {formatDate(props.vesting.startDateTime)}
+                {formatDate(props?.vesting?.startDateTime || new Date())}
                 <br />
-                {formatTime(props.vesting.startDateTime)}
+                {formatTime(props?.vesting?.startDateTime || new Date())}
               </>
             </p>
           </div>
@@ -115,9 +143,9 @@ const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: I
             <p className="flex flex-row items-start gap-2 text-xs font-semibold text-neutral-600">
               <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
               <>
-                {formatDate(props.vesting.endDateTime)}
+                {formatDate(props?.vesting?.endDateTime || new Date())}
                 <br />
-                {formatTime(props.vesting.endDateTime)}
+                {formatTime(props?.vesting?.endDateTime || new Date())}
               </>
             </p>
           </div>
@@ -128,9 +156,9 @@ const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: I
           <button
             type="button"
             className="primary w-full mb-2"
-            disabled={!props.claimable.isClaimable}
+            disabled={!props?.claimable?.isClaimable || false}
             onClick={onClaim}>
-            Claim <strong>{formatNumber(props.claimable.token)}</strong> {props.token.symbol}
+            Claim <strong>{formatNumber(props?.claimable?.token || 0)}</strong> {props.token.symbol}
           </button>
           <Link href={viewDetailsUrl}>
             <span className="flex w-full items-center justify-center h-10 text-primary-900 text-sm font-medium cursor-pointer">

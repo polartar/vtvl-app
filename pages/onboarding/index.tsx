@@ -2,9 +2,11 @@ import Carousel from '@components/atoms/Carousel/Carousel';
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
 import styled from '@emotion/styled';
+import OnboardingContext, { Step, useOnboardingContext } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import AstroHelmet from 'public/icons/astronaut-helmet.svg';
+import { useContext, useEffect } from 'react';
 
 const OnboardingContainer = styled.section`
   display: grid;
@@ -39,6 +41,11 @@ const WalletContainer = styled.div`
 `;
 
 const SelectLoginTypePage: NextPage = () => {
+  const { startOnboarding } = useOnboardingContext();
+  useEffect(() => {
+    startOnboarding(Step.ChainSetup);
+  }, []);
+
   const wallets = [
     {
       name: 'Member',

@@ -1,5 +1,6 @@
 export interface IVestingContract {
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
+  tokenAddress: string;
   address: string;
   deployer: string;
   organizationId: string;

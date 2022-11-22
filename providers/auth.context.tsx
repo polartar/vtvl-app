@@ -71,8 +71,13 @@ export function AuthContextProvider({ children }: any) {
   const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(false);
   console.log({ user });
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const memberInfo = await fetchMember(user.uid);
+        const safe = await fetchSafeByQuery('user_id', '==', user.uid);
+        setUser({ ...user, memberInfo });
+        setSafe(safe);
+      }
       setLoading(false);
     });
 
@@ -81,7 +86,6 @@ export function AuthContextProvider({ children }: any) {
 
   const signInWithGoogle = async (): Promise<NewLogin | undefined> => {
     setLoading(true);
-
     await setPersistence(auth, browserSessionPersistence);
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
     const additionalInfo = getAdditionalUserInfo(credential);
@@ -309,7 +313,7 @@ export function AuthContextProvider({ children }: any) {
       toggleSideBar,
       expandSidebar
     }),
-    [loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, user, safe]
+    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe]
   );
   console.log('organzationId - ', organizationId);
   useEffect(() => {

@@ -1,8 +1,13 @@
 import Chip from '@components/atoms/Chip/Chip';
+import Loader from '@components/atoms/Loader/Loader';
+import Lottie from 'lottie-react';
+import ErrorAnimation from 'public/error-state.json';
 import WarningIcon from 'public/icons/warning.svg';
+import SuccessAnimation from 'public/successfully-done.json';
+import { useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 
-export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS';
+export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'ERROR';
 export interface TransactionModalProps {
   status: TransactionStatuses;
 }
@@ -51,20 +56,54 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
       )
     },
     SUCCESS: {
-      image: '/images/success-animation.gif',
+      image: <Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />,
       title: <>Woo hoo! Transaction was successful</>,
       description: <>Well done! Now we can go further. Phew!</>
+    },
+    ERROR: {
+      image: <Lottie animationData={ErrorAnimation} style={{ width: '106px' }} />,
+      title: <>Oh no! Transaction was unsuccessful</>,
+      description: <>No worries! Just try again later.</>
     }
   };
 
+  const [progress, setProgress] = useState(0);
+  const [isOpen, setIsOpen] = useState(true);
+  // 100% / (3 seconds / 100 ms) = amount of progress per tick
+  const progressAdditionBasedOnSeconds = 100 / ((3 * 1000) / 100);
+
+  useEffect(() => {
+    if (status === 'SUCCESS' || status === 'ERROR') {
+      setProgress(1);
+      setIsOpen(true);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (progress && progress < 100) {
+      setTimeout(() => {
+        setProgress((t) => t + progressAdditionBasedOnSeconds);
+      }, 100);
+    } else {
+      setProgress(0);
+    }
+  }, [progress]);
+
   return (
     <>
-      {status && (
-        <Modal isOpen={true} style={modalStyles}>
-          <img src={txTypes[status].image} className="h-32 opacity-90" />
+      {status ? (
+        <Modal isOpen={isOpen} style={modalStyles}>
+          {status === 'SUCCESS' || status === 'ERROR' ? (
+            <Loader progress={progress} onComplete={() => setIsOpen(false)} />
+          ) : null}
+          {status !== 'SUCCESS' && status !== 'ERROR' ? (
+            <img src={txTypes[status].image} className="h-32 opacity-90" />
+          ) : (
+            txTypes[status].image
+          )}
           <h2 className="sora font-semibold text-3xl text-neutral-900 mt-12">{txTypes[status].title}</h2>
           <p className="mt-4 font-medium text-sm text-neutral-500 text-center">{txTypes[status].description}</p>
-          {status !== 'SUCCESS' && (
+          {status !== 'SUCCESS' && status !== 'ERROR' && (
             <Chip
               label={
                 <div className="flex flex-row items-center gap-2">
@@ -78,7 +117,7 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
             />
           )}
         </Modal>
-      )}
+      ) : null}
     </>
   );
 };
