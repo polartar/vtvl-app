@@ -5,6 +5,7 @@ import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
+import Router from 'next/router';
 import React, { useContext, useEffect } from 'react';
 import { IMember } from 'types/models';
 
@@ -36,13 +37,14 @@ const MemberWalletPage: NextPage = () => {
         name,
         type
       });
-  }, []);
+  }, [user]);
 
   const loginWithUrl = async (mem: IMember) => {
     try {
       await emailSignUp(mem, window.location.toString());
     } catch (error: any) {
-      console.log('error ', error);
+      console.error('error ', error);
+      Router.replace(`/error?email=${mem.email}`);
     }
   };
 
@@ -51,7 +53,7 @@ const MemberWalletPage: NextPage = () => {
       await activate(injected);
       completeOnboarding();
     } catch (error) {
-      console.log('connection error ', error);
+      console.error('connection error ', error);
     }
   }
 
@@ -60,7 +62,7 @@ const MemberWalletPage: NextPage = () => {
       await activate(walletconnect);
       completeOnboarding();
     } catch (error) {
-      console.log('connection error ', error);
+      console.error('connection error ', error);
     }
   }
 

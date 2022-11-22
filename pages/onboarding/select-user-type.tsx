@@ -41,7 +41,7 @@ const userTypes = {
 };
 
 const SelectUserTypePage: NextPage = () => {
-  const { onNext, startOnboarding, completeOnboarding, inProgress } = useContext(OnboardingContext);
+  const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
   const { emailSignUp, user } = useContext(AuthContext);
   const { active } = useWeb3React();
   const [selected, setSelected] = React.useState('');
@@ -70,7 +70,7 @@ const SelectUserTypePage: NextPage = () => {
         },
         newUser
       );
-  }, []);
+  }, [user]);
 
   const loginWithUrl = async (member: IMember, newUser: boolean) => {
     try {
@@ -78,6 +78,7 @@ const SelectUserTypePage: NextPage = () => {
       if (!newUser) completeOnboarding();
     } catch (error: any) {
       console.log('error ', error);
+      Router.replace(`/error?email=${member.email}`);
     }
   };
 

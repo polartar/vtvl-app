@@ -31,7 +31,7 @@ import { NextPageWithLayout } from '../_app';
 
 const Dashboard: NextPageWithLayout = () => {
   const { library, account, activate } = useWeb3React();
-  const { organizationId, safe, emailSignUp } = useAuthContext();
+  const { user, organizationId, safe, emailSignUp } = useAuthContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { recipients, scheduleFormState } = useVestingContext();
   const {
@@ -55,13 +55,14 @@ const Dashboard: NextPageWithLayout = () => {
     const email = params.searchParams.get('email');
     if (email) loginWithUrl(email);
     fetchDashboardData();
-  }, []);
+  }, [user]);
 
   const loginWithUrl = async (email: string) => {
     try {
       await emailSignUp({ email }, window.location.toString());
     } catch (error: any) {
-      console.log('error ', error);
+      console.error('error ', error);
+      router.replace(`/error?email=${email}`);
     }
   };
 

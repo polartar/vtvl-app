@@ -11,7 +11,7 @@ interface ISharedData {
 const SharedContext = createContext({} as ISharedData);
 
 export function SharedContextProvider({ children }: any) {
-  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [isPageLoading, setIsPageLoading] = useState(false);
 
   const value = useMemo(
     () => ({
