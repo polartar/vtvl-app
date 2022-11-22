@@ -138,7 +138,6 @@ export function OnboardingContextProvider({ children }: any) {
   };
 
   const onNext = async (data: OnboardingInfo) => {
-    console.log('currentStep is ', currentStep);
     switch (currentStep) {
       case Step.ChainSetup:
         setInProgress(true);

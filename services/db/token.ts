@@ -9,9 +9,7 @@ import {
   setDoc,
   where
 } from '@firebase/firestore';
-import { QuerySnapshot } from 'firebase/firestore';
 import { tokenCollection } from 'services/db/firestore';
-import { db } from 'services/db/firestore';
 import { IToken } from 'types/models';
 
 export const fetchToken = async (id: string): Promise<IToken | undefined> => {

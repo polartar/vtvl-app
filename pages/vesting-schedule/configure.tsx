@@ -233,7 +233,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             lumpSumReleaseAfterCliff: lumpSumReleaseAfterCliff.value,
             releaseFrequency: releaseFrequency.value,
             amountToBeVested: amountToBeVested.value,
-            tokenId
+            tokenId,
+            tokenAddress: mintFormState.address,
+            amountClaimed: 0,
+            amountUnclaimed: 0
           },
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),

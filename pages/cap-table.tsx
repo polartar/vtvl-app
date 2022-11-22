@@ -28,10 +28,13 @@ const CapTable: NextPageWithLayout = () => {
   const [vestingData, setVestingsData] = useState<any[]>([]);
   const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
   const [isPageLoading, setPageLoading] = useState(true);
+  const [totalClaimed, setTotalClaimed] = useState(0);
+  const [totalUnClaimed, setTotalUnClaimed] = useState(0);
+  const [totalAllocation, setTotalAllocation] = useState(0);
 
   const schedules = [
-    { label: 'All', value: 'all' },
-    { label: 'Viking-0132', value: 'viking-0132' }
+    { label: 'All', value: 'all' }
+    // { label: 'Viking-0132', value: 'viking-0132' }
   ];
 
   useEffect(() => {
@@ -222,8 +225,15 @@ const CapTable: NextPageWithLayout = () => {
       return;
     }
 
+    let sumClaimed = 0;
+    let sumUnclaimed = 0;
+    let sumAllocation = 0;
+
     const transformedVestings = [...vestingData].reduce((acc: any, obj: { id: string; data: IVesting }) => {
       const o = [...obj.data.recipients].reduce((a: any, o: any) => {
+        sumAllocation += obj.data.details.amountToBeVested;
+        sumUnclaimed += obj.data.details.amountClaimed;
+        sumClaimed += obj.data.details.amountUnclaimed;
         return [
           ...a,
           {
@@ -238,6 +248,9 @@ const CapTable: NextPageWithLayout = () => {
       return [...acc, ...o];
     }, []);
 
+    setTotalClaimed(sumClaimed);
+    setTotalUnClaimed(sumUnclaimed);
+    setTotalAllocation(sumAllocation);
     console.log('transformed vestings ', transformedVestings);
     setVestingsData(transformedVestings);
     setShowCapTable(true);
@@ -255,12 +268,12 @@ const CapTable: NextPageWithLayout = () => {
               <div className="p-5 mb-6 border-b border-gray-200">
                 <CapTableOverview
                   token={mintFormState.symbol || 'Token'}
-                  schedules={3}
+                  schedules={vestingData.length}
                   totalRecipients={vestingData.length}
-                  claimed={10000000}
-                  unclaimed={40000000}
-                  totalWithdrawn={5000000}
-                  totalAllocation={50000000}
+                  claimed={totalClaimed}
+                  unclaimed={totalUnClaimed}
+                  totalWithdrawn={0}
+                  totalAllocation={totalAllocation}
                 />
               </div>
               <label>
