@@ -257,6 +257,11 @@ const CapTable: NextPageWithLayout = () => {
     setPageLoading(false);
   };
 
+  // Remove this once there is an integration with the backend
+  useEffect(() => {
+    setTimeout(() => setPageLoading(false), 5000);
+  }, []);
+
   return (
     <>
       <PageLoader isLoading={isPageLoading}>
