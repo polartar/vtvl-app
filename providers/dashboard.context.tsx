@@ -124,7 +124,7 @@ export function DashboardContextProvider({ children }: any) {
     fetchDashboardVestings();
     fetchDashboardVestingContract();
     fetchDashboardTransactions();
-  }, []);
+  }, [organizationId]);
 
   useEffect(() => {
     if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {
