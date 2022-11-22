@@ -11,7 +11,7 @@ import {
   signInWithEmailAndPassword,
   signInWithEmailLink,
   signInWithPopup,
-  signOut,
+  signOut
 } from 'firebase/auth';
 import useEagerConnect from 'hooks/useEagerConnect';
 import Router from 'next/router';
@@ -72,10 +72,10 @@ export function AuthContextProvider({ children }: any) {
   console.log({ user });
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if(user){
+      if (user) {
         const memberInfo = await fetchMember(user.uid);
         const safe = await fetchSafeByQuery('user_id', '==', user.uid);
-        setUser({...user, memberInfo });
+        setUser({ ...user, memberInfo });
         setSafe(safe);
       }
       setLoading(false);
@@ -83,7 +83,6 @@ export function AuthContextProvider({ children }: any) {
 
     return unsubscribe;
   }, []);
-
 
   const signInWithGoogle = async (): Promise<NewLogin | undefined> => {
     setLoading(true);

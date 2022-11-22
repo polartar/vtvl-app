@@ -194,3 +194,7 @@ export function OnboardingContextProvider({ children }: any) {
 }
 
 export default OnboardingContext;
+
+export const useOnboardingContext = () => ({
+  ...useContext(OnboardingContext)
+});

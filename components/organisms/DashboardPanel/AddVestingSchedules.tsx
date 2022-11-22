@@ -136,6 +136,7 @@ AddVestingSchedulesProps) => {
       const vestingContract = await VestingFactory.deploy(mintFormState.address);
       await vestingContract.deployed();
       const vestingContractId = await createVestingContract({
+        tokenAddress: mintFormState.address,
         address: vestingContract.address,
         status: 'SUCCESS',
         deployer: account,

@@ -4,18 +4,12 @@ import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import MyTokenDetails, { IClaimable, ITokenDetails } from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import AuthContext from '@providers/auth.context';
-import { useWeb3React } from '@web3-react/core';
-// import { NumberMatcher } from 'cypress/types/net-stubbing';
-import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { stringify } from 'querystring';
 import { ReactElement, useContext, useEffect, useState } from 'react';
-import { fetchTokenByQuery } from 'services/db/token';
-import { IToken, IVesting } from 'types/models';
+import { fetchTokensByQuery } from 'services/db/token';
+import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 
 const MyTokenStatus: NextPageWithLayout = () => {
-
-  const { account, library } = useWeb3React();
   const { user } = useContext(AuthContext);
 
   // Fetch token based on status at initial load
@@ -33,27 +27,20 @@ const MyTokenStatus: NextPageWithLayout = () => {
     setTab(e.target.value);
   };
 
-
-  interface ITokenSummary {
-    name: string,
-    logo: string,
-    symbol: string,
-    address: string
-  }
-
   interface IVestingSummary {
-    name: string,
-    totalAllocation: number,
-    totalVested: number,
-    claimed: number,
-    unclaimed: number,
-    startDateTime: string,
-    endDateTime: string,
+    name: string;
+    totalAllocation: number;
+    totalVested: number;
+    claimed: number;
+    unclaimed: number;
+    startDateTime: string;
+    endDateTime: string;
   }
+
   interface ITokenInfo {
-    token?: ITokenDetails,
-    vesting?: IVestingSummary,
-    claimable?: IClaimable
+    token?: ITokenDetails;
+    vesting?: IVestingSummary;
+    claimable?: IClaimable;
   }
 
   const [showTokens, setShowTokens] = useState(false);
@@ -102,47 +89,49 @@ const MyTokenStatus: NextPageWithLayout = () => {
   // Remove this once there is an integration happening with the backend,
   // but make sure to setIsPageLoading to false once actual data is loaded.
   useEffect(() => {
-    console.log("user org id is ", user?.memberInfo?.org_id);
-    //TODO: get user organization
-    // get organization vesting schedules
-    console.log("user member info here is ", user?.memberInfo);
-    (async () => {
-      const orgId = user?.memberInfo?.org_id || ''
-      const t = await fetchTokenByQuery('organizationId', '==', orgId);
-      if(t && t.data){
-        setTokens([{ token: {
-          name: t.data.name,
-          symbol: t.data.symbol,
-          logo: t.data.logo,
-          address: t.data.address,
-          decimals: t.data.decimals?.toString() || ''
-        } }]);
-        setShowTokens(true);
-        console.log("we have tokens for org here ", t?.data)
-      }
-      setIsPageLoading(false)
-    })();
-  }, []);
+    setUpTokens();
+  }, [user]);
 
-  const importToken = async (token: ITokenDetails) => {
-    try {
-      if(!library || !account || !token) return;
-      await library.provider.request({
-        method: 'wallet_watchAsset',
-        params: {
-          type: 'ERC20', // Initially only supports ERC20, but eventually more!
-          options: {
-            address: token.address,
-            symbol: token.symbol,
-            decimals: token.decimals || 18,
-            image: token.logo,
-          },
-        },
-      });
-    } catch (error) {
-      console.error(error);
+  const setUpTokens = async () => {
+    const orgId = user?.memberInfo?.org_id || '';
+    console.log('orgId is ', orgId);
+
+    if (!orgId) {
+      console.log('no org id');
+      setIsPageLoading(false);
+      return;
     }
-  }
+    const tkns = await fetchTokensByQuery('organizationId', '==', orgId);
+
+    if (!tkns) {
+      console.log('no token fetched.');
+      setIsPageLoading(false);
+      return;
+    }
+
+    const resultTokens = await Promise.all(
+      tkns.map(async (t) => {
+        const v = await fetchVestingContractByQuery('tokenAddress', '==', t.get('address'));
+        console.log('v here is ', v);
+        // if(!v) { console.log("no vesting contract for token fetched."); return; }
+        //TODO: figure out how to link vestings to represent data
+        return {
+          token: {
+            name: t.get('name'),
+            symbol: t.get('symbol'),
+            logo: t.get('logo'),
+            address: t.get('address'),
+            decimals: t.get('decimals') || ''
+          }
+        };
+      })
+    );
+
+    setTokens([...resultTokens]);
+    setShowTokens(true);
+    setIsPageLoading(false);
+    console.log('we have tokens for org here ', resultTokens);
+  };
 
   return (
     <>
@@ -154,9 +143,16 @@ const MyTokenStatus: NextPageWithLayout = () => {
               <>
                 <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
                 <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {tokens?.map((token, tokenIndex) => (
-                    token.token && <MyTokenDetails importToken={importToken} key={`my-token-${tokenIndex}`} token={token?.token} viewDetailsUrl="/tokens/schedule-001" />
-                  ))}
+                  {tokens?.map(
+                    (info, idx) =>
+                      info.token && (
+                        <MyTokenDetails
+                          key={`my-token-${idx}`}
+                          token={info?.token}
+                          viewDetailsUrl="/tokens/schedule-001"
+                        />
+                      )
+                  )}
                 </div>
                 {/* Probably need a condition to check if there are more records */}
                 <button type="button" className="primary line mx-auto flex py-1.5 my-5">

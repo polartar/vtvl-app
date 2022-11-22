@@ -9,30 +9,34 @@ import CapTableOverview from '@components/molecules/CapTableOverview/CapTableOve
 import Table from '@components/molecules/Table/Table';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
+import { useAuthContext } from 'providers/auth.context';
 import RecipientsIcon from 'public/icons/cap-table-recipients.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
-import { convertAllToOptions, minifyAddress } from 'utils/shared';
-import { fetchVestingsByQuery } from 'services/db/vesting';
-import { formatNumber } from 'utils/token';
-import { NextPageWithLayout } from './_app';
-import { IVesting, } from 'types/models';
-import { useAuthContext } from 'providers/auth.context';
 import { fetchMember } from 'services/db/member';
-import { any } from 'cypress/types/bluebird';
+import { fetchVestingsByQuery } from 'services/db/vesting';
+import { IVesting } from 'types/models';
+import { convertAllToOptions, minifyAddress } from 'utils/shared';
+import { formatNumber } from 'utils/token';
+
+import { NextPageWithLayout } from './_app';
 
 const CapTable: NextPageWithLayout = () => {
-
   const { mintFormState } = useTokenContext();
   const { user } = useAuthContext();
   const [showCapTable, setShowCapTable] = useState(false);
   const [tab, setTab] = useState('all');
   const [vestingData, setVestingsData] = useState<any[]>([]);
   const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
+  const [isPageLoading, setPageLoading] = useState(true);
 
   const schedules = [
     { label: 'All', value: 'all' },
     { label: 'Viking-0132', value: 'viking-0132' }
   ];
+
+  useEffect(() => {
+    setUpCapTable();
+  }, []);
 
   // Renderer for the recipient types for UI purpose
   const CellRecipientType = ({ value }: any) => <Chip label={value} rounded size="small" color="gray" />;
@@ -202,38 +206,43 @@ const CapTable: NextPageWithLayout = () => {
     }
   ];
 
-  // Temporary flag for showing the cap table
-  // Integrate this with the real data logic
+  const setUpCapTable = async () => {
+    const memberInfo = user?.memberInfo?.org_id
+      ? user?.memberInfo
+      : user
+      ? await fetchMember(user?.uid || '')
+      : undefined;
 
-  const [isPageLoading, setPageLoading] = useState(true);
+    const vestingData = await fetchVestingsByQuery('organizationId', '==', memberInfo?.org_id || '');
+    console.log('vesting data here is ', vestingData);
 
-  useEffect(() => {
-    (async () => {
-      const memberInfo = user?.memberInfo?.org_id ? user?.memberInfo : user ? await fetchMember(user?.uid || ''): undefined;
-      const vestingData = await fetchVestingsByQuery('organizationId', '==', memberInfo?.org_id || '');
-      console.log("vesting data here is ", vestingData)
+    if (!vestingData || vestingData.length == 0) {
+      console.log('no vesting table details');
+      setPageLoading(false);
+      return;
+    }
 
-      if (vestingData) {
-        const transformedVestings = [...vestingData].reduce((acc: any, obj: {id: string, data: IVesting}) => {
-          const o = [...obj.data.recipients].reduce((a: any, o: any) => {
-            return [...a, {
-              name: o.name,
-              company: o.company,
-              recipientType: o.recipientType[0]?.label,
-              address: o.walletAddress,
-              totalAllocation: obj.data.details.amountToBeVested
-            }]
-          }, [])
-          return [...acc, ...o]
-         }, [])
+    const transformedVestings = [...vestingData].reduce((acc: any, obj: { id: string; data: IVesting }) => {
+      const o = [...obj.data.recipients].reduce((a: any, o: any) => {
+        return [
+          ...a,
+          {
+            name: o.name,
+            company: o.company,
+            recipientType: o.recipientType[0]?.label,
+            address: o.walletAddress,
+            totalAllocation: obj.data.details.amountToBeVested
+          }
+        ];
+      }, []);
+      return [...acc, ...o];
+    }, []);
 
-        console.log("transformed vestings ", transformedVestings)
-        setVestingsData(transformedVestings);
-        setShowCapTable(true);
-      }
-      setPageLoading(false)
-    })();
-  }, []);
+    console.log('transformed vestings ', transformedVestings);
+    setVestingsData(transformedVestings);
+    setShowCapTable(true);
+    setPageLoading(false);
+  };
 
   return (
     <>

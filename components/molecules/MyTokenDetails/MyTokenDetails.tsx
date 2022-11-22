@@ -4,11 +4,8 @@ import { useWeb3React } from '@web3-react/core';
 import Link from 'next/link';
 import CopyIcon from 'public/icons/copy-to-clipboard.svg';
 import Countdown from 'react-countdown';
-import { tokenCollection } from 'services/db/firestore';
-import { IToken } from 'types/models';
 import { formatDate, formatTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
-import { toHex } from 'utils/web3';
 
 import TokenProfile from '../TokenProfile/TokenProfile';
 
@@ -41,10 +38,30 @@ export interface IMyTokenDetails {
   claimable?: IClaimable;
   viewDetailsUrl?: string;
   onClaim?: () => void;
-  importToken: (token: ITokenDetails) => void;
 }
 
-const MyTokenDetails = ({ viewDetailsUrl = '', importToken,  onClaim = () => {}, ...props }: IMyTokenDetails) => {
+const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: IMyTokenDetails) => {
+  const { library } = useWeb3React();
+
+  const importToken = async () => {
+    try {
+      if (!library || !props.token) return;
+      await library.provider.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20', // Initially only supports ERC20, but eventually more!
+          options: {
+            address: props.token.address,
+            symbol: props.token.symbol,
+            decimals: props.token.decimals || 18,
+            image: props.token.logo
+          }
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <div className="panel p-0">
@@ -57,14 +74,9 @@ const MyTokenDetails = ({ viewDetailsUrl = '', importToken,  onClaim = () => {},
           <CopyIcon className="fill-current h-4 cursor-pointer" />
           <p>{props.token.address}</p>
         </div>
-        <button onClick={()=>importToken({
-          name: props.token.name,
-          symbol: props.token.symbol || '',
-          logo: props.token.logo,
-          address: props.token.address,
-          decimals: props.token.decimals
-          })}
-          className="secondary py-1 mb-6">Import token to your wallet</button>
+        <button onClick={() => importToken()} className="secondary py-1 mb-6">
+          Import token to your wallet
+        </button>
         <VestingProgress duration="30 days left" progress={50} />
         <div className="mt-6 grid grid-cols-2 pb-4 border-b border-gray-200">
           <div>
