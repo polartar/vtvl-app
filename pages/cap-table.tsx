@@ -260,7 +260,7 @@ const CapTable: NextPageWithLayout = () => {
   return (
     <>
       <PageLoader isLoading={isPageLoading}>
-        <div className="w-full">
+        <div className="w-full h-full">
           <h1 className="h2 text-neutral-900 mb-2">Cap Table</h1>
           <p className="text-neutral-500 text-sm mb-5">You can find below the history of the transactions.</p>
           {showCapTable ? (

@@ -606,7 +606,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     <>
       <PageLoader isLoading={isFetchingSchedules || isTokenLoading}>
         {vestingSchedules?.length && mintFormState ? (
-          <div className="w-full">
+          <div className="w-full h-full">
             <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
             <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
               <div>

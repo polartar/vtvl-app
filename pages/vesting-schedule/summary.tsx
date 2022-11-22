@@ -69,8 +69,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
       tokenAddress: mintFormState.address,
       tokenId
     });
+    await Router.push('/vesting-schedule/success');
     resetVestingState();
-    Router.push('/vesting-schedule/success');
     // try {
     //   if (!library) {
     //     activate(injected);

@@ -1,5 +1,6 @@
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
@@ -89,7 +90,6 @@ const FundingContractModal = ({
   const fundingMethod = { value: watch('fundingMethod'), fieldState: getFieldState('fundingMethod') };
   const amount = { value: watch('amount'), fieldState: getFieldState('amount') };
 
-  const [copied, setCopied] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [contractBalance, setContractBalance] = useState(0);
 
@@ -119,13 +119,6 @@ const FundingContractModal = ({
   const handleMaxChange = () => {
     setValue('amount', +mintFormState.maxSupply);
   };
-
-  // Update copied state when the contract address is copied to clipboard.
-  useEffect(() => {
-    if (copied === true) {
-      setTimeout(() => setCopied(false), 2000);
-    }
-  }, [copied]);
 
   // Update the form values that rely on the contract object from the parent caller.
   // Update the amount in the form when updating the method of funding.
@@ -296,22 +289,15 @@ const FundingContractModal = ({
                 ) : null}
                 {/* MANUAL FUNDING SECTION */}
                 {fundingMethod.value === 'MANUAL' ? (
-                  <CopyToClipboard text={mintFormState.address} onCopy={() => setCopied(true)}>
+                  <Copy text={mintFormState.address}>
                     <div className="mt-5 pt-3 px-3 flex flex-col items-center cursor-pointer relative">
                       <TokenProfile logo={mintFormState.logo} name={mintFormState.name} symbol={mintFormState.symbol} />
                       <div className="row-center mt-2">
                         <CopyIcon className="fill-current h-4" />
                         <p className="paragraphy-small neutral-text">{mintFormState.address}</p>
                       </div>
-                      {copied ? (
-                        <div className="absolute z-50 bottom-3 text-center w-full">
-                          <span className="inline-block bg-white rounded-xl shadow-lg py-4 px-6 opacity-95">
-                            Contract address copied!
-                          </span>
-                        </div>
-                      ) : null}
                     </div>
-                  </CopyToClipboard>
+                  </Copy>
                 ) : null}
               </div>
             ) : null}

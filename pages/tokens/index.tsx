@@ -136,8 +136,8 @@ const MyTokenStatus: NextPageWithLayout = () => {
   return (
     <>
       <PageLoader isLoading={isPageLoading}>
-        <div className="w-full">
-          <div className="max-w-4xl xl:max-w-full">
+        <div className="w-full h-full">
+          <div className={showTokens ? 'max-w-4xl xl:max-w-full' : ''}>
             <h1 className="text-neutral-900 mb-9">My Tokens</h1>
             {showTokens ? (
               <>

@@ -1,8 +1,10 @@
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import VestingProgress from '@components/atoms/VestingProgress/VestingProgress';
 import { useWeb3React } from '@web3-react/core';
 import Link from 'next/link';
 import CopyIcon from 'public/icons/copy-to-clipboard.svg';
+import CopyToClipboard from 'react-copy-to-clipboard';
 import Countdown from 'react-countdown';
 import { formatDate, formatTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
