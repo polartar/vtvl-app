@@ -76,8 +76,9 @@ export function TokenContextProvider({ children }: any) {
               address: res.data?.address || '',
               imported: res.data?.imported || false,
               createdAt: res.data?.createdAt ? res.data?.createdAt : Math.floor(new Date().getTime() / 1000),
-              updatedAt: res.data?.updatedAt ? res.data?.createdAt : Math.floor(new Date().getTime() / 1000),
-              status: res.data?.status ? res.data?.status : 'PENDING'
+              updatedAt: res.data?.updatedAt ? res.data?.updatedAt : Math.floor(new Date().getTime() / 1000),
+              status: res.data?.status ? res.data?.status : 'PENDING',
+              tokenId: res.id
             }));
             setTokenId(res.id);
           }

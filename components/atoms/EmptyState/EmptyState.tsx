@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface IEmptyStateProps extends React.BaseHTMLAttributes<HTMLDivElement> {
-  image?: string;
+  image?: string | JSX.Element;
   imageSize?: 'small' | 'default' | 'large';
   imageBlend?: boolean;
   title?: string;
@@ -38,10 +38,12 @@ const EmptyState = ({
   };
   return (
     <div className="flex flex-col items-center justify-center max-w-md mx-auto">
-      {image ? (
+      {image && typeof image === 'string' ? (
         <ImageRenderer blend={imageBlend}>
           <img src={image} alt={title} className={`mb-3.5 ${sizes[imageSize]}`} />
         </ImageRenderer>
+      ) : image ? (
+        <div className="mb-3.5">{image}</div>
       ) : null}
       {title ? <h2 className="h5 font-medium text-neutral-900 text-center mb-2">{title}</h2> : null}
       {description ? <p className="text-neutral-500 text-center mb-8">{description}</p> : null}

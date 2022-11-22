@@ -55,7 +55,7 @@ const ConnectWalletPage: NextPage = () => {
         (async () => {
           await activate(injected, undefined, true);
           if (user) completeOnboarding();
-          else if (!activated) Router.push('/onboarding/member-login');
+          else if (!activated) Router.push('/onboarding/sign-up');
         })();
       }
     });

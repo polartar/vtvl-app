@@ -1,8 +1,10 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
+import Lottie from 'lottie-react';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
+import SuccessAnimation from 'public/successfully-done.json';
 import { ReactElement } from 'react';
 
 const ClaimTokenComplete: NextPageWithLayout = () => {
@@ -11,7 +13,7 @@ const ClaimTokenComplete: NextPageWithLayout = () => {
     <>
       <h1 className="h2 font-medium text-center mb-10">My Tokens</h1>
       <EmptyState
-        image="/images/success-animation.gif"
+        image={<Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />}
         imageSize="small"
         imageBlend={false}
         title="Claim complete"
