@@ -68,14 +68,14 @@ const MyTokenStatus: NextPageWithLayout = () => {
   // Remove this once there is an integration happening with the backend,
   // but make sure to setIsPageLoading to false once actual data is loaded.
   useEffect(() => {
-    setTimeout(() => setIsPageLoading(false), 5000);
+    setTimeout(() => setIsPageLoading(false), 3000);
   }, []);
 
   return (
     <>
       <PageLoader isLoading={isPageLoading}>
-        <div className="w-full">
-          <div className="max-w-4xl xl:max-w-full">
+        <div className="w-full h-full">
+          <div className={showTokens ? 'max-w-4xl xl:max-w-full' : ''}>
             <h1 className="text-neutral-900 mb-9">My Tokens</h1>
             {showTokens ? (
               <>

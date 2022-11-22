@@ -67,8 +67,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
       updatedAt: Math.floor(new Date().getTime() / 1000),
       transactionId: ''
     });
+    await Router.push('/vesting-schedule/success');
     resetVestingState();
-    Router.push('/vesting-schedule/success');
     // try {
     //   if (!library) {
     //     activate(injected);

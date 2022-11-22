@@ -1,7 +1,9 @@
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import VestingProgress from '@components/atoms/VestingProgress/VestingProgress';
 import Link from 'next/link';
 import CopyIcon from 'public/icons/copy-to-clipboard.svg';
+import CopyToClipboard from 'react-copy-to-clipboard';
 import Countdown from 'react-countdown';
 import { formatDate, formatTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
@@ -46,10 +48,12 @@ const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: I
           <TokenProfile logo={props.token.logo} name={props.token.name} symbol={props.token.symbol} size="small" />
           <Chip label={props.vesting.name} color="gray" rounded />
         </div>
-        <div className="row-center gap-2 text-xxs text-neutral-500 mb-3">
-          <CopyIcon className="fill-current h-4 cursor-pointer" />
-          <p>{props.token.address}</p>
-        </div>
+        <Copy text={props.token.address}>
+          <div className="row-center gap-2 text-xxs text-neutral-500 mb-3">
+            <CopyIcon className="fill-current h-4 cursor-pointer" />
+            <p>{props.token.address}</p>
+          </div>
+        </Copy>
         <button className="secondary py-1 mb-6">Import token to your wallet</button>
         <VestingProgress duration="30 days left" progress={50} />
         <div className="mt-6 grid grid-cols-2 pb-4 border-b border-gray-200">

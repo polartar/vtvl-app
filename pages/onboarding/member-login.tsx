@@ -84,6 +84,7 @@ const MemberLoginPage: NextPage = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="w-full my-6 flex flex-col items-center">
         <button
+          type="button"
           onClick={async () => await googleSignIn()}
           className="line flex flex-row items-center justify-center gap-2.5 w-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
