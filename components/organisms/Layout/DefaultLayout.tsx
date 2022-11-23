@@ -1,9 +1,11 @@
+import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
 import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import Head from 'next/head';
+import { useLoaderContext } from 'providers/loader.context';
 import React, { useContext, useEffect } from 'react';
 
 import AuthContext from '../../../providers/auth.context';
@@ -29,19 +31,23 @@ const Main = styled.main<{ sidebarIsExpanded: boolean; sidebarIsShown: boolean }
 /**
  * SIDEBAR ITEMS BASED ON USER ROLES
  *
- * INVESTOR
+ * INVESTOR/EMPLOYEE
  * - Portfolio Overview
  * - Claims Portal
  * - Support
  * - Switch to founder
  *
  * FOUNDER
- * -
- *
- * EMPLOYEE
+ * - Dashboard
+ *  - Minting token / Import token
+ *  - Additional Supply
+ *  - Funding Contracts
+ * - Vesting Schedule
+ * - Cap table
  */
 
-const SidebarProps = {
+// Available routes for Founders
+const FounderRoutes = {
   collapsed: false,
   roleTitle: 'Founder',
   menuList: [
@@ -64,13 +70,6 @@ const SidebarProps = {
       icon: '/icons/s_capTable.svg',
       hoverIcon: '/icons/s_capTable2.svg',
       route: '/cap-table',
-      available: true
-    },
-    {
-      title: 'Claims Portal',
-      icon: '/icons/s_dashboard.svg',
-      hoverIcon: '/icons/s_dashboard2.svg',
-      route: '/tokens',
       available: true
     },
     {
@@ -104,6 +103,56 @@ const SidebarProps = {
   role: 'Founder'
 };
 
+// Menulist for both Employee and Investors
+const employeeInvestorMenuItems = {
+  menuList: [
+    {
+      title: 'Portfolio Overview',
+      icon: '/icons/s_dashboard.svg',
+      hoverIcon: '/icons/s_dashboard2.svg',
+      route: '/dashboard',
+      available: false
+    },
+    {
+      title: 'Claims Portal',
+      icon: '/icons/s_dashboard.svg',
+      hoverIcon: '/icons/s_dashboard2.svg',
+      route: '/tokens',
+      available: true
+    }
+  ],
+  submenuList: [
+    // { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
+    { title: 'Support', icon: '/icons/support.svg', route: '/support' },
+    { title: 'Switch to founder', icon: '/icons/switchUser.svg', route: '/switch-account' }
+  ]
+};
+
+// Routes available for Employees
+const EmployeeRoutes = {
+  collapsed: false,
+  roleTitle: 'Employee',
+  menuList: [...employeeInvestorMenuItems.menuList],
+  submenuList: [...employeeInvestorMenuItems.submenuList],
+  userName: 'John Doe',
+  role: 'Employee'
+};
+// Routes available for Investors -- same as the employees
+const InvestorRoutes = {
+  collapsed: false,
+  roleTitle: 'Investor',
+  menuList: [...employeeInvestorMenuItems.menuList],
+  submenuList: [...employeeInvestorMenuItems.submenuList],
+  userName: 'John Doe',
+  role: 'Investor'
+};
+
+const SidebarProps: Record<string, any> = {
+  founder: { ...FounderRoutes },
+  employee: { ...EmployeeRoutes },
+  investor: { ...InvestorRoutes }
+};
+
 interface DefaultLayoutProps {
   sidebar?: boolean;
   connected?: boolean;
@@ -117,11 +166,12 @@ interface DefaultLayoutProps {
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const { user, error, logOut, showSideBar, sidebarIsExpanded, toggleSideBar, refreshUser } = useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
+  const { loading } = useLoaderContext();
   const { active } = useWeb3React();
   useEffect(() => {
     (async () => await refreshUser())();
   }, []);
-  console.log('in progress here is ', inProgress);
+  console.log('in progress here is ', inProgress, user);
   return (
     <Container>
       <Head>
@@ -136,15 +186,18 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout className="flex flex-row w-full">
-        {(user || sidebar || showSideBar) && !inProgress ? (
-          <Sidebar {...SidebarProps} roleTitle={user?.memberInfo?.type || 'founder'} />
+        {!inProgress && user && user?.memberInfo && user.memberInfo.type ? (
+          <Sidebar {...SidebarProps[user?.memberInfo?.type]} roleTitle={user?.memberInfo?.type || 'founder'} />
         ) : null}
-        <Main
-          sidebarIsExpanded={sidebarIsExpanded}
-          sidebarIsShown={(user || sidebar || showSideBar) && !inProgress}
-          className="flex flex-col items-center p-8 pt-7">
-          {props.children}
-        </Main>
+        <div className="relative">
+          {loading && <PageLoader />}
+          <Main
+            sidebarIsExpanded={sidebarIsExpanded}
+            sidebarIsShown={Boolean(!inProgress && user && user?.memberInfo && user.memberInfo.type)}
+            className="flex flex-col items-center p-8 pt-7">
+            {props.children}
+          </Main>
+        </div>
       </Layout>
     </Container>
   );

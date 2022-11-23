@@ -14,6 +14,7 @@ import { IRecipient } from 'types/vesting';
 import { parseTokenAmount } from 'utils/token';
 
 import { useAuthContext } from './auth.context';
+import { useLoaderContext } from './loader.context';
 import { useSharedContext } from './shared.context';
 import { useTokenContext } from './token.context';
 
@@ -31,6 +32,7 @@ interface IDashboardData {
   fetchDashboardVestings: () => void;
   fetchDashboardTransactions: () => void;
   setOwnershipTransfered: (v: boolean) => void;
+  fetchDashboardData: () => void;
 }
 
 const DashboardContext = createContext({} as IDashboardData);
@@ -39,6 +41,7 @@ export function DashboardContextProvider({ children }: any) {
   const { account, chainId } = useWeb3React();
   const { mintFormState } = useTokenContext();
   const { organizationId, safe } = useAuthContext();
+  const { showLoading, hideLoading } = useLoaderContext();
 
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
   const [vestingContract, setVestingContract] = useState<
@@ -48,46 +51,55 @@ export function DashboardContextProvider({ children }: any) {
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
-  const [vestingsLoading, setVestingsLoading] = useState(true);
-  const [vestingContractLoading, setVestingContractLoading] = useState(true);
-  const [transactionsLoading, setTransactionsLoading] = useState(true);
+  const [vestingsLoading, setVestingsLoading] = useState(false);
+  const [vestingContractLoading, setVestingContractLoading] = useState(false);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
 
-  const fetchDashboardVestingContract = () => {
-    if (organizationId) {
-      fetchVestingContractByQuery('organizationId', '==', organizationId)
-        .then((res) => {
-          setVestingContract(res);
-          setVestingContractLoading(false);
-        })
-        .catch((err) => setVestingContractLoading(false));
-    } else {
-      setVestingContractLoading(false);
+  const fetchDashboardVestingContract = async () => {
+    try {
+      setVestingContractLoading(true);
+      const res = await fetchVestingContractByQuery('organizationId', '==', organizationId!);
+      setVestingContract(res);
+    } catch (err) {
+      console.log('fetchDashboardVestingContract - ', err);
     }
+    setVestingContractLoading(false);
   };
 
-  const fetchDashboardVestings = () => {
-    if (organizationId) {
-      fetchVestingsByQuery('organizationId', '==', organizationId)
-        .then((res) => {
-          setVestings(res);
-          setVestingsLoading(false);
-        })
-        .catch((err) => setVestingsLoading(false));
-    } else {
-      setVestingsLoading(false);
+  const fetchDashboardVestings = async () => {
+    setVestingsLoading(true);
+    try {
+      const res = await fetchVestingsByQuery('organizationId', '==', organizationId!);
+      setVestings(res);
+    } catch (err) {
+      console.log('fetchDashboardVestings - ', err);
     }
+    setVestingsLoading(false);
   };
 
-  const fetchDashboardTransactions = () => {
+  const fetchDashboardTransactions = async () => {
+    setTransactionsLoading(true);
+    try {
+      const res = await fetchTransactionsByQuery('organizationId', '==', organizationId!);
+      setTransactions(res);
+    } catch (err) {
+      console.log('fetchDashboardTransactions - ', err);
+    }
+    setTransactionsLoading(false);
+  };
+
+  const fetchDashboardData = async () => {
+    console.log('fetchDashboardData');
     if (organizationId) {
-      fetchTransactionsByQuery('organizationId', '==', organizationId)
-        .then((res) => {
-          setTransactions(res);
-          setTransactionsLoading(false);
-        })
-        .catch((err) => setTransactionsLoading(false));
-    } else {
-      setTransactionsLoading(false);
+      showLoading();
+      try {
+        await fetchDashboardVestings();
+        await fetchDashboardVestingContract();
+        await fetchDashboardTransactions();
+      } catch (err) {
+        console.log('fetchDashboardData - ', err);
+      }
+      hideLoading();
     }
   };
 
@@ -105,7 +117,8 @@ export function DashboardContextProvider({ children }: any) {
       fetchDashboardVestingContract,
       fetchDashboardVestings,
       fetchDashboardTransactions,
-      setOwnershipTransfered
+      setOwnershipTransfered,
+      fetchDashboardData
     }),
     [
       vestings,
@@ -121,10 +134,8 @@ export function DashboardContextProvider({ children }: any) {
   );
 
   useEffect(() => {
-    fetchDashboardVestings();
-    fetchDashboardVestingContract();
-    fetchDashboardTransactions();
-  }, []);
+    fetchDashboardData();
+  }, [organizationId]);
 
   useEffect(() => {
     if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {

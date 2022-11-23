@@ -2,13 +2,14 @@ import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { Web3Provider } from '@ethersproject/providers';
 import { AuthContextProvider } from '@providers/auth.context';
 import { DashboardContextProvider } from '@providers/dashboard.context';
+import { LoaderContextProvider } from '@providers/loader.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
 import { TokenContextProvider } from '@providers/token.context';
-import { TransactionalLoaderContextProvider } from '@providers/transactional-loader.context';
 import { VestingContextProvider } from '@providers/vesting.context';
 import { Web3ReactProvider } from '@web3-react/core';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
+import { TransactionLoaderContextProvider } from 'providers/transaction-loader.context';
 import React, { ReactElement, ReactNode } from 'react';
 // Todo: Arvin #18 - Explore styles that can be customized / override to conform with VTVL branding.
 // React datepicker initial styling.
@@ -48,28 +49,31 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     <>
       <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
         {/* <Web3ReactProviderReloaded getLibrary={getLibrary}> */}
+
         <AuthContextProvider>
-          <TokenContextProvider>
-            <OnboardingContextProvider>
-              <VestingContextProvider>
-                <DashboardContextProvider>
-                  <TransactionalLoaderContextProvider>
-                    {/* <DefaultLayout sidebar={true} connected={true}> */}
-                    <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                    <ToastContainer />
-                    <ReactTooltip
-                      effect="solid"
-                      type="dark"
-                      place="top"
-                      multiline
-                      delayShow={300}
-                      backgroundColor="var(--neutral-700)"
-                    />
-                  </TransactionalLoaderContextProvider>
-                </DashboardContextProvider>
-              </VestingContextProvider>
-            </OnboardingContextProvider>
-          </TokenContextProvider>
+          <LoaderContextProvider>
+            <TokenContextProvider>
+              <OnboardingContextProvider>
+                <VestingContextProvider>
+                  <DashboardContextProvider>
+                    <TransactionLoaderContextProvider>
+                      {/* <DefaultLayout sidebar={true} connected={true}> */}
+                      <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                      <ToastContainer />
+                      <ReactTooltip
+                        effect="solid"
+                        type="dark"
+                        place="top"
+                        multiline
+                        delayShow={300}
+                        backgroundColor="var(--neutral-700)"
+                      />
+                    </TransactionLoaderContextProvider>
+                  </DashboardContextProvider>
+                </VestingContextProvider>
+              </OnboardingContextProvider>
+            </TokenContextProvider>
+          </LoaderContextProvider>
         </AuthContextProvider>
         {/* </Web3ReactProviderReloaded> */}
       </Web3ReactProvider>

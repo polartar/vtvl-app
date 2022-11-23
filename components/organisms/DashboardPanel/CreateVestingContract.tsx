@@ -3,6 +3,7 @@ import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import Chip from 'components/atoms/Chip/Chip';
 import StepWizard from 'components/atoms/StepWizard/StepWizard';
@@ -110,6 +111,7 @@ AddVestingSchedulesProps) => {
     setOwnershipTransfered,
     depositAmount
   } = useDashboardContext();
+  const { setTransactionStatus } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
   const [status, setStatus] = useState('');
@@ -119,58 +121,66 @@ AddVestingSchedulesProps) => {
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
 
-  // const totalVestingAmount = useMemo(() => {
-  //   let result = 0;
-  //   vestings
-  //     .filter((vesting) => vesting.data.status !== 'SUCCESS')
-  //     .forEach((vesting) => (result += parseFloat(vesting.data.details.amountToBeVested as unknown as string)));
-  //   return result;
-  // }, [vestings]);
-  // console.log({ totalVestingAmount, vestings });
   const handleDeployVestingContract = async () => {
-    console.log('handleDeployVestingContract');
-    if (!account) {
-      activate(injected);
-      return;
-    } else if (organizationId) {
-      const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI.abi);
-      const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
-      const VestingFactory = new ethers.ContractFactory(
-        VTVL_VESTING_ABI.abi,
-        '0x' + VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
-        library.getSigner()
-      );
-      const vestingContract = await VestingFactory.deploy(mintFormState.address);
-      await vestingContract.deployed();
-      const vestingContractId = await createVestingContract({
-        tokenAddress: mintFormState.address,
-        address: vestingContract.address,
-        status: 'SUCCESS',
-        deployer: account,
-        organizationId,
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000)
-      });
-      fetchDashboardVestingContract();
-      if (!safe?.address) {
-        setStatus('success');
-      } else setStatus('transferToMultisigSafe');
+    try {
+      if (!account) {
+        activate(injected);
+        return;
+      } else if (organizationId) {
+        setTransactionStatus('PENDING');
+        const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI.abi);
+        const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
+        const VestingFactory = new ethers.ContractFactory(
+          VTVL_VESTING_ABI.abi,
+          '0x' + VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
+          library.getSigner()
+        );
+        const vestingContract = await VestingFactory.deploy(mintFormState.address);
+        setTransactionStatus('IN_PROGRESS');
+        await vestingContract.deployed();
+        const vestingContractId = await createVestingContract({
+          tokenAddress: mintFormState.address,
+          address: vestingContract.address,
+          status: 'SUCCESS',
+          deployer: account,
+          organizationId,
+          createdAt: Math.floor(new Date().getTime() / 1000),
+          updatedAt: Math.floor(new Date().getTime() / 1000)
+        });
+        setTransactionStatus('SUCCESS');
+        fetchDashboardVestingContract();
+        if (!safe?.address) {
+          setStatus('success');
+        } else setStatus('transferToMultisigSafe');
+      }
+    } catch (err) {
+      console.log('handleDeployVestingContract - ', err);
+      setTransactionStatus('ERROR');
     }
   };
 
   const handleTransferOwnership = async () => {
-    if (organizationId) {
-      const vestingContractData = await fetchVestingContractByQuery('organizationId', '==', organizationId);
-      if (vestingContractData?.data) {
-        const vestingContract = new ethers.Contract(
-          vestingContractData?.data?.address,
-          VTVL_VESTING_ABI.abi,
-          library.getSigner()
-        );
-        await vestingContract.setAdmin(safe?.address, true);
-        setStatus('success');
-        setOwnershipTransfered(true);
+    try {
+      if (organizationId) {
+        setTransactionStatus('PENDING');
+        const vestingContractData = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        if (vestingContractData?.data) {
+          const vestingContract = new ethers.Contract(
+            vestingContractData?.data?.address,
+            VTVL_VESTING_ABI.abi,
+            library.getSigner()
+          );
+          const transactionResponse = await vestingContract.setAdmin(safe?.address, true);
+          setTransactionStatus('IN_PROGRESS');
+          await transactionResponse.wait();
+          setStatus('success');
+          setOwnershipTransfered(true);
+          setTransactionStatus('SUCCESS');
+        }
       }
+    } catch (err) {
+      console.log('handleTransferOwnership - ', err);
+      setTransactionStatus('ERROR');
     }
   };
 
@@ -233,16 +243,6 @@ AddVestingSchedulesProps) => {
       );
       const vestingCliffAmounts = new Array(vesting.recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
 
-      console.log({
-        addresses,
-        vestingStartTimestamps,
-        vestingEndTimestamps,
-        vestingCliffTimestamps,
-        vestingReleaseIntervals,
-        vestingLinearVestAmounts,
-        vestingCliffAmounts
-      });
-
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
       const CREATE_CLAIMS_BATCH_INTERFACE =
@@ -260,6 +260,7 @@ AddVestingSchedulesProps) => {
       ]);
 
       if (safe?.address && account && chainId && organizationId) {
+        setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
@@ -276,6 +277,7 @@ AddVestingSchedulesProps) => {
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
         const signature = await safeSdk.signTransactionHash(txHash);
+        setTransactionStatus('PENDING');
         safeTransaction.addSignature(signature);
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
@@ -288,7 +290,7 @@ AddVestingSchedulesProps) => {
           safeTxHash: txHash,
           senderSignature: signature.data
         });
-        console.log({ txHash });
+
         if (account && organizationId) {
           const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
           const transactionId = await createTransaction({
@@ -321,10 +323,12 @@ AddVestingSchedulesProps) => {
           setApproved(true);
         }
         toast.success('Transaction has been created successfully.');
+        setTransactionStatus('SUCCESS');
       }
     } catch (err) {
       console.log('handleCreateSignTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 
@@ -332,6 +336,7 @@ AddVestingSchedulesProps) => {
     try {
       console.log('handleApproveTransaction');
       if (safe?.address && chainId && transaction) {
+        setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
@@ -343,7 +348,7 @@ AddVestingSchedulesProps) => {
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction?.hash);
-        console.log({ apiTx });
+
         const safeTx = await safeSdk.createTransaction({
           safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
         });
@@ -351,22 +356,26 @@ AddVestingSchedulesProps) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
         const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
+        setTransactionStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         fetchSafeTransactionFromHash(transaction.hash);
         setApproved(true);
         toast.success('Approved successfully.');
+        setTransactionStatus('SUCCESS');
         // const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         // await executeTransactionResponse.transactionResponse?.wait();
       }
     } catch (err) {
       console.log('handleApproveTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 
   const handleExecuteTransaction = async () => {
     try {
       if (safe?.address && chainId && transaction) {
+        setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
@@ -378,18 +387,16 @@ AddVestingSchedulesProps) => {
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction?.hash);
-        console.log({ apiTx });
+
         const safeTx = await safeSdk.createTransaction({
           safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
         });
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        console.log({ safeTx });
-        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
-        // console.log({ safeTx });
-        // await approveTxResponse.transactionResponse?.wait();
+
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
+        setTransactionStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
 
         updateTransaction(
@@ -399,11 +406,13 @@ AddVestingSchedulesProps) => {
           },
           vestings[activeVestingIndex].data.transactionId
         );
+        setTransactionStatus('SUCCESS');
         toast.success('Executed successfully.');
       }
     } catch (err) {
       console.log('handleExecuteTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 
