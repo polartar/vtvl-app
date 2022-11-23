@@ -1,3 +1,5 @@
+import Button from '@components/atoms/Button/Button';
+import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -27,7 +29,7 @@ const SignUpPage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
-    formState: { errors, isValid, isDirty, isSubmitted }
+    formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
       memberEmail: ''
@@ -80,8 +82,12 @@ const SignUpPage: NextPage = () => {
         Only registered team members are allowed to access this site.
       </p>
 
-      <div className="w-full my-6 panel flex flex-col items-center">
+      <Form
+        isSubmitting={isSubmitting}
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full my-6 flex flex-col items-center">
         <button
+          type="button"
           onClick={async () => await googleSignIn()}
           className="line flex flex-row items-center justify-center gap-2.5 w-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
@@ -95,7 +101,7 @@ const SignUpPage: NextPage = () => {
           <hr className="border-t border-neutral-200 w-1/4 sm:w-1/3" />
         </div>
         <div className="w-full mb-5">
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col items-center">
+          <div className="flex flex-col items-center">
             <Controller
               name="memberEmail"
               control={control}
@@ -107,33 +113,24 @@ const SignUpPage: NextPage = () => {
                   className="md:col-span-2"
                   error={Boolean(errors.memberEmail)}
                   required
-                  success={
-                    !errors.memberEmail && (memberEmail.state.isTouched || memberEmail.state.isDirty) && isSubmitted
-                  }
-                  message={
-                    errors.memberEmail
-                      ? 'Please enter your company email'
-                      : (memberEmail.state.isTouched || memberEmail.state.isDirty) && isSubmitted
-                      ? 'Company email is okay'
-                      : ''
-                  }
+                  message={errors.memberEmail ? 'Please enter your company email' : ''}
                   {...field}
                 />
               )}
             />
-            <button className="secondary mt-5" type="submit">
+            <Button className="secondary mt-5 mx-auto" type="submit" loading={isSubmitting}>
               Sign Up
-            </button>
-          </form>
+            </Button>
+          </div>
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
-        <span className="font-medium text-xs text-neutral-800">
+        <span className="block font-medium text-xs text-neutral-800 text-center">
           Already have an account?{' '}
           <span className="text-primary-900" onClick={() => router.replace('/onboarding/member-login')}>
             Login
           </span>
         </span>
-      </div>
+      </Form>
     </div>
   );
 };
