@@ -16,6 +16,7 @@ import { Timestamp } from 'firebase/firestore';
 import Router from 'next/router';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
+import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
 import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
 import { useEffect, useMemo, useState } from 'react';
@@ -114,6 +115,7 @@ AddVestingSchedulesProps) => {
     setOwnershipTransfered,
     depositAmount
   } = useDashboardContext();
+  const { setTransactionStatus } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
   const [status, setStatus] = useState('');
@@ -128,24 +130,32 @@ AddVestingSchedulesProps) => {
       activate(injected);
       return;
     } else if (organizationId) {
-      const VestingFactory = new ethers.ContractFactory(
-        VTVL_VESTING_ABI.abi,
-        '0x' + VTVL_VESTING_ABI.bytecode,
-        library.getSigner()
-      );
-      const vestingContract = await VestingFactory.deploy(mintFormState.address);
-      await vestingContract.deployed();
-      const vestingContractId = await createVestingContract({
-        tokenAddress: mintFormState.address,
-        address: vestingContract.address,
-        status: 'SUCCESS',
-        deployer: account,
-        organizationId,
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000)
-      });
-      fetchDashboardVestingContract();
-      setStatus('transferToMultisigSafe');
+      try {
+        setTransactionStatus('PENDING');
+        const VestingFactory = new ethers.ContractFactory(
+          VTVL_VESTING_ABI.abi,
+          '0x' + VTVL_VESTING_ABI.bytecode,
+          library.getSigner()
+        );
+        const vestingContract = await VestingFactory.deploy(mintFormState.address);
+        setTransactionStatus('IN_PROGRESS');
+        await vestingContract.deployed();
+        const vestingContractId = await createVestingContract({
+          tokenAddress: mintFormState.address,
+          address: vestingContract.address,
+          status: 'SUCCESS',
+          deployer: account,
+          organizationId,
+          createdAt: Math.floor(new Date().getTime() / 1000),
+          updatedAt: Math.floor(new Date().getTime() / 1000)
+        });
+        fetchDashboardVestingContract();
+        setStatus('transferToMultisigSafe');
+        setTransactionStatus('SUCCESS');
+      } catch (err) {
+        console.log('handleDeployVestingContract - ', err);
+        setTransactionStatus('ERROR');
+      }
     }
   };
 
@@ -153,14 +163,23 @@ AddVestingSchedulesProps) => {
     if (organizationId) {
       const vestingContractData = await fetchVestingContractByQuery('organizationId', '==', organizationId);
       if (vestingContractData?.data) {
-        const vestingContract = new ethers.Contract(
-          vestingContractData?.data?.address,
-          VTVL_VESTING_ABI.abi,
-          library.getSigner()
-        );
-        await vestingContract.setAdmin(safe?.address, true);
-        setStatus('success');
-        setOwnershipTransfered(true);
+        try {
+          setTransactionStatus('PENDING');
+          const vestingContract = new ethers.Contract(
+            vestingContractData?.data?.address,
+            VTVL_VESTING_ABI.abi,
+            library.getSigner()
+          );
+          const transaction = await vestingContract.setAdmin(safe?.address, true);
+          setTransactionStatus('IN_PROGRESS');
+          await transaction.wait();
+          setStatus('success');
+          setOwnershipTransfered(true);
+          setTransactionStatus('SUCCESS');
+        } catch (err) {
+          console.log('handleTransferOwnership - ', err);
+          setTransactionStatus('ERROR');
+        }
       }
     }
   };
@@ -246,7 +265,7 @@ AddVestingSchedulesProps) => {
           ethers: ethers,
           signer: library?.getSigner(0)
         });
-
+        setTransactionStatus('PENDING');
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
         const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
         const txData = {
@@ -257,6 +276,7 @@ AddVestingSchedulesProps) => {
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
         const signature = await safeSdk.signTransactionHash(txHash);
+        setTransactionStatus('IN_PROGRESS');
         safeTransaction.addSignature(signature);
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
@@ -304,7 +324,9 @@ AddVestingSchedulesProps) => {
           setApproved(true);
         }
         toast.success('Transaction has been created successfully.');
+        setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
+        setTransactionStatus('PENDING');
         const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
         const vestingContractInstance = new ethers.Contract(
           vestingContract?.data?.address ?? '',
@@ -320,6 +342,7 @@ AddVestingSchedulesProps) => {
           vestingLinearVestAmounts,
           vestingCliffAmounts
         );
+        setTransactionStatus('IN_PROGRESS');
         const transactionData: ITransaction = {
           hash: addingClaimsTransaction.hash,
           safeHash: '',
@@ -349,16 +372,19 @@ AddVestingSchedulesProps) => {
         );
         setStatus('success');
         toast.success('Added schedules successfully.');
+        setTransactionStatus('SUCCESS');
       }
     } catch (err) {
       console.log('handleCreateSignTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 
   const handleApproveTransaction = async () => {
     try {
       if (safe?.address && chainId && transaction) {
+        setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
@@ -380,22 +406,26 @@ AddVestingSchedulesProps) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
         const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.hash as string);
+        setTransactionStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         fetchSafeTransactionFromHash(transaction?.data?.hash as string);
         setApproved(true);
         toast.success('Approved successfully.');
+        setTransactionStatus('SUCCESS');
         // const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         // await executeTransactionResponse.transactionResponse?.wait();
       }
     } catch (err) {
       console.log('handleApproveTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 
   const handleExecuteTransaction = async () => {
     try {
       if (safe?.address && chainId && transaction) {
+        setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
@@ -420,6 +450,7 @@ AddVestingSchedulesProps) => {
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
+        setTransactionStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction.data) {
           updateTransaction(
@@ -444,10 +475,12 @@ AddVestingSchedulesProps) => {
           );
         }
         toast.success('Executed successfully.');
+        setTransactionStatus('SUCCESS');
       }
     } catch (err) {
       console.log('handleExecuteTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 

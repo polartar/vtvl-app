@@ -5,12 +5,14 @@ import MyTokenDetails, { IClaimable, ITokenDetails } from '@components/molecules
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import AuthContext from '@providers/auth.context';
 import { NextPageWithLayout } from 'pages/_app';
+import { useLoaderContext } from 'providers/loader.context';
 import { ReactElement, useContext, useEffect, useState } from 'react';
 import { fetchTokensByQuery } from 'services/db/token';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 
 const MyTokenStatus: NextPageWithLayout = () => {
   const { user } = useContext(AuthContext);
+  const { showLoading, hideLoading } = useLoaderContext();
 
   // Fetch token based on status at initial load
   // Statuses are: All / Claimed / Unclaimed
@@ -92,6 +94,14 @@ const MyTokenStatus: NextPageWithLayout = () => {
     setUpTokens();
   }, [user]);
 
+  useEffect(() => {
+    if (isPageLoading) {
+      showLoading();
+    } else {
+      hideLoading();
+    }
+  }, [isPageLoading]);
+
   const setUpTokens = async () => {
     const orgId = user?.memberInfo?.org_id || '';
     console.log('orgId is ', orgId);
@@ -135,40 +145,38 @@ const MyTokenStatus: NextPageWithLayout = () => {
 
   return (
     <>
-      <PageLoader isLoading={isPageLoading}>
-        <div className="w-full h-full">
-          <div className={showTokens ? 'max-w-4xl xl:max-w-full' : ''}>
-            <h1 className="text-neutral-900 mb-9">My Tokens</h1>
-            {showTokens ? (
-              <>
-                <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
-                <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-                  {tokens?.map(
-                    (info, idx) =>
-                      info.token && (
-                        <MyTokenDetails
-                          key={`my-token-${idx}`}
-                          token={info?.token}
-                          viewDetailsUrl="/tokens/schedule-001"
-                        />
-                      )
-                  )}
-                </div>
-                {/* Probably need a condition to check if there are more records */}
-                <button type="button" className="primary line mx-auto flex py-1.5 my-5">
-                  Load more
-                </button>
-              </>
-            ) : (
-              <EmptyState
-                image="/images/cryptocurrency-trading-bot.gif"
-                title="No claimable tokens"
-                description={<>Come back again next time.</>}
-              />
-            )}
-          </div>
+      <div className="w-full h-full">
+        <div className={showTokens ? 'max-w-4xl xl:max-w-full' : ''}>
+          <h1 className="text-neutral-900 mb-9">My Tokens</h1>
+          {showTokens ? (
+            <>
+              <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
+              <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+                {tokens?.map(
+                  (info, idx) =>
+                    info.token && (
+                      <MyTokenDetails
+                        key={`my-token-${idx}`}
+                        token={info?.token}
+                        viewDetailsUrl="/tokens/schedule-001"
+                      />
+                    )
+                )}
+              </div>
+              {/* Probably need a condition to check if there are more records */}
+              <button type="button" className="primary line mx-auto flex py-1.5 my-5">
+                Load more
+              </button>
+            </>
+          ) : (
+            <EmptyState
+              image="/images/cryptocurrency-trading-bot.gif"
+              title="No claimable tokens"
+              description={<>Come back again next time.</>}
+            />
+          )}
         </div>
-      </PageLoader>
+      </div>
     </>
   );
 };

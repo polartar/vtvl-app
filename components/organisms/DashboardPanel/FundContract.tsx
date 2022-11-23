@@ -3,6 +3,7 @@ import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import Chip from 'components/atoms/Chip/Chip';
 import StepWizard from 'components/atoms/StepWizard/StepWizard';
@@ -49,6 +50,7 @@ const FundContract = () => {
   const { account, library, activate, chainId } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   const { mintFormState } = useTokenContext();
+  const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
   const {
     vestings,
     transactions,
@@ -75,6 +77,7 @@ const FundContract = () => {
   const handleExecuteTransaction = async () => {
     try {
       if (safe?.address && chainId && transaction) {
+        setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
@@ -96,6 +99,7 @@ const FundContract = () => {
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
+        setTransactionStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
 
         updateTransaction(
@@ -106,16 +110,19 @@ const FundContract = () => {
           transaction.id
         );
         toast.success('Executed successfully.');
+        setTransactionStatus('SUCCESS');
       }
     } catch (err) {
       console.log('handleExecuteTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 
   const handleApproveTransaction = async () => {
     try {
       if (safe?.address && chainId && transaction) {
+        setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
@@ -133,14 +140,17 @@ const FundContract = () => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
         const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
+        setTransactionStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         fetchSafeTransactionFromHash(transaction.data.hash);
         setApproved(true);
         toast.success('Approved successfully.');
+        setTransactionStatus('SUCCESS');
       }
     } catch (err) {
       console.log('handleApproveTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 
@@ -153,6 +163,7 @@ const FundContract = () => {
       }
 
       if (type === 'Metamask') {
+        setTransactionStatus('PENDING');
         const tokenContract = new ethers.Contract(
           mintFormState.address,
           [
@@ -173,9 +184,11 @@ const FundContract = () => {
             .mul(BigNumber.from((10 ** 18).toString()))
             .toString()
         );
+        setTransactionStatus('IN_PROGRESS');
         await fundTransaction.wait();
         toast.success('Token deposited successfully');
         setStatus('success');
+        setTransactionStatus('SUCCESS');
       } else {
         const tokenContractInterface = new ethers.utils.Interface([
           'function transfer(address to, uint amount) returns (bool)',
@@ -190,6 +203,7 @@ const FundContract = () => {
         ]);
         if (safe?.address && account && chainId && organizationId) {
           if (safe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())) {
+            setTransactionStatus('PENDING');
             const ethAdapter = new EthersAdapter({
               ethers: ethers,
               signer: library?.getSigner(0)
@@ -203,6 +217,7 @@ const FundContract = () => {
             const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
             const txHash = await safeSdk.getTransactionHash(safeTransaction);
             const signature = await safeSdk.signTransactionHash(txHash);
+            setTransactionStatus('IN_PROGRESS');
             safeTransaction.addSignature(signature);
             const safeService = new SafeServiceClient({
               txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
@@ -240,6 +255,7 @@ const FundContract = () => {
               }
             });
             fetchSafeTransactionFromHash(txHash);
+            setTransactionStatus('SUCCESS');
           } else {
             toast.error('You are not a signer of this multisig wallet.');
             return;
@@ -249,6 +265,7 @@ const FundContract = () => {
       setShowFundingContractModal(false);
     } catch (err: any) {
       toast.error(err.reason ? err.reason : 'Something went wrong. Try again later.');
+      setTransactionStatus('ERROR');
     }
   };
 

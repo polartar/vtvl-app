@@ -237,6 +237,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
     //   console.log('err - ', err);
     // }
   };
+
   return (
     <>
       <div className="w-full mb-6 panel max-w-2xl">

@@ -49,7 +49,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
         data-tip="Toggle sidebar"
       />
       <div>
-        <RoleTitle className={`transition-all ${sidebarIsExpanded ? 'text-sm' : 'text-xxs'}`}>{roleTitle}</RoleTitle>
+        <RoleTitle className={`transition-all ${sidebarIsExpanded ? 'text-sm' : 'text-tiny'}`}>{roleTitle}</RoleTitle>
         {menuList.map((menu: any, index: number) => (
           <SidebarItem
             key={index}
