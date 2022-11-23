@@ -89,37 +89,13 @@ const Dashboard: NextPageWithLayout = () => {
     }
   ];
 
-  const sampleScheduleDetails: IScheduleOverviewProps = {
-    name: 'Voyager-0123',
-    beneficiaries: 4,
-    startDate: 'October 22, 2022',
-    endDate: 'July 2, 2023',
-    cliff: '1 month',
-    linearRelease: 'Monthly',
-    totalAllocated: `${formatNumber(75000)} BICO`
-  };
-
-  const sampleContractDetails: IVestingContractProps = {
-    tokenName: 'Biconomy',
-    tokenSymbol: 'BICO',
-    supplyCap: 'LIMITED',
-    maxSupply: 60000000,
-    address: '0x823B3DEc340d86AE5d8341A030Cee62eCbFf0CC5'
-  };
-
-  // Samples for showing previous and next items via buttons
-  const showPreviousSchedule = () => {
-    console.log('Load and show the previous schedule here');
-    setCurrentPage((previous) => previous - 1);
-  };
-
-  const showNextSchedule = () => {
-    console.log('Load and show the next schedule here');
-    setCurrentPage((previous) => previous + 1);
-  };
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isPageLoading, setIsPageLoading] = useState(true);
+  useEffect(() => {
+    if (!organizationId) {
+      showLoading();
+    } else {
+      hideLoading();
+    }
+  }, [organizationId]);
 
   return (
     <>

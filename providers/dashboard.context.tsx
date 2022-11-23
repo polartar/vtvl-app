@@ -100,8 +100,6 @@ export function DashboardContextProvider({ children }: any) {
         console.log('fetchDashboardData - ', err);
       }
       hideLoading();
-    } else {
-      showLoading();
     }
   };
 
