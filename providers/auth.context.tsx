@@ -319,10 +319,11 @@ export function AuthContextProvider({ children }: any) {
   useEffect(() => {
     if (user && user.email && user.uid) {
       fetchOrgByQuery('email', '==', user.email).then((org) => {
-        console.log({ org });
         setOrganizationId(org?.id);
       });
       fetchSafeByQuery('user_id', '==', user.uid).then((safe) => setSafe(safe));
+    } else {
+      Router.push('/onboarding');
     }
   }, [user]);
 

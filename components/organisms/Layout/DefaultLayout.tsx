@@ -186,7 +186,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout className="flex flex-row w-full">
-        {!inProgress && user && user?.memberInfo && user.memberInfo.type ? (
+        {!inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type] ? (
           <Sidebar {...SidebarProps[user?.memberInfo?.type]} roleTitle={user?.memberInfo?.type || 'founder'} />
         ) : null}
         <div className="relative">
