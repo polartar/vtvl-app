@@ -28,6 +28,7 @@ import {
   ReleaseFrequency
 } from 'types/constants/schedule-configuration';
 import { SupportedChains } from 'types/constants/supported-chains';
+import { generateRandomName } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -59,6 +60,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
     const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
     const ABI = [PERFORM_CREATE_FUNCTION];
     const vestingId = await createVesting({
+      name: generateRandomName(12),
       details: scheduleFormState,
       recipients,
       organizationId: organizationId!,

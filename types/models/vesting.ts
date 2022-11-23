@@ -4,6 +4,7 @@ import { MultiValue } from 'react-select';
 import { IRecipient } from 'types/vesting';
 
 export interface IVesting {
+  name: string;
   details: IScheduleFormState;
   recipients: MultiValue<IRecipient>;
   status?:

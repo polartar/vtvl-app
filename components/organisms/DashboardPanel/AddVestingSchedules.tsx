@@ -728,7 +728,13 @@ AddVestingSchedulesProps) => {
                 {statuses[status].label}
               </p>
             }
-            color={status === 'approved' ? 'successAlt' : status === 'declined' ? 'dangerAlt' : 'warningAlt'}
+            color={
+              status === 'approved' || status === 'success'
+                ? 'successAlt'
+                : status === 'declined'
+                ? 'dangerAlt'
+                : 'warningAlt'
+            }
             rounded
           />
         ) : null}

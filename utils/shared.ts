@@ -69,3 +69,15 @@ export const getActualDateTime = (data: {
     endDate
   };
 };
+
+// Generates a set of numbers based on the given length
+export const generateRandomName = (l: number) => {
+  const length = l;
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};

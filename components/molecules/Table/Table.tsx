@@ -113,7 +113,7 @@ const Table = ({
   };
 
   return (
-    <div className="panel p-0">
+    <div className="panel p-0 w-full">
       <div className="overflow-x-auto">
         <table {...getTableProps()}>
           <thead>
