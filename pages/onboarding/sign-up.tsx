@@ -126,7 +126,7 @@ const SignUpPage: NextPage = () => {
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <span className="block font-medium text-xs text-neutral-800 text-center">
           Already have an account?{' '}
-          <span className="text-primary-900" onClick={() => router.replace('/onboarding/member-login')}>
+          <span className="text-primary-900 cursor-pointer" onClick={() => router.replace('/onboarding/member-login')}>
             Login
           </span>
         </span>
