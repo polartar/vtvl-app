@@ -1,6 +1,8 @@
 import styled from '@emotion/styled';
 import React from 'react';
 
+import Avatar from '../Avatar/Avatar';
+
 interface Props {
   userName: string;
   role: string;
@@ -11,11 +13,15 @@ interface Props {
 const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
   return (
     <UserContainer>
-      <img
-        src={profilePhoto || '/images/user.png'}
-        alt="userImg"
-        className={`transition-all rounded-full ${compact ? 'mx-1' : 'mx-3'}`}
-      />
+      {profilePhoto ? (
+        <img
+          src={profilePhoto || '/images/user.png'}
+          alt="userImg"
+          className={`transition-all rounded-full ${compact ? 'mx-1' : 'mx-3'}`}
+        />
+      ) : (
+        <Avatar name={userName} />
+      )}
       <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
         <p>{userName}</p>
         <p className="capitalize">{role}</p>

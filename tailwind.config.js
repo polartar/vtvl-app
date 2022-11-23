@@ -33,7 +33,8 @@ module.exports = {
         h4: '1.5rem',
         h5: '1.25rem',
         h6: '1rem',
-        xxs: '0.625rem'
+        xxs: '0.625rem',
+        tiny: '0.5625rem'
       },
       spacing: {
         13: '3.25rem'
