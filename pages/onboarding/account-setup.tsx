@@ -141,7 +141,7 @@ const AccountSetupPage: NextPage = () => {
           await addInvitee({
             name: contributor.name,
             email: contributor.email,
-            org_id: user.memberInfo?.org_id || ''
+            org_id: user.memberInfo?.org_id || org_id || ''
           });
           await sendTeammateInvite(
             contributor.email,
@@ -260,7 +260,6 @@ const AccountSetupPage: NextPage = () => {
                 placeholder="Enter your company email address"
                 className="md:col-span-2"
                 required
-                disabled={true}
                 error={Boolean(errors.companyEmail)}
                 message={errors.companyEmail ? 'Please enter your company email' : ''}
                 {...field}
