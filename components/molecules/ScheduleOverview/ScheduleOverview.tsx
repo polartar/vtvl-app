@@ -2,6 +2,7 @@ import Chip from '@components/atoms/Chip/Chip';
 import { Timestamp } from 'firebase/firestore';
 import { IScheduleOverviewProps, IVesting } from 'types/models/vesting';
 import { timestampToDateString } from 'utils/date';
+import { formatNumber } from 'utils/token';
 
 const ScheduleOverview = (vesting: IVesting) => {
   const startDate = timestampToDateString((vesting.details.startDateTime as unknown as Timestamp).toMillis());
@@ -52,7 +53,7 @@ const ScheduleOverview = (vesting: IVesting) => {
         <label>
           <span>Vesting allocation</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{totalAllocated}</p>
+        <p className="paragraphy-tiny-medium neutral-text">{formatNumber(totalAllocated)}</p>
       </div>
     </div>
   );
