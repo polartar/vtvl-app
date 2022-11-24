@@ -234,12 +234,12 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
               </div>
             </div>
             <ScheduleDetails {...vestingSchedule.details} token={mintFormState.symbol || 'Token'} />
-            {safeTransaction && account && safeTransaction.signatures.has(account.toLowerCase()) ? (
+            {/* {safeTransaction && account && safeTransaction.signatures.has(account.toLowerCase()) ? (
               <div className="row-center justify-center mt-6 pt-6 border-t border-gray-200">
                 <Button className="secondary">Approve</Button>
                 <Button className="primary">Reject</Button>
               </div>
-            ) : null}
+            ) : null} */}
           </div>
         </>
       ) : null}
