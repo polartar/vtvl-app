@@ -316,6 +316,7 @@ export function AuthContextProvider({ children }: any) {
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe]
   );
   console.log('organzationId - ', organizationId);
+
   useEffect(() => {
     if (user && user.email && user.uid) {
       fetchOrgByQuery('email', '==', user.email).then((org) => {

@@ -145,7 +145,7 @@ const AccountSetupPage: NextPage = () => {
           });
           await sendTeammateInvite(
             contributor.email,
-            'employee',
+            'manager',
             contributor.name,
             values.company,
             user.memberInfo?.org_id || org_id
