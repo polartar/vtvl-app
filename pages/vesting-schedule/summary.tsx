@@ -72,7 +72,9 @@ const ScheduleSummary: NextPageWithLayout = () => {
       tokenId,
       createdBy: user
     });
+    console.log('creating vesting schedule', vestingId);
     await Router.push('/vesting-schedule/success');
+    resetVestingState();
   };
 
   return (
