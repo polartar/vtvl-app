@@ -21,7 +21,7 @@ const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
         />
       ) : (
         // Temporarily use role as avatar initials -- update later
-        <Avatar name={role} />
+        <Avatar name={role.toUpperCase()} />
       )}
       <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
         {/* <p>{userName}</p> */}
@@ -49,7 +49,6 @@ const UserContainer = styled.div`
     height: 40px;
   }
   div {
-    height: 40px;
     display: flex;
     flex-direction: column;
     p {
