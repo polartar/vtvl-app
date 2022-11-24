@@ -186,7 +186,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   useEffect(() => {
     (async () => await refreshUser())();
   }, []);
-  console.log('in progress here is ', inProgress, user);
+  // console.log('in progress here is ', inProgress, user);
   return (
     <Container>
       <Head>

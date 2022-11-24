@@ -13,8 +13,6 @@ const credentials = {
   measurementId: process.env.NEXT_PUBLIC_FIRESTORE_MEASUREMENT_ID
 };
 
-console.log('firebase api', process.env.NEXT_PUBLIC_FIRESTORE_API_KEY);
-
 export const firebase = !getApps().length ? initializeApp(credentials) : getApp();
 export const db = getFirestore(firebase);
 export const auth = getAuth(firebase);

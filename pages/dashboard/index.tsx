@@ -89,14 +89,16 @@ const Dashboard: NextPageWithLayout = () => {
   ];
 
   useEffect(() => {
-    console.log('user obj in auth context', user);
+    // console.log('user obj in auth context', user);
+    console.log('retesting org_id', organizationId);
 
-    if (!user?.memberInfo?.org_id) {
+    if (!organizationId) {
+      // if (!user?.memberInfo?.org_id) {
       showLoading();
     } else {
       hideLoading();
     }
-  }, [user]);
+  }, [organizationId]);
 
   return (
     <>

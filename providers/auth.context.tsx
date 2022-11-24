@@ -319,9 +319,16 @@ export function AuthContextProvider({ children }: any) {
 
   useEffect(() => {
     if (user && user.email && user.uid) {
-      fetchOrgByQuery('email', '==', user.email).then((org) => {
-        setOrganizationId(org?.id);
-      });
+      // console.log('logging auth context user', user);
+      // console.log('logging user org_id', user?.memberInfo?.org_id);
+      setOrganizationId(user?.memberInfo?.org_id);
+
+      // fetchOrgByQuery('email', '==', user.email).then((org) => {
+      //   console.log('logging auth context org', org);
+
+      //   setOrganizationId(org?.id);
+      // });
+
       fetchSafeByQuery('user_id', '==', user.uid).then((safe) => setSafe(safe));
     }
   }, [user]);

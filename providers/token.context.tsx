@@ -30,6 +30,7 @@ const TokenContext = createContext({} as ITokenContextData);
 
 export function TokenContextProvider({ children }: any) {
   const { organizationId } = useAuthContext();
+
   const [isTokenLoading, setIsTokenLoading] = useState(true);
 
   const [mintFormState, setMintFormState] = useState<IMintFormState>({
