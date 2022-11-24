@@ -613,6 +613,21 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     }
   };
 
+  const [remaining, setRemaining] = useState(0);
+  const [totalUsedSupply, setTotalUsedSupply] = useState(0);
+
+  useEffect(() => {
+    if (vestingSchedules && vestingSchedules.length) {
+      setTotalUsedSupply(vestingSchedules.reduce((prev, curr) => prev + +curr.data.details.amountToBeVested, 0));
+    }
+  }, vestingSchedules);
+
+  useEffect(() => {
+    if (totalUsedSupply) {
+      setRemaining(+mintFormState.initialSupply - totalUsedSupply);
+    }
+  }, [totalUsedSupply]);
+
   return (
     <>
       {vestingSchedules?.length && mintFormState ? (
@@ -638,7 +653,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <VestingOverview
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
-              remainingAllocation={10000000}
+              remainingAllocation={remaining}
               totalAllocation={mintFormState.initialSupply || 0}
             />
           </div>
