@@ -38,6 +38,7 @@ import {
 } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
+import { getNumberOfReleases, getProjectedEndDateTime } from 'utils/vesting';
 
 type DateTimeType = Date | null;
 
@@ -91,8 +92,26 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   // Handle the submit of the form
   const onSubmit: SubmitHandler<IScheduleFormState> = (data) => {
     console.log('Form Submitted', data, getValues());
-    updateScheduleFormState({ ...scheduleFormState, ...data });
-    Router.push('/vesting-schedule/add-beneficiary');
+    // Map the correct data
+    // FORM's endDateTime will be saved to originalEndDateTime
+    // DB's endDateTime will save the projectedEndDateTime
+    const { releaseFrequency, startDateTime, endDateTime } = data;
+    if (startDateTime && endDateTime) {
+      const numberOfReleases = getNumberOfReleases(releaseFrequency, startDateTime, endDateTime);
+      const projectedEndDateTime = getProjectedEndDateTime(
+        startDateTime,
+        endDateTime,
+        numberOfReleases,
+        DATE_FREQ_TO_TIMESTAMP[releaseFrequency]
+      );
+      updateScheduleFormState({
+        ...scheduleFormState,
+        ...data,
+        originalEndDateTime: endDateTime,
+        endDateTime: projectedEndDateTime
+      });
+      Router.push('/vesting-schedule/add-beneficiary');
+    }
   };
 
   // Form fields
@@ -228,6 +247,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           value: selectOption.value,
           details: {
             startDateTime: startDateTime.value,
+            originalEndDateTime: endDateTime.value,
             endDateTime: endDateTime.value,
             cliffDuration: cliffDuration.value,
             lumpSumReleaseAfterCliff: lumpSumReleaseAfterCliff.value,
