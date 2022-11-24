@@ -51,7 +51,7 @@ interface ScheduleFormTypes {
 
 const ScheduleSummary: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
-  const { organizationId, safe } = useAuthContext();
+  const { organizationId, safe, user } = useAuthContext();
   const { recipients, scheduleFormState, resetVestingState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
 
@@ -69,7 +69,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
       updatedAt: Math.floor(new Date().getTime() / 1000),
       transactionId: '',
       tokenAddress: mintFormState.address,
-      tokenId
+      tokenId,
+      createdBy: user
     });
     await Router.push('/vesting-schedule/success');
   };

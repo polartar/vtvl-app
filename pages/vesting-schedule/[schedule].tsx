@@ -13,6 +13,7 @@ import { useAuthContext } from '@providers/auth.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
+import Decimal from 'decimal.js';
 import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/router';
@@ -24,6 +25,8 @@ import { fetchVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction, IVesting } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
+import { formatNumber } from 'utils/token';
+import { getDuration } from 'utils/vesting';
 
 const VestingScheduleDetailed: NextPageWithLayout = () => {
   const { account, library, chainId } = useWeb3React();
@@ -124,6 +127,11 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     }
   ];
 
+  const scheduleDuration =
+    vestingSchedule && vestingSchedule.details.startDateTime && vestingSchedule.details.endDateTime
+      ? getDuration(vestingSchedule.details.startDateTime as Date, vestingSchedule.details.endDateTime)
+      : '';
+
   const approvers = new Array(safe?.threshold).fill({ title: '', desc: '' });
   const [transaction, setTransaction] = useState<{ id: string; data: ITransaction | undefined }>();
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
@@ -195,23 +203,34 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
             <div className="border-t border-gray-200 py-6 mt-6 grid sm:grid-cols-2 md:grid-cols-5 gap-3">
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Token per user</span>
-                <p className="paragraphy-small-medium text-neutral-900">5,250 {mintFormState.symbol || 'Token'}</p>
+                <p className="paragraphy-small-medium text-neutral-900">
+                  {formatNumber(
+                    new Decimal(vestingSchedule.details.amountToBeVested)
+                      .div(new Decimal(vestingSchedule.recipients.length))
+                      .toDP(6, Decimal.ROUND_UP)
+                  )}{' '}
+                  {mintFormState.symbol || 'Token'}
+                </p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Total locked token</span>
-                <p className="paragraphy-small-medium text-neutral-900">10,000,000 {mintFormState.symbol || 'Token'}</p>
+                <p className="paragraphy-small-medium text-neutral-900">
+                  {formatNumber(vestingSchedule.details.amountToBeVested)} {mintFormState.symbol || 'Token'}
+                </p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Beneficiaries</span>
-                <p className="paragraphy-small-medium text-neutral-900">4</p>
+                <p className="paragraphy-small-medium text-neutral-900">{vestingSchedule.recipients.length}</p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Total Period</span>
-                <p className="paragraphy-small-medium text-neutral-900">63 days</p>
+                <p className="paragraphy-small-medium text-neutral-900">{scheduleDuration}</p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Created by</span>
-                <p className="paragraphy-small-medium text-neutral-900">Satoshi S.</p>
+                <p className="paragraphy-small-medium text-neutral-900">
+                  {vestingSchedule.createdBy?.memberInfo?.name || ''}
+                </p>
               </div>
             </div>
             <ScheduleDetails {...vestingSchedule.details} token={mintFormState.symbol || 'Token'} />
