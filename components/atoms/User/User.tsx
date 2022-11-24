@@ -20,10 +20,11 @@ const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
           className={`transition-all rounded-full ${compact ? 'mx-1' : 'mx-3'}`}
         />
       ) : (
-        <Avatar name={userName} />
+        // Temporarily use role as avatar initials -- update later
+        <Avatar name={role} />
       )}
       <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
-        <p>{userName}</p>
+        {/* <p>{userName}</p> */}
         <p className="capitalize">{role}</p>
       </div>
     </UserContainer>
