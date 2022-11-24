@@ -76,6 +76,8 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
     if (status === 'SUCCESS' || status === 'ERROR') {
       setProgress(1);
       setIsOpen(true);
+    } else if (status) {
+      setIsOpen(true);
     }
   }, [status]);
 

@@ -474,6 +474,7 @@ AddVestingSchedulesProps) => {
             })
           );
         }
+        setStatus('success');
         toast.success('Executed successfully.');
         setTransactionStatus('SUCCESS');
       }
@@ -697,7 +698,7 @@ AddVestingSchedulesProps) => {
   useEffect(() => {
     if (account && safeTransaction && safe) {
       setApproved(safeTransaction.signatures.has(account.toLowerCase()));
-      if (safeTransaction.signatures.size === safe?.owners.length) {
+      if (safeTransaction.signatures.size >= safe?.threshold) {
         setExecutable(true);
       }
       if (transaction?.data?.status === 'SUCCESS') {
@@ -742,11 +743,11 @@ AddVestingSchedulesProps) => {
           <div className="row-center gap-1 paragraphy-small-medium text-neutral-500">
             <div>
               Confirmation status <span className="text-secondary-900">{safeTransaction?.signatures.size}</span>/
-              {safe?.owners.length}
+              {safe?.threshold}
             </div>
             <StepWizard
               status={safeTransaction?.signatures.size ?? 0}
-              steps={new Array(safe?.owners.length).fill({ title: '', desc: '' })}
+              steps={new Array(safe?.threshold).fill({ title: '', desc: '' })}
               size="tiny"
             />
           </div>
