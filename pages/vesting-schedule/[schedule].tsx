@@ -188,12 +188,12 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
             {transaction && transaction.data?.status !== 'SUCCESS' && safeTransaction && safe ? (
               <>
                 <p className="text-sm text-neutral-500 text-center mb-5">
-                  <strong>{safe?.threshold - safeTransaction.signatures.size}</strong> out of{' '}
-                  <strong>{safe?.threshold}</strong> owners is required to confirm this schedule
+                  <strong>{safeTransaction.signatures.size || 0}</strong> out of <strong>{safe?.threshold}</strong>{' '}
+                  owners is required to confirm this schedule
                 </p>
                 <StepWizard
                   steps={approvers}
-                  status={safeTransaction.signatures.size}
+                  status={safeTransaction?.signatures.size ?? 0}
                   size="small"
                   className="mx-auto"
                   showAllLabels
