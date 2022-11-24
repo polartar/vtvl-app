@@ -25,11 +25,11 @@ const StepWizard = ({ steps, status, size = 'default', className = '', showAllLa
               {status <= stepIndex && status < steps.length - 1 ? (
                 size !== 'tiny' && size !== 'small' ? (
                   <Dot isActive={status === stepIndex} />
-                ) : null
-              ) : size === 'tiny' || size === 'small' ? (
-                <div className="text-success-500">
-                  <SuccessIcon className="fill-current" />
-                </div>
+                ) : (
+                  <div className="text-success-500">
+                    <SuccessIcon className="fill-current" />
+                  </div>
+                )
               ) : (
                 <Tick fill={steps.length === stepIndex + 1 ? Colors.success : Colors.primary} />
               )}
