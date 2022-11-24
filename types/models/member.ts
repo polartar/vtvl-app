@@ -9,6 +9,8 @@ export interface IInvitee {
   org_id: string;
   name: string;
   email: string;
+  createdAt?: number;
+  updatedAt?: number;
 }
 
 export interface IMember {
@@ -21,6 +23,8 @@ export interface IMember {
   wallets?: [IAddress];
   type?: string;
   joined?: number;
+  createdAt?: number;
+  updatedAt?: number;
 }
 
 export interface IUser extends FirebaseUser {

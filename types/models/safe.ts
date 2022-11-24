@@ -14,4 +14,6 @@ export interface ISafe {
   chainId: number;
   owners: IOwner[];
   threshold: number;
+  createdAt?: number;
+  updatedAt?: number;
 }

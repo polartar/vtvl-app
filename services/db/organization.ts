@@ -23,10 +23,17 @@ export const fetchOrgByQuery = async (
 
 export const updateOrg = async (org: IOrganization, id: string): Promise<void> => {
   const orgRef = doc(orgCollection, id);
-  await setDoc(orgRef, org);
+  await setDoc(orgRef, {
+    ...org,
+    updatedAt: Math.floor(new Date().getTime() / 1000)
+  });
 };
 
 export const createOrg = async (org: IOrganization): Promise<string> => {
-  const orgRef = await addDoc(orgCollection, org);
+  const orgRef = await addDoc(orgCollection, {
+    ...org,
+    createdAt: Math.floor(new Date().getTime() / 1000),
+    updatedAt: Math.floor(new Date().getTime() / 1000)
+  });
   return orgRef.id;
 };

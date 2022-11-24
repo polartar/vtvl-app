@@ -12,6 +12,7 @@ import { useAuthContext } from './auth.context';
 export interface IScheduleFormState {
   startDateTime: Date | null | undefined;
   endDateTime: Date | null | undefined;
+  originalEndDateTime: Date | null | undefined;
   cliffDuration: CliffDuration;
   lumpSumReleaseAfterCliff: string | number;
   releaseFrequency: ReleaseFrequency;
@@ -25,6 +26,7 @@ export interface IScheduleFormState {
 export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
   startDateTime: new Date(),
   endDateTime: new Date(),
+  originalEndDateTime: new Date(),
   cliffDuration: 'no-cliff',
   lumpSumReleaseAfterCliff: 25,
   releaseFrequency: 'continuous',

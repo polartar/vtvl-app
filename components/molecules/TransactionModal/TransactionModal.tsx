@@ -3,6 +3,7 @@ import Loader from '@components/atoms/Loader/Loader';
 import Lottie from 'lottie-react';
 import ErrorAnimation from 'public/error-state.json';
 import WarningIcon from 'public/icons/warning.svg';
+import MetaMaskWalletAnimation from 'public/metamask_wallet_loader.json';
 import SuccessAnimation from 'public/successfully-done.json';
 import { useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
@@ -40,12 +41,12 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
 
   const txTypes = {
     IN_PROGRESS: {
-      image: '/images/wallet-transaction.png',
+      image: <Lottie animationData={MetaMaskWalletAnimation} style={{ width: '132px' }} />,
       title: <>Hang on, we're almost there!</>,
       description: <>Your transaction is in progress. Just a few more seconds...</>
     },
     PENDING: {
-      image: '/images/wallet-transaction.png',
+      image: <Lottie animationData={MetaMaskWalletAnimation} style={{ width: '132px' }} />,
       title: <>Whoops! A wallet transaction is in progress</>,
       description: (
         <>
@@ -76,6 +77,8 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
     if (status === 'SUCCESS' || status === 'ERROR') {
       setProgress(1);
       setIsOpen(true);
+    } else if (status) {
+      setIsOpen(true);
     }
   }, [status]);
 
@@ -96,11 +99,7 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
           {status === 'SUCCESS' || status === 'ERROR' ? (
             <Loader progress={progress} onComplete={() => setIsOpen(false)} />
           ) : null}
-          {status !== 'SUCCESS' && status !== 'ERROR' ? (
-            <img src={txTypes[status].image} className="h-32 opacity-90" />
-          ) : (
-            txTypes[status].image
-          )}
+          {txTypes[status].image}
           <h2 className="sora font-semibold text-3xl text-neutral-900 mt-12">{txTypes[status].title}</h2>
           <p className="mt-4 font-medium text-sm text-neutral-500 text-center">{txTypes[status].description}</p>
           {status !== 'SUCCESS' && status !== 'ERROR' && (

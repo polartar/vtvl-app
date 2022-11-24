@@ -53,7 +53,7 @@ const FundingContractModal = ({
       width: '100%',
       height: '100%',
       backgroundColor: 'rgba(0,0,0,0.3)',
-      zIndex: '1000',
+      zIndex: '900',
       overflowY: 'auto',
       paddingTop: '3rem',
       paddingBottom: '3rem'

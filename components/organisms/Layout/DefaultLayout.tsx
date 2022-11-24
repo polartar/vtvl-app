@@ -146,11 +146,26 @@ const InvestorRoutes = {
   userName: 'John Doe',
   role: 'Investor'
 };
+// Routes available for Managers -- temporary
+const ManagerRoutes = {
+  ...EmployeeRoutes,
+  menuList: [
+    {
+      title: 'Vesting schedule',
+      icon: '/icons/s_vestingSchedule.svg',
+      hoverIcon: '/icons/s_vestingSchedule2.svg',
+      route: '/vesting-schedule',
+      available: true
+    },
+    ...EmployeeRoutes.menuList
+  ]
+};
 
 const SidebarProps: Record<string, any> = {
   founder: { ...FounderRoutes },
   employee: { ...EmployeeRoutes },
-  investor: { ...InvestorRoutes }
+  investor: { ...InvestorRoutes },
+  manager: { ...ManagerRoutes }
 };
 
 interface DefaultLayoutProps {
@@ -171,7 +186,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   useEffect(() => {
     (async () => await refreshUser())();
   }, []);
-  console.log('in progress here is ', inProgress, user);
+  // console.log('in progress here is ', inProgress, user);
   return (
     <Container>
       <Head>
@@ -186,7 +201,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout className="flex flex-row w-full">
-        {!inProgress && user && user?.memberInfo && user.memberInfo.type ? (
+        {!inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type] ? (
           <Sidebar {...SidebarProps[user?.memberInfo?.type]} roleTitle={user?.memberInfo?.type || 'founder'} />
         ) : null}
         <div className="relative">

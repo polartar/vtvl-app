@@ -43,7 +43,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
         src="/icons/collapse-btn.svg"
         alt="toggle sidebar"
         onClick={expandSidebar}
-        className={`absolute top-8 -right-2 h-4 w-4 cursor-pointer transform-gpu transition-all rounded-full ${
+        className={`absolute top-8 -right-2 h-4 w-4 z-50 cursor-pointer transform-gpu transition-all rounded-full ${
           sidebarIsExpanded ? 'rotate-180' : ''
         }`}
         data-tip="Toggle sidebar"
@@ -107,6 +107,9 @@ const SidebarContainer = styled.aside<{
   flex-direction: column;
   justify-content: space-between;
   padding: 32px 16px 16px;
+  @media only screen and (min-width: 1366px) {
+    width: 279px;
+  }
 `;
 const RoleTitle = styled.span`
   font-style: normal;
