@@ -322,8 +322,6 @@ export function AuthContextProvider({ children }: any) {
         setOrganizationId(org?.id);
       });
       fetchSafeByQuery('user_id', '==', user.uid).then((safe) => setSafe(safe));
-    } else {
-      Router.push('/onboarding');
     }
   }, [user]);
 
