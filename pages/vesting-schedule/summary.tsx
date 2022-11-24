@@ -60,7 +60,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
     const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
     const ABI = [PERFORM_CREATE_FUNCTION];
     const vestingId = await createVesting({
-      name: generateRandomName(12),
+      name: generateRandomName(12) || '',
       details: scheduleFormState,
       recipients,
       organizationId: organizationId!,
@@ -69,8 +69,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
       updatedAt: Math.floor(new Date().getTime() / 1000),
       transactionId: '',
       tokenAddress: mintFormState.address,
-      tokenId,
-      createdBy: user
+      tokenId
     });
     console.log('creating vesting schedule', vestingId);
     await Router.push('/vesting-schedule/success');

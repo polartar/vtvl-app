@@ -6,7 +6,7 @@ import { IRecipient } from 'types/vesting';
 import { IUser } from './member';
 
 export interface IVesting {
-  name: string;
+  name?: string;
   details: IScheduleFormState;
   recipients: MultiValue<IRecipient>;
   status?:
@@ -26,7 +26,6 @@ export interface IVesting {
   vestingContract?: string;
   createdAt?: number;
   updatedAt?: number;
-  createdBy?: IUser;
   transactionId: string;
 }
 

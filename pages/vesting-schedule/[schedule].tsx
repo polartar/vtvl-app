@@ -228,9 +228,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Created by</span>
-                <p className="paragraphy-small-medium text-neutral-900">
-                  {vestingSchedule.createdBy?.memberInfo?.name || '--'}
-                </p>
+                <p className="paragraphy-small-medium text-neutral-900">--</p>
               </div>
             </div>
             <ScheduleDetails {...vestingSchedule.details} token={mintFormState.symbol || 'Token'} />
