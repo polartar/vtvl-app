@@ -52,6 +52,7 @@ export type AuthContextData = {
   sidebarIsExpanded: boolean;
   toggleSideBar: () => void;
   expandSidebar: () => void;
+  forceExpandSidebar: () => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -311,7 +312,8 @@ export function AuthContextProvider({ children }: any) {
       showSideBar,
       sidebarIsExpanded,
       toggleSideBar,
-      expandSidebar
+      expandSidebar,
+      forceExpandSidebar: () => setSidebarIsExpanded(true)
     }),
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe]
   );
