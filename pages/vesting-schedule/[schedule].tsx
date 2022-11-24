@@ -229,7 +229,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Created by</span>
                 <p className="paragraphy-small-medium text-neutral-900">
-                  {vestingSchedule.createdBy?.memberInfo?.name || ''}
+                  {vestingSchedule.createdBy?.memberInfo?.name || '--'}
                 </p>
               </div>
             </div>
