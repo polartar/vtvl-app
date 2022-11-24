@@ -35,6 +35,7 @@ const UserContainer = styled.div`
   border-radius: 24px;
   display: flex;
   align-items: center;
+  gap: 8px;
   font-family: 'Inter-Bold';
   font-style: normal;
   font-size: 16px;
