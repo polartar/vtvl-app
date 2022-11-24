@@ -93,7 +93,7 @@ const VestingOverview = ({
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Total allocation</p>
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Total supply</p>
           <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
               {formatNumber(totalAllocation)} {token}
