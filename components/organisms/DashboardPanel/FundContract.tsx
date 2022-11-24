@@ -33,7 +33,7 @@ import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
 import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
-import { parseTokenAmount } from 'utils/token';
+import { formatNumber, parseTokenAmount } from 'utils/token';
 import { getCliffAmount, getCliffDateTime, getNumberOfReleases, getProjectedEndDateTime } from 'utils/vesting';
 
 import FundingContractModal from '../FundingContractModal/FundingContractModal';
@@ -455,7 +455,7 @@ const FundContract = () => {
             <label>
               <span>Amount needed</span>
             </label>
-            <p className="paragraphy-tiny-medium neutral-text">{depositAmount}</p>
+            <p className="paragraphy-tiny-medium neutral-text">{formatNumber(+depositAmount)}</p>
           </div>
         </div>
       </div>

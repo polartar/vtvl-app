@@ -3,4 +3,6 @@ export interface IOrganization {
   email: string;
   user_id?: string;
   safe_id?: number;
+  createdAt?: number;
+  updatedAt?: number;
 }

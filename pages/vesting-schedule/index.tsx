@@ -237,7 +237,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       {
         id: 'scheduleName',
         Header: '# Sched',
-        accessor: 'data.scheduleName',
+        accessor: 'data.name',
         Cell: CellScheduleName
       },
       {
@@ -633,14 +633,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                 </button>
               </div>
             </div>
-            <div className="flex flex-row items-center justify-start gap-2">
-              <button className="secondary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
-                <PlusIcon className="w-5 h-5" />
-                <span className="whitespace-nowrap">Create Schedule</span>
-              </button>
-            </div>
           </div>
-          <div className="p-5 mb-6 border-b border-gray-200">
+          <div className="p-5 mb-6 border-b border-gray-200 w-full">
             <VestingOverview
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}

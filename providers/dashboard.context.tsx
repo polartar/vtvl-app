@@ -2,6 +2,7 @@ import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
+import { useRouter } from 'next/router';
 import React, { SetStateAction, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
@@ -42,6 +43,7 @@ export function DashboardContextProvider({ children }: any) {
   const { mintFormState } = useTokenContext();
   const { organizationId, safe } = useAuthContext();
   const { showLoading, hideLoading } = useLoaderContext();
+  const router = useRouter();
 
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
   const [vestingContract, setVestingContract] = useState<
@@ -89,7 +91,6 @@ export function DashboardContextProvider({ children }: any) {
   };
 
   const fetchDashboardData = async () => {
-    console.log('fetchDashboardData');
     if (organizationId) {
       showLoading();
       try {
@@ -134,8 +135,8 @@ export function DashboardContextProvider({ children }: any) {
   );
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [organizationId]);
+    if (organizationId || (router && router.pathname === '/dashboard')) fetchDashboardData();
+  }, [organizationId, router]);
 
   useEffect(() => {
     if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {

@@ -31,7 +31,7 @@ import { NextPageWithLayout } from '../_app';
 
 const Dashboard: NextPageWithLayout = () => {
   const { library, account, activate } = useWeb3React();
-  const { organizationId, safe, emailSignUp } = useAuthContext();
+  const { organizationId, safe, emailSignUp, user } = useAuthContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { recipients, scheduleFormState } = useVestingContext();
   const {
@@ -89,7 +89,11 @@ const Dashboard: NextPageWithLayout = () => {
   ];
 
   useEffect(() => {
+    // console.log('user obj in auth context', user);
+    console.log('retesting org_id', organizationId);
+
     if (!organizationId) {
+      // if (!user?.memberInfo?.org_id) {
       showLoading();
     } else {
       hideLoading();

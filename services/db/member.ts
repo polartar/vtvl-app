@@ -36,12 +36,18 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
     ...invitee?.data(),
     email: member.email || '',
     companyEmail: invitee?.data().email || member.companyEmail || '',
-    type: invitee?.data().email ? 'employee' : member.type || 'anonymous',
+    type: invitee?.data().email ? 'manager' : member.type || 'anonymous',
     org_id: invitee?.data().org_id || member.org_id || '',
-    joined: member.joined || Math.floor(new Date().getTime() / 1000)
+    joined: member.joined || Math.floor(new Date().getTime() / 1000),
+    createdAt: Math.floor(new Date().getTime() / 1000),
+    updatedAt: Math.floor(new Date().getTime() / 1000)
   });
 };
 
 export const addInvitee = async (invitee: IInvitee): Promise<void> => {
-  await addDoc(inviteeCollection, invitee);
+  await addDoc(inviteeCollection, {
+    ...invitee,
+    createdAt: Math.floor(new Date().getTime() / 1000),
+    updatedAt: Math.floor(new Date().getTime() / 1000)
+  });
 };

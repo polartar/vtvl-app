@@ -160,11 +160,12 @@ const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: I
             onClick={onClaim}>
             Claim <strong>{formatNumber(props?.claimable?.token || 0)}</strong> {props.token.symbol}
           </button>
-          <Link href={viewDetailsUrl}>
+          {/* Temporarily removed -- will update again later */}
+          {/* <Link href={viewDetailsUrl}>
             <span className="flex w-full items-center justify-center h-10 text-primary-900 text-sm font-medium cursor-pointer">
               View details
             </span>
-          </Link>
+          </Link> */}
         </div>
       </div>
     </div>

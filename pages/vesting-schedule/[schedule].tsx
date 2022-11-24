@@ -5,24 +5,37 @@ import StepWizard from '@components/atoms/StepWizard/StepWizard';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import ScheduleSummary from '@components/molecules/ScheduleSummary/ScheduleSummary';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
+import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
+import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
+import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
 import { useAuthContext } from '@providers/auth.context';
+import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
+import { useWeb3React } from '@web3-react/core';
+import Decimal from 'decimal.js';
+import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import WarningIcon from 'public/icons/warning.svg';
 import { ReactElement, useEffect, useState } from 'react';
+import { fetchTransaction } from 'services/db/transaction';
 import { fetchVesting } from 'services/db/vesting';
-import { IVesting } from 'types/models';
+import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
+import { ITransaction, IVesting } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
+import { formatNumber } from 'utils/token';
+import { getDuration } from 'utils/vesting';
 
 const VestingScheduleDetailed: NextPageWithLayout = () => {
+  const { account, library, chainId } = useWeb3React();
   const router = useRouter();
   const { schedule } = router.query;
-  const [fetching, setFetching] = useState(false);
   const [vestingSchedule, setVestingSchedule] = useState<IVesting | undefined>(undefined);
   const { mintFormState } = useTokenContext();
-  const { organizationId } = useAuthContext();
+  const { safe, organizationId } = useAuthContext();
+  const { loading, hideLoading, showLoading } = useLoaderContext();
   // const organizationId = 'MYvgDyXEY5kCfxdIvtY8'; // mock data
 
   const getVestingScheduleDetails = async () => {
@@ -41,17 +54,17 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
             endDateTime: actualDateTime.endDate
           }
         });
-        setFetching(false);
+        hideLoading();
       }
     } catch (err) {
       // something went wrong
-      setFetching(false);
+      hideLoading();
     }
   };
 
   useEffect(() => {
     if (schedule) {
-      setFetching(true);
+      showLoading();
       getVestingScheduleDetails();
     }
   }, [schedule]);
@@ -114,46 +127,117 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     }
   ];
 
+  const scheduleDuration =
+    vestingSchedule && vestingSchedule.details.startDateTime && vestingSchedule.details.endDateTime
+      ? getDuration(vestingSchedule.details.startDateTime as Date, vestingSchedule.details.endDateTime)
+      : '';
+
+  const approvers = new Array(safe?.threshold).fill({ title: '', desc: '' });
+  const [transaction, setTransaction] = useState<{ id: string; data: ITransaction | undefined }>();
+  const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
+
+  // Copy of the one from AddVestingSchedule.tsx
+  // To do Arvin: Optimize this along with the existing one
+  const fetchSafeTransactionFromHash = async (txHash: string) => {
+    if (safe?.address && chainId) {
+      const ethAdapter = new EthersAdapter({
+        ethers: ethers,
+        signer: library?.getSigner(0)
+      });
+
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+      const safeService = new SafeServiceClient({
+        txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+        ethAdapter
+      });
+      const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(txHash);
+      const safeTx = await safeSdk.createTransaction({
+        safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
+      });
+      apiTx.confirmations?.forEach((confirmation) => {
+        safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
+      });
+      setSafeTransaction({ ...safeTx });
+    }
+  };
+
+  // Fetch the transaction by using the transaction id
+  // With this, we can check whether the vesting schedule has multisig transactions
+  useEffect(() => {
+    if (vestingSchedule?.transactionId) {
+      fetchTransaction(vestingSchedule.transactionId).then((res) => {
+        setTransaction({ id: vestingSchedule.transactionId, data: res });
+      });
+    }
+  }, [vestingSchedule]);
+
+  // Actually fetch the Safe transaction
+  useEffect(() => {
+    if (transaction?.data?.hash) {
+      fetchSafeTransactionFromHash(transaction.data.hash);
+    }
+  }, [transaction, account]);
+
   return (
     <>
-      {fetching ? (
-        <Loader progress={90} />
-      ) : vestingSchedule ? (
+      {!loading && vestingSchedule ? (
         <>
-          <h1 className="h2 text-neutral-900 mb-10">VOYAGER-0123</h1>
+          <h1 className="h2 text-neutral-900 mb-10">{vestingSchedule.name}</h1>
           <div className="w-full mb-6 panel max-w-2xl">
             <h2 className="text-lg font-medium text-neutral-900 mb-1.5 text-center">Schedule Details</h2>
-            <p className="text-sm text-neutral-500 text-center mb-5">
-              <strong>2</strong> out of <strong>3</strong> owners is required to confirm this schedule
-            </p>
-            <StepWizard steps={wizardSteps} status={1} size="small" className="mx-auto" showAllLabels />
+            {transaction && transaction.data?.status !== 'SUCCESS' && safeTransaction && safe ? (
+              <>
+                <p className="text-sm text-neutral-500 text-center mb-5">
+                  <strong>{safeTransaction.signatures.size || 0}</strong> out of <strong>{safe?.threshold}</strong>{' '}
+                  owners is required to confirm this schedule
+                </p>
+                <StepWizard
+                  steps={approvers}
+                  status={safeTransaction?.signatures.size ?? 0}
+                  size="small"
+                  className="mx-auto"
+                  showAllLabels
+                />
+              </>
+            ) : null}
             <div className="border-t border-gray-200 py-6 mt-6 grid sm:grid-cols-2 md:grid-cols-5 gap-3">
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Token per user</span>
-                <p className="paragraphy-small-medium text-neutral-900">5,250 {mintFormState.symbol || 'Token'}</p>
+                <p className="paragraphy-small-medium text-neutral-900">
+                  {formatNumber(
+                    new Decimal(vestingSchedule.details.amountToBeVested)
+                      .div(new Decimal(vestingSchedule.recipients.length))
+                      .toDP(6, Decimal.ROUND_UP)
+                  )}{' '}
+                  {mintFormState.symbol || 'Token'}
+                </p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Total locked token</span>
-                <p className="paragraphy-small-medium text-neutral-900">10,000,000 {mintFormState.symbol || 'Token'}</p>
+                <p className="paragraphy-small-medium text-neutral-900">
+                  {formatNumber(vestingSchedule.details.amountToBeVested)} {mintFormState.symbol || 'Token'}
+                </p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Beneficiaries</span>
-                <p className="paragraphy-small-medium text-neutral-900">4</p>
+                <p className="paragraphy-small-medium text-neutral-900">{vestingSchedule.recipients.length}</p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Total Period</span>
-                <p className="paragraphy-small-medium text-neutral-900">63 days</p>
+                <p className="paragraphy-small-medium text-neutral-900">{scheduleDuration}</p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Created by</span>
-                <p className="paragraphy-small-medium text-neutral-900">Satoshi S.</p>
+                <p className="paragraphy-small-medium text-neutral-900">--</p>
               </div>
             </div>
             <ScheduleDetails {...vestingSchedule.details} token={mintFormState.symbol || 'Token'} />
-            <div className="row-center justify-center mt-6 pt-6 border-t border-gray-200">
-              <Button className="secondary">Approve</Button>
-              <Button className="primary">Reject</Button>
-            </div>
+            {/* {safeTransaction && account && safeTransaction.signatures.has(account.toLowerCase()) ? (
+              <div className="row-center justify-center mt-6 pt-6 border-t border-gray-200">
+                <Button className="secondary">Approve</Button>
+                <Button className="primary">Reject</Button>
+              </div>
+            ) : null} */}
           </div>
         </>
       ) : null}

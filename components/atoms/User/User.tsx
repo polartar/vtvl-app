@@ -20,10 +20,11 @@ const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
           className={`transition-all rounded-full ${compact ? 'mx-1' : 'mx-3'}`}
         />
       ) : (
-        <Avatar name={userName} />
+        // Temporarily use role as avatar initials -- update later
+        <Avatar name={role.toUpperCase()} />
       )}
       <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
-        <p>{userName}</p>
+        {/* <p>{userName}</p> */}
         <p className="capitalize">{role}</p>
       </div>
     </UserContainer>
@@ -35,6 +36,7 @@ const UserContainer = styled.div`
   border-radius: 24px;
   display: flex;
   align-items: center;
+  gap: 8px;
   font-family: 'Inter-Bold';
   font-style: normal;
   font-size: 16px;
@@ -47,7 +49,6 @@ const UserContainer = styled.div`
     height: 40px;
   }
   div {
-    height: 40px;
     display: flex;
     flex-direction: column;
     p {

@@ -18,7 +18,10 @@ export const fetchSafeByAddress = async (address: string): Promise<ISafe | undef
 
 export const updateSafe = async (safe: ISafe, id: string): Promise<void> => {
   const safeRef = doc(safeCollection, id);
-  await setDoc(safeRef, safe);
+  await setDoc(safeRef, {
+    ...safe,
+    updatedAt: Math.floor(new Date().getTime() / 1000)
+  });
 };
 
 export const createOrUpdateSafe = async (safe: ISafe, ref?: string): Promise<string> => {
@@ -27,7 +30,11 @@ export const createOrUpdateSafe = async (safe: ISafe, ref?: string): Promise<str
     await setDoc(safeRef, safe);
     return ref;
   }
-  const safeRef = await addDoc(safeCollection, safe);
+  const safeRef = await addDoc(safeCollection, {
+    ...safe,
+    createdAt: Math.floor(new Date().getTime() / 1000),
+    updatedAt: Math.floor(new Date().getTime() / 1000)
+  });
   return safeRef.id;
 };
 

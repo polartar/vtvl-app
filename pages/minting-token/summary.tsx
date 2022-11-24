@@ -70,7 +70,7 @@ const Summary: NextPageWithLayout = () => {
           status: 'SUCCESS'
         });
 
-        updateMintFormState({ ...mintFormState, contractAddress: tokenContract.address, status: 'SUCCESS' });
+        updateMintFormState({ ...mintFormState, address: tokenContract.address, status: 'SUCCESS' });
 
         console.log('Address:', tokenContract.address);
         toast.success('Token created successfully');
