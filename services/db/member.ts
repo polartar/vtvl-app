@@ -36,7 +36,7 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
     ...invitee?.data(),
     email: member.email || '',
     companyEmail: invitee?.data().email || member.companyEmail || '',
-    type: invitee?.data().email ? 'employee' : member.type || 'anonymous',
+    type: invitee?.data().email ? 'manager' : member.type || 'anonymous',
     org_id: invitee?.data().org_id || member.org_id || '',
     joined: member.joined || Math.floor(new Date().getTime() / 1000),
     createdAt: Math.floor(new Date().getTime() / 1000),
