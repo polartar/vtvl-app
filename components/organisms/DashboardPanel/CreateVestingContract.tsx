@@ -540,7 +540,6 @@ AddVestingSchedulesProps) => {
         ethAdapter
       });
       const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(txHash);
-      console.log({ apiTx });
       const safeTx = await safeSdk.createTransaction({
         safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
       });
@@ -561,10 +560,11 @@ AddVestingSchedulesProps) => {
         setSafeTransaction(undefined);
         setApproved(false);
         setExecutable(false);
-        setStatus('createSignTransaction');
+        if (!vestingContract?.id) setStatus('vestingContractRequired');
+        else setStatus('createSignTransaction');
       }
     }
-  }, [vestings, activeVestingIndex, type]);
+  }, [vestings, activeVestingIndex, type, vestingContract]);
 
   useEffect(() => {
     if (transaction?.hash) {

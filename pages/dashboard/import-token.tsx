@@ -9,6 +9,7 @@ import { ethers } from 'ethers';
 import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
+import { useTokenContext } from 'providers/token.context';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { createToken } from 'services/db/token';
@@ -22,6 +23,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
   const { chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
   const router = useRouter();
+  const { mintFormState, updateMintFormState } = useTokenContext();
 
   const defaultValues: IImportToken = {
     tokenAddress: ''
@@ -56,6 +58,19 @@ const DashboardImportToken: NextPageWithLayout = () => {
     } else if (tokenName) {
       setLoading(true);
       const tokenRefId = await createToken({
+        name: tokenName,
+        symbol: tokenSymbol,
+        decimals: tokenDecimals,
+        address: tokenAddress.value,
+        logo: '',
+        organizationId: organizationId!,
+        imported: true,
+        createdAt: Math.floor(new Date().getTime() / 1000),
+        updatedAt: Math.floor(new Date().getTime() / 1000),
+        supplyCap: 'UNLIMITED',
+        status: 'SUCCESS'
+      });
+      updateMintFormState({
         name: tokenName,
         symbol: tokenSymbol,
         decimals: tokenDecimals,
