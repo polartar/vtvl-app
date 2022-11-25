@@ -1,4 +1,5 @@
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import React from 'react';
 import { IFundContractProps } from 'types/models/vestingContract';
 import { formatNumber } from 'utils/token';
@@ -16,7 +17,9 @@ const FundContract: React.FC<IFundContractProps> = ({ symbol, address, amount, .
         <label>
           <span>Contract Address</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{address}</p>
+        <Copy text={address}>
+          <p className="paragraphy-tiny-medium neutral-text">{address}</p>
+        </Copy>
       </div>
       <div>
         <label>

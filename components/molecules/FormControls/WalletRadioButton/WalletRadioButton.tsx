@@ -1,4 +1,5 @@
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import Decimal from 'decimal.js';
 import { formatNumber } from 'utils/token';
 
@@ -30,7 +31,9 @@ const WalletRadioButton = ({
             {formatNumber(balance)} {symbol ? <Chip label={symbol} size="small" color="gray" rounded /> : null}
           </span>
         </div>
-        <span className="text-sm text-neutral-500">{address}</span>
+        <Copy text={address}>
+          <span className="text-sm text-neutral-500">{address}</span>
+        </Copy>
       </div>
       <div
         className={`row-center justify-center w-6 h-6 rounded-full border ${

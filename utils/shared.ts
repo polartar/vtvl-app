@@ -33,6 +33,7 @@ export const formatDate = (date: Date) => format(date, 'E, LLL d, yyyy');
  * Converts the time into a human readable one
  */
 export const formatTime = (date: Date) => format(date, 'h:mm a (O)');
+export const formatDateTime = (date: Date) => format(date, 'E, LLL d, yyyy h:mm a (O)');
 
 /**
  * Visually compress the token address
@@ -74,7 +75,7 @@ export const getActualDateTime = (data: {
 export const generateRandomName = (l: number) => {
   const length = l;
   let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const charactersLength = characters.length;
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));

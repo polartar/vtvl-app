@@ -3,8 +3,6 @@ import Copy from '@components/atoms/Copy/Copy';
 import VestingProgress from '@components/atoms/VestingProgress/VestingProgress';
 import { useWeb3React } from '@web3-react/core';
 import Link from 'next/link';
-import CopyIcon from 'public/icons/copy-to-clipboard.svg';
-import CopyToClipboard from 'react-copy-to-clipboard';
 import Countdown from 'react-countdown';
 import { formatDate, formatTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
@@ -73,8 +71,9 @@ const MyTokenDetails = ({ viewDetailsUrl = '', onClaim = () => {}, ...props }: I
           <Chip label={props?.vesting?.name || ''} color="gray" rounded />
         </div>
         <div className="row-center gap-2 text-xxs text-neutral-500 mb-3">
-          <CopyIcon className="fill-current h-4 cursor-pointer" />
-          <p>{props.token.address}</p>
+          <Copy text={props.token.address}>
+            <p>{props.token.address}</p>
+          </Copy>
         </div>
         <button onClick={() => importToken()} className="secondary py-1 mb-6">
           Import token to your wallet

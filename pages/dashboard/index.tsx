@@ -1,3 +1,4 @@
+import Copy from '@components/atoms/Copy/Copy';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
@@ -133,13 +134,17 @@ const Dashboard: NextPageWithLayout = () => {
                 logo={mintFormState.logo}
                 className="mb-2"
               />
-              <p className="text-sm font-medium text-netural-900">
-                Token Address: <span className="text-neutral-500">{mintFormState.address}</span>
-              </p>
-              {vestingContract && vestingContract.data?.address && (
+              <Copy text={mintFormState.address}>
                 <p className="text-sm font-medium text-netural-900">
-                  Vesting Contract Address: <span className="text-neutral-500">{vestingContract.data?.address}</span>
+                  Token Address: <span className="text-neutral-500">{mintFormState.address}</span>
                 </p>
+              </Copy>
+              {vestingContract && vestingContract.data?.address && (
+                <Copy text={vestingContract.data?.address}>
+                  <p className="text-sm font-medium text-netural-900">
+                    Vesting Contract Address: <span className="text-neutral-500">{vestingContract.data?.address}</span>
+                  </p>
+                </Copy>
               )}
             </div>
             <div className="flex flex-row items-center justify-start gap-2">

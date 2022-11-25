@@ -11,7 +11,7 @@ import React, { useContext, useEffect } from 'react';
 import AuthContext from '../../../providers/auth.context';
 
 const Container = styled.section`
-  min-width: 100vw;
+  width: 100vw;
   min-height: 100vh;
 `;
 
@@ -186,7 +186,14 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   useEffect(() => {
     (async () => await refreshUser())();
   }, []);
-  // console.log('in progress here is ', inProgress, user);
+
+  const displaySideBar = Boolean(
+    !inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type]
+  );
+
+  const getUserSidebarLinks =
+    user && user.memberInfo && user.memberInfo.type ? SidebarProps[user?.memberInfo?.type] : {};
+
   return (
     <Container>
       <Head>
@@ -201,14 +208,12 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout className="flex flex-row w-full">
-        {!inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type] ? (
-          <Sidebar {...SidebarProps[user?.memberInfo?.type]} roleTitle={user?.memberInfo?.type || 'founder'} />
-        ) : null}
+        {displaySideBar ? <Sidebar {...getUserSidebarLinks} roleTitle={user?.memberInfo?.type || 'founder'} /> : null}
         <div className="relative">
           {loading && <PageLoader />}
           <Main
             sidebarIsExpanded={sidebarIsExpanded}
-            sidebarIsShown={Boolean(!inProgress && user && user?.memberInfo && user.memberInfo.type)}
+            sidebarIsShown={displaySideBar}
             className="flex flex-col items-center p-8 pt-7">
             {props.children}
           </Main>
