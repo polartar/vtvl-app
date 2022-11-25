@@ -1,4 +1,5 @@
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Input from '@components/atoms/FormControls/Input/Input';
@@ -9,6 +10,7 @@ import CapTableOverview from '@components/molecules/CapTableOverview/CapTableOve
 import Table from '@components/molecules/Table/Table';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
+import Decimal from 'decimal.js';
 import { useAuthContext } from 'providers/auth.context';
 import RecipientsIcon from 'public/icons/cap-table-recipients.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
@@ -22,20 +24,17 @@ import { NextPageWithLayout } from './_app';
 
 const CapTable: NextPageWithLayout = () => {
   const { mintFormState } = useTokenContext();
-  const { user } = useAuthContext();
+  const { user, organizationId } = useAuthContext();
   const [showCapTable, setShowCapTable] = useState(false);
   const [tab, setTab] = useState('all');
-  const [vestingData, setVestingsData] = useState<any[]>([]);
+  const [vestingsData, setVestingsData] = useState<any[]>([]);
+  const [recipientsData, setRecipientsData] = useState<any[]>([]);
+  const [schedules, setSchedules] = useState<any[]>([]);
   const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
   const [isPageLoading, setPageLoading] = useState(true);
   const [totalClaimed, setTotalClaimed] = useState(0);
   const [totalUnClaimed, setTotalUnClaimed] = useState(0);
   const [totalAllocation, setTotalAllocation] = useState(0);
-
-  const schedules = [
-    { label: 'All', value: 'all' }
-    // { label: 'Viking-0132', value: 'viking-0132' }
-  ];
 
   useEffect(() => {
     setUpCapTable();
@@ -51,30 +50,24 @@ const CapTable: NextPageWithLayout = () => {
       <div>
         <p className="text-sm text-medium text-neutral-900">{row.original.company}</p>
         {row.original.address ? (
-          <p className="text-xs text-neutral-600 mt-0.5 underline" data-tip={row.original.address}>
-            {minifyAddress(row.original.address)}
-          </p>
+          <Copy text={row.original.address}>
+            <p className="text-xs text-neutral-600 mt-0.5 underline">{minifyAddress(row.original.address)}</p>
+          </Copy>
         ) : null}
       </div>
     </div>
   );
 
   // Renderer for combined information -- Amount + Token name / symbol
-  const CellAmount = ({ amount, token }: { amount: number; token: string }) => (
+  const CellAmount = ({ amount }: { amount: number }) => (
     <>
-      {formatNumber(amount)} {token}
+      {formatNumber(amount)} {mintFormState.symbol}
     </>
   );
-  const CellTotalAmount = ({ row }: any) => (
-    <CellAmount amount={row.original.totalAllocation} token={row.original.token} />
-  );
-  const CellClaimedAmount = ({ row }: any) => <CellAmount amount={row.original.claimed} token={row.original.token} />;
-  const CellUnclaimedAmount = ({ row }: any) => (
-    <CellAmount amount={row.original.unclaimed} token={row.original.token} />
-  );
-  const CellWithdrawnAmount = ({ row }: any) => (
-    <CellAmount amount={row.original.withdrawn} token={row.original.token} />
-  );
+  const CellTotalAmount = ({ row }: any) => <CellAmount amount={row.original.totalAllocation} />;
+  const CellClaimedAmount = ({ row }: any) => <CellAmount amount={row.original.claimed} />;
+  const CellUnclaimedAmount = ({ row }: any) => <CellAmount amount={row.original.unclaimed} />;
+  const CellWithdrawnAmount = ({ row }: any) => <CellAmount amount={row.original.withdrawn} />;
 
   // Renderer for the toggle switch in managing alerts for each schedule
   const CellToggleSwitch = (props: any) => {
@@ -216,8 +209,10 @@ const CapTable: NextPageWithLayout = () => {
       ? await fetchMember(user?.uid || '')
       : undefined;
 
-    const vestingData = await fetchVestingsByQuery('organizationId', '==', memberInfo?.org_id || '');
+    const vestingData = await fetchVestingsByQuery('organizationId', '==', memberInfo?.org_id || organizationId || '');
     console.log('vesting data here is ', vestingData);
+    // Set the bar radio selector based on the schedules fetched
+    setSchedules([{ label: 'All', value: 'all' }, ...vestingData.map((vd) => ({ label: vd.data.name, value: vd.id }))]);
 
     if (!vestingData || vestingData.length == 0) {
       console.log('no vesting table details');
@@ -230,8 +225,10 @@ const CapTable: NextPageWithLayout = () => {
     let sumAllocation = 0;
 
     const transformedVestings = [...vestingData].reduce((acc: any, obj: { id: string; data: IVesting }) => {
+      // This is based on `amount to be vested` per schedule
+      sumAllocation += obj.data.details.amountToBeVested;
       const o = [...obj.data.recipients].reduce((a: any, o: any) => {
-        sumAllocation += obj.data.details.amountToBeVested;
+        // Based on claimed, unclaimed per each recipient per vesting schedule
         sumUnclaimed += obj.data.details.amountClaimed;
         sumClaimed += obj.data.details.amountUnclaimed;
         return [
@@ -241,7 +238,10 @@ const CapTable: NextPageWithLayout = () => {
             company: o.company,
             recipientType: o.recipientType[0]?.label,
             address: o.walletAddress,
-            totalAllocation: obj.data.details.amountToBeVested
+            // Ensure that the totalAllocation for each recipient is divided by the number of recipients
+            totalAllocation: new Decimal(obj.data.details.amountToBeVested)
+              .div(new Decimal(obj.data.recipients.length))
+              .toDP(6, Decimal.ROUND_UP)
           }
         ];
       }, []);
@@ -252,7 +252,8 @@ const CapTable: NextPageWithLayout = () => {
     setTotalUnClaimed(sumUnclaimed);
     setTotalAllocation(sumAllocation);
     console.log('transformed vestings ', transformedVestings);
-    setVestingsData(transformedVestings);
+    setVestingsData(vestingData);
+    setRecipientsData(transformedVestings);
     setShowCapTable(true);
     setPageLoading(false);
   };
@@ -267,8 +268,8 @@ const CapTable: NextPageWithLayout = () => {
             <div className="p-5 mb-6 border-b border-gray-200">
               <CapTableOverview
                 token={mintFormState.symbol || 'Token'}
-                schedules={vestingData.length}
-                totalRecipients={vestingData.length}
+                schedules={vestingsData.length}
+                totalRecipients={recipientsData.length}
                 claimed={totalClaimed}
                 unclaimed={totalUnClaimed}
                 totalWithdrawn={0}
@@ -286,14 +287,14 @@ const CapTable: NextPageWithLayout = () => {
               variant="tab"
             />
             <div className="grid sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-7 mb-8">
-              <SelectInput label="Recipient type" options={recipientTypes} />
+              {/* <SelectInput label="Recipient type" options={recipientTypes} />
               <SelectInput label="Company" options={recipientTypes} />
               <Input label="Withdrawn" placeholder="any" />
               <Input label="Claimed" placeholder="any" />
-              <Input label="Unclaimed" placeholder="any" />
+              <Input label="Unclaimed" placeholder="any" /> */}
             </div>
 
-            <Table columns={columns} data={vestingData} pagination={true} exports={true} />
+            <Table columns={columns} data={recipientsData} pagination={true} exports={true} />
           </>
         ) : (
           <EmptyState

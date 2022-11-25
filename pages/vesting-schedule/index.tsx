@@ -1,5 +1,6 @@
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import Loader from '@components/atoms/Loader/Loader';
@@ -111,7 +112,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   useEffect(() => {
     getVestings();
-  }, [organizationId]);
+  }, []);
 
   useEffect(() => {
     if (isFetchingSchedules || isTokenLoading) {
@@ -303,94 +304,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     ],
     []
   );
-
-  // Sample data
-  // const data = [
-  //   {
-  //     id: '19xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 0,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'WAITING_FUNDS',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '20xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 30,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'COMPLETED',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '21xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 22,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'LIVE',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '22xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 65,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'CREATING',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '23xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 82,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'COMPLETED',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '24xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 100,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'CREATED',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '25xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 100,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'WAITING_APPROVAL',
-  //     requiredConfirmation: '2 out of 3'
-  //   }
-  // ];
 
   console.log('Data counts', vestingScheduleDataCounts);
   /**
@@ -620,7 +533,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     if (vestingSchedules && vestingSchedules.length) {
       setTotalUsedSupply(vestingSchedules.reduce((prev, curr) => prev + +curr.data.details.amountToBeVested, 0));
     }
-  }, vestingSchedules);
+  }, [vestingSchedules]);
 
   useEffect(() => {
     if (totalUsedSupply) {
@@ -637,9 +550,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
               <div>
                 <TokenProfile {...mintFormState} className="mb-2" />
-                <p className="text-sm font-medium text-netural-900">
-                  Contract address: <span className="text-neutral-500">{mintFormState.address}</span>
-                </p>
+                <Copy text={mintFormState.address}>
+                  <p className="text-sm font-medium text-netural-900">
+                    Contract address: <span className="text-neutral-500">{mintFormState.address}</span>
+                  </p>
+                </Copy>
               </div>
               <div className="flex flex-row items-center justify-start gap-2">
                 <button className="secondary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>

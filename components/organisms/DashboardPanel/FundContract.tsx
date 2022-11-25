@@ -1,3 +1,4 @@
+import Copy from '@components/atoms/Copy/Copy';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
@@ -449,7 +450,9 @@ const FundContract = () => {
             <label>
               <span>Contract Address</span>
             </label>
-            <p className="paragraphy-tiny-medium neutral-text">{vestingContract?.data?.address}</p>
+            <Copy text={vestingContract?.data?.address || ''}>
+              <p className="paragraphy-tiny-medium neutral-text">{vestingContract?.data?.address}</p>
+            </Copy>
           </div>
           <div>
             <label>

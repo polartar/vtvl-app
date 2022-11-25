@@ -1,4 +1,5 @@
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import { IVestingContractProps } from 'types/models/vesting';
 import { formatNumber } from 'utils/token';
 
@@ -40,9 +41,11 @@ const ContractOverview = ({
       </div>
       <div>
         <label>
-          <span>Contract address</span>
+          <span>Token address</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{address}</p>
+        <Copy text={address}>
+          <p className="paragraphy-tiny-medium neutral-text">{address}</p>
+        </Copy>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
+import Copy from '@components/atoms/Copy/Copy';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
@@ -121,7 +122,9 @@ const MintSuppy: NextPageWithLayout = () => {
         className="w-full my-6">
         <TokenProfile {...mintFormState} className="mb-6" />
         <span className="paragraphy-medium-medium text-neutral-700">Contract address</span>
-        <p className="text-sm text-neutral-500 mb-2">{mintFormState.address}</p>
+        <Copy text={mintFormState.address}>
+          <p className="text-sm text-neutral-500 mb-2">{mintFormState.address}</p>
+        </Copy>
         <div className="my-6 py-6 border-t border-b border-gray-200 grid grid-cols-3">
           <div className="font-medium text-sm">
             <p className="text-neutral-800">Supply cap</p>

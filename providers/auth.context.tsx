@@ -52,7 +52,7 @@ export type AuthContextData = {
   sidebarIsExpanded: boolean;
   toggleSideBar: () => void;
   expandSidebar: () => void;
-  forceExpandSidebar: () => void;
+  forceCollapseSidebar: () => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -60,7 +60,7 @@ const AuthContext = createContext({} as AuthContextData);
 export function AuthContextProvider({ children }: any) {
   const [user, setUser] = useState<IUser | undefined>();
   // Remove default value when merging to develop, staging or main
-  // Mock organizationId MYvgDyXEY5kCfxdIvtY8 or V2dmM9LmDAAgfWgj8PJR
+  // Mock organizationId MYvgDyXEY5kCfxdIvtY8 or V2dmM9LmDAAgfWgj8PJR or t2SfnLYwU0MZpY4q7zL8 for bico
   const [organizationId, setOrganizationId] = useState<string | undefined>();
   const [safe, setSafe] = useState<ISafe | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -69,7 +69,7 @@ export function AuthContextProvider({ children }: any) {
   const [error, setError] = useState('');
   // Remove after implementing context to show/hide the sidebar
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
-  const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(false);
+  const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(true);
   console.log({ user });
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -313,7 +313,7 @@ export function AuthContextProvider({ children }: any) {
       sidebarIsExpanded,
       toggleSideBar,
       expandSidebar,
-      forceExpandSidebar: () => setSidebarIsExpanded(true)
+      forceCollapseSidebar: () => setSidebarIsExpanded(false)
     }),
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe]
   );

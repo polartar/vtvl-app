@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import Router, { useRouter } from 'next/router';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 
 import AuthContext from '../../../providers/auth.context';
 import { Colors } from '../../CommonStyles';
@@ -29,13 +29,20 @@ interface Props {
 }
 
 const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
-  const { sidebarIsExpanded, expandSidebar, user, logOut } = useContext(AuthContext);
+  const { sidebarIsExpanded, expandSidebar, forceCollapseSidebar, user, logOut } = useContext(AuthContext);
   const currentRoute = useRouter();
   const [selectedRoute, setSelectedRoute] = React.useState(currentRoute.pathname || '');
   const handleMenuClick = (route: string) => {
     setSelectedRoute(route);
     Router.push(route);
   };
+
+  // Force expand the sidebar on initial load when the device screen width is large
+  useEffect(() => {
+    if (window.innerWidth < 1366) {
+      forceCollapseSidebar();
+    }
+  }, []);
 
   return (
     <SidebarContainer isExpanded={sidebarIsExpanded} className="transition-all">
@@ -107,9 +114,6 @@ const SidebarContainer = styled.aside<{
   flex-direction: column;
   justify-content: space-between;
   padding: 32px 16px 16px;
-  @media only screen and (min-width: 1366px) {
-    width: 279px;
-  }
 `;
 const RoleTitle = styled.span`
   font-style: normal;
