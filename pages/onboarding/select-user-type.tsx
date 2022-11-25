@@ -87,7 +87,6 @@ const SelectUserTypePage: NextPage = () => {
         onNext({ accountType: selected });
         return;
       }
-      active ? completeOnboarding() : Router.push('/member');
       if (user) {
         await newMember(user.uid, {
           email: user.email || member?.email,
