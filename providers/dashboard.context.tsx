@@ -34,6 +34,7 @@ interface IDashboardData {
   fetchDashboardTransactions: () => void;
   setOwnershipTransfered: (v: boolean) => void;
   fetchDashboardData: () => void;
+  fetchVestingContractBalance: () => void;
 }
 
 const DashboardContext = createContext({} as IDashboardData);
@@ -104,41 +105,7 @@ export function DashboardContextProvider({ children }: any) {
     }
   };
 
-  const value = useMemo(
-    () => ({
-      vestings,
-      vestingContract,
-      transactions,
-      ownershipTransfered,
-      insufficientBalance,
-      depositAmount,
-      vestingsLoading,
-      vestingContractLoading,
-      transactionsLoading,
-      fetchDashboardVestingContract,
-      fetchDashboardVestings,
-      fetchDashboardTransactions,
-      setOwnershipTransfered,
-      fetchDashboardData
-    }),
-    [
-      vestings,
-      vestingContract,
-      transactions,
-      ownershipTransfered,
-      insufficientBalance,
-      depositAmount,
-      vestingsLoading,
-      vestingContractLoading,
-      transactionsLoading
-    ]
-  );
-
-  useEffect(() => {
-    if (organizationId || (router && router.pathname === '/dashboard')) fetchDashboardData();
-  }, [organizationId, router]);
-
-  useEffect(() => {
+  const fetchVestingContractBalance = async () => {
     if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {
       let totalVestingAmount = 0;
       vestings
@@ -180,6 +147,45 @@ export function DashboardContextProvider({ children }: any) {
     }
     setInsufficientBalance(false);
     setDepositAmount('');
+  };
+
+  const value = useMemo(
+    () => ({
+      vestings,
+      vestingContract,
+      transactions,
+      ownershipTransfered,
+      insufficientBalance,
+      depositAmount,
+      vestingsLoading,
+      vestingContractLoading,
+      transactionsLoading,
+      fetchDashboardVestingContract,
+      fetchDashboardVestings,
+      fetchDashboardTransactions,
+      setOwnershipTransfered,
+      fetchDashboardData,
+      fetchVestingContractBalance
+    }),
+    [
+      vestings,
+      vestingContract,
+      transactions,
+      ownershipTransfered,
+      insufficientBalance,
+      depositAmount,
+      vestingsLoading,
+      vestingContractLoading,
+      transactionsLoading
+    ]
+  );
+
+  useEffect(() => {
+    if (organizationId || (router && router.pathname === '/dashboard')) fetchDashboardData();
+  }, [organizationId, router]);
+
+  useEffect(() => {
+    fetchVestingContractBalance();
   }, [vestingContract, vestings, mintFormState, chainId]);
 
   useEffect(() => {

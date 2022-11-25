@@ -62,7 +62,8 @@ const FundContract = () => {
     fetchDashboardTransactions,
     setOwnershipTransfered,
     depositAmount,
-    insufficientBalance
+    insufficientBalance,
+    fetchVestingContractBalance
   } = useDashboardContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
@@ -112,6 +113,8 @@ const FundContract = () => {
         );
         toast.success('Executed successfully.');
         setTransactionStatus('SUCCESS');
+        setStatus('success');
+        fetchVestingContractBalance();
       }
     } catch (err) {
       console.log('handleExecuteTransaction - ', err);
@@ -189,6 +192,7 @@ const FundContract = () => {
         await fundTransaction.wait();
         toast.success('Token deposited successfully');
         setStatus('success');
+        fetchVestingContractBalance();
         setTransactionStatus('SUCCESS');
       } else {
         const tokenContractInterface = new ethers.utils.Interface([
