@@ -118,7 +118,7 @@ const employeeInvestorMenuItems = {
       icon: '/icons/s_dashboard.svg',
       hoverIcon: '/icons/s_dashboard2.svg',
       route: '/tokens',
-      available: true
+      available: false
     }
   ],
   submenuList: [
