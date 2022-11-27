@@ -75,9 +75,7 @@ export function AuthContextProvider({ children }: any) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const memberInfo = await fetchMember(user.uid);
-        const safe = await fetchSafeByQuery('user_id', '==', user.uid);
         setUser({ ...user, memberInfo });
-        setSafe(safe);
       }
       setLoading(false);
     });
@@ -330,10 +328,14 @@ export function AuthContextProvider({ children }: any) {
 
       //   setOrganizationId(org?.id);
       // });
-
-      fetchSafeByQuery('user_id', '==', user.uid).then((safe) => setSafe(safe));
     }
   }, [user]);
+
+  useEffect(() => {
+    if (organizationId) {
+      fetchSafeByQuery('org_id', '==', organizationId).then((res) => setSafe(res));
+    }
+  }, [organizationId]);
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;
 }
