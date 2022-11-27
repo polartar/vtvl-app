@@ -53,6 +53,7 @@ export type AuthContextData = {
   toggleSideBar: () => void;
   expandSidebar: () => void;
   forceCollapseSidebar: () => void;
+  fetchSafe: () => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -283,6 +284,12 @@ export function AuthContextProvider({ children }: any) {
     Router.replace('/onboarding');
   };
 
+  const fetchSafe = async () => {
+    if (organizationId) {
+      fetchSafeByQuery('org_id', '==', organizationId).then((res) => setSafe(res));
+    }
+  };
+
   // Remove after implementing context to show/hide the sidebar
   const toggleSideBar = () => setShowSideBar((prev) => !prev);
   const expandSidebar = () => setSidebarIsExpanded((prev) => !prev);
@@ -311,7 +318,8 @@ export function AuthContextProvider({ children }: any) {
       sidebarIsExpanded,
       toggleSideBar,
       expandSidebar,
-      forceCollapseSidebar: () => setSidebarIsExpanded(false)
+      forceCollapseSidebar: () => setSidebarIsExpanded(false),
+      fetchSafe
     }),
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe]
   );
@@ -332,9 +340,7 @@ export function AuthContextProvider({ children }: any) {
   }, [user]);
 
   useEffect(() => {
-    if (organizationId) {
-      fetchSafeByQuery('org_id', '==', organizationId).then((res) => setSafe(res));
-    }
+    fetchSafe();
   }, [organizationId]);
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;
