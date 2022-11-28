@@ -18,7 +18,7 @@ const ScheduleOverview = (vesting: IVesting) => {
         <label>
           <span>Schedule name</span>
         </label>
-        <Chip color="gray" label={'name'} rounded size="small" />
+        {vesting.name ? <Chip color="gray" label={vesting.name} rounded size="small" /> : '--'}
       </div>
       <div>
         <label>

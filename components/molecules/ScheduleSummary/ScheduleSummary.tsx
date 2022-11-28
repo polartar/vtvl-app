@@ -7,7 +7,7 @@ const ScheduleSummary = (props: IScheduleSummaryProps) => {
         <label>
           <span>Schedule name</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{props.name}</p>
+        <p className="paragraphy-tiny-medium neutral-text">{props.name || '--'}</p>
       </div>
       <div>
         <label>
