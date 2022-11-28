@@ -37,6 +37,7 @@ import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IToken, ITransaction, IVesting } from 'types/models';
+import { IRecipient } from 'types/vesting';
 import { convertAllToOptions, formatDate, formatTime } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -222,6 +223,26 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     );
   };
 
+  // Recipients' data -- loop through all recipients and apply table as well to provide
+  // deeper level data on the vesting schedule.
+  const CellRecipients = ({ row }: any) => {
+    return row && row.original.data && row.original.data.recipients ? (
+      // Negative margins to override the default TD paddings set from global css
+      <table className="-my-3.5 -mx-6">
+        {row.original.data.recipients.map((recipient: IRecipient, rIndex: number) => {
+          return (
+            <tr key={`recipient-${rIndex}`} className="group">
+              <td className="py-2 px-3 group-last:border-b-0">{recipient.name ? recipient.name : '(Anonymous)'}</td>
+              <td className="py-2 px-3 group-last:border-b-0">
+                <Copy text={recipient.walletAddress}>{recipient.walletAddress}</Copy>
+              </td>
+            </tr>
+          );
+        })}
+      </table>
+    ) : null;
+  };
+
   // Update color of row if the status of the vesting schedule record is COMPLETED
   const getTrProps = (rowInfo: any) => {
     if (rowInfo) {
@@ -240,6 +261,12 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         Header: '# Sched',
         accessor: 'data.name',
         Cell: CellScheduleName
+      },
+      {
+        id: 'recipients',
+        Header: 'Recipients',
+        accessor: 'data.recipients',
+        Cell: CellRecipients
       },
       {
         id: 'startDate',
