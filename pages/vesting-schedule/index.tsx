@@ -229,16 +229,22 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     return row && row.original.data && row.original.data.recipients ? (
       // Negative margins to override the default TD paddings set from global css
       <table className="-my-3.5 -mx-6">
-        {row.original.data.recipients.map((recipient: IRecipient, rIndex: number) => {
-          return (
-            <tr key={`recipient-${rIndex}`} className="group">
-              <td className="py-2 px-3 group-last:border-b-0">{recipient.name ? recipient.name : '(Anonymous)'}</td>
-              <td className="py-2 px-3 group-last:border-b-0">
-                <Copy text={recipient.walletAddress}>{recipient.walletAddress}</Copy>
-              </td>
-            </tr>
-          );
-        })}
+        <tbody>
+          {row.original.data.recipients.map((recipient: IRecipient, rIndex: number) => {
+            return (
+              <tr key={`recipient-${rIndex}`} className="group">
+                <td className="group-last:border-b-0">
+                  <div className="w-28 py-2">{recipient.name ? recipient.name : '(Anonymous)'}</div>
+                </td>
+                <td className="group-last:border-b-0">
+                  <div className="w-full py-2">
+                    <Copy text={recipient.walletAddress}>{recipient.walletAddress}</Copy>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
       </table>
     ) : null;
   };
