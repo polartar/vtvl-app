@@ -109,7 +109,9 @@ AddVestingSchedulesProps) => {
     fetchDashboardVestings,
     fetchDashboardTransactions,
     setOwnershipTransfered,
-    depositAmount
+    removeOwnership,
+    depositAmount,
+    setRemoveOwnership
   } = useDashboardContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
 
@@ -416,7 +418,35 @@ AddVestingSchedulesProps) => {
     }
   };
 
-  const handleCreateFundTransaction = async () => {};
+  const handleRemoveDeployerOwnership = async () => {
+    try {
+      if (!account || !library) {
+        activate(injected);
+        return;
+      }
+
+      if (organizationId && safe?.address && account.toLowerCase() === safe?.owners[0].address.toLowerCase()) {
+        setTransactionStatus('PENDING');
+        const vestingContractData = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        if (vestingContractData?.data) {
+          const vestingContract = new ethers.Contract(
+            vestingContractData?.data?.address,
+            VTVL_VESTING_ABI.abi,
+            library.getSigner()
+          );
+          const transactionResponse = await vestingContract.setAdmin(account, false);
+          setTransactionStatus('IN_PROGRESS');
+          await transactionResponse.wait();
+          setStatus('success');
+          setRemoveOwnership(false);
+          setTransactionStatus('SUCCESS');
+        }
+      }
+    } catch (err) {
+      console.log('handleTransferOwnership - ', err);
+      setTransactionStatus('ERROR');
+    }
+  };
 
   const statuses: Record<string, AddVestingSchedulesStatuses> = {
     createSignTransaction: {
@@ -475,6 +505,18 @@ AddVestingSchedulesProps) => {
           <button className="black row-center" onClick={handleTransferOwnership}>
             <img src="/images/multi-sig.png" className="w-6 h-6" aria-hidden="true" />
             Transfer ownership to Multi-sig Safe
+          </button>
+        </>
+      )
+    },
+    removeOwnership: {
+      icon: <WarningIcon className="w-4 h-4" />,
+      label: "Remove deployer's ownership",
+      actions: (
+        <>
+          <button className="black row-center" onClick={handleRemoveDeployerOwnership}>
+            <img src="/images/multi-sig.png" className="w-6 h-6" aria-hidden="true" />
+            Remove deployer's ownership
           </button>
         </>
       )
@@ -575,12 +617,12 @@ AddVestingSchedulesProps) => {
   useEffect(() => {
     if (type === 'contract' && !vestingContract?.id) {
       setStatus('vestingContractRequired');
-    } else if (type === 'contract' && vestingContract?.id) {
+    } else if (type === 'contract' && vestingContract?.id && !ownershipTransfered) {
       setStatus('transferToMultisigSafe');
-    } else if (type === 'fundContract') {
-      setStatus('fundingRequired');
+    } else if (type === 'contract' && removeOwnership) {
+      setStatus('removeOwnership');
     }
-  }, [type, vestingContract, ownershipTransfered]);
+  }, [type, vestingContract, ownershipTransfered, removeOwnership]);
 
   return (
     <div className={`panel ${className} mb-5`}>
