@@ -535,6 +535,10 @@
     @apply border-l border-gray-200;
   }
 
+  table tbody tr:last-child {
+    @apply border-b-0;
+  }
+
   /* Recharts override */
   .recharts-cartesian-axis-tick-value {
     @apply text-xs text-neutral-800;
