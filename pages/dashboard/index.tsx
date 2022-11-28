@@ -40,6 +40,7 @@ const Dashboard: NextPageWithLayout = () => {
     vestingContract,
     transactions,
     ownershipTransfered,
+    removeOwnership,
     insufficientBalance,
     depositAmount,
     vestingContractLoading,
@@ -175,7 +176,9 @@ const Dashboard: NextPageWithLayout = () => {
               ))
             : !hasVestingContract && <DashboardPanel type="contract" />} */}
 
-          {(!vestingContract?.id || !ownershipTransfered) && <CreateVestingContract type="contract" />}
+          {(!vestingContract?.id || !ownershipTransfered || removeOwnership) && (
+            <CreateVestingContract type="contract" />
+          )}
           <FundContract />
           {vestings && vestings.length > 0 && <AddVestingSchedules type="schedule" />}
 
