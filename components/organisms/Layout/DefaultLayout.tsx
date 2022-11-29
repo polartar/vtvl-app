@@ -158,6 +158,13 @@ const ManagerRoutes = {
   ...EmployeeRoutes,
   menuList: [
     {
+      title: 'Dashboard',
+      icon: '/icons/s_dashboard.svg',
+      hoverIcon: '/icons/s_dashboard2.svg',
+      route: '/dashboard',
+      available: true
+    },
+    {
       title: 'Vesting schedule',
       icon: '/icons/s_vestingSchedule.svg',
       hoverIcon: '/icons/s_vestingSchedule2.svg',
