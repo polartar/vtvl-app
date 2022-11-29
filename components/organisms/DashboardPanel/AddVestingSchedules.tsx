@@ -462,9 +462,10 @@ AddVestingSchedulesProps) => {
             vestings[activeVestingIndex].data.transactionId
           );
           const batchVestings = await fetchVestingsByQuery('transactionId', '==', transaction.id);
+          const activeBatchVestings = batchVestings.filter((bv) => !bv.data.archive);
 
           await Promise.all(
-            batchVestings.map(async (vesting) => {
+            activeBatchVestings.map(async (vesting) => {
               await updateVesting(
                 {
                   ...vesting.data,

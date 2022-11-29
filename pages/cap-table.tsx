@@ -210,7 +210,12 @@ const CapTable: NextPageWithLayout = () => {
       ? await fetchMember(user?.uid || '')
       : undefined;
 
-    const vestingData = await fetchVestingsByQuery('organizationId', '==', memberInfo?.org_id || organizationId || '');
+    const initialVestingData = await fetchVestingsByQuery(
+      'organizationId',
+      '==',
+      memberInfo?.org_id || organizationId || ''
+    );
+    const vestingData = initialVestingData.filter((vd) => !vd.data.archive);
     console.log('vesting data here is ', vestingData);
     // Set the bar radio selector based on the schedules fetched
     setSchedules([{ label: 'All', value: 'all' }, ...vestingData.map((vd) => ({ label: vd.data.name, value: vd.id }))]);
