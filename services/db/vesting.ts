@@ -8,6 +8,15 @@ export const fetchVesting = async (id: string): Promise<IVesting | undefined> =>
   return vestingDoc.data();
 };
 
+export const fetchAllVestings = async () => {
+  const snapshot = await getDocs(vestingCollection);
+  const documents: IVesting[] = [];
+  snapshot.forEach((doc) => {
+    documents.push(doc.data());
+  });
+  return documents;
+};
+
 export const fetchVestingsByQuery = async (
   field: string,
   syntax: WhereFilterOp,
