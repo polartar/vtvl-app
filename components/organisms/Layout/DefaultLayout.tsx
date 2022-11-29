@@ -66,6 +66,13 @@ const FounderRoutes = {
       available: true
     },
     {
+      title: 'Connect safe',
+      icon: '/icons/s_vestingSchedule.svg',
+      hoverIcon: '/icons/s_vestingSchedule2.svg',
+      route: '/onboarding/setup-safes',
+      available: true
+    },
+    {
       title: 'Cap table',
       icon: '/icons/s_capTable.svg',
       hoverIcon: '/icons/s_capTable2.svg',
