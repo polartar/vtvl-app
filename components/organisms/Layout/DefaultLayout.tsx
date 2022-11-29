@@ -106,19 +106,19 @@ const FounderRoutes = {
 // Menulist for both Employee and Investors
 const employeeInvestorMenuItems = {
   menuList: [
-    {
-      title: 'Portfolio Overview',
-      icon: '/icons/s_dashboard.svg',
-      hoverIcon: '/icons/s_dashboard2.svg',
-      route: '/dashboard',
-      available: false
-    },
+    // {
+    //   title: 'Portfolio Overview',
+    //   icon: '/icons/s_dashboard.svg',
+    //   hoverIcon: '/icons/s_dashboard2.svg',
+    //   route: '/dashboard',
+    //   available: false
+    // },
     {
       title: 'Claims Portal',
       icon: '/icons/s_dashboard.svg',
       hoverIcon: '/icons/s_dashboard2.svg',
       route: '/tokens',
-      available: false
+      available: true
     }
   ],
   submenuList: [
