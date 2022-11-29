@@ -42,12 +42,21 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
   const txTypes = {
     IN_PROGRESS: {
       image: <Lottie animationData={MetaMaskWalletAnimation} style={{ width: '132px' }} />,
-      title: <>Hang on, we're almost there!</>,
+      title: (
+        <div className="flex flex-row items-center gap-2">
+          <img src="/images/tx-inprogress.png" className="w-9 h-9" />
+          Hang on, we're almost there!
+        </div>
+      ),
       description: <>Your transaction is in progress. Just a few more seconds...</>
     },
     PENDING: {
       image: <Lottie animationData={MetaMaskWalletAnimation} style={{ width: '132px' }} />,
-      title: <>Whoops! A wallet transaction is in progress</>,
+      title: (
+        <div className="flex flex-row items-center gap-2">
+          <img src="/images/tx-pending.png" className="w-9 h-9" />A wallet transaction is in progress
+        </div>
+      ),
       description: (
         <>
           Please confirm the transaction in your wallet.
@@ -58,12 +67,22 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
     },
     SUCCESS: {
       image: <Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />,
-      title: <>Woo hoo! Transaction was successful</>,
+      title: (
+        <div className="flex flex-row items-center gap-2">
+          <img src="/images/tx-success.png" className="w-9 h-9" />
+          Woo hoo! Transaction was successful
+        </div>
+      ),
       description: <>Well done! Now we can go further. Phew!</>
     },
     ERROR: {
       image: <Lottie animationData={ErrorAnimation} style={{ width: '106px' }} />,
-      title: <>Oh no! Transaction was unsuccessful</>,
+      title: (
+        <div className="flex flex-row items-center gap-2">
+          <img src="/images/tx-failed.png" className="w-9 h-9" />
+          Oh no! Transaction was unsuccessful
+        </div>
+      ),
       description: <>No worries! Just try again later.</>
     }
   };
