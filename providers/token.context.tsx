@@ -1,5 +1,11 @@
+import ERC20 from '@contracts/abi/ERC20.json';
+import { useWeb3React } from '@web3-react/core';
+import Decimal from 'decimal.js';
+import { ethers } from 'ethers';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { fetchTokenByQuery } from 'services/db/token';
+import { fetchVestingContractByQuery } from 'services/db/vestingContract';
+import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 import { useAuthContext } from './auth.context';
 import { useSharedContext } from './shared.context';
@@ -23,12 +29,14 @@ interface ITokenContextData {
   mintFormState: IMintFormState;
   tokenId: string;
   isTokenLoading: boolean;
+  totalTokenSupply: string | number | Decimal;
   updateMintFormState: (v: any) => void;
 }
 
 const TokenContext = createContext({} as ITokenContextData);
 
 export function TokenContextProvider({ children }: any) {
+  const { library, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
 
   const [isTokenLoading, setIsTokenLoading] = useState(true);
@@ -49,16 +57,37 @@ export function TokenContextProvider({ children }: any) {
   });
 
   const [tokenId, setTokenId] = useState('');
+  const [totalTokenSupply, setTotalTokenSupply] = useState(0);
 
   const value = useMemo(
     () => ({
       mintFormState,
       tokenId,
       isTokenLoading,
+      totalTokenSupply,
       updateMintFormState: setMintFormState
     }),
-    [mintFormState, isTokenLoading]
+    [mintFormState, isTokenLoading, totalTokenSupply]
   );
+
+  const getTokenSupply = async () => {
+    if (organizationId && library) {
+      const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+      const vestingContractInstance = new ethers.Contract(
+        vestingContract?.data?.tokenAddress ?? '',
+        ERC20,
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+      if (vestingContract && vestingContract.data) {
+        vestingContractInstance.totalSupply().then((res: string) => {
+          // Divide response token unit 256 to 1e18 for 18 decimal places.
+          // To do: look for a util function that does this.
+          console.log('token supply', +res.toString() / 1e18);
+          setTotalTokenSupply(+res.toString() / 1e18);
+        });
+      }
+    }
+  };
 
   const fetchToken = () => {
     if (organizationId) {
@@ -94,6 +123,12 @@ export function TokenContextProvider({ children }: any) {
   useEffect(() => {
     fetchToken();
   }, [organizationId]);
+
+  useEffect(() => {
+    if (!mintFormState.initialSupply) {
+      getTokenSupply();
+    }
+  }, [mintFormState]);
 
   return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;
 }

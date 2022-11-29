@@ -61,7 +61,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { organizationId, safe } = useAuthContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
-  const { mintFormState, isTokenLoading } = useTokenContext();
+  const { mintFormState, isTokenLoading, totalTokenSupply } = useTokenContext();
 
   const [selected, setSelected] = useState('manual');
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
@@ -592,17 +592,19 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const [remaining, setRemaining] = useState(0);
   const [totalUsedSupply, setTotalUsedSupply] = useState(0);
 
+  // Get the total used supply based on all the schedules
   useEffect(() => {
     if (vestingSchedules && vestingSchedules.length) {
       setTotalUsedSupply(vestingSchedules.reduce((prev, curr) => prev + +curr.data.details.amountToBeVested, 0));
     }
   }, [vestingSchedules]);
 
+  // Sets the remaining based on the total supply
   useEffect(() => {
-    if (totalUsedSupply) {
-      setRemaining(+mintFormState.initialSupply - totalUsedSupply);
+    if (totalUsedSupply && totalTokenSupply) {
+      setRemaining(+totalTokenSupply - totalUsedSupply);
     }
-  }, [totalUsedSupply]);
+  }, [totalUsedSupply, totalTokenSupply]);
 
   return (
     <>
@@ -632,7 +634,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
               remainingAllocation={remaining}
-              totalAllocation={mintFormState.initialSupply || 0}
+              totalAllocation={+totalTokenSupply || 0}
             />
           </div>
           {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">

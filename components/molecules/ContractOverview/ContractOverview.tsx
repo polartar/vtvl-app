@@ -29,7 +29,7 @@ const ContractOverview = ({
         <label>
           <span>Supply cap</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{supplyCap}</p>
+        <p className="paragraphy-tiny-medium neutral-text">{supplyCap || 'Unknown'}</p>
       </div>
       <div>
         <label>
