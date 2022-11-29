@@ -29,6 +29,7 @@ const CapTable: NextPageWithLayout = () => {
   const [tab, setTab] = useState('all');
   const [vestingsData, setVestingsData] = useState<any[]>([]);
   const [recipientsData, setRecipientsData] = useState<any[]>([]);
+  const [filteredRecipientsData, setFilteredRecipientsData] = useState<any[]>([]);
   const [schedules, setSchedules] = useState<any[]>([]);
   const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
   const [isPageLoading, setPageLoading] = useState(true);
@@ -258,6 +259,39 @@ const CapTable: NextPageWithLayout = () => {
     setPageLoading(false);
   };
 
+  // Todo Arvin: Optimize / Abstract this along with the transformedVesting one to avoid repeating codes
+  useEffect(() => {
+    if (tab !== 'all') {
+      console.log('Filter start', vestingsData, tab);
+      // Filter the data based on the schedule
+      const filteredVestings = [...vestingsData].filter((vesting) => vesting.id === tab);
+      const filteredRecipients = [...filteredVestings].reduce((acc: any, obj: { id: string; data: IVesting }) => {
+        // This is based on `amount to be vested` per schedule
+        const o = [...obj.data.recipients].reduce((a: any, o: any) => {
+          // Based on claimed, unclaimed per each recipient per vesting schedule
+          return [
+            ...a,
+            {
+              name: o.name,
+              company: o.company,
+              recipientType: o.recipientType[0]?.label,
+              address: o.walletAddress,
+              // Ensure that the totalAllocation for each recipient is divided by the number of recipients
+              totalAllocation: new Decimal(obj.data.details.amountToBeVested)
+                .div(new Decimal(obj.data.recipients.length))
+                .toDP(6, Decimal.ROUND_UP)
+            }
+          ];
+        }, []);
+        return [...acc, ...o];
+      }, []);
+      setFilteredRecipientsData(filteredRecipients);
+    } else {
+      setFilteredRecipientsData(recipientsData);
+    }
+    console.log('REcipient data', recipientsData);
+  }, [recipientsData, tab]);
+
   return (
     <>
       <div className="w-full h-full">
@@ -294,7 +328,7 @@ const CapTable: NextPageWithLayout = () => {
               <Input label="Unclaimed" placeholder="any" /> */}
             </div>
 
-            <Table columns={columns} data={recipientsData} pagination={true} exports={true} />
+            <Table columns={columns} data={filteredRecipientsData} pagination={true} exports={true} />
           </>
         ) : (
           <EmptyState
