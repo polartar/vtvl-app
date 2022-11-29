@@ -29,14 +29,20 @@ const ContractOverview = ({
         <label>
           <span>Supply cap</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{supplyCap || 'Unknown'}</p>
+        <p className="paragraphy-tiny-medium neutral-text">
+          {(supplyCap === 'UNLIMITED' && maxSupply) || !supplyCap ? 'Unknown' : supplyCap}
+        </p>
       </div>
       <div>
         <label>
           <span>Maximum supply</span>
         </label>
         <p className="paragraphy-tiny-medium neutral-text">
-          {!maxSupply && supplyCap === 'UNLIMITED' ? 'Unlimited' : formatNumber(maxSupply)}
+          {(supplyCap === 'UNLIMITED' && maxSupply) || !supplyCap || supplyCap === 'LIMITED'
+            ? formatNumber(maxSupply)
+            : supplyCap === 'UNLIMITED'
+            ? 'Unlimited'
+            : '--'}
         </p>
       </div>
       <div>

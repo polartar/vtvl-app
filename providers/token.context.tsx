@@ -70,15 +70,19 @@ export function TokenContextProvider({ children }: any) {
     [mintFormState, isTokenLoading, totalTokenSupply]
   );
 
-  const getTokenSupply = async () => {
-    if (organizationId && library) {
-      const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+  const getTokenSupply = () => {
+    if (organizationId && SupportedChains[chainId as SupportedChainId] && mintFormState) {
+      // Rely on tokens collection from DB to have the token address itself
+      // Because:
+      // - Imported tokens is not guaranteed to have a vestingContract in our DB.
+      // - Imported and Platform-created tokens have a tokens document that has the token address.
       const vestingContractInstance = new ethers.Contract(
-        vestingContract?.data?.tokenAddress ?? '',
+        mintFormState.address ?? '',
         ERC20,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
-      if (vestingContract && vestingContract.data) {
+      if (vestingContractInstance) {
+        // Get the total supply and parse it.
         vestingContractInstance.totalSupply().then((res: string) => {
           // Divide response token unit 256 to 1e18 for 18 decimal places.
           // To do: look for a util function that does this.
@@ -125,7 +129,9 @@ export function TokenContextProvider({ children }: any) {
   }, [organizationId]);
 
   useEffect(() => {
-    if (!mintFormState.initialSupply) {
+    console.log('Mint supply was updated', mintFormState);
+    // Consider the data from DB as Imported token when this condition is met.
+    if ((!mintFormState.initialSupply || !mintFormState.maxSupply) && mintFormState.supplyCap === 'UNLIMITED') {
       getTokenSupply();
     }
   }, [mintFormState]);
