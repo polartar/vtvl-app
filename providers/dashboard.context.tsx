@@ -29,11 +29,14 @@ interface IDashboardData {
   vestingsLoading: boolean;
   vestingContractLoading: boolean;
   transactionsLoading: boolean;
+  removeOwnership: boolean;
   fetchDashboardVestingContract: () => void;
   fetchDashboardVestings: () => void;
   fetchDashboardTransactions: () => void;
   setOwnershipTransfered: (v: boolean) => void;
   fetchDashboardData: () => void;
+  fetchVestingContractBalance: () => void;
+  setRemoveOwnership: (v: boolean) => void;
 }
 
 const DashboardContext = createContext({} as IDashboardData);
@@ -51,6 +54,7 @@ export function DashboardContextProvider({ children }: any) {
   >();
   const [transactions, setTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
+  const [removeOwnership, setRemoveOwnership] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [vestingsLoading, setVestingsLoading] = useState(false);
@@ -72,7 +76,9 @@ export function DashboardContextProvider({ children }: any) {
     setVestingsLoading(true);
     try {
       const res = await fetchVestingsByQuery('organizationId', '==', organizationId!);
-      setVestings(res);
+      // Filter out without the archived records
+      const filteredVestingSchedules = res.filter((v) => !v.data.archive);
+      setVestings(filteredVestingSchedules);
     } catch (err) {
       console.log('fetchDashboardVestings - ', err);
     }
@@ -104,41 +110,7 @@ export function DashboardContextProvider({ children }: any) {
     }
   };
 
-  const value = useMemo(
-    () => ({
-      vestings,
-      vestingContract,
-      transactions,
-      ownershipTransfered,
-      insufficientBalance,
-      depositAmount,
-      vestingsLoading,
-      vestingContractLoading,
-      transactionsLoading,
-      fetchDashboardVestingContract,
-      fetchDashboardVestings,
-      fetchDashboardTransactions,
-      setOwnershipTransfered,
-      fetchDashboardData
-    }),
-    [
-      vestings,
-      vestingContract,
-      transactions,
-      ownershipTransfered,
-      insufficientBalance,
-      depositAmount,
-      vestingsLoading,
-      vestingContractLoading,
-      transactionsLoading
-    ]
-  );
-
-  useEffect(() => {
-    if (organizationId || (router && router.pathname === '/dashboard')) fetchDashboardData();
-  }, [organizationId, router]);
-
-  useEffect(() => {
+  const fetchVestingContractBalance = async () => {
     if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {
       let totalVestingAmount = 0;
       vestings
@@ -180,6 +152,48 @@ export function DashboardContextProvider({ children }: any) {
     }
     setInsufficientBalance(false);
     setDepositAmount('');
+  };
+
+  const value = useMemo(
+    () => ({
+      vestings,
+      vestingContract,
+      transactions,
+      ownershipTransfered,
+      insufficientBalance,
+      depositAmount,
+      vestingsLoading,
+      vestingContractLoading,
+      transactionsLoading,
+      removeOwnership,
+      fetchDashboardVestingContract,
+      fetchDashboardVestings,
+      fetchDashboardTransactions,
+      setOwnershipTransfered,
+      fetchDashboardData,
+      fetchVestingContractBalance,
+      setRemoveOwnership
+    }),
+    [
+      vestings,
+      vestingContract,
+      transactions,
+      ownershipTransfered,
+      insufficientBalance,
+      depositAmount,
+      vestingsLoading,
+      vestingContractLoading,
+      transactionsLoading,
+      removeOwnership
+    ]
+  );
+
+  useEffect(() => {
+    if (organizationId || (router && router.pathname === '/dashboard')) fetchDashboardData();
+  }, [organizationId, router]);
+
+  useEffect(() => {
+    fetchVestingContractBalance();
   }, [vestingContract, vestings, mintFormState, chainId]);
 
   useEffect(() => {
@@ -195,7 +209,33 @@ export function DashboardContextProvider({ children }: any) {
     } else if (vestingContract?.data && vestingContract.data.status === 'SUCCESS' && !safe?.address) {
       setOwnershipTransfered(true);
     }
-  }, [organizationId, vestingContract, safe, ownershipTransfered, chainId]);
+  }, [organizationId, vestingContract, safe, chainId]);
+
+  useEffect(() => {
+    if (
+      vestingContract?.data &&
+      safe?.address &&
+      safe.owners[0] &&
+      chainId &&
+      ownershipTransfered &&
+      account &&
+      account.toLowerCase() === safe.owners[0].address.toLowerCase()
+    ) {
+      const VestingContract = new ethers.Contract(
+        vestingContract.data.address,
+        VTVL_VESTING_ABI.abi,
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+      VestingContract.isAdmin(account)
+        .then((res: any) => {
+          setRemoveOwnership(res);
+        })
+        .catch((err: any) => {
+          console.log('removeOwnership - ', err);
+          setRemoveOwnership(false);
+        });
+    }
+  }, [ownershipTransfered, organizationId, vestingContract, safe, account, chainId]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

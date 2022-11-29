@@ -1,3 +1,4 @@
+import Copy from '@components/atoms/Copy/Copy';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
@@ -61,7 +62,8 @@ const FundContract = () => {
     fetchDashboardTransactions,
     setOwnershipTransfered,
     depositAmount,
-    insufficientBalance
+    insufficientBalance,
+    fetchVestingContractBalance
   } = useDashboardContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
@@ -111,6 +113,8 @@ const FundContract = () => {
         );
         toast.success('Executed successfully.');
         setTransactionStatus('SUCCESS');
+        setStatus('success');
+        fetchVestingContractBalance();
       }
     } catch (err) {
       console.log('handleExecuteTransaction - ', err);
@@ -188,6 +192,7 @@ const FundContract = () => {
         await fundTransaction.wait();
         toast.success('Token deposited successfully');
         setStatus('success');
+        fetchVestingContractBalance();
         setTransactionStatus('SUCCESS');
       } else {
         const tokenContractInterface = new ethers.utils.Interface([
@@ -449,7 +454,9 @@ const FundContract = () => {
             <label>
               <span>Contract Address</span>
             </label>
-            <p className="paragraphy-tiny-medium neutral-text">{vestingContract?.data?.address}</p>
+            <Copy text={vestingContract?.data?.address || ''}>
+              <p className="paragraphy-tiny-medium neutral-text">{vestingContract?.data?.address}</p>
+            </Copy>
           </div>
           <div>
             <label>

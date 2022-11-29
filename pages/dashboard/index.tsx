@@ -1,3 +1,4 @@
+import Copy from '@components/atoms/Copy/Copy';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
@@ -39,6 +40,7 @@ const Dashboard: NextPageWithLayout = () => {
     vestingContract,
     transactions,
     ownershipTransfered,
+    removeOwnership,
     insufficientBalance,
     depositAmount,
     vestingContractLoading,
@@ -133,13 +135,21 @@ const Dashboard: NextPageWithLayout = () => {
                 logo={mintFormState.logo}
                 className="mb-2"
               />
-              <p className="text-sm font-medium text-netural-900">
-                Token Address: <span className="text-neutral-500">{mintFormState.address}</span>
-              </p>
+
+              <div className="text-sm font-medium text-netural-900 mb-1.5">
+                Token Address:{' '}
+                <span className="text-neutral-500">
+                  <Copy text={mintFormState.address}>{mintFormState.address}</Copy>
+                </span>
+              </div>
+
               {vestingContract && vestingContract.data?.address && (
-                <p className="text-sm font-medium text-netural-900">
-                  Vesting Contract Address: <span className="text-neutral-500">{vestingContract.data?.address}</span>
-                </p>
+                <div className="text-sm font-medium text-netural-900">
+                  Vesting Contract Address:{' '}
+                  <span className="text-neutral-500">
+                    <Copy text={vestingContract.data?.address}>{vestingContract.data?.address}</Copy>
+                  </span>
+                </div>
               )}
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
@@ -166,7 +176,9 @@ const Dashboard: NextPageWithLayout = () => {
               ))
             : !hasVestingContract && <DashboardPanel type="contract" />} */}
 
-          {(!vestingContract?.id || !ownershipTransfered) && <CreateVestingContract type="contract" />}
+          {(!vestingContract?.id || !ownershipTransfered || removeOwnership) && (
+            <CreateVestingContract type="contract" />
+          )}
           <FundContract />
           {vestings && vestings.length > 0 && <AddVestingSchedules type="schedule" />}
 

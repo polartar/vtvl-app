@@ -1,4 +1,5 @@
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import { IVestingContractProps } from 'types/models/vesting';
 import { formatNumber } from 'utils/token';
 
@@ -28,21 +29,29 @@ const ContractOverview = ({
         <label>
           <span>Supply cap</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{supplyCap}</p>
+        <p className="paragraphy-tiny-medium neutral-text">
+          {(supplyCap === 'UNLIMITED' && maxSupply) || !supplyCap ? 'Unknown' : supplyCap}
+        </p>
       </div>
       <div>
         <label>
           <span>Maximum supply</span>
         </label>
         <p className="paragraphy-tiny-medium neutral-text">
-          {!maxSupply && supplyCap === 'UNLIMITED' ? 'Unlimited' : formatNumber(maxSupply)}
+          {(supplyCap === 'UNLIMITED' && maxSupply) || !supplyCap || supplyCap === 'LIMITED'
+            ? formatNumber(maxSupply)
+            : supplyCap === 'UNLIMITED'
+            ? 'Unlimited'
+            : '--'}
         </p>
       </div>
       <div>
         <label>
-          <span>Contract address</span>
+          <span>Token address</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{address}</p>
+        <Copy text={address}>
+          <p className="paragraphy-tiny-medium neutral-text">{address}</p>
+        </Copy>
       </div>
     </div>
   );

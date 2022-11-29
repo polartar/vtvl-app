@@ -1,3 +1,4 @@
+import Copy from '@components/atoms/Copy/Copy';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useLoaderContext } from '@providers/loader.context';
@@ -34,7 +35,9 @@ const Complete: NextPageWithLayout = () => {
         </h2>
         {mintFormState?.logo ? <img src={mintFormState.logo} className="w-20 h-20 mb-4 mx-auto rounded-full" /> : null}
         <h3 className="font-bold h4 uppercase mb-6">{mintFormState?.name}</h3>
-        <p className="text-sm text-neutral-500 mb-6">{mintFormState?.address}</p>
+        <Copy text={mintFormState?.address}>
+          <p className="text-sm text-neutral-500 mb-6">{mintFormState?.address}</p>
+        </Copy>
         <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
           <button className="primary" type="button" onClick={() => Router.push('/vesting-schedule/configure')}>
             Create schedule

@@ -44,7 +44,8 @@ module.exports = {
   plugins: [],
   variants: {
     extend: {
-      translate: ['group-hover']
+      translate: ['group-hover'],
+      border: ['group-last']
     }
   }
 };

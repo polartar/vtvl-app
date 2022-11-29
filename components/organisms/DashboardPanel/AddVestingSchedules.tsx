@@ -113,7 +113,8 @@ AddVestingSchedulesProps) => {
     fetchDashboardVestings,
     fetchDashboardTransactions,
     setOwnershipTransfered,
-    depositAmount
+    depositAmount,
+    insufficientBalance: insufficientBalanceForAllVestings
   } = useDashboardContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
 
@@ -461,9 +462,10 @@ AddVestingSchedulesProps) => {
             vestings[activeVestingIndex].data.transactionId
           );
           const batchVestings = await fetchVestingsByQuery('transactionId', '==', transaction.id);
+          const activeBatchVestings = batchVestings.filter((bv) => !bv.data.archive);
 
           await Promise.all(
-            batchVestings.map(async (vesting) => {
+            activeBatchVestings.map(async (vesting) => {
               await updateVesting(
                 {
                   ...vesting.data,
@@ -489,10 +491,6 @@ AddVestingSchedulesProps) => {
     const vesting = vestings[activeVestingIndex];
     Router.push(`/vesting-schedule/${vesting.id}`);
   };
-
-  const handleCreateFundTransaction = async () => {};
-
-  const [showFundingContractModal, setShowFundingContractModal] = useState(false);
 
   const statuses: Record<string, IAddVestingSchedulesStatuses> = {
     createSignTransaction: {
@@ -652,8 +650,6 @@ AddVestingSchedulesProps) => {
       setStatus('vestingContractRequired');
     } else if (type === 'contract' && vestingContract?.id) {
       setStatus('transferToMultisigSafe');
-    } else if (type === 'fundContract') {
-      setStatus('fundingRequired');
     }
   }, [type, vestingContract, ownershipTransfered]);
 
@@ -668,6 +664,10 @@ AddVestingSchedulesProps) => {
   useEffect(() => {
     if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {
       try {
+        if (!insufficientBalanceForAllVestings) {
+          setInsufficientBalance(false);
+          return;
+        }
         const vesting = vestings[activeVestingIndex];
         const tokenContract = new ethers.Contract(
           mintFormState.address,
@@ -693,7 +693,7 @@ AddVestingSchedulesProps) => {
         console.log('vestingContract balance - ', err);
       }
     }
-  }, [vestingContract, activeVestingIndex, vestings, mintFormState, chainId]);
+  }, [vestingContract, activeVestingIndex, vestings, mintFormState, chainId, insufficientBalanceForAllVestings]);
 
   useEffect(() => {
     if (account && safeTransaction && safe) {

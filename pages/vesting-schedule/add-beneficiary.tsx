@@ -9,6 +9,7 @@ import Decimal from 'decimal.js';
 import { getDownloadURL, getStorage, ref } from 'firebase/storage';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
+import { useDashboardContext } from 'providers/dashboard.context';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Modal, { Styles } from 'react-modal';
@@ -16,6 +17,7 @@ import Select, { ActionMeta, OnChangeValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { IRecipient, IRecipientFormState, IRecipientType } from 'types/vesting';
 import { convertLabelToOption } from 'utils/shared';
+import { formatNumber } from 'utils/token';
 
 const AddBeneficiary: NextPageWithLayout = () => {
   const { mintFormState } = useTokenContext();
@@ -28,6 +30,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
     recipientType: []
   };
   const { recipients: recipientsData, updateRecipients, scheduleFormState } = useVestingContext();
+  const { vestings } = useDashboardContext();
 
   const {
     control,
@@ -107,6 +110,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
 
   // Set the default beneficiary type options
   const [beneficiaryTypeOptions, setRecipientTypeOptions] = useState(beneficiaryTypeDefaultOptions);
+  const [recipientDuplicated, setRecipientDuplicated] = useState(false);
 
   // Higher level recipient dropdown
   const recipients = { value: recipientsWatch('recipients'), state: recipientsGetFieldState('recipients') };
@@ -124,9 +128,29 @@ const AddBeneficiary: NextPageWithLayout = () => {
     const labelValue = convertLabelToOption(data.name);
     const newValue = { ...data, ...labelValue };
     // Add the data to the new options list and also as value
+    let allRecipients: IRecipient[] = [...recipients.value];
+    if (vestings && vestings.length > 0) {
+      vestings.map((vesting) => {
+        allRecipients = [...allRecipients, ...vesting.data.recipients];
+      });
+    }
+
+    if (
+      allRecipients.find((recipient) => recipient.walletAddress.toLowerCase() === newValue.walletAddress.toLowerCase())
+    ) {
+      setRecipientDuplicated(true);
+      return;
+    }
+
+    setRecipientDuplicated(false);
     const newRecipients = [...recipients.value, newValue];
     recipientsSetValue('recipients', [...newRecipients]);
     setRecipientOptions([...newRecipients]);
+
+    console.log('Form Submitted');
+    setTimeout(() => {
+      reset();
+    }, 500);
   };
 
   /**
@@ -136,10 +160,6 @@ const AddBeneficiary: NextPageWithLayout = () => {
    */
   const onSubmit: SubmitHandler<IRecipient> = (data) => {
     addRecipient(data);
-    console.log('Form Submitted');
-    setTimeout(() => {
-      reset();
-    }, 500);
   };
 
   /**
@@ -244,6 +264,10 @@ const AddBeneficiary: NextPageWithLayout = () => {
     });
   }, []);
 
+  useEffect(() => {
+    setRecipientDuplicated(false);
+  }, [walletAddress.value]);
+
   return (
     <>
       <div className="w-full mb-6 panel max-w-2xl">
@@ -259,10 +283,11 @@ const AddBeneficiary: NextPageWithLayout = () => {
                   <p className="text-xs font-medium text-neutral-700">
                     Token allocation per user:{' '}
                     {recipients.value && recipients.value.length > 0
-                      ? new Decimal(scheduleFormState.amountToBeVested)
-                          .div(new Decimal(recipients.value.length))
-                          .toDP(6, Decimal.ROUND_UP)
-                          .toString()
+                      ? formatNumber(
+                          new Decimal(scheduleFormState.amountToBeVested)
+                            .div(new Decimal(recipients.value.length))
+                            .toDP(6, Decimal.ROUND_UP)
+                        )
                       : 0}{' '}
                     <strong>{mintFormState.symbol || 'Token'}</strong>
                   </p>
@@ -298,8 +323,14 @@ const AddBeneficiary: NextPageWithLayout = () => {
                 placeholder="Enter wallet address"
                 className="md:col-span-2"
                 required
-                error={Boolean(errors.walletAddress)}
-                message={errors.walletAddress ? 'Please enter wallet address' : ''}
+                error={Boolean(errors.walletAddress) || recipientDuplicated}
+                message={
+                  errors.walletAddress
+                    ? 'Please enter wallet address'
+                    : recipientDuplicated
+                    ? 'Wallet address is duplicated'
+                    : ''
+                }
                 {...field}
               />
             )}

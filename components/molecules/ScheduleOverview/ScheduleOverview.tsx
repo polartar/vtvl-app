@@ -2,6 +2,7 @@ import Chip from '@components/atoms/Chip/Chip';
 import { Timestamp } from 'firebase/firestore';
 import { IScheduleOverviewProps, IVesting } from 'types/models/vesting';
 import { timestampToDateString } from 'utils/date';
+import { formatDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 
 const ScheduleOverview = (vesting: IVesting) => {
@@ -17,7 +18,7 @@ const ScheduleOverview = (vesting: IVesting) => {
         <label>
           <span>Schedule name</span>
         </label>
-        <Chip color="gray" label={'name'} rounded size="small" />
+        {vesting.name ? <Chip color="gray" label={vesting.name} rounded size="small" /> : '--'}
       </div>
       <div>
         <label>
@@ -29,25 +30,25 @@ const ScheduleOverview = (vesting: IVesting) => {
         <label>
           <span>Start</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{startDate}</p>
+        <p className="paragraphy-tiny-medium neutral-text">{formatDateTime(new Date(startDate))}</p>
       </div>
       <div>
         <label>
           <span>End</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{endDate}</p>
+        <p className="paragraphy-tiny-medium neutral-text">{formatDateTime(new Date(endDate))}</p>
       </div>
       <div>
         <label>
           <span>Cliff release</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{cliff}</p>
+        <p className="paragraphy-tiny-medium neutral-text capitalize">{cliff}</p>
       </div>
       <div>
         <label>
           <span>Linear release</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{linearRelease}</p>
+        <p className="paragraphy-tiny-medium neutral-text capitalize">{linearRelease}</p>
       </div>
       <div>
         <label>

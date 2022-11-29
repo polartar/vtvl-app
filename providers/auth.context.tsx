@@ -52,7 +52,8 @@ export type AuthContextData = {
   sidebarIsExpanded: boolean;
   toggleSideBar: () => void;
   expandSidebar: () => void;
-  forceExpandSidebar: () => void;
+  forceCollapseSidebar: () => void;
+  fetchSafe: () => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -60,7 +61,7 @@ const AuthContext = createContext({} as AuthContextData);
 export function AuthContextProvider({ children }: any) {
   const [user, setUser] = useState<IUser | undefined>();
   // Remove default value when merging to develop, staging or main
-  // Mock organizationId MYvgDyXEY5kCfxdIvtY8 or V2dmM9LmDAAgfWgj8PJR
+  // Mock organizationId MYvgDyXEY5kCfxdIvtY8 or V2dmM9LmDAAgfWgj8PJR or t2SfnLYwU0MZpY4q7zL8 for bico
   const [organizationId, setOrganizationId] = useState<string | undefined>();
   const [safe, setSafe] = useState<ISafe | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -69,15 +70,13 @@ export function AuthContextProvider({ children }: any) {
   const [error, setError] = useState('');
   // Remove after implementing context to show/hide the sidebar
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
-  const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(false);
+  const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(true);
   console.log({ user });
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const memberInfo = await fetchMember(user.uid);
-        const safe = await fetchSafeByQuery('user_id', '==', user.uid);
         setUser({ ...user, memberInfo });
-        setSafe(safe);
       }
       setLoading(false);
     });
@@ -285,6 +284,12 @@ export function AuthContextProvider({ children }: any) {
     Router.replace('/onboarding');
   };
 
+  const fetchSafe = async () => {
+    if (organizationId) {
+      fetchSafeByQuery('org_id', '==', organizationId).then((res) => setSafe(res));
+    }
+  };
+
   // Remove after implementing context to show/hide the sidebar
   const toggleSideBar = () => setShowSideBar((prev) => !prev);
   const expandSidebar = () => setSidebarIsExpanded((prev) => !prev);
@@ -313,13 +318,18 @@ export function AuthContextProvider({ children }: any) {
       sidebarIsExpanded,
       toggleSideBar,
       expandSidebar,
-      forceExpandSidebar: () => setSidebarIsExpanded(true)
+      forceCollapseSidebar: () => setSidebarIsExpanded(false),
+      fetchSafe
     }),
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe]
   );
   console.log('organzationId - ', organizationId);
 
   useEffect(() => {
+    if (user && user.memberInfo && user.memberInfo.type && user.memberInfo.type !== 'founder') {
+      Router.push('/tokens');
+      return;
+    }
     if (user && user.email && user.uid) {
       // console.log('logging auth context user', user);
       // console.log('logging user org_id', user?.memberInfo?.org_id);
@@ -330,10 +340,12 @@ export function AuthContextProvider({ children }: any) {
 
       //   setOrganizationId(org?.id);
       // });
-
-      fetchSafeByQuery('user_id', '==', user.uid).then((safe) => setSafe(safe));
     }
   }, [user]);
+
+  useEffect(() => {
+    fetchSafe();
+  }, [organizationId]);
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;
 }

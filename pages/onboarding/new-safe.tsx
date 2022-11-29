@@ -4,7 +4,7 @@ import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import Safe from '@gnosis.pm/safe-core-sdk';
-import AuthContext from '@providers/auth.context';
+import AuthContext, { useAuthContext } from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
@@ -29,6 +29,7 @@ type ConfirmationForm = {
 
 const NewSafePage: NextPage = () => {
   const { active, library, chainId } = useWeb3React();
+  const { fetchSafe } = useAuthContext();
   const { user } = useContext(AuthContext);
   const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
   const { query } = useRouter();
@@ -233,6 +234,7 @@ const NewSafePage: NextPage = () => {
         },
         safeRef
       );
+      fetchSafe();
       return await onNext({ safeAddress: safe.getAddress() });
     } catch (error: any) {
       console.error('error getting safe info ', error);

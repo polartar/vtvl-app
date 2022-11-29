@@ -1,5 +1,6 @@
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import Chip from '@components/atoms/Chip/Chip';
+import Copy from '@components/atoms/Copy/Copy';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import Loader from '@components/atoms/Loader/Loader';
@@ -36,7 +37,8 @@ import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IToken, ITransaction, IVesting } from 'types/models';
-import { convertAllToOptions, formatDate, formatTime } from 'utils/shared';
+import { IRecipient } from 'types/vesting';
+import { convertAllToOptions, formatDate, formatTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getCliffAmount,
@@ -59,7 +61,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { organizationId, safe } = useAuthContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
-  const { mintFormState, isTokenLoading } = useTokenContext();
+  const { mintFormState, isTokenLoading, totalTokenSupply } = useTokenContext();
 
   const [selected, setSelected] = useState('manual');
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
@@ -67,6 +69,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     totalSchedules: 0,
     pendingSchedules: 0,
     pendingApprovals: 0,
+    pendingDeployments: 0,
     totalRecipients: 0,
     progress: { current: 0, total: 0 }
   });
@@ -74,8 +77,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // We get the schedules
   const [vestingSchedules, setVestingSchedules] = useState<IVestingSchedules[]>();
 
-  const getVestings = async () => {
-    setIsFetchingSchedules(true);
+  const getVestings = async (loader = true) => {
+    if (loader) setIsFetchingSchedules(true);
     try {
       if (organizationId) {
         const schedules = await fetchVestingsByQuery('organizationId', '==', organizationId);
@@ -83,35 +86,38 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         // Manually count all necessary data since we're fetching all of the schedules for this particular organization
         let inProgress = 0;
         let pendingSchedules = 0;
+        let pendingDeployments = 0;
         let pendingApprovals = 0;
         let totalRecipients = 0;
         schedules.map((sched) => {
           inProgress += sched.data.status === 'LIVE' ? 1 : 0;
           pendingSchedules += sched.data.status === 'WAITING_FUNDS' ? 1 : 0;
+          pendingDeployments += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
           pendingApprovals += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
           totalRecipients += sched.data.recipients.length;
         });
 
         setVestingScheduleDataCounts({
           totalSchedules: schedules?.length || 0,
-          pendingSchedules: pendingSchedules,
-          pendingApprovals: pendingApprovals,
-          totalRecipients: totalRecipients,
+          pendingSchedules,
+          pendingDeployments,
+          pendingApprovals,
+          totalRecipients,
           progress: { current: inProgress, total: schedules?.length || 0 }
         });
-        setIsFetchingSchedules(false);
+        if (loader) setIsFetchingSchedules(false);
       } else {
-        setIsFetchingSchedules(true);
+        if (loader) setIsFetchingSchedules(true);
       }
     } catch (err) {
       console.log('error', err);
-      setIsFetchingSchedules(false);
+      if (loader) setIsFetchingSchedules(false);
     }
   };
 
   useEffect(() => {
     getVestings();
-  }, [organizationId]);
+  }, []);
 
   useEffect(() => {
     if (isFetchingSchedules || isTokenLoading) {
@@ -195,7 +201,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const CellAmount = ({ value }: any) => formatNumber(value);
 
   // Renderer for status
-  const CellStatus = ({ value }: any) => {
+  const CellStatus = ({ value, row }: any) => {
     const statuses: any = {
       INITIALIZED: { color: 'dangerAlt', label: 'Initialized' },
       WAITING_APPROVAL: { color: 'dangerAlt', label: 'Approval pending' },
@@ -205,12 +211,24 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       LIVE: { color: 'infoAlt', label: 'Live' },
       COMPLETED: { color: 'gray', label: 'Completed' }
     };
-    return <Chip {...statuses[value]} size="small" rounded />;
+    return (
+      <div className="flex flex-row items-center gap-1">
+        <Chip {...statuses[value]} size="small" rounded />
+        {row.original.data.archive ? <Chip label="Archived" size="small" rounded color="grayAlt" /> : null}
+      </div>
+    );
   };
 
   // Renderer for more action items
   const CellActions = (props: any) => {
-    const menuItems = [{ label: 'Revoke', onClick: () => alert('Revoke clicked') }];
+    const { data, id } = props.row.original;
+    const menuItems = [
+      {
+        label: `${data.archive ? 'Unarchive' : 'Archive'}`,
+        onClick: () => handleArchiving(id, data)
+      },
+      { label: 'Revoke', onClick: () => alert('Revoke clicked') }
+    ];
     return (
       <div className="row-center">
         <button className="line small" onClick={() => Router.push(`/vesting-schedule/${props.row.original.id}`)}>
@@ -221,14 +239,54 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     );
   };
 
+  // Recipients' data -- loop through all recipients and apply table as well to provide
+  // deeper level data on the vesting schedule.
+  const CellRecipients = ({ row }: any) => {
+    return row && row.original.data && row.original.data.recipients ? (
+      // Negative margins to override the default TD paddings set from global css
+      <table className="-my-3.5 -mx-6">
+        <tbody>
+          {row.original.data.recipients.map((recipient: IRecipient, rIndex: number) => {
+            return (
+              <tr key={`recipient-${rIndex}`} className="group">
+                <td className="group-last:border-b-0">
+                  <div className="w-20 py-2">{recipient.name ? recipient.name : '(Anonymous)'}</div>
+                </td>
+                <td className="group-last:border-b-0">
+                  <div className="w-full py-2">
+                    <Copy text={recipient.walletAddress}>{minifyAddress(recipient.walletAddress)}</Copy>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    ) : null;
+  };
+
   // Update color of row if the status of the vesting schedule record is COMPLETED
   const getTrProps = (rowInfo: any) => {
     if (rowInfo) {
+      const { status, archive } = rowInfo.original.data;
       return {
-        className: rowInfo.original.status === 'COMPLETED' ? 'bg-success-50' : ''
+        className: status === 'COMPLETED' ? 'bg-success-50' : archive ? 'bg-gray-50' : ''
       };
     }
     return {};
+  };
+
+  // Handles the archiving process
+  const handleArchiving = async (id: string, data: IVesting) => {
+    await updateVesting(
+      {
+        ...data,
+        archive: !data.archive
+      },
+      id
+    );
+    toast.success(`Schedule: ${data.name} ${!data.archive ? '' : 'un'}archived!`);
+    getVestings(false);
   };
 
   // Defines the columns used and their functions in the table
@@ -239,6 +297,12 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         Header: '# Sched',
         accessor: 'data.name',
         Cell: CellScheduleName
+      },
+      {
+        id: 'recipients',
+        Header: 'Recipients',
+        accessor: 'data.recipients',
+        Cell: CellRecipients
       },
       {
         id: 'startDate',
@@ -303,94 +367,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     ],
     []
   );
-
-  // Sample data
-  // const data = [
-  //   {
-  //     id: '19xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 0,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'WAITING_FUNDS',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '20xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 30,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'COMPLETED',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '21xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 22,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'LIVE',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '22xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 65,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'CREATING',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '23xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 82,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'COMPLETED',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '24xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 100,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'CREATED',
-  //     requiredConfirmation: '2 out of 3'
-  //   },
-  //   {
-  //     id: '25xlnbgasldfkADSf',
-  //     scheduleName: 'Viking-0123',
-  //     startDate: 'Aug 06, 2022 07:00 (GST)',
-  //     endDate: 'Nov 13, 2022 23:00 (GST)',
-  //     progress: 100,
-  //     cliffRelease: 'No Cliff',
-  //     vestingPeriod: '3 months',
-  //     totalAllocation: 50000,
-  //     status: 'WAITING_APPROVAL',
-  //     requiredConfirmation: '2 out of 3'
-  //   }
-  // ];
 
   console.log('Data counts', vestingScheduleDataCounts);
   /**
@@ -616,17 +592,19 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const [remaining, setRemaining] = useState(0);
   const [totalUsedSupply, setTotalUsedSupply] = useState(0);
 
+  // Get the total used supply based on all the schedules
   useEffect(() => {
     if (vestingSchedules && vestingSchedules.length) {
       setTotalUsedSupply(vestingSchedules.reduce((prev, curr) => prev + +curr.data.details.amountToBeVested, 0));
     }
-  }, vestingSchedules);
+  }, [vestingSchedules]);
 
+  // Sets the remaining based on the total supply
   useEffect(() => {
-    if (totalUsedSupply) {
-      setRemaining(+mintFormState.initialSupply - totalUsedSupply);
+    if (totalUsedSupply && totalTokenSupply) {
+      setRemaining(+totalTokenSupply - totalUsedSupply);
     }
-  }, [totalUsedSupply]);
+  }, [totalUsedSupply, totalTokenSupply]);
 
   return (
     <>
@@ -637,9 +615,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
               <div>
                 <TokenProfile {...mintFormState} className="mb-2" />
-                <p className="text-sm font-medium text-netural-900">
-                  Contract address: <span className="text-neutral-500">{mintFormState.address}</span>
-                </p>
+                <Copy text={mintFormState.address}>
+                  <p className="text-sm font-medium text-netural-900">
+                    Contract address: <span className="text-neutral-500">{mintFormState.address}</span>
+                  </p>
+                </Copy>
               </div>
               <div className="flex flex-row items-center justify-start gap-2">
                 <button className="secondary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
@@ -654,7 +634,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
               remainingAllocation={remaining}
-              totalAllocation={mintFormState.initialSupply || 0}
+              totalAllocation={+totalTokenSupply || 0}
             />
           </div>
           {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
