@@ -9,6 +9,7 @@ import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
+import Modal, { Styles } from 'react-modal';
 
 const OnboardingContainer = styled.section`
   display: grid;
@@ -46,6 +47,30 @@ const ConnectWalletPage: NextPage = () => {
   const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
   const { user, anonymousSignIn } = useContext(AuthContext);
   const [activated, setActivated] = useState(false);
+  const [ledgerModalShow, setLedgerModalShow] = useState(false);
+
+  const modalStyles: Styles = {
+    overlay: {
+      position: 'fixed',
+      display: 'flex',
+      justifyContent: 'center',
+      top: '0',
+      left: '0',
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0,0,0,0.3)',
+      zIndex: '900',
+      overflowY: 'auto',
+      paddingTop: '3rem',
+      paddingBottom: '3rem'
+    },
+    content: {
+      backgroundColor: '#fff',
+      position: 'absolute',
+      filter: 'drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08))',
+      borderRadius: '1.5rem'
+    }
+  };
 
   useEffect(() => {
     startOnboarding(Step.ChainSetup);
@@ -88,9 +113,12 @@ const ConnectWalletPage: NextPage = () => {
       onClick: metamaskActivate
     },
     {
-      name: 'Ledger',
-      image: '/icons/wallets/ledger.png'
+      name: 'Ledger Connect',
+      image: '/icons/wallets/ledger.png',
       // need to add an onClick handler here
+      onClick: () => setLedgerModalShow(true),
+      subLabel: 'Soon',
+      disabled: true
     },
     {
       name: 'Wallet Connect',
@@ -168,6 +196,12 @@ const ConnectWalletPage: NextPage = () => {
       <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
         <Carousel variant="dark" items={carouselItems} />
       </Vesting>
+      <Modal isOpen={ledgerModalShow} style={modalStyles}>
+        Instructions goes here
+        <button type="button" onClick={() => setLedgerModalShow(false)}>
+          Close
+        </button>
+      </Modal>
     </OnboardingContainer>
   );
 };
