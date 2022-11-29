@@ -59,6 +59,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
         }
       });
     }
+    hideLoading();
   };
 
   // Remove this once there is an integration happening with the backend,

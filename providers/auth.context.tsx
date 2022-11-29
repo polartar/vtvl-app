@@ -326,7 +326,13 @@ export function AuthContextProvider({ children }: any) {
   console.log('organzationId - ', organizationId);
 
   useEffect(() => {
-    if (user && user.memberInfo && user.memberInfo.type && user.memberInfo.type !== 'founder') {
+    if (
+      user &&
+      user.memberInfo &&
+      user.memberInfo.type &&
+      user.memberInfo.type !== 'founder' &&
+      user.memberInfo.type !== 'manager'
+    ) {
       Router.push('/tokens');
       return;
     }

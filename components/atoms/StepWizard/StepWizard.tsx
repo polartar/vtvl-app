@@ -22,16 +22,18 @@ const StepWizard = ({ steps, status, size = 'default', className = '', showAllLa
           <DotWrapper size={size}>
             <LeftBorder cl={stepIndex} isActive={status >= stepIndex} size={size} />
             <Circle isActive={status > stepIndex} isLast={stepIndex + 1 === steps.length} size={size}>
-              {status <= stepIndex && status < steps.length - 1 ? (
-                size !== 'tiny' && size !== 'small' ? (
-                  <Dot isActive={status === stepIndex} />
-                ) : (
-                  <div className="text-success-500">
-                    <SuccessIcon className="fill-current" />
-                  </div>
-                )
+              {status <= stepIndex && status < steps.length ? (
+                <>{size !== 'tiny' && size !== 'small' ? <Dot isActive={status === stepIndex} /> : null}</>
               ) : (
-                <Tick fill={steps.length === stepIndex + 1 ? Colors.success : Colors.primary} />
+                <>
+                  {size !== 'tiny' && size !== 'small' ? (
+                    <Tick fill={steps.length === stepIndex + 1 ? Colors.success : Colors.primary} />
+                  ) : (
+                    <div className="text-success-500">
+                      <SuccessIcon className="fill-current" />
+                    </div>
+                  )}
+                </>
               )}
             </Circle>
             <RightBorder cl={stepIndex + 1 < steps.length ? 1 : 0} isActive={status > stepIndex} size={size} />
