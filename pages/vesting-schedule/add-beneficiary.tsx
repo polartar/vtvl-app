@@ -17,6 +17,7 @@ import Select, { ActionMeta, OnChangeValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { IRecipient, IRecipientFormState, IRecipientType } from 'types/vesting';
 import { convertLabelToOption } from 'utils/shared';
+import { formatNumber } from 'utils/token';
 
 const AddBeneficiary: NextPageWithLayout = () => {
   const { mintFormState } = useTokenContext();
@@ -282,10 +283,11 @@ const AddBeneficiary: NextPageWithLayout = () => {
                   <p className="text-xs font-medium text-neutral-700">
                     Token allocation per user:{' '}
                     {recipients.value && recipients.value.length > 0
-                      ? new Decimal(scheduleFormState.amountToBeVested)
-                          .div(new Decimal(recipients.value.length))
-                          .toDP(6, Decimal.ROUND_UP)
-                          .toString()
+                      ? formatNumber(
+                          new Decimal(scheduleFormState.amountToBeVested)
+                            .div(new Decimal(recipients.value.length))
+                            .toDP(6, Decimal.ROUND_UP)
+                        )
                       : 0}{' '}
                     <strong>{mintFormState.symbol || 'Token'}</strong>
                   </p>

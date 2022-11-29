@@ -88,19 +88,20 @@ const ConnectWalletPage: NextPage = () => {
       onClick: metamaskActivate
     },
     {
-      name: 'Wallet Connect',
-      image: '/icons/wallets/walletconnect.svg',
-      onClick: walletConnectActivate
+      name: 'Ledger',
+      image: '/icons/wallets/ledger.png'
+      // need to add an onClick handler here
     },
     {
-      name: 'Coinbase Wallet',
-      image: '/icons/wallets/coinbase.png',
+      name: 'Wallet Connect',
+      image: '/icons/wallets/walletconnect.svg',
+      onClick: walletConnectActivate,
       subLabel: 'Soon',
       disabled: true
     },
     {
-      name: 'Ledger',
-      image: '/icons/wallets/ledger.png',
+      name: 'Coinbase Wallet',
+      image: '/icons/wallets/coinbase.png',
       subLabel: 'Soon',
       disabled: true
     },
