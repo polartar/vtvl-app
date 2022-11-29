@@ -18,6 +18,7 @@ interface VestingOverviewProps {
   totalSchedules: number;
   pendingSchedules: number;
   pendingApprovals: number;
+  pendingDeployments: number;
   totalRecipients: number;
   progress: VestingProgress;
   remainingAllocation: number | Decimal;
@@ -31,12 +32,13 @@ const VestingOverview = ({
   progress,
   pendingApprovals,
   pendingSchedules,
+  pendingDeployments,
   remainingAllocation,
   totalAllocation
 }: VestingOverviewProps) => {
   return (
     <>
-      <div className="grid sm:grid-cols-5 md:grid-cols-7 gap-3 xl:gap-6">
+      <div className="grid sm:grid-cols-4 md:grid-cols-8 gap-3 xl:gap-6">
         <div>
           <p className="paragraphy-tiny-medium neutral-text mb-6">Total schedules</p>
           <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
@@ -49,6 +51,13 @@ const VestingOverview = ({
           <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
             <SchedulesIcon className="w-6 h-6" />
             {pendingSchedules}
+          </div>
+        </div>
+        <div>
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Pending deployments</p>
+          <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
+            <ApprovalsIcon className="w-6 h-6" />
+            {pendingDeployments}
           </div>
         </div>
         <div>

@@ -38,7 +38,7 @@ import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IToken, ITransaction, IVesting } from 'types/models';
 import { IRecipient } from 'types/vesting';
-import { convertAllToOptions, formatDate, formatTime } from 'utils/shared';
+import { convertAllToOptions, formatDate, formatTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getCliffAmount,
@@ -69,6 +69,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     totalSchedules: 0,
     pendingSchedules: 0,
     pendingApprovals: 0,
+    pendingDeployments: 0,
     totalRecipients: 0,
     progress: { current: 0, total: 0 }
   });
@@ -85,20 +86,23 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         // Manually count all necessary data since we're fetching all of the schedules for this particular organization
         let inProgress = 0;
         let pendingSchedules = 0;
+        let pendingDeployments = 0;
         let pendingApprovals = 0;
         let totalRecipients = 0;
         schedules.map((sched) => {
           inProgress += sched.data.status === 'LIVE' ? 1 : 0;
           pendingSchedules += sched.data.status === 'WAITING_FUNDS' ? 1 : 0;
+          pendingDeployments += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
           pendingApprovals += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
           totalRecipients += sched.data.recipients.length;
         });
 
         setVestingScheduleDataCounts({
           totalSchedules: schedules?.length || 0,
-          pendingSchedules: pendingSchedules,
-          pendingApprovals: pendingApprovals,
-          totalRecipients: totalRecipients,
+          pendingSchedules,
+          pendingDeployments,
+          pendingApprovals,
+          totalRecipients,
           progress: { current: inProgress, total: schedules?.length || 0 }
         });
         setIsFetchingSchedules(false);
@@ -234,11 +238,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             return (
               <tr key={`recipient-${rIndex}`} className="group">
                 <td className="group-last:border-b-0">
-                  <div className="w-28 py-2">{recipient.name ? recipient.name : '(Anonymous)'}</div>
+                  <div className="w-20 py-2">{recipient.name ? recipient.name : '(Anonymous)'}</div>
                 </td>
                 <td className="group-last:border-b-0">
                   <div className="w-full py-2">
-                    <Copy text={recipient.walletAddress}>{recipient.walletAddress}</Copy>
+                    <Copy text={recipient.walletAddress}>{minifyAddress(recipient.walletAddress)}</Copy>
                   </div>
                 </td>
               </tr>
