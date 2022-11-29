@@ -47,7 +47,7 @@ const VestingOverview = ({
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Pending schedules</p>
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Pending fundings</p>
           <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
             <SchedulesIcon className="w-6 h-6" />
             {pendingSchedules}

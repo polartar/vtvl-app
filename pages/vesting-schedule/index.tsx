@@ -77,8 +77,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // We get the schedules
   const [vestingSchedules, setVestingSchedules] = useState<IVestingSchedules[]>();
 
-  const getVestings = async () => {
-    setIsFetchingSchedules(true);
+  const getVestings = async (loader = true) => {
+    if (loader) setIsFetchingSchedules(true);
     try {
       if (organizationId) {
         const schedules = await fetchVestingsByQuery('organizationId', '==', organizationId);
@@ -105,13 +105,13 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           totalRecipients,
           progress: { current: inProgress, total: schedules?.length || 0 }
         });
-        setIsFetchingSchedules(false);
+        if (loader) setIsFetchingSchedules(false);
       } else {
-        setIsFetchingSchedules(true);
+        if (loader) setIsFetchingSchedules(true);
       }
     } catch (err) {
       console.log('error', err);
-      setIsFetchingSchedules(false);
+      if (loader) setIsFetchingSchedules(false);
     }
   };
 
@@ -201,7 +201,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const CellAmount = ({ value }: any) => formatNumber(value);
 
   // Renderer for status
-  const CellStatus = ({ value }: any) => {
+  const CellStatus = ({ value, row }: any) => {
     const statuses: any = {
       INITIALIZED: { color: 'dangerAlt', label: 'Initialized' },
       WAITING_APPROVAL: { color: 'dangerAlt', label: 'Approval pending' },
@@ -211,12 +211,24 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       LIVE: { color: 'infoAlt', label: 'Live' },
       COMPLETED: { color: 'gray', label: 'Completed' }
     };
-    return <Chip {...statuses[value]} size="small" rounded />;
+    return (
+      <div className="flex flex-row items-center gap-1">
+        <Chip {...statuses[value]} size="small" rounded />
+        {row.original.data.archive ? <Chip label="Archived" size="small" rounded color="grayAlt" /> : null}
+      </div>
+    );
   };
 
   // Renderer for more action items
   const CellActions = (props: any) => {
-    const menuItems = [{ label: 'Revoke', onClick: () => alert('Revoke clicked') }];
+    const { data, id } = props.row.original;
+    const menuItems = [
+      {
+        label: `${data.archive ? 'Unarchive' : 'Archive'}`,
+        onClick: () => handleArchiving(id, data)
+      },
+      { label: 'Revoke', onClick: () => alert('Revoke clicked') }
+    ];
     return (
       <div className="row-center">
         <button className="line small" onClick={() => Router.push(`/vesting-schedule/${props.row.original.id}`)}>
@@ -256,11 +268,25 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // Update color of row if the status of the vesting schedule record is COMPLETED
   const getTrProps = (rowInfo: any) => {
     if (rowInfo) {
+      const { status, archive } = rowInfo.original.data;
       return {
-        className: rowInfo.original.status === 'COMPLETED' ? 'bg-success-50' : ''
+        className: status === 'COMPLETED' ? 'bg-success-50' : archive ? 'bg-gray-50' : ''
       };
     }
     return {};
+  };
+
+  // Handles the archiving process
+  const handleArchiving = async (id: string, data: IVesting) => {
+    await updateVesting(
+      {
+        ...data,
+        archive: !data.archive
+      },
+      id
+    );
+    toast.success(`Schedule: ${data.name} ${!data.archive ? '' : 'un'}archived!`);
+    getVestings(false);
   };
 
   // Defines the columns used and their functions in the table

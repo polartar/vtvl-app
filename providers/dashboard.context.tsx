@@ -76,7 +76,9 @@ export function DashboardContextProvider({ children }: any) {
     setVestingsLoading(true);
     try {
       const res = await fetchVestingsByQuery('organizationId', '==', organizationId!);
-      setVestings(res);
+      // Filter out without the archived records
+      const filteredVestingSchedules = res.filter((v) => !v.data.archive);
+      setVestings(filteredVestingSchedules);
     } catch (err) {
       console.log('fetchDashboardVestings - ', err);
     }
