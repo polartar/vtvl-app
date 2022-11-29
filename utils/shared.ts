@@ -1,6 +1,7 @@
 import format from 'date-fns/format';
 import Decimal from 'decimal.js';
 import { Timestamp } from 'firebase/firestore';
+import { spaceMissions } from 'types/constants/shared';
 
 import { formatNumber } from './token';
 
@@ -75,10 +76,11 @@ export const getActualDateTime = (data: {
 export const generateRandomName = (l: number) => {
   const length = l;
   let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const characters = '0123456789';
   const charactersLength = characters.length;
+  const spaceMission = spaceMissions[Math.floor(Math.random() * spaceMissions.length)];
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
-  return result;
+  return `${spaceMission}-${result}`;
 };
