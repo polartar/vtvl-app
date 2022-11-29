@@ -6,7 +6,7 @@ import OnboardingContext from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import Head from 'next/head';
 import { useLoaderContext } from 'providers/loader.context';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import AuthContext from '../../../providers/auth.context';
 
@@ -70,6 +70,13 @@ const FounderRoutes = {
       icon: '/icons/s_capTable.svg',
       hoverIcon: '/icons/s_capTable2.svg',
       route: '/cap-table',
+      available: true
+    },
+    {
+      title: 'Connect safe',
+      icon: '/icons/s_vestingSchedule.svg',
+      hoverIcon: '/icons/s_vestingSchedule2.svg',
+      route: '/onboarding/setup-safes',
       available: true
     },
     {
@@ -179,10 +186,18 @@ interface DefaultLayoutProps {
  *  This has a sidebar prop to determine if the Sidebar component should be shown or not.
  */
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
-  const { user, error, logOut, showSideBar, sidebarIsExpanded, toggleSideBar, refreshUser } = useContext(AuthContext);
+  const { user, safe, error, logOut, showSideBar, sidebarIsExpanded, toggleSideBar, refreshUser } =
+    useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
   const { loading } = useLoaderContext();
   const { active } = useWeb3React();
+  const [sidebarProperties, setSidebarProperties] = useState({
+    roleTitle: 'Anonymous',
+    role: '',
+    userName: '',
+    menuList: [],
+    submenuList: []
+  });
   useEffect(() => {
     (async () => await refreshUser())();
   }, []);
@@ -191,8 +206,17 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     !inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type]
   );
 
-  const getUserSidebarLinks =
-    user && user.memberInfo && user.memberInfo.type ? SidebarProps[user?.memberInfo?.type] : {};
+  useEffect(() => {
+    if (user && user.memberInfo && user.memberInfo.type) {
+      if (safe && user.memberInfo.type === 'founder') {
+        const sbProps = SidebarProps[user?.memberInfo?.type];
+        sbProps.menuList.slice(3, 1); // Remove connect safe
+        setSidebarProperties({ ...sbProps });
+      } else {
+        setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
+      }
+    }
+  }, [user, safe]);
 
   return (
     <Container>
@@ -208,7 +232,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
       />
       <Layout className="flex flex-row w-full">
-        {displaySideBar ? <Sidebar {...getUserSidebarLinks} roleTitle={user?.memberInfo?.type || 'founder'} /> : null}
+        {displaySideBar ? <Sidebar {...sidebarProperties} roleTitle={user?.memberInfo?.type || 'founder'} /> : null}
         <div className="relative">
           {loading && <PageLoader />}
           <Main

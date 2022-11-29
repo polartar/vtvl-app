@@ -60,7 +60,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
     const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
     const ABI = [PERFORM_CREATE_FUNCTION];
     const vestingId = await createVesting({
-      name: generateRandomName(12) || '',
+      name: generateRandomName(4) || '',
       details: scheduleFormState,
       recipients,
       organizationId: organizationId!,
