@@ -90,7 +90,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
           <h1 className="text-neutral-900 mb-9">My Tokens</h1>
           {tokens && tokens.length > 0 ? (
             <>
-              <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" />
+              {/* <BarRadio name="statuses" options={statuses} value={tab} onChange={handleTabChange} variant="tab" /> */}
               <div className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-8">
                 {tokens.map((info, idx) => (
                   <MyTokenDetails
