@@ -106,11 +106,7 @@ const SignUpPage: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
       <h1 className="text-neutral-900">Create your account</h1>
-      <p className="text-sm text-center text-neutral-500">
-        Select or enter your credentials to gain the access to platform.
-        <br />
-        Only registered team members are allowed to access this site.
-      </p>
+      <p className="text-sm text-center text-neutral-500">Please enter your email to create an account</p>
 
       <Form
         isSubmitting={isSubmitting}
@@ -124,7 +120,7 @@ const SignUpPage: NextPage = () => {
           onClick={async () => await googleSignIn()}
           className="line flex flex-row items-center justify-center gap-2.5 w-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
-          Sign Up with Google
+          Sign up with Google
         </button>
         <div className="flex flex-row items-center justify-center gap-3 my-5 w-full">
           <hr className="border-t border-neutral-200 w-1/4 sm:w-1/3" />
@@ -159,7 +155,7 @@ const SignUpPage: NextPage = () => {
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <div className="flex flex-row items-center justify-center gap-5 font-medium text-xs text-neutral-800">
           Already have an account?{' '}
-          <button className="primary small" onClick={() => router.replace('/onboarding/member-login')}>
+          <button type="button" className="primary small" onClick={() => router.replace('/onboarding/member-login')}>
             Login
           </button>
         </div>

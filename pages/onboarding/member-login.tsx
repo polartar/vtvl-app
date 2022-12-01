@@ -72,12 +72,8 @@ const MemberLoginPage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
-      <h1 className="text-neutral-900">Log in</h1>
-      <p className="text-sm text-center text-neutral-500">
-        Select or enter your credentials to gain the access to platform.
-        <br />
-        Only registered team members are allowed to access this site.
-      </p>
+      <h1 className="text-neutral-900">Let's get started</h1>
+      <p className="text-sm text-center text-neutral-500">Sign in to access the platform</p>
 
       <Form
         isSubmitting={isSubmitting}
@@ -121,11 +117,11 @@ const MemberLoginPage: NextPage = () => {
           </div>
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
-        <div className="font-medium text-xs text-neutral-800 text-center ">
+        <div className="flex flex-row items-center gap-5 justify-center font-medium text-xs text-neutral-800 text-center ">
           Don&apos;t have an account?{' '}
-          <span className="text-primary-900 cursor-pointer" onClick={() => router.replace('/onboarding/sign-up')}>
-            Create an account.
-          </span>
+          <button type="button" className="primary small" onClick={() => router.replace('/onboarding/sign-up')}>
+            Create an account
+          </button>
         </div>
       </Form>
     </div>
