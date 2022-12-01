@@ -1,11 +1,12 @@
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import Consent from '@components/molecules/Consent/Consent';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { emailPattern } from 'types/constants/validation-patterns';
@@ -29,16 +30,23 @@ const SignUpPage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
+    setValue,
     formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
-      memberEmail: ''
+      memberEmail: '',
+      agreedOnConsent: false
     }
   });
 
   const memberEmail = {
     value: watch('memberEmail'),
     state: getFieldState('memberEmail')
+  };
+
+  const agreedOnConsent = {
+    value: watch('agreedOnConsent'),
+    state: getFieldState('agreedOnConsent')
   };
 
   const googleSignIn = async () => {
@@ -53,10 +61,17 @@ const SignUpPage: NextPage = () => {
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     try {
+      setFormSuccess(false);
       const values = getValues();
       const params: any = new URL(window.location.toString() || '');
       const type = params.searchParams.get('type');
       const orgId = params.searchParams.get('orgId');
+
+      if (!agreedOnConsent.value) {
+        setFormError(true);
+        setFormMessage('You must accept the terms and conditions to create an account.');
+        return;
+      }
 
       if (type && orgId) {
         // invited member
@@ -73,9 +88,24 @@ const SignUpPage: NextPage = () => {
     }
   };
 
+  const [formError, setFormError] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
+  const [formMessage, setFormMessage] = useState('');
+  const handleAgree = (checked: boolean) => {
+    setValue('agreedOnConsent', checked);
+  };
+
+  useEffect(() => {
+    if (agreedOnConsent.value === true) {
+      setFormError(false);
+      setFormSuccess(true);
+      setFormMessage('');
+    }
+  }, [agreedOnConsent.value]);
+
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
-      <h1 className="text-neutral-900">Sign Up</h1>
+      <h1 className="text-neutral-900">Create your account</h1>
       <p className="text-sm text-center text-neutral-500">
         Select or enter your credentials to gain the access to platform.
         <br />
@@ -85,6 +115,9 @@ const SignUpPage: NextPage = () => {
       <Form
         isSubmitting={isSubmitting}
         onSubmit={handleSubmit(onSubmit)}
+        error={formError}
+        success={formSuccess}
+        message={formMessage}
         className="w-full my-6 flex flex-col items-center">
         <button
           type="button"
@@ -119,17 +152,19 @@ const SignUpPage: NextPage = () => {
               )}
             />
             <Button className="secondary mt-5 mx-auto" type="submit" loading={isSubmitting}>
-              Sign Up
+              Create account
             </Button>
           </div>
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
-        <span className="block font-medium text-xs text-neutral-800 text-center">
+        <div className="flex flex-row items-center justify-center gap-5 font-medium text-xs text-neutral-800">
           Already have an account?{' '}
-          <span className="text-primary-900 cursor-pointer" onClick={() => router.replace('/onboarding/member-login')}>
+          <button className="primary small" onClick={() => router.replace('/onboarding/member-login')}>
             Login
-          </span>
-        </span>
+          </button>
+        </div>
+
+        <Consent variant="check" className="mt-5" onAgree={handleAgree} />
       </Form>
     </div>
   );
