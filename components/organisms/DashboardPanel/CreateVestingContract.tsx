@@ -149,6 +149,15 @@ AddVestingSchedulesProps) => {
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000)
         });
+        // Ensure that the initial vesting schedule record is also updated
+        await updateVesting(
+          {
+            ...vestings[activeVestingIndex].data,
+            status: 'SUCCESS',
+            updatedAt: Math.floor(new Date().getTime() / 1000)
+          },
+          vestings[activeVestingIndex].id
+        );
         setTransactionStatus('SUCCESS');
         fetchDashboardVestingContract();
         if (!safe?.address) {

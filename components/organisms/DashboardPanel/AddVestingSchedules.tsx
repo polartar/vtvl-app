@@ -141,7 +141,8 @@ AddVestingSchedulesProps) => {
         const vestingContract = await VestingFactory.deploy(mintFormState.address);
         setTransactionStatus('IN_PROGRESS');
         await vestingContract.deployed();
-        const vestingContractId = await createVestingContract({
+        // Add a contract record
+        await createVestingContract({
           tokenAddress: mintFormState.address,
           address: vestingContract.address,
           status: 'SUCCESS',
@@ -150,6 +151,16 @@ AddVestingSchedulesProps) => {
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000)
         });
+        // Ensure that the initial vesting schedule record is also updated
+        await updateVesting(
+          {
+            ...vestings[activeVestingIndex].data,
+            status: 'SUCCESS',
+            updatedAt: Math.floor(new Date().getTime() / 1000)
+          },
+          vestings[activeVestingIndex].id
+        );
+
         fetchDashboardVestingContract();
         setStatus('transferToMultisigSafe');
         setTransactionStatus('SUCCESS');

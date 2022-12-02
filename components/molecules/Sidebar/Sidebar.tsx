@@ -44,6 +44,12 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
     }
   }, []);
 
+  // Watch for the currentRoute's path to ensure update active state on the sidebar
+  // This fixes redirection via route push
+  useEffect(() => {
+    setSelectedRoute(currentRoute.pathname);
+  }, [currentRoute.pathname]);
+
   return (
     <SidebarContainer isExpanded={sidebarIsExpanded} className="transition-all">
       <img

@@ -222,6 +222,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       } else {
         setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
       }
+    } else {
+      // For testing purposes only
+      setSidebarProperties({ ...SidebarProps.founder });
     }
   }, [user, safe]);
 
