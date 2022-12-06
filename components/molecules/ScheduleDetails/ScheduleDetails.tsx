@@ -39,6 +39,7 @@ interface ScheduleDetailProps extends React.AllHTMLAttributes<HTMLDivElement> {
    */
   token: string;
   layout?: 'small' | 'default';
+  includeDetails?: boolean;
 }
 
 const ScheduleDetails = ({
@@ -52,6 +53,7 @@ const ScheduleDetails = ({
   token,
   layout = 'default',
   hint = true,
+  includeDetails = true,
   ...props
 }: ScheduleDetailProps) => {
   /**
@@ -188,49 +190,51 @@ const ScheduleDetails = ({
           }
         />
       )}
-      <div className={`grid gap-3 mt-5 ${layout === 'small' ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4 '}`}>
-        <label>
-          <span>Cliff</span>
-          <p className="flex flex-row items-start gap-2 text-xs">
-            <img src="/icons/graph-stairs.svg" className="w-6 h-6" alt="Cliff" />
-            {formatNumber(cliffAmount)} {token}
-          </p>
-        </label>
-        <label>
-          <span>Linear Release</span>
-          <p className="flex flex-row items-start gap-2 text-xs">
-            <img src="/icons/graph-line.svg" className="w-6 h-6" alt="Cliff" />
-            {formatNumber(releaseAmount)} {token} /{DATE_FREQ_TO_LABEL[releaseFrequency]}
-          </p>
-        </label>
-        <label>
-          <span>Start</span>
-          <p className="flex flex-row items-start gap-2 text-xs">
-            <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
-            {startDateTime ? (
-              <>
-                {formatDate(startDateTime)}
-                <br />
-                {formatTime(startDateTime)}
-              </>
-            ) : null}
-          </p>
-        </label>
-        <label>
-          <span>End</span>
-          <p className="flex flex-row items-start gap-2 text-xs">
-            <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
-            {projectedEndDateTime ? (
-              <>
-                {formatDate(projectedEndDateTime)}
-                <br />
-                {formatTime(projectedEndDateTime)}
-              </>
-            ) : null}
-            {/* <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." /> */}
-          </p>
-        </label>
-      </div>
+      {includeDetails ? (
+        <div className={`grid gap-3 mt-5 ${layout === 'small' ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4 '}`}>
+          <label>
+            <span>Cliff</span>
+            <p className="flex flex-row items-start gap-2 text-xs">
+              <img src="/icons/graph-stairs.svg" className="w-6 h-6" alt="Cliff" />
+              {formatNumber(cliffAmount)} {token}
+            </p>
+          </label>
+          <label>
+            <span>Linear Release</span>
+            <p className="flex flex-row items-start gap-2 text-xs">
+              <img src="/icons/graph-line.svg" className="w-6 h-6" alt="Cliff" />
+              {formatNumber(releaseAmount)} {token} /{DATE_FREQ_TO_LABEL[releaseFrequency]}
+            </p>
+          </label>
+          <label>
+            <span>Start</span>
+            <p className="flex flex-row items-start gap-2 text-xs">
+              <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
+              {startDateTime ? (
+                <>
+                  {formatDate(startDateTime)}
+                  <br />
+                  {formatTime(startDateTime)}
+                </>
+              ) : null}
+            </p>
+          </label>
+          <label>
+            <span>End</span>
+            <p className="flex flex-row items-start gap-2 text-xs">
+              <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
+              {projectedEndDateTime ? (
+                <>
+                  {formatDate(projectedEndDateTime)}
+                  <br />
+                  {formatTime(projectedEndDateTime)}
+                </>
+              ) : null}
+              {/* <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." /> */}
+            </p>
+          </label>
+        </div>
+      ) : null}
     </>
   );
 };

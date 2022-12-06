@@ -218,10 +218,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     const newDetails = { ...details };
     // Due to dates are typed as Timestamps in firebase, we need to use a function for that.
     const actualDateTime = getActualDateTime(newDetails);
-    console.log('Changing template', actualDateTime.startDate, actualDateTime.endDate);
+    console.log('Changing template', actualDateTime.startDateTime, actualDateTime.endDateTime);
     setValue('amountToBeVested', newDetails.amountToBeVested);
-    setValue('startDateTime', actualDateTime.startDate);
-    setValue('endDateTime', actualDateTime.endDate);
+    setValue('startDateTime', actualDateTime.startDateTime);
+    setValue('endDateTime', actualDateTime.endDateTime);
     setValue('releaseFrequency', newDetails.releaseFrequency);
     setValue('cliffDuration', newDetails.cliffDuration);
     setValue('lumpSumReleaseAfterCliff', newDetails.lumpSumReleaseAfterCliff);
@@ -308,8 +308,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           return {
             id: record.id,
             ...record.data,
-            startDateTime: actualDateTime.startDate,
-            endDateTime: actualDateTime.endDate
+            startDateTime: actualDateTime.startDateTime,
+            endDateTime: actualDateTime.endDateTime
           };
         });
         setTemplateOptions(transformedDatas);
