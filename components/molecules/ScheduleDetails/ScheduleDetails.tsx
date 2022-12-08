@@ -117,6 +117,7 @@ const ScheduleDetails = ({
         dateFormat = 'MMM d yyyy';
         break;
       case 'monthly':
+      case 'quarterly':
         dateFormat = 'MMM yyyy';
         break;
       case 'yearly':

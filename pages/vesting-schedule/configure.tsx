@@ -145,11 +145,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   const radioOptions = [
     { label: 'Continuous', value: 'continuous' },
-    { label: 'Minute', value: 'minute' },
+    // { label: 'Minute', value: 'minute' },
     { label: 'Hourly', value: 'hourly' },
     { label: 'Daily', value: 'daily' },
     { label: 'Weekly', value: 'weekly' },
     { label: 'Monthly', value: 'monthly' },
+    { label: 'Quarterly', value: 'quarterly' },
     { label: 'Yearly', value: 'yearly' }
   ];
 
