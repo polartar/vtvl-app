@@ -4,6 +4,7 @@ import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import MyTokenDetails from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import AuthContext from '@providers/auth.context';
+import { useClaimTokensContext } from '@providers/claim-tokens.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useWeb3React } from '@web3-react/core';
 import type { ERC20 } from 'contracts/ERC20';
@@ -11,6 +12,7 @@ import ERC20_ABI from 'contracts/abi/ERC20.json';
 import { Contract } from 'ethers';
 import useTokenContract from 'hooks/useTokenContract';
 import { getContract } from 'hooks/web3';
+import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useContext, useEffect, useState } from 'react';
 import { fetchTokenByQuery, fetchTokensByQuery } from 'services/db/token';
@@ -22,67 +24,77 @@ const MyTokenStatus: NextPageWithLayout = () => {
   const { account, library } = useWeb3React();
   const { user } = useContext(AuthContext);
   const { showLoading, hideLoading } = useLoaderContext();
+  const { vestingSchedules } = useClaimTokensContext();
+  const { route } = useRouter();
 
   const [organizations, setOrganizations] = useState<{ [key: string]: boolean }>({});
   const [tab, setTab] = useState('all');
   const [tokens, setTokens] = useState<IToken[]>([]);
   const [vestings, setVestings] = useState<{ [key: string]: IVesting }>({});
 
-  const handleTabChange = (e: any) => {
-    // Change token query based on currently selected tab
-    setTab(e.target.value);
-  };
-
-  const statuses = [
-    { label: 'All', value: 'all' },
-    { label: 'Claimed', value: 'claimed' },
-    { label: 'Unclaimed', value: 'unclaimed' }
-  ];
-
-  const fetchOrganizations = async () => {
-    const vestings = await fetchAllVestings();
-    if (vestings && vestings.length > 0 && account) {
-      vestings.forEach((vesting) => {
-        if (
-          vesting.recipients &&
-          vesting.recipients.length > 0 &&
-          vesting.recipients.find((recipient) => recipient.walletAddress.toLowerCase() === account.toLowerCase())
-        ) {
-          setOrganizations({
-            ...organizations,
-            [vesting.organizationId]: true
-          });
-          setVestings({
-            [vesting.organizationId]: vesting
-          });
-          hideLoading();
-        }
-      });
-    }
-    hideLoading();
-  };
-
-  // Remove this once there is an integration happening with the backend,
-  // but make sure to setIsPageLoading to false once actual data is loaded.
+  // Check for Vesting schedules, then redirect to the first record
   useEffect(() => {
-    fetchOrganizations();
-  }, [user, account]);
-
-  useEffect(() => {
-    if (organizations && Object.keys(organizations).length > 0) {
-      const orgIds = Object.keys(organizations);
-      orgIds.map((orgId) => {
-        fetchTokenByQuery('organizationId', '==', orgId).then((res) => {
-          if (res?.data) {
-            setTokens([
-              ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),
-              res.data
-            ]);
-          }
-        });
-      });
+    if (vestingSchedules && vestingSchedules.length) {
+      const selectFirst = vestingSchedules[0];
+      Router.push(`/tokens/${selectFirst.id}`);
     }
-  }, [organizations]);
+  }, [vestingSchedules]);
+
+  // const handleTabChange = (e: any) => {
+  //   // Change token query based on currently selected tab
+  //   setTab(e.target.value);
+  // };
+
+  // const statuses = [
+  //   { label: 'All', value: 'all' },
+  //   { label: 'Claimed', value: 'claimed' },
+  //   { label: 'Unclaimed', value: 'unclaimed' }
+  // ];
+
+  // const fetchOrganizations = async () => {
+  //   const vestings = await fetchAllVestings();
+  //   if (vestings && vestings.length > 0 && account) {
+  //     vestings.forEach((vesting) => {
+  //       if (
+  //         vesting.recipients &&
+  //         vesting.recipients.length > 0 &&
+  //         vesting.recipients.find((recipient) => recipient.walletAddress.toLowerCase() === account.toLowerCase())
+  //       ) {
+  //         setOrganizations({
+  //           ...organizations,
+  //           [vesting.organizationId]: true
+  //         });
+  //         setVestings({
+  //           [vesting.organizationId]: vesting
+  //         });
+  //         hideLoading();
+  //       }
+  //     });
+  //   }
+  //   hideLoading();
+  // };
+
+  // // Remove this once there is an integration happening with the backend,
+  // // but make sure to setIsPageLoading to false once actual data is loaded.
+  // useEffect(() => {
+  //   fetchOrganizations();
+  // }, [user, account]);
+
+  // useEffect(() => {
+  //   if (organizations && Object.keys(organizations).length > 0) {
+  //     const orgIds = Object.keys(organizations);
+  //     orgIds.map((orgId) => {
+  //       fetchTokenByQuery('organizationId', '==', orgId).then((res) => {
+  //         if (res?.data) {
+  //           setTokens([
+  //             ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),
+  //             res.data
+  //           ]);
+  //         }
+  //       });
+  //     });
+  //   }
+  // }, [organizations]);
 
   return (
     <>

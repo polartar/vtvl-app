@@ -54,22 +54,27 @@ export const convertToUSD = (amount: number | Decimal | string) => {
 export interface IActualDateTimeProps {
   startDateTime: Date | null | undefined;
   endDateTime: Date | null | undefined;
+  originalEndDateTime: Date | null | undefined;
 }
 export const getActualDateTime = (data: IActualDateTimeProps) => {
   let startDateTime;
   let endDateTime;
+  let originalEndDateTime;
   try {
     // Try first with the presumption that the dates provided are in Timestamp -- came from firebase.
     startDateTime = new Date((data.startDateTime as unknown as Timestamp).toMillis());
     endDateTime = new Date((data.endDateTime as unknown as Timestamp).toMillis());
+    originalEndDateTime = new Date((data.originalEndDateTime as unknown as Timestamp).toMillis());
   } catch (err) {
     // Catch it with the default as if it came from current form data
     startDateTime = data.startDateTime;
     endDateTime = data.endDateTime;
+    originalEndDateTime = data.originalEndDateTime;
   }
   return {
     startDateTime,
-    endDateTime
+    endDateTime,
+    originalEndDateTime
   };
 };
 

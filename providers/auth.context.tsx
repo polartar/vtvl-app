@@ -61,7 +61,7 @@ const AuthContext = createContext({} as AuthContextData);
 export function AuthContextProvider({ children }: any) {
   const [user, setUser] = useState<IUser | undefined>();
   // Remove default value when merging to develop, staging or main
-  // Mock organizationId MYvgDyXEY5kCfxdIvtY8 or V2dmM9LmDAAgfWgj8PJR or t2SfnLYwU0MZpY4q7zL8 for bico
+  // Mock organizationId 'v2S4z6kgjac61iDsQqr7'
   const [organizationId, setOrganizationId] = useState<string | undefined>();
   const [safe, setSafe] = useState<ISafe | undefined>();
   const [loading, setLoading] = useState<boolean>(true);

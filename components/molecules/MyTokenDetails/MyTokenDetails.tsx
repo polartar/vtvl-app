@@ -37,7 +37,8 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
   const [vestingContractAddress, setVestingContractAddress] = useState('');
   const [actualDateTime, setActualDateTime] = useState<IActualDateTimeProps>({
     startDateTime: new Date(),
-    endDateTime: new Date()
+    endDateTime: new Date(),
+    originalEndDateTime: new Date()
   });
 
   const importToken = async () => {

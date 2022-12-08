@@ -50,7 +50,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
  * e.g., `<button className="primary large">` is the same as `<Button primary large>`.
  * `<Button label="My Button" />` is the same as `<Button>My Button</Button>`
  */
-const Button = (props: ButtonProps) => {
+const Button = ({ loading = false, ...props }: ButtonProps) => {
   const { primary, secondary, outline, danger, success, warning, size, label } = props;
   const getClassNames = () => {
     let className = '';
@@ -66,15 +66,15 @@ const Button = (props: ButtonProps) => {
   return (
     <button
       {...props}
-      className={`relative ${getClassNames()} ${props.className} ${props.loading ? 'loading' : ''}`}
-      disabled={props.loading || props.disabled}>
+      className={`relative ${getClassNames()} ${props.className} ${loading ? 'loading' : ''}`}
+      disabled={loading || props.disabled}>
       {/* Used opacity to preserve the current width of the button when it is doing the loading state */}
-      <span className={`transition-all block transform-gpu ${props.loading ? 'opacity-0 translate-x-1.5' : ''}`}>
+      <span className={`transition-all block transform-gpu ${loading ? 'opacity-0 translate-x-1.5' : ''}`}>
         {label || props.children}
       </span>
       <span
         className={`absolute flex items-center justify-center inset-0 transition-all transform-gpu ${
-          props.loading ? '' : 'opacity-0 -translate-x-5'
+          loading ? '' : 'opacity-0 -translate-x-5'
         }`}
         aria-hidden="true">
         <DotLoader className={`${getClassNames()}`} />
