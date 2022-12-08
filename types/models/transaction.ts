@@ -7,4 +7,5 @@ export interface ITransaction {
   createdAt: number;
   updatedAt: number;
   organizationId: string;
+  chainId: number;
 }

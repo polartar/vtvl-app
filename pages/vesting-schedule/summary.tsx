@@ -56,6 +56,10 @@ const ScheduleSummary: NextPageWithLayout = () => {
   const { mintFormState, tokenId } = useTokenContext();
 
   const handleCreateSchedule = async () => {
+    if (!account || !chainId) {
+      activate(injected);
+      return;
+    }
     const PERFORM_CREATE_FUNCTION = 'function performCreate(uint256 value, bytes memory deploymentData)';
     const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
     const ABI = [PERFORM_CREATE_FUNCTION];
@@ -69,7 +73,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
       updatedAt: Math.floor(new Date().getTime() / 1000),
       transactionId: '',
       tokenAddress: mintFormState.address,
-      tokenId
+      tokenId,
+      chainId
     });
     console.log('creating vesting schedule', vestingId);
     await Router.push('/vesting-schedule/success');

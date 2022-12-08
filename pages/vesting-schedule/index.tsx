@@ -376,7 +376,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   const handleBatchProcess = async (selectedRows: []) => {
     try {
-      if (!account || !library) {
+      if (!account || !library || !chainId) {
         activate(injected);
         return;
       }
@@ -508,7 +508,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
-            organizationId: organizationId
+            organizationId: organizationId,
+            chainId
           });
           await Promise.all(
             selectedRows.map(async (row: any) => {
@@ -552,7 +553,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           type: 'ADDING_CLAIMS',
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
-          organizationId: organizationId
+          organizationId: organizationId,
+          chainId
         };
         const transactionId = await createTransaction(transactionData);
         await Promise.all(

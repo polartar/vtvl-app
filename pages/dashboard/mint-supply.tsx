@@ -31,7 +31,7 @@ const defaultValues: IAdditionalSupply = {
 };
 
 const MintSuppy: NextPageWithLayout = () => {
-  const { library, account, activate } = useWeb3React();
+  const { library, account, activate, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
   const { mintFormState, tokenId } = useTokenContext();
   const [formError, setFormError] = useState(false);
@@ -63,7 +63,7 @@ const MintSuppy: NextPageWithLayout = () => {
     // Mint supply here
     try {
       // Connect to wallet first
-      if (!library) {
+      if (!library || !chainId) {
         activate(injected);
       } else {
         const tokenTemplate = supplyCap === 'LIMITED' ? VariableSupplyERC20Token : FullPremintERC20Token;
@@ -93,7 +93,8 @@ const MintSuppy: NextPageWithLayout = () => {
             supplyCap: supplyCap,
             maxSupply: +maxSupply,
             initialSupply: +additionalTokens,
-            status: mintFormState.status
+            status: mintFormState.status,
+            chainId
           },
           tokenId
         );

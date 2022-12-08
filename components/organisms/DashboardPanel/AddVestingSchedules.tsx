@@ -127,7 +127,7 @@ AddVestingSchedulesProps) => {
   const [executable, setExecutable] = useState(false);
 
   const handleDeployVestingContract = async () => {
-    if (!account) {
+    if (!account || !chainId) {
       activate(injected);
       return;
     } else if (organizationId) {
@@ -149,7 +149,8 @@ AddVestingSchedulesProps) => {
           deployer: account,
           organizationId,
           createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000)
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          chainId
         });
         // Ensure that the initial vesting schedule record is also updated
         await updateVesting(
@@ -311,7 +312,8 @@ AddVestingSchedulesProps) => {
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
-            organizationId: organizationId
+            organizationId: organizationId,
+            chainId
           });
           setTransaction({
             id: transactionId,
@@ -323,7 +325,8 @@ AddVestingSchedulesProps) => {
               type: 'ADDING_CLAIMS',
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
-              organizationId: organizationId
+              organizationId: organizationId,
+              chainId
             }
           });
           updateVesting(
@@ -363,7 +366,8 @@ AddVestingSchedulesProps) => {
           type: 'ADDING_CLAIMS',
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
-          organizationId: organizationId
+          organizationId: organizationId,
+          chainId
         };
         const transactionId = await createTransaction(transactionData);
         updateVesting(

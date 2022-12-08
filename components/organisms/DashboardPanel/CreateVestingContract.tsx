@@ -125,7 +125,7 @@ AddVestingSchedulesProps) => {
 
   const handleDeployVestingContract = async () => {
     try {
-      if (!account) {
+      if (!account || !chainId) {
         activate(injected);
         return;
       } else if (organizationId) {
@@ -147,17 +147,20 @@ AddVestingSchedulesProps) => {
           deployer: account,
           organizationId,
           createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000)
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          chainId
         });
         // Ensure that the initial vesting schedule record is also updated
-        await updateVesting(
-          {
-            ...vestings[activeVestingIndex].data,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          vestings[activeVestingIndex].id
-        );
+        if (vestings && vestings[activeVestingIndex]) {
+          await updateVesting(
+            {
+              ...vestings[activeVestingIndex].data,
+              status: 'SUCCESS',
+              updatedAt: Math.floor(new Date().getTime() / 1000)
+            },
+            vestings[activeVestingIndex].id
+          );
+        }
         setTransactionStatus('SUCCESS');
         fetchDashboardVestingContract();
         if (!safe?.address) {
@@ -312,7 +315,8 @@ AddVestingSchedulesProps) => {
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
-            organizationId: organizationId
+            organizationId: organizationId,
+            chainId
           });
           setTransaction({
             hash: txHash,
@@ -322,7 +326,8 @@ AddVestingSchedulesProps) => {
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
-            organizationId: organizationId
+            organizationId: organizationId,
+            chainId
           });
           updateVesting(
             {
