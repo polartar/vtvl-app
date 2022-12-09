@@ -91,7 +91,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         let totalRecipients = 0;
         schedules.map((sched) => {
           inProgress += sched.data.status === 'LIVE' ? 1 : 0;
-          pendingSchedules += sched.data.status === 'WAITING_FUNDS' ? 1 : 0;
+          pendingSchedules += sched.data.status === 'WAITING_FUNDS' || sched.data.status === 'INITIALIZED' ? 1 : 0;
           pendingDeployments += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
           pendingApprovals += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
           totalRecipients += sched.data.recipients.length;

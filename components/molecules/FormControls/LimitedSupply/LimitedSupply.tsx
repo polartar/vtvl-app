@@ -38,7 +38,9 @@ const LimitedSupply = ({
         <div className="flex flex-row items-center justify-between gap-3">
           {label ? (
             <>
-              <span className={`form-label ${required ? 'required' : ''}`}>{label}</span>
+              <span className={`form-label ${required ? 'required' : ''}`}>
+                {label} <small>({formatNumber((initial / maximum) * 100, 0)}%)</small>
+              </span>
               {maxReadOnly ? (
                 <p className="text-xs font-medium text-neutral-700">
                   {maximumLabel}: {formatNumber(maximum)}
