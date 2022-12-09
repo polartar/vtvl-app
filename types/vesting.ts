@@ -22,11 +22,8 @@ export interface IRecipientFormState {
 export interface IChartDataTypes {
   start: Date;
   end: Date;
-  cliffDate: Date;
   cliffDuration: CliffDuration;
   cliffAmount: number | Decimal;
   frequency: ReleaseFrequency;
-  numberOfReleases: number;
-  releaseAmount: number | Decimal;
   vestedAmount: number | Decimal;
 }
