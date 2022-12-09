@@ -38,7 +38,7 @@ import {
 } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
-import { getNumberOfReleases, getProjectedEndDateTime } from 'utils/vesting';
+import { getChartData, getCliffAmount, getNumberOfReleases } from 'utils/vesting';
 
 type DateTimeType = Date | null;
 
@@ -95,15 +95,25 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     // Map the correct data
     // FORM's endDateTime will be saved to originalEndDateTime
     // DB's endDateTime will save the projectedEndDateTime
-    const { releaseFrequency, startDateTime, endDateTime } = data;
+    const { releaseFrequency, startDateTime, endDateTime, cliffDuration, amountToBeVested, lumpSumReleaseAfterCliff } =
+      data;
     if (startDateTime && endDateTime) {
       const numberOfReleases = getNumberOfReleases(releaseFrequency, startDateTime, endDateTime);
-      const projectedEndDateTime = getProjectedEndDateTime(
-        startDateTime,
-        endDateTime,
-        numberOfReleases,
-        DATE_FREQ_TO_TIMESTAMP[releaseFrequency]
-      );
+      const cliffAmount = getCliffAmount(cliffDuration, +lumpSumReleaseAfterCliff, amountToBeVested);
+      const projectedEndDateTime = getChartData({
+        start: startDateTime,
+        end: endDateTime,
+        cliffDuration,
+        cliffAmount: cliffAmount,
+        frequency: releaseFrequency,
+        vestedAmount: amountToBeVested
+      }).projectedEndDateTime;
+      // getProjectedEndDateTime(
+      //   startDateTime,
+      //   endDateTime,
+      //   numberOfReleases,
+      //   releaseFrequency
+      // );
       updateScheduleFormState({
         ...scheduleFormState,
         ...data,
@@ -478,7 +488,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       const releaseFreqSeconds = DATE_FREQ_TO_TIMESTAMP[releaseFrequency.value];
       const cliffSeconds = CLIFFDURATION_TIMESTAMP[cliffDuration.value];
       const idealScheduleDuration = cliffSeconds + releaseFreqSeconds;
-      console.log('Difference', idealScheduleDuration, diffSeconds);
+      console.log('Difference', idealScheduleDuration, diffSeconds, releaseFreqSeconds, cliffSeconds);
       // Compare to cliff duration
       if (idealScheduleDuration > diffSeconds) {
         // Error

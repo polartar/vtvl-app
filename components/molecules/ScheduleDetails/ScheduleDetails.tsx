@@ -18,7 +18,6 @@ import {
   getCliffDateTime,
   getDuration,
   getNumberOfReleases,
-  getProjectedEndDateTime,
   getReleaseAmount
 } from 'utils/vesting';
 
@@ -75,12 +74,9 @@ const ScheduleDetails = ({
   const chartData = getChartData({
     start: startDateTime || new Date(),
     end: endDateTime || new Date(),
-    cliffDate: cliffDate || new Date(),
     cliffDuration,
     cliffAmount,
     frequency: releaseFrequency,
-    numberOfReleases,
-    releaseAmount,
     vestedAmount: +amountToBeVested
   });
 
@@ -89,12 +85,11 @@ const ScheduleDetails = ({
   };
   console.log('Chart data', chartData);
 
-  const frequencyInterval = DATE_FREQ_TO_TIMESTAMP[releaseFrequency];
-  const actualStartDateTime = cliffDuration !== 'no-cliff' ? cliffDate : startDateTime;
-  const projectedEndDateTime =
-    endDateTime && actualStartDateTime
-      ? getProjectedEndDateTime(actualStartDateTime, endDateTime, numberOfReleases, frequencyInterval)
-      : null;
+  // const actualStartDateTime = cliffDuration !== 'no-cliff' ? cliffDate : startDateTime;
+  // const projectedEndDateTime =
+  //   endDateTime && actualStartDateTime
+  //     ? getProjectedEndDateTime(actualStartDateTime, endDateTime, numberOfReleases, releaseFrequency)
+  //     : null;
 
   const singleLineFrequencies = ['continuous', 'minute', 'hourly'];
 
@@ -221,11 +216,11 @@ const ScheduleDetails = ({
           <span>End</span>
           <p className="flex flex-row items-start gap-2 text-xs">
             <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
-            {projectedEndDateTime ? (
+            {chartData.projectedEndDateTime ? (
               <>
-                {formatDate(projectedEndDateTime)}
+                {formatDate(chartData.projectedEndDateTime)}
                 <br />
-                {formatTime(projectedEndDateTime)}
+                {formatTime(chartData.projectedEndDateTime)}
               </>
             ) : null}
             {/* <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." /> */}

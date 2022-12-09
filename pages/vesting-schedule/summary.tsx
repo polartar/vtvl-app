@@ -36,7 +36,6 @@ import {
   getCliffDateTime,
   getDuration,
   getNumberOfReleases,
-  getProjectedEndDateTime,
   getReleaseAmount
 } from 'utils/vesting';
 
