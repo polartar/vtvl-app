@@ -134,7 +134,7 @@ export function DashboardContextProvider({ children }: any) {
       vestings
         .filter((vesting) => vesting.data.status !== 'SUCCESS')
         .forEach(
-          (vesting) => (totalVestingAmount += parseInt(vesting.data.details.amountToBeVested as unknown as string))
+          (vesting) => (totalVestingAmount += parseFloat(vesting.data.details.amountToBeVested as unknown as string))
         );
       const tokenContract = new ethers.Contract(
         mintFormState.address,
