@@ -1,21 +1,27 @@
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ConsentProps {
-  variant?: 'default' | 'minimal';
+  variant?: 'default' | 'check';
+  className?: string;
+  checked?: boolean;
+  onAgree?: (checked: any) => void;
 }
 
-const Consent = ({ variant = 'default' }: ConsentProps) => {
-  const [agree, setAgree] = useState(true);
+const Consent = ({ variant = 'default', className = '', onAgree = (e) => {} }: ConsentProps) => {
+  const [agree, setAgree] = useState(false);
+  useEffect(() => {
+    onAgree(agree);
+  }, [agree]);
   return (
-    <div className="text-xs text-neutral-600 font-medium leading-5">
-      {variant === 'minimal' ? (
-        <div className="row-center justify-center">
+    <div className={`text-xs text-neutral-600 font-medium leading-5 ${className}`}>
+      {variant === 'check' ? (
+        <div className="flex flex-row items-start gap-2 justify-center max-w-xs mx-auto">
           <label
-            className={`cursor-pointer flex items-center justify-center w-5 h-5 rounded-full border border-primary-900 overflow-hidden ${
+            className={`cursor-pointer flex items-center justify-center w-4 h-4 mt-0.5 rounded-full border border-primary-900 overflow-hidden flex-shrink-0 ${
               agree ? 'bg-primary-900' : ' bg-primary-50'
             }`}>
-            {agree ? <img src="/icons/check.svg" alt="Agree" /> : null}
+            {agree ? <img src="/icons/check.svg" alt="Agree" className="w-3 mt-px" /> : null}
             <input
               type="checkbox"
               name="agree"
@@ -26,26 +32,26 @@ const Consent = ({ variant = 'default' }: ConsentProps) => {
           </label>
           <div>
             I agree to VTVL{' '}
-            <Link href="/terms">
-              <span className="cursor-pointer font-bold text-primary-900 no-underline">Terms</span>
-            </Link>{' '}
-            of use and{' '}
-            <Link href="/">
-              <span className="cursor-pointer font-bold text-primary-900 no-underline">Privacy</span>
-            </Link>{' '}
-            Statement
+            <a href="https://vtvl.io/terms" target="_blank" title="Terms and Conditions">
+              <span className="cursor-pointer font-bold text-primary-900 no-underline">Terms of Service</span>
+            </a>{' '}
+            and acknowledge that I have read and understand the{' '}
+            <a href="https://vtvl.io/privacypolicy" target="_blank" title="Privacy Policy">
+              <span className="cursor-pointer font-bold text-primary-900 no-underline">Privacy Policy</span>
+            </a>
+            .
           </div>
         </div>
       ) : (
         <span>
           By connecting a wallet, you agree to VTVL{' '}
-          <Link href="/terms">
+          <a href="https://vtvl.io/terms" target="_blank" title="Terms and Conditions">
             <span className="cursor-pointer font-bold text-primary-900 no-underline">Terms of Service</span>
-          </Link>{' '}
+          </a>{' '}
           and acknowledge that you have read and understand the{' '}
-          <Link href="/">
+          <a href="https://vtvl.io/privacypolicy" target="_blank" title="Privacy Policy">
             <span className="cursor-pointer font-bold text-primary-900 no-underline">Privacy Policy</span>
-          </Link>
+          </a>
           .
         </span>
       )}

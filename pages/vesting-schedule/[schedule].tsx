@@ -50,8 +50,8 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
           ...getVestingSchedule,
           details: {
             ...getVestingSchedule?.details,
-            startDateTime: actualDateTime.startDate,
-            endDateTime: actualDateTime.endDate
+            startDateTime: actualDateTime.startDateTime,
+            endDateTime: actualDateTime.endDateTime
           }
         });
         hideLoading();

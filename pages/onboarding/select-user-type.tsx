@@ -43,7 +43,7 @@ const userTypes = {
 const SelectUserTypePage: NextPage = () => {
   const { onNext, startOnboarding, completeOnboarding, inProgress } = useContext(OnboardingContext);
   const { emailSignUp, user } = useContext(AuthContext);
-  const { active } = useWeb3React();
+  const { active, account, chainId } = useWeb3React();
   const [selected, setSelected] = React.useState('');
   const [member, setMember] = React.useState<IMember>();
 
@@ -87,13 +87,14 @@ const SelectUserTypePage: NextPage = () => {
         onNext({ accountType: selected });
         return;
       }
-      if (user) {
+      if (user && account) {
         await newMember(user.uid, {
           email: user.email || member?.email,
           companyEmail: user.email || member?.email,
           name: user.displayName || member?.name,
           type: selected,
-          org_id: member?.org_id
+          org_id: member?.org_id,
+          wallets: [{ walletAddress: account, chainId: chainId! }]
         });
         active ? completeOnboarding() : Router.push('/member');
         return;

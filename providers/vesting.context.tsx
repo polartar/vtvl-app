@@ -2,10 +2,11 @@ import { useWeb3React } from '@web3-react/core';
 import { Timestamp } from 'firebase/firestore';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
-import { fetchVestingsByQuery } from 'services/db/vesting';
+import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVesting } from 'types/models';
 import { IRecipient } from 'types/vesting';
+import { generateRandomName } from 'utils/shared';
 
 import { useAuthContext } from './auth.context';
 
@@ -86,7 +87,20 @@ export function VestingContextProvider({ children }: any) {
 
   useEffect(() => {
     if (organizationId) {
-      fetchVestingsByQuery('organizationId', '==', organizationId).then((res) => setVestings(res));
+      fetchVestingsByQuery('organizationId', '==', organizationId).then((res) => {
+        // Check if the vesting schedules already has name, if none, generate one
+        if (res.length) {
+          const newVestings = res.map((schedule) => {
+            const newScheduleDetails = { ...schedule };
+            if (!schedule.data.name) {
+              newScheduleDetails.data.name = generateRandomName();
+              updateVesting({ ...newScheduleDetails.data }, schedule.id);
+            }
+            return newScheduleDetails;
+          });
+          setVestings(newVestings);
+        }
+      });
     }
   }, [organizationId]);
 

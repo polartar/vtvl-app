@@ -5,6 +5,7 @@ import { useTransactionLoaderContext } from '@providers/transaction-loader.conte
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import getUnixTime from 'date-fns/getUnixTime';
 import Decimal from 'decimal.js';
 import { ethers } from 'ethers';
@@ -16,7 +17,7 @@ import { fetchToken, fetchTokensByQuery } from 'services/db/token';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IToken, IVesting } from 'types/models';
-import { formatDate, formatTime } from 'utils/shared';
+import { IActualDateTimeProps, formatDate, formatTime, getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 
 import TokenProfile from '../TokenProfile/TokenProfile';
@@ -35,6 +36,11 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
   const [daysLeft, setDaysLeft] = useState(0);
   const [progress, setProgress] = useState(0);
   const [vestingContractAddress, setVestingContractAddress] = useState('');
+  const [actualDateTime, setActualDateTime] = useState<IActualDateTimeProps>({
+    startDateTime: new Date(),
+    endDateTime: new Date(),
+    originalEndDateTime: new Date()
+  });
 
   const importToken = async () => {
     try {
@@ -107,6 +113,12 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
     }
   }, [vesting, token, chainId, account]);
 
+  // Sets the actual date times based on fetched data from the vesting details -- which is normally in Timestamp
+  // then parse it to JS readable date time for easy manipulation / formatting via date-fns
+  useEffect(() => {
+    setActualDateTime(getActualDateTime({ ...vesting.details }));
+  }, [vesting]);
+
   return (
     <div className="panel p-0">
       <div className="p-6">
@@ -122,7 +134,9 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
         <button onClick={() => importToken()} className="secondary py-1 mb-6">
           Import token to your wallet
         </button>
-        <VestingProgress duration={`${daysLeft} days left`} progress={progress} />
+        {actualDateTime.endDateTime ? (
+          <VestingProgress duration={`${formatDistanceToNow(actualDateTime.endDateTime)} left`} progress={progress} />
+        ) : null}
         <div className="mt-6 grid grid-cols-2 pb-4 border-b border-gray-200">
           <div>
             <p className="text-xs font-medium text-neutral-500 mb-1">Your total allocation</p>

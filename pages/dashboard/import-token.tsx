@@ -55,7 +55,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
     if (!tokenAddress.value || tokenAddress.value.length !== 42) {
       setError(true);
       setMessage('Token address is invalid');
-    } else if (tokenName) {
+    } else if (tokenName && chainId) {
       setLoading(true);
       const tokenRefId = await createToken({
         name: tokenName,
@@ -68,7 +68,8 @@ const DashboardImportToken: NextPageWithLayout = () => {
         createdAt: Math.floor(new Date().getTime() / 1000),
         updatedAt: Math.floor(new Date().getTime() / 1000),
         supplyCap: 'UNLIMITED',
-        status: 'SUCCESS'
+        status: 'SUCCESS',
+        chainId
       });
       updateMintFormState({
         name: tokenName,
@@ -81,7 +82,8 @@ const DashboardImportToken: NextPageWithLayout = () => {
         createdAt: Math.floor(new Date().getTime() / 1000),
         updatedAt: Math.floor(new Date().getTime() / 1000),
         supplyCap: 'UNLIMITED',
-        status: 'SUCCESS'
+        status: 'SUCCESS',
+        chainId
       });
       setLoading(false);
       router.push('/dashboard');

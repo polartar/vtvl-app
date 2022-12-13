@@ -1,11 +1,12 @@
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import Consent from '@components/molecules/Consent/Consent';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { emailPattern } from 'types/constants/validation-patterns';
@@ -15,7 +16,8 @@ type LoginForm = {
 };
 
 const SignUpPage: NextPage = () => {
-  const { teammateSignIn, sendLoginLink, signInWithGoogle } = useContext(AuthContext);
+  const { teammateSignIn, sendLoginLink, signInWithGoogle, agreedOnConsent, setAgreedOnConsent } =
+    useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const router = useRouter();
 
@@ -29,6 +31,7 @@ const SignUpPage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
+    setValue,
     formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
@@ -51,12 +54,28 @@ const SignUpPage: NextPage = () => {
     }
   };
 
+  const onGoogleSignUp = async () => {
+    if (!agreedOnConsent) {
+      setFormError(true);
+      setFormMessage('You must accept the terms and conditions to create an account.');
+      return;
+    }
+    await googleSignIn();
+  };
+
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     try {
+      setFormSuccess(false);
       const values = getValues();
       const params: any = new URL(window.location.toString() || '');
       const type = params.searchParams.get('type');
       const orgId = params.searchParams.get('orgId');
+
+      if (!agreedOnConsent) {
+        setFormError(true);
+        setFormMessage('You must accept the terms and conditions to create an account.');
+        return;
+      }
 
       if (type && orgId) {
         // invited member
@@ -73,25 +92,39 @@ const SignUpPage: NextPage = () => {
     }
   };
 
+  const [formError, setFormError] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
+  const [formMessage, setFormMessage] = useState('');
+  const handleAgree = (checked: boolean) => {
+    setAgreedOnConsent(checked);
+  };
+
+  useEffect(() => {
+    if (agreedOnConsent === true) {
+      setFormError(false);
+      setFormSuccess(true);
+      setFormMessage('');
+    }
+  }, [agreedOnConsent]);
+
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
-      <h1 className="text-neutral-900">Sign Up</h1>
-      <p className="text-sm text-center text-neutral-500">
-        Select or enter your credentials to gain the access to platform.
-        <br />
-        Only registered team members are allowed to access this site.
-      </p>
+      <h1 className="text-neutral-900">Create your account</h1>
+      <p className="text-sm text-center text-neutral-500">Please enter your email to create an account</p>
 
       <Form
         isSubmitting={isSubmitting}
         onSubmit={handleSubmit(onSubmit)}
+        error={formError}
+        success={formSuccess}
+        message={formMessage}
         className="w-full my-6 flex flex-col items-center">
         <button
           type="button"
-          onClick={async () => await googleSignIn()}
+          onClick={onGoogleSignUp}
           className="line flex flex-row items-center justify-center gap-2.5 w-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
-          Sign Up with Google
+          Sign up with Google
         </button>
         <div className="flex flex-row items-center justify-center gap-3 my-5 w-full">
           <hr className="border-t border-neutral-200 w-1/4 sm:w-1/3" />
@@ -119,17 +152,19 @@ const SignUpPage: NextPage = () => {
               )}
             />
             <Button className="secondary mt-5 mx-auto" type="submit" loading={isSubmitting}>
-              Sign Up
+              Create account
             </Button>
           </div>
         </div>
         <hr className="border-t border-neutral-200 w-full mb-5" />
-        <span className="block font-medium text-xs text-neutral-800 text-center">
+        <div className="flex flex-row items-center justify-center gap-5 font-medium text-xs text-neutral-800">
           Already have an account?{' '}
-          <span className="text-primary-900 cursor-pointer" onClick={() => router.replace('/onboarding/member-login')}>
+          <button type="button" className="primary small" onClick={() => router.replace('/onboarding/member-login')}>
             Login
-          </span>
-        </span>
+          </button>
+        </div>
+
+        <Consent variant="check" className="mt-5" onAgree={handleAgree} />
       </Form>
     </div>
   );

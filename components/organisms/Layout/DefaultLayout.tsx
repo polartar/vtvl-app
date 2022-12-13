@@ -121,7 +121,7 @@ const employeeInvestorMenuItems = {
     //   available: false
     // },
     {
-      title: 'Claims Portal',
+      title: 'My tokens',
       icon: '/icons/s_dashboard.svg',
       hoverIcon: '/icons/s_dashboard2.svg',
       route: '/tokens',
@@ -210,6 +210,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   }, []);
 
   const displaySideBar = Boolean(
+    // MOCK DISPLAY
+    // true
     !inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type]
   );
 
@@ -222,6 +224,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       } else {
         setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
       }
+    } else {
+      // For testing purposes only
+      setSidebarProperties({ ...SidebarProps.employee });
     }
   }, [user, safe]);
 

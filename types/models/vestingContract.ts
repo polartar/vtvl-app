@@ -6,6 +6,7 @@ export interface IVestingContract {
   organizationId: string;
   createdAt: number;
   updatedAt: number;
+  chainId: number;
 }
 
 export interface IFundContractProps {

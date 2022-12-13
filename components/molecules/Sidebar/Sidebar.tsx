@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
+import { useClaimTokensContext } from '@providers/claim-tokens.context';
 import Router, { useRouter } from 'next/router';
-import React, { useContext, useEffect } from 'react';
+import React, { Fragment, useContext, useEffect } from 'react';
 
 import AuthContext from '../../../providers/auth.context';
 import { Colors } from '../../CommonStyles';
@@ -30,12 +31,16 @@ interface Props {
 
 const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
   const { sidebarIsExpanded, expandSidebar, forceCollapseSidebar, user, logOut } = useContext(AuthContext);
+  const { vestingSchedules } = useClaimTokensContext();
   const currentRoute = useRouter();
   const [selectedRoute, setSelectedRoute] = React.useState(currentRoute.pathname || '');
   const handleMenuClick = (route: string) => {
     setSelectedRoute(route);
     Router.push(route);
   };
+
+  const hasTokensToClaim = (menu: any) => false; // temporary -- to use the old claim token
+  // Boolean(menu.route === '/tokens' && vestingSchedules && vestingSchedules.length);
 
   // Force expand the sidebar on initial load when the device screen width is large
   useEffect(() => {
@@ -44,50 +49,85 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
     }
   }, []);
 
+  // Watch for the currentRoute's path to ensure update active state on the sidebar
+  // This fixes redirection via route push
+  useEffect(() => {
+    setSelectedRoute(currentRoute.pathname);
+  }, [currentRoute.pathname]);
+
   return (
     <SidebarContainer isExpanded={sidebarIsExpanded} className="transition-all">
       <img
         src="/icons/collapse-btn.svg"
         alt="toggle sidebar"
         onClick={expandSidebar}
-        className={`absolute top-8 -right-2 h-4 w-4 z-50 cursor-pointer transform-gpu transition-all rounded-full ${
+        className={`absolute top-8 -right-2 h-4 w-4 z-30 cursor-pointer transform-gpu transition-all rounded-full ${
           sidebarIsExpanded ? 'rotate-180' : ''
         }`}
         data-tip="Toggle sidebar"
       />
       <div>
         <RoleTitle className={`transition-all ${sidebarIsExpanded ? 'text-sm' : 'text-tiny'}`}>{roleTitle}</RoleTitle>
-        {menuList.map((menu: any, index: number) => (
-          <SidebarItem
-            key={index}
-            selected={selectedRoute.includes(menu.route)}
-            hovered={false}
-            onClick={() => (menu.available ? handleMenuClick(menu.route) : {})}
-            icon={menu.icon}
-            hoverIcon={menu.hoverIcon}
-            className={`${sidebarIsExpanded ? 'w-60' : ''} ${!menu.available ? 'opacity-40' : ''}`}>
-            <span
-              className={`transition-width overflow-hidden whitespace-nowrap ${
-                sidebarIsExpanded ? '' : 'opacity-0 w-0'
-              }`}>
-              <p>{menu.title}</p>
-              {!menu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
-            </span>
-          </SidebarItem>
-        ))}
+        {menuList && menuList.length
+          ? menuList.map((menu: any, index: number) => (
+              <Fragment key={`menu-item-${index}`}>
+                <SidebarItem
+                  selected={selectedRoute.includes(menu.route)}
+                  hovered={false}
+                  onClick={() => (menu.available ? handleMenuClick(menu.route) : {})}
+                  icon={menu.icon}
+                  hoverIcon={menu.hoverIcon}
+                  className={`${sidebarIsExpanded ? 'w-60' : ''} ${!menu.available ? 'opacity-40' : ''}`}>
+                  <div
+                    className={`w-full transition-width overflow-hidden whitespace-nowrap ${
+                      sidebarIsExpanded ? '' : 'opacity-0 w-0'
+                    }`}>
+                    <div className="flex flex-row items-center justify-between mr-3">
+                      <p>{menu.title}</p>
+                      {hasTokensToClaim(menu) ? (
+                        <div className="bg-primary-700 text-xs text-white rounded-full py-0.5 px-2">
+                          {vestingSchedules.length}
+                        </div>
+                      ) : null}
+                    </div>
+                    {!menu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
+                  </div>
+                </SidebarItem>
+                {/* Display only when the Claim portal link is available and has claimable tokens */}
+                {/* We can probably refactor this one later into a component */}
+                {hasTokensToClaim(menu)
+                  ? vestingSchedules.map((schedule) => (
+                      <div
+                        key={`schedule-${schedule.id}`}
+                        className={`text-neutral-700 font-medium py-2 cursor-pointer hover:bg-gray-200 rounded-full transition-all mt-3 last:mb-3 ${
+                          sidebarIsExpanded ? 'px-12' : 'flex items-center justify-center'
+                        } ${currentRoute.asPath.includes(schedule.id) ? 'bg-gray-200' : ''}`}
+                        onClick={() => Router.push(`/tokens/${schedule.id}`)}>
+                        {sidebarIsExpanded ? schedule.data.name : schedule.data.name?.charAt(0)}
+                      </div>
+                    ))
+                  : null}
+              </Fragment>
+            ))
+          : null}
       </div>
       <div>
-        {submenuList.map((submenu, index) => (
-          <IconText key={index} sideIcon={submenu.icon} className={`${!submenu.available ? 'opacity-40' : ''}`}>
-            <span
-              className={`transition-width overflow-hidden whitespace-nowrap ${
-                sidebarIsExpanded ? '' : 'opacity-0 w-0'
-              }`}>
-              <p>{submenu.title}</p>
-              {!submenu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
-            </span>
-          </IconText>
-        ))}
+        {submenuList && submenuList.length
+          ? submenuList.map((submenu, index) => (
+              <IconText
+                key={`submenu-item-${index}`}
+                sideIcon={submenu.icon}
+                className={`${!submenu.available ? 'opacity-40' : ''}`}>
+                <span
+                  className={`transition-width overflow-hidden whitespace-nowrap ${
+                    sidebarIsExpanded ? '' : 'opacity-0 w-0'
+                  }`}>
+                  <p>{submenu.title}</p>
+                  {!submenu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
+                </span>
+              </IconText>
+            ))
+          : null}
         <UserContainer>
           <User
             userName={user?.memberInfo?.name || user?.displayName || 'John Doe'}
@@ -114,9 +154,6 @@ const SidebarContainer = styled.aside<{
   flex-direction: column;
   justify-content: space-between;
   padding: 32px 16px 16px;
-  @media only screen and (min-width: 1366px) {
-    width: 279px;
-  }
 `;
 const RoleTitle = styled.span`
   font-style: normal;
