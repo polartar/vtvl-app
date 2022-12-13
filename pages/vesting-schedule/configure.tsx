@@ -136,8 +136,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
 
   console.log('Lumpsum release', lumpSumReleaseAfterCliff.value);
-  // Supporting variables
-  const tokenSupply = mintFormState.initialSupply || 100000;
 
   const cliffOptions = [
     { label: 'No cliff', value: 'no-cliff' },
@@ -166,7 +164,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Handle the changes made when updating the amount to be vested.
   const handleMinChange = (e: any) => {
-    console.log('Min changed', +e.target.value, tokenSupply);
+    console.log('Min changed', +e.target.value);
     setValue('amountToBeVested', +e.target.value);
   };
 
@@ -733,9 +731,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   label="Amount to be vested"
                   required
                   initial={+amountToBeVested.value}
-                  maximum={+tokenSupply}
+                  maximum={+mintFormState.initialSupply}
                   onMinChange={handleMinChange}
-                  onUseMax={() => setValue('amountToBeVested', +tokenSupply)}
+                  onUseMax={() => setValue('amountToBeVested', +mintFormState.initialSupply)}
                   maxReadOnly
                 />
               </div>
