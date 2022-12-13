@@ -40,7 +40,8 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
     org_id: invitee?.data().org_id || member.org_id || '',
     joined: member.joined || Math.floor(new Date().getTime() / 1000),
     createdAt: Math.floor(new Date().getTime() / 1000),
-    updatedAt: Math.floor(new Date().getTime() / 1000)
+    updatedAt: Math.floor(new Date().getTime() / 1000),
+    wallets: member.wallets
   });
 };
 

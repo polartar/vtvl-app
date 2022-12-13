@@ -1,3 +1,4 @@
+import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import {
   GoogleAuthProvider,
@@ -54,11 +55,14 @@ export type AuthContextData = {
   expandSidebar: () => void;
   forceCollapseSidebar: () => void;
   fetchSafe: () => void;
+  agreedOnConsent: boolean;
+  setAgreedOnConsent: (data: any) => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
 
 export function AuthContextProvider({ children }: any) {
+  const { chainId, account } = useWeb3React();
   const [user, setUser] = useState<IUser | undefined>();
   // Remove default value when merging to develop, staging or main
   // Mock organizationId 'v2S4z6kgjac61iDsQqr7'
@@ -66,6 +70,7 @@ export function AuthContextProvider({ children }: any) {
   const [safe, setSafe] = useState<ISafe | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
+  const [agreedOnConsent, setAgreedOnConsent] = useState<boolean>(false);
   const tried = useEagerConnect();
   const [error, setError] = useState('');
   // Remove after implementing context to show/hide the sidebar
@@ -94,7 +99,8 @@ export function AuthContextProvider({ children }: any) {
       await newMember(credential.user.uid, {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
-        name: credential.user.displayName || ''
+        name: credential.user.displayName || '',
+        wallets: account ? [{ walletAddress: account, chainId: chainId! }] : undefined
       });
     }
     setIsNewUser(additionalInfo?.isNewUser || false);
@@ -126,7 +132,8 @@ export function AuthContextProvider({ children }: any) {
       await newMember(credential.user.uid, {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
-        name: credential.user.displayName || ''
+        name: credential.user.displayName || '',
+        wallets: account ? [{ walletAddress: account, chainId: chainId! }] : undefined
       });
     }
     setOrganizationId(memberInfo?.org_id);
@@ -189,7 +196,10 @@ export function AuthContextProvider({ children }: any) {
           type: newSignUp.type,
           org_id: newSignUp.org_id
         };
-    await newMember(credential.user.uid, memberInfo);
+    await newMember(credential.user.uid, {
+      ...memberInfo,
+      wallets: account ? [{ walletAddress: account, chainId: chainId! }] : undefined
+    });
     setUser({ ...credential.user, memberInfo });
 
     setLoading(false);
@@ -220,7 +230,11 @@ export function AuthContextProvider({ children }: any) {
           type
         };
 
-    await newMember(credential.user.uid, { ...memberInfo, type });
+    await newMember(credential.user.uid, {
+      ...memberInfo,
+      type,
+      wallets: account ? [{ walletAddress: account, chainId: chainId! }] : undefined
+    });
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     setUser({ ...credential.user, memberInfo });
@@ -319,9 +333,11 @@ export function AuthContextProvider({ children }: any) {
       toggleSideBar,
       expandSidebar,
       forceCollapseSidebar: () => setSidebarIsExpanded(false),
-      fetchSafe
+      fetchSafe,
+      agreedOnConsent,
+      setAgreedOnConsent
     }),
-    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe]
+    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent]
   );
   console.log('organzationId - ', organizationId);
 

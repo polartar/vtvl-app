@@ -16,7 +16,8 @@ type LoginForm = {
 };
 
 const SignUpPage: NextPage = () => {
-  const { teammateSignIn, sendLoginLink, signInWithGoogle } = useContext(AuthContext);
+  const { teammateSignIn, sendLoginLink, signInWithGoogle, agreedOnConsent, setAgreedOnConsent } =
+    useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const router = useRouter();
 
@@ -34,19 +35,13 @@ const SignUpPage: NextPage = () => {
     formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
-      memberEmail: '',
-      agreedOnConsent: false
+      memberEmail: ''
     }
   });
 
   const memberEmail = {
     value: watch('memberEmail'),
     state: getFieldState('memberEmail')
-  };
-
-  const agreedOnConsent = {
-    value: watch('agreedOnConsent'),
-    state: getFieldState('agreedOnConsent')
   };
 
   const googleSignIn = async () => {
@@ -59,6 +54,15 @@ const SignUpPage: NextPage = () => {
     }
   };
 
+  const onGoogleSignUp = async () => {
+    if (!agreedOnConsent) {
+      setFormError(true);
+      setFormMessage('You must accept the terms and conditions to create an account.');
+      return;
+    }
+    await googleSignIn();
+  };
+
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     try {
       setFormSuccess(false);
@@ -67,7 +71,7 @@ const SignUpPage: NextPage = () => {
       const type = params.searchParams.get('type');
       const orgId = params.searchParams.get('orgId');
 
-      if (!agreedOnConsent.value) {
+      if (!agreedOnConsent) {
         setFormError(true);
         setFormMessage('You must accept the terms and conditions to create an account.');
         return;
@@ -92,16 +96,16 @@ const SignUpPage: NextPage = () => {
   const [formSuccess, setFormSuccess] = useState(false);
   const [formMessage, setFormMessage] = useState('');
   const handleAgree = (checked: boolean) => {
-    setValue('agreedOnConsent', checked);
+    setAgreedOnConsent(checked);
   };
 
   useEffect(() => {
-    if (agreedOnConsent.value === true) {
+    if (agreedOnConsent === true) {
       setFormError(false);
       setFormSuccess(true);
       setFormMessage('');
     }
-  }, [agreedOnConsent.value]);
+  }, [agreedOnConsent]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
@@ -117,7 +121,7 @@ const SignUpPage: NextPage = () => {
         className="w-full my-6 flex flex-col items-center">
         <button
           type="button"
-          onClick={async () => await googleSignIn()}
+          onClick={onGoogleSignUp}
           className="line flex flex-row items-center justify-center gap-2.5 w-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign up with Google

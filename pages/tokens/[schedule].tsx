@@ -1,4 +1,5 @@
 import Button from '@components/atoms/Button/Button';
+import Chip from '@components/atoms/Chip/Chip';
 import VestingProgress from '@components/atoms/VestingProgress/VestingProgress';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
@@ -10,7 +11,7 @@ import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
-import Decimal from 'decimal.js';
+import getUnixTime from 'date-fns/getUnixTime';
 import { ethers } from 'ethers';
 import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -31,7 +32,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   const { mintFormState } = useTokenContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
-  const { tokens, userTokenDetails, vestingSchedules, selectedSchedule, setSelectedSchedule, fetchContract } =
+  const { userTokenDetails, vestingSchedules, selectedSchedule, selectedToken, setSelectedSchedule, fetchContract } =
     useClaimTokensContext();
   const router = useRouter();
   // schedule = document id of the vesting schedule
@@ -40,6 +41,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   const [nextUnlock, setNextUnlock] = useState(1000);
   const [isClaiming, setIsClaiming] = useState(false);
   const [isNextUnlockUpdated, setIsNextUnlockUpdated] = useState(true);
+  const [isCliffComplete, setIsCliffComplete] = useState(false);
   const countDownComponent = useRef<Countdown>(null);
 
   const [chartData, setChartData] = useState([
@@ -86,6 +88,27 @@ const MyTokenSchedule: NextPageWithLayout = () => {
       }
     } else {
       setIsClaiming(false);
+    }
+  };
+
+  // Handles the importing for token to wallet process
+  const importToken = async () => {
+    try {
+      if (!library || !selectedToken) return;
+      await library.provider.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20', // Initially only supports ERC20, but eventually more!
+          options: {
+            address: selectedToken?.address,
+            symbol: selectedToken?.symbol,
+            decimals: selectedToken?.decimals || 18,
+            image: selectedToken?.logo
+          }
+        }
+      });
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -176,6 +199,17 @@ const MyTokenSchedule: NextPageWithLayout = () => {
     // Initially
     showLoading();
   }, [selectedSchedule]);
+
+  useEffect(() => {
+    if (userTokenDetails.cliffDate) {
+      const cliffDateSeconds = getUnixTime(userTokenDetails.cliffDate as Date);
+      const nowSeconds = getUnixTime(new Date());
+      if (nowSeconds >= cliffDateSeconds) {
+        // Cliff complete
+        setIsCliffComplete(true);
+      }
+    }
+  }, [userTokenDetails.cliffDate]);
 
   return (
     <>
@@ -389,9 +423,10 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                 <div className="p-6 border-gray-200">
                   <div className="flex flex-row items-center gap-2 mb-2.5">
                     <LockIcon className="h-6 fill-current" />
-                    <span className={`text-sm text-neutral-500 ${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
+                    <span className={`text-sm text-neutral-500${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
                       Cliff
                     </span>
+                    {isCliffComplete ? <Chip label="Finished" rounded color="successAlt" size="small" /> : null}
                   </div>
                   <div className="text-lg text-neutral-900">
                     <span className="capitalize">{selectedSchedule.data.details.cliffDuration.replace('-', ' ')}</span>
@@ -411,6 +446,12 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     {formatNumber(userTokenDetails.releaseAmount, 6)}/
                     {DATE_FREQ_TO_LABEL[selectedSchedule.data.details.releaseFrequency]}
                   </div>
+                </div>
+                <div className="p-6 border-t border-gray-200 text-center  sm:col-span-2 md:col-span-1 lg:col-span-2">
+                  <p className="text-gray-500">Let's start claiming your tokens.</p>
+                  <button onClick={() => importToken()} className="secondary py-1">
+                    Import token to your wallet
+                  </button>
                 </div>
               </div>
             </div>

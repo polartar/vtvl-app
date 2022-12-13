@@ -33,6 +33,7 @@ interface IClaimTokensData {
   tokens: IToken[];
   vestingSchedules: { id: string; data: IVesting }[];
   selectedSchedule: { id: string; data: IVesting } | undefined;
+  selectedToken: IToken | undefined;
   userTokenDetails: TUserTokenDetails;
   setSelectedSchedule: (data: any) => void;
   fetchContract: () => void;
@@ -75,6 +76,9 @@ export function ClaimTokensContextProvider({ children }: any) {
   // Stores the claimable tokens of the current user
   const [tokens, setTokens] = useState<IToken[]>([]);
 
+  // Stores the selected token based on the selected schedule
+  const [selectedToken, setSelectedToken] = useState<IToken | undefined>();
+
   // Stores the list of vesting schedules based on claimable tokens of the user
   const [vestingSchedules, setVestingSchedules] = useState<{ id: string; data: IVesting }[]>([]);
 
@@ -110,7 +114,7 @@ export function ClaimTokensContextProvider({ children }: any) {
           // MOCK DATA
           // vesting.data.recipients.find(
           //   (recipient) =>
-          //     recipient.walletAddress.toLowerCase() === '0x34e28F73941198d6E1b5C05d550c29c97CbdB747'.toLowerCase()
+          //     recipient.walletAddress.toLowerCase() === '0x2395ab434522ed26d49839cca7568da48c5c8d4a'.toLowerCase()
           // )
         ) {
           setOrganizations({
@@ -149,9 +153,9 @@ export function ClaimTokensContextProvider({ children }: any) {
 
         const [totalAllocatedToUser, totalClaimableByUser, totalVestedToUser] = await Promise.all([
           // MOCK DATAS
-          // vestingContract.finalVestedAmount('0x34e28F73941198d6E1b5C05d550c29c97CbdB747'),
-          // vestingContract.claimableAmount('0x34e28F73941198d6E1b5C05d550c29c97CbdB747'),
-          // vestingContract.vestedAmount('0x34e28F73941198d6E1b5C05d550c29c97CbdB747', getUnixTime(new Date()))
+          // vestingContract.finalVestedAmount('0x2395ab434522ed26d49839cca7568da48c5c8d4a'),
+          // vestingContract.claimableAmount('0x2395ab434522ed26d49839cca7568da48c5c8d4a'),
+          // vestingContract.vestedAmount('0x2395ab434522ed26d49839cca7568da48c5c8d4a', getUnixTime(new Date()))
           vestingContract.finalVestedAmount(account),
           vestingContract.claimableAmount(account),
           vestingContract.vestedAmount(account, getUnixTime(new Date()))
@@ -171,16 +175,34 @@ export function ClaimTokensContextProvider({ children }: any) {
     }
   };
 
+  // Gets the token details
+  const getTokenDetails = async () => {
+    if (selectedSchedule && selectedSchedule.data) {
+      try {
+        const getTokenFromDB = await fetchTokenByQuery('organizationId', '==', selectedSchedule?.data.organizationId);
+        console.log('Token', getTokenFromDB);
+        if (getTokenFromDB && getTokenFromDB.data) {
+          setSelectedToken({
+            ...getTokenFromDB.data
+          });
+        }
+      } catch (err) {
+        // something went wrong
+      }
+    }
+  };
+
   const value = useMemo(
     () => ({
       tokens,
       vestingSchedules,
       selectedSchedule,
+      selectedToken,
       userTokenDetails,
       setSelectedSchedule,
       fetchContract
     }),
-    [vestingSchedules, selectedSchedule, tokens, userTokenDetails]
+    [vestingSchedules, selectedSchedule, selectedToken, tokens, userTokenDetails]
   );
 
   useEffect(() => {
@@ -251,10 +273,7 @@ export function ClaimTokensContextProvider({ children }: any) {
           ? getNumberOfReleases(releaseFrequency, cliffDate || startDateTime, endDateTime)
           : 0;
 
-      // TO BE CONTINUED!! WHY IS THIS NOT WORKING? RETURNING 0 when parsed but on logs displays the correct one.
       const releaseAmount = getReleaseAmountDecimal(new Decimal(amountToBeVested), cliffAmount, numberOfReleases);
-
-      console.log('Release amount', releaseAmount.toString(), formatNumber(releaseAmount, 6));
 
       setUserTokenDetails({
         ...userTokenDetails,
@@ -264,9 +283,16 @@ export function ClaimTokensContextProvider({ children }: any) {
         numberOfReleases
       });
     }
+  }, [selectedSchedule]);
+
+  // Waits for the releaseAmount to finish before fetching other records
+  // Fixes the said amounts being defaulted to 0
+  useEffect(() => {
     // Get the contract
     fetchContract();
-  }, [selectedSchedule]);
+    // Get the current token
+    getTokenDetails();
+  }, [userTokenDetails.releaseAmount]);
 
   // Computes the claimed, unclaimed and remaining tokens of the individual user
   useEffect(() => {
