@@ -99,7 +99,7 @@ AddVestingSchedulesProps) => {
 
   const { account, library, activate, chainId } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
-  const { mintFormState, totalTokenSupply } = useTokenContext();
+  const { mintFormState } = useTokenContext();
   const {
     vestings,
     transactions,
@@ -678,7 +678,7 @@ AddVestingSchedulesProps) => {
             tokenName={mintFormState.name}
             tokenSymbol={mintFormState.symbol}
             supplyCap={mintFormState.supplyCap}
-            maxSupply={mintFormState.maxSupply ? mintFormState.maxSupply : +totalTokenSupply}
+            maxSupply={mintFormState.initialSupply ? mintFormState.initialSupply : 0}
             address={mintFormState.address}
           />
         ) : null}

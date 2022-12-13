@@ -55,7 +55,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { organizationId, safe } = useAuthContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
-  const { mintFormState, isTokenLoading, totalTokenSupply } = useTokenContext();
+  const { mintFormState, isTokenLoading } = useTokenContext();
 
   const [selected, setSelected] = useState('manual');
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
@@ -603,10 +603,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Sets the remaining based on the total supply
   useEffect(() => {
-    if (totalUsedSupply && totalTokenSupply) {
-      setRemaining(+totalTokenSupply - totalUsedSupply);
+    if (totalUsedSupply && mintFormState.initialSupply) {
+      setRemaining(+mintFormState.initialSupply - totalUsedSupply);
     }
-  }, [totalUsedSupply, totalTokenSupply]);
+  }, [totalUsedSupply, mintFormState.initialSupply]);
 
   return (
     <>
@@ -636,7 +636,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
               remainingAllocation={remaining}
-              totalAllocation={+totalTokenSupply || 0}
+              totalAllocation={+mintFormState.initialSupply || 0}
             />
           </div>
           {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">

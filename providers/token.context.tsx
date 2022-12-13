@@ -29,7 +29,6 @@ interface ITokenContextData {
   mintFormState: IMintFormState;
   tokenId: string;
   isTokenLoading: boolean;
-  totalTokenSupply: string | number | Decimal;
   updateMintFormState: (v: any) => void;
 }
 
@@ -57,21 +56,20 @@ export function TokenContextProvider({ children }: any) {
   });
 
   const [tokenId, setTokenId] = useState('');
-  const [totalTokenSupply, setTotalTokenSupply] = useState(0);
 
   const value = useMemo(
     () => ({
       mintFormState,
       tokenId,
       isTokenLoading,
-      totalTokenSupply,
       updateMintFormState: setMintFormState
     }),
-    [mintFormState, isTokenLoading, totalTokenSupply]
+    [mintFormState, isTokenLoading]
   );
 
-  const getTokenSupply = () => {
-    if (organizationId && SupportedChains[chainId as SupportedChainId] && mintFormState) {
+  const getTokenDetailsFromBlockchain = async () => {
+    if (organizationId && mintFormState.address && SupportedChains[chainId as SupportedChainId]) {
+      // Check blockchain for precise details
       // Rely on tokens collection from DB to have the token address itself
       // Because:
       // - Imported tokens is not guaranteed to have a vestingContract in our DB.
@@ -82,12 +80,23 @@ export function TokenContextProvider({ children }: any) {
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
       if (vestingContractInstance) {
-        // Get the total supply and parse it.
-        vestingContractInstance.totalSupply().then((res: string) => {
-          // Divide response token unit 256 to 1e18 for 18 decimal places.
-          // To do: look for a util function that does this.
-          console.log('token supply', +res.toString() / 1e18);
-          setTotalTokenSupply(+res.toString() / 1e18);
+        // Get all necessary details from the blockchain
+        const [totalSupply, name, symbol, decimals] = await Promise.all([
+          vestingContractInstance.totalSupply(),
+          vestingContractInstance.name(),
+          vestingContractInstance.symbol(),
+          vestingContractInstance.decimals()
+        ]);
+        // Divide response token unit 256 to 1e18 for 18 decimal places.
+        // To do: look for a util function that does this.
+        console.log('Token details', name, symbol, decimals, +totalSupply.toString() / 1e18, vestingContractInstance);
+
+        setMintFormState({
+          ...mintFormState,
+          initialSupply: +totalSupply.toString() / 1e18,
+          name,
+          symbol,
+          decimals
         });
       }
     }
@@ -97,7 +106,7 @@ export function TokenContextProvider({ children }: any) {
     if (organizationId) {
       fetchTokenByQuery('organizationId', '==', organizationId)
         .then((res) => {
-          if (res) {
+          if (res && res.data) {
             setMintFormState((mintFormState) => ({
               ...mintFormState,
               name: res.data?.name || '',
@@ -118,7 +127,9 @@ export function TokenContextProvider({ children }: any) {
           }
           setIsTokenLoading(false);
         })
-        .catch((err) => setIsTokenLoading(false));
+        .catch((err) => {
+          setIsTokenLoading(false);
+        });
     } else {
       setIsTokenLoading(false);
     }
@@ -131,10 +142,14 @@ export function TokenContextProvider({ children }: any) {
   useEffect(() => {
     console.log('Mint supply was updated', mintFormState);
     // Consider the data from DB as Imported token when this condition is met.
-    if ((!mintFormState.initialSupply || !mintFormState.maxSupply) && mintFormState.supplyCap === 'UNLIMITED') {
-      getTokenSupply();
+    if (
+      mintFormState.address &&
+      (!mintFormState.initialSupply || !mintFormState.maxSupply) &&
+      mintFormState.supplyCap === 'UNLIMITED'
+    ) {
+      getTokenDetailsFromBlockchain();
     }
-  }, [mintFormState]);
+  }, [mintFormState.address]);
 
   return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;
 }
