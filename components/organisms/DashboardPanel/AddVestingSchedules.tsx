@@ -127,7 +127,7 @@ AddVestingSchedulesProps) => {
   const [executable, setExecutable] = useState(false);
 
   const handleDeployVestingContract = async () => {
-    if (!account) {
+    if (!account || !chainId) {
       activate(injected);
       return;
     } else if (organizationId) {
@@ -141,15 +141,27 @@ AddVestingSchedulesProps) => {
         const vestingContract = await VestingFactory.deploy(mintFormState.address);
         setTransactionStatus('IN_PROGRESS');
         await vestingContract.deployed();
-        const vestingContractId = await createVestingContract({
+        // Add a contract record
+        await createVestingContract({
           tokenAddress: mintFormState.address,
           address: vestingContract.address,
           status: 'SUCCESS',
           deployer: account,
           organizationId,
           createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000)
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          chainId
         });
+        // Ensure that the initial vesting schedule record is also updated
+        await updateVesting(
+          {
+            ...vestings[activeVestingIndex].data,
+            status: 'SUCCESS',
+            updatedAt: Math.floor(new Date().getTime() / 1000)
+          },
+          vestings[activeVestingIndex].id
+        );
+
         fetchDashboardVestingContract();
         setStatus('transferToMultisigSafe');
         setTransactionStatus('SUCCESS');
@@ -308,7 +320,8 @@ AddVestingSchedulesProps) => {
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
-            organizationId: organizationId
+            organizationId: organizationId,
+            chainId
           });
           setTransaction({
             id: transactionId,
@@ -320,7 +333,8 @@ AddVestingSchedulesProps) => {
               type: 'ADDING_CLAIMS',
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
-              organizationId: organizationId
+              organizationId: organizationId,
+              chainId
             }
           });
           updateVesting(
@@ -360,7 +374,8 @@ AddVestingSchedulesProps) => {
           type: 'ADDING_CLAIMS',
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
-          organizationId: organizationId
+          organizationId: organizationId,
+          chainId
         };
         const transactionId = await createTransaction(transactionData);
         updateVesting(

@@ -1,6 +1,7 @@
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { Web3Provider } from '@ethersproject/providers';
 import { AuthContextProvider } from '@providers/auth.context';
+import { ClaimTokensContextProvider } from '@providers/claim-tokens.context';
 import { DashboardContextProvider } from '@providers/dashboard.context';
 import { LoaderContextProvider } from '@providers/loader.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
@@ -57,17 +58,18 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                 <VestingContextProvider>
                   <DashboardContextProvider>
                     <TransactionLoaderContextProvider>
-                      {/* <DefaultLayout sidebar={true} connected={true}> */}
-                      <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                      <ToastContainer />
-                      <ReactTooltip
-                        effect="solid"
-                        type="dark"
-                        place="top"
-                        multiline
-                        delayShow={300}
-                        backgroundColor="var(--neutral-700)"
-                      />
+                      <ClaimTokensContextProvider>
+                        <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                        <ToastContainer />
+                        {/* <ReactTooltip
+                          effect="solid"
+                          type="dark"
+                          place="top"
+                          multiline
+                          delayShow={300}
+                          backgroundColor="var(--neutral-700)"
+                        /> */}
+                      </ClaimTokensContextProvider>
                     </TransactionLoaderContextProvider>
                   </DashboardContextProvider>
                 </VestingContextProvider>

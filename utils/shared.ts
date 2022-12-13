@@ -51,29 +51,35 @@ export const convertToUSD = (amount: number | Decimal | string) => {
 };
 
 // This function lets us parse the correct date format before displaying and using it across the schedule form and chart.
-export const getActualDateTime = (data: {
+export interface IActualDateTimeProps {
   startDateTime: Date | null | undefined;
   endDateTime: Date | null | undefined;
-}) => {
-  let startDate;
-  let endDate;
+  originalEndDateTime: Date | null | undefined;
+}
+export const getActualDateTime = (data: IActualDateTimeProps) => {
+  let startDateTime;
+  let endDateTime;
+  let originalEndDateTime;
   try {
     // Try first with the presumption that the dates provided are in Timestamp -- came from firebase.
-    startDate = new Date((data.startDateTime as unknown as Timestamp).toMillis());
-    endDate = new Date((data.endDateTime as unknown as Timestamp).toMillis());
+    startDateTime = new Date((data.startDateTime as unknown as Timestamp).toMillis());
+    endDateTime = new Date((data.endDateTime as unknown as Timestamp).toMillis());
+    originalEndDateTime = new Date((data.originalEndDateTime as unknown as Timestamp).toMillis());
   } catch (err) {
     // Catch it with the default as if it came from current form data
-    startDate = data.startDateTime;
-    endDate = data.endDateTime;
+    startDateTime = data.startDateTime;
+    endDateTime = data.endDateTime;
+    originalEndDateTime = data.originalEndDateTime;
   }
   return {
-    startDate,
-    endDate
+    startDateTime,
+    endDateTime,
+    originalEndDateTime
   };
 };
 
 // Generates a set of numbers based on the given length
-export const generateRandomName = (l: number) => {
+export const generateRandomName = (l = 4) => {
   const length = l;
   let result = '';
   const characters = '0123456789';

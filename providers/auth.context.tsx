@@ -1,3 +1,4 @@
+import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import {
   GoogleAuthProvider,
@@ -54,18 +55,22 @@ export type AuthContextData = {
   expandSidebar: () => void;
   forceCollapseSidebar: () => void;
   fetchSafe: () => void;
+  agreedOnConsent: boolean;
+  setAgreedOnConsent: (data: any) => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
 
 export function AuthContextProvider({ children }: any) {
+  const { chainId, account } = useWeb3React();
   const [user, setUser] = useState<IUser | undefined>();
   // Remove default value when merging to develop, staging or main
-  // Mock organizationId MYvgDyXEY5kCfxdIvtY8 or V2dmM9LmDAAgfWgj8PJR or t2SfnLYwU0MZpY4q7zL8 for bico
+  // Mock organizationId 'v2S4z6kgjac61iDsQqr7'
   const [organizationId, setOrganizationId] = useState<string | undefined>();
   const [safe, setSafe] = useState<ISafe | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
+  const [agreedOnConsent, setAgreedOnConsent] = useState<boolean>(false);
   const tried = useEagerConnect();
   const [error, setError] = useState('');
   // Remove after implementing context to show/hide the sidebar
@@ -91,11 +96,13 @@ export function AuthContextProvider({ children }: any) {
     const additionalInfo = getAdditionalUserInfo(credential);
     const memberInfo = await fetchMember(credential.user.uid);
     if (additionalInfo?.isNewUser) {
-      await newMember(credential.user.uid, {
+      const updatedMemberInfo: IMember = {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
         name: credential.user.displayName || ''
-      });
+      };
+      if (account) updatedMemberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+      await newMember(credential.user.uid, { ...updatedMemberInfo });
     }
     setIsNewUser(additionalInfo?.isNewUser || false);
     setOrganizationId(memberInfo?.org_id);
@@ -123,11 +130,13 @@ export function AuthContextProvider({ children }: any) {
     const memberInfo = await fetchMember(credential.user.uid);
     const additionalInfo = getAdditionalUserInfo(credential);
     if (additionalInfo?.isNewUser) {
-      await newMember(credential.user.uid, {
+      const updatedMemberInfo: IMember = {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
         name: credential.user.displayName || ''
-      });
+      };
+      if (account) updatedMemberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+      await newMember(credential.user.uid, { ...updatedMemberInfo });
     }
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
@@ -159,7 +168,9 @@ export function AuthContextProvider({ children }: any) {
       joined: Math.floor(new Date().getTime() / 1000)
     };
 
-    await newMember(user.uid, memberInfo);
+    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+
+    await newMember(user.uid, { ...memberInfo });
     setOrganizationId(org_id);
     setUser({ ...user, memberInfo });
     setIsNewUser(true);
@@ -189,7 +200,11 @@ export function AuthContextProvider({ children }: any) {
           type: newSignUp.type,
           org_id: newSignUp.org_id
         };
-    await newMember(credential.user.uid, memberInfo);
+
+    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+    await newMember(credential.user.uid, {
+      ...memberInfo
+    });
     setUser({ ...credential.user, memberInfo });
 
     setLoading(false);
@@ -220,7 +235,12 @@ export function AuthContextProvider({ children }: any) {
           type
         };
 
-    await newMember(credential.user.uid, { ...memberInfo, type });
+    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+
+    await newMember(credential.user.uid, {
+      ...memberInfo,
+      type
+    });
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     setUser({ ...credential.user, memberInfo });
@@ -319,9 +339,11 @@ export function AuthContextProvider({ children }: any) {
       toggleSideBar,
       expandSidebar,
       forceCollapseSidebar: () => setSidebarIsExpanded(false),
-      fetchSafe
+      fetchSafe,
+      agreedOnConsent,
+      setAgreedOnConsent
     }),
-    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe]
+    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent]
   );
   console.log('organzationId - ', organizationId);
 

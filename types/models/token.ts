@@ -12,4 +12,5 @@ export interface IToken {
   initialSupply?: number;
   status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   decimals?: number;
+  chainId: number;
 }

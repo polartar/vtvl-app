@@ -32,7 +32,7 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
 
   const path = existingMember ? existingMember.id : uid;
   const memberRef = doc(memberCollection, path);
-  await setDoc(memberRef, {
+  const memberInfo: IMember = {
     ...invitee?.data(),
     email: member.email || '',
     companyEmail: invitee?.data().email || member.companyEmail || '',
@@ -41,7 +41,9 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
     joined: member.joined || Math.floor(new Date().getTime() / 1000),
     createdAt: Math.floor(new Date().getTime() / 1000),
     updatedAt: Math.floor(new Date().getTime() / 1000)
-  });
+  };
+  if (member.wallets) memberInfo.wallets = member.wallets;
+  await setDoc(memberRef, memberInfo);
 };
 
 export const addInvitee = async (invitee: IInvitee): Promise<void> => {

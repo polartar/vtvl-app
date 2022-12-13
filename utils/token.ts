@@ -7,11 +7,11 @@ export const parseTokenAmount = (amountTokens: string | number, decimals?: numbe
 };
 
 /** This is intended to format numbers for DISPLAY only */
-export const formatNumber = (number: number | Decimal, decimalPlaces?: number) => {
+export const formatNumber = (number: number | Decimal, decimalPlaces = 6) => {
   const formattedNumber = Number(number).toLocaleString('en', {
     minimumFractionDigits: 0,
-    maximumFractionDigits: typeof decimalPlaces === undefined ? 6 : decimalPlaces
+    maximumFractionDigits: decimalPlaces
   });
-  if (formattedNumber === 'NaN') return 0;
+  if (formattedNumber === 'NaN' || number <= 0) return 0;
   return formattedNumber;
 };

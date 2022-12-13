@@ -25,7 +25,7 @@ import { formatNumber, parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
-  const { library, account, activate } = useWeb3React();
+  const { library, account, activate, chainId } = useWeb3React();
   const { mintFormState, updateMintFormState } = useTokenContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
 
@@ -37,7 +37,7 @@ const Summary: NextPageWithLayout = () => {
     try {
       if (!library) {
         activate(injected);
-      } else if (organizationId) {
+      } else if (organizationId && chainId) {
         setTransactionStatus('PENDING');
         setLoading(true);
         const tokenTemplate = supplyCap === 'LIMITED' ? VariableSupplyERC20Token : FullPremintERC20Token;
@@ -67,10 +67,11 @@ const Summary: NextPageWithLayout = () => {
           supplyCap: supplyCap,
           maxSupply: maxSupply ? maxSupply : 0,
           initialSupply: initialSupply ? initialSupply : 0,
-          status: 'SUCCESS'
+          status: 'SUCCESS',
+          chainId
         });
 
-        updateMintFormState({ ...mintFormState, address: tokenContract.address, status: 'SUCCESS' });
+        updateMintFormState({ ...mintFormState, address: tokenContract.address, status: 'SUCCESS', chainId });
 
         console.log('Address:', tokenContract.address);
         toast.success('Token created successfully');

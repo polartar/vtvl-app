@@ -155,7 +155,7 @@ const devSupportedChains: SupportedChainsType = {
     multisigTxUrl: ''
   },
   [SupportedChainId.BINANCE]: {
-    id: 56,
+    id: 97,
     icon: '/icons/chains/bsc.svg',
     title: 'Binance Smart Chain Testnet',
     code: 'BSC',
