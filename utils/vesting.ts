@@ -1,4 +1,5 @@
 import add from 'date-fns/add';
+import differenceInSeconds from 'date-fns/differenceInSeconds';
 import format from 'date-fns/format';
 import formatDuration from 'date-fns/formatDuration';
 import getUnixTime from 'date-fns/getUnixTime';
@@ -127,27 +128,30 @@ export const getNumberOfReleases = (frequency: ReleaseFrequency, startDate: Date
 
 /**
  * Get the projected end date time
+ * Currently scrapped due to inaccuracy
  */
-export const getProjectedEndDateTime = (
-  startDate: Date,
-  endDate: Date,
-  numberOfReleases: number,
-  frequencyInterval: number
-) => {
-  const endInUnix = getUnixTime(endDate);
-  const startInUnix = getUnixTime(startDate);
-  const difference = endInUnix - startInUnix;
-  const modulusCheck = difference % frequencyInterval;
+// export const getProjectedEndDateTime = (
+//   startDate: Date,
+//   endDate: Date,
+//   numberOfReleases: number,
+//   frequency: ReleaseFrequency
+// ) => {
+//   const endInUnix = getUnixTime(endDate);
+//   const startInUnix = getUnixTime(startDate);
+//   const difference = differenceInSeconds(endDate, startDate);
+//   const frequencyInterval = DATE_FREQ_TO_TIMESTAMP[frequency];
+//   const modulusCheck = difference % frequencyInterval;
 
-  // Has a remainder, check to see how many ms to add
-  if (modulusCheck) {
-    // Allocates the whole release cycle time
-    const remaining = frequencyInterval * numberOfReleases - difference;
-    const newEndDate = endInUnix + remaining;
-    return toDate(newEndDate * 1000);
-  }
-  return endDate;
-};
+//   // Has a remainder, check to see how many ms to add
+//   if (modulusCheck) {
+//     const toAddOneDay = ['monthly', 'quarterly', 'yearly'];
+//     // Allocates the whole release cycle time
+//     const remaining = frequencyInterval * numberOfReleases - difference;
+//     const newEndDate = endInUnix + remaining + (toAddOneDay.includes(frequency) ? DATE_FREQ_TO_TIMESTAMP.daily : 0);
+//     return toDate(newEndDate * 1000);
+//   }
+//   return endDate;
+// };
 
 /**
  * Release amount - how much is being released aligned with frequency.
@@ -170,27 +174,67 @@ export const getReleaseAmountDecimal = (amountToBeVested: Decimal, cliffAmount: 
 };
 
 /**
+ * Frequency duration options to add for exact dates
+ */
+export const getFrequencyDuration = (startDate: Date, releaseFrequency: ReleaseFrequency) => {
+  const durationOption = {
+    years: 0,
+    months: 0,
+    weeks: 0,
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  };
+  switch (releaseFrequency) {
+    case 'continuous':
+      durationOption.seconds = 1;
+      break;
+    case 'minute':
+      durationOption.minutes = 1;
+      break;
+    case 'hourly':
+      durationOption.hours = 1;
+      break;
+    case 'daily':
+      durationOption.days = 1;
+      break;
+    case 'weekly':
+      durationOption.weeks = 1;
+      break;
+    case 'monthly':
+      durationOption.months = 1;
+      break;
+    case 'quarterly':
+      durationOption.months = 3;
+      break;
+    case 'yearly':
+      durationOption.years = 1;
+      break;
+    default:
+      break;
+  }
+
+  return add(startDate, durationOption);
+};
+
+/**
  * Line Chart data
  * Generate an array of line chart data that supports the vesting schedule configuration
  */
-export const getChartData = ({
-  start,
-  end,
-  cliffDate,
-  cliffDuration,
-  cliffAmount,
-  frequency,
-  numberOfReleases,
-  releaseAmount,
-  vestedAmount
-}: IChartDataTypes) => {
-  const frequencyInterval = DATE_FREQ_TO_TIMESTAMP[frequency];
+export const getChartData = ({ start, end, cliffDuration, cliffAmount, frequency, vestedAmount }: IChartDataTypes) => {
+  const cliffDate = getCliffDateTime(start, cliffDuration);
   const actualStart = cliffDuration !== 'no-cliff' ? cliffDate : start;
-  const projectedEndDate = getProjectedEndDateTime(actualStart, end, numberOfReleases, frequencyInterval);
+  // const projectedEndDate = getProjectedEndDateTime(actualStart, end, numberOfReleases, frequency);
+  const numberOfReleases = getNumberOfReleases(frequency, actualStart, end);
+  const releaseAmount = getReleaseAmount(+vestedAmount, +cliffAmount, numberOfReleases);
   const cliffData = [];
   const releaseData = [];
   // Stores the current amount and be cumulative during interval
   let currentAmount = new Decimal(0).toDP(6, Decimal.ROUND_UP);
+
+  // Stores the projected End date time for the last record in the vesting chart
+  let projectedEndDateTime = end;
 
   // Current date and will also be cumulative during interval.
   let currentDate = start;
@@ -229,17 +273,15 @@ export const getChartData = ({
     if (singleLineFrequencies.includes(frequency) || numberOfReleases > 60) {
       // The total amount to be vested
       releaseData.push({
-        date: formatDateTime(projectedEndDate),
+        date: formatDateTime(end),
         value: vestedAmount.toString()
       });
     } else {
       // Loop based on frequency interval (how many releases)
       for (let i = 0; i < numberOfReleases; i++) {
-        // Add option on the uses the exact time
-        const addOption = { seconds: DATE_FREQ_TO_TIMESTAMP[frequency] };
-
+        // Add option on the uses the exact time based on the current date and frequency
         // Add 1 unit of the interval type to the date
-        currentDate = add(currentDate, addOption);
+        currentDate = getFrequencyDuration(currentDate, frequency);
         currentAmount = Decimal.add(currentAmount, releaseAmount);
 
         // Check if current amount is more the the amount to be vested
@@ -247,10 +289,14 @@ export const getChartData = ({
           date: formatDateTime(currentDate),
           value: currentAmount.toString()
         });
+
+        // Update the projected end date
+        if (i === numberOfReleases - 1) projectedEndDateTime = currentDate;
       }
     }
   }
-  return { release: releaseData, cliff: cliffData };
+  // Move the projected end date time here
+  return { release: releaseData, cliff: cliffData, projectedEndDateTime };
 };
 
 /**

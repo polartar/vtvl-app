@@ -38,7 +38,7 @@ import {
 } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
-import { getNumberOfReleases, getProjectedEndDateTime } from 'utils/vesting';
+import { getChartData, getCliffAmount, getNumberOfReleases } from 'utils/vesting';
 
 type DateTimeType = Date | null;
 
@@ -95,15 +95,25 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     // Map the correct data
     // FORM's endDateTime will be saved to originalEndDateTime
     // DB's endDateTime will save the projectedEndDateTime
-    const { releaseFrequency, startDateTime, endDateTime } = data;
+    const { releaseFrequency, startDateTime, endDateTime, cliffDuration, amountToBeVested, lumpSumReleaseAfterCliff } =
+      data;
     if (startDateTime && endDateTime) {
       const numberOfReleases = getNumberOfReleases(releaseFrequency, startDateTime, endDateTime);
-      const projectedEndDateTime = getProjectedEndDateTime(
-        startDateTime,
-        endDateTime,
-        numberOfReleases,
-        DATE_FREQ_TO_TIMESTAMP[releaseFrequency]
-      );
+      const cliffAmount = getCliffAmount(cliffDuration, +lumpSumReleaseAfterCliff, amountToBeVested);
+      const projectedEndDateTime = getChartData({
+        start: startDateTime,
+        end: endDateTime,
+        cliffDuration,
+        cliffAmount: cliffAmount,
+        frequency: releaseFrequency,
+        vestedAmount: amountToBeVested
+      }).projectedEndDateTime;
+      // getProjectedEndDateTime(
+      //   startDateTime,
+      //   endDateTime,
+      //   numberOfReleases,
+      //   releaseFrequency
+      // );
       updateScheduleFormState({
         ...scheduleFormState,
         ...data,
@@ -126,8 +136,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
 
   console.log('Lumpsum release', lumpSumReleaseAfterCliff.value);
-  // Supporting variables
-  const tokenSupply = mintFormState.initialSupply || 100000;
 
   const cliffOptions = [
     { label: 'No cliff', value: 'no-cliff' },
@@ -145,17 +153,18 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   const radioOptions = [
     { label: 'Continuous', value: 'continuous' },
-    { label: 'Minute', value: 'minute' },
+    // { label: 'Minute', value: 'minute' },
     { label: 'Hourly', value: 'hourly' },
     { label: 'Daily', value: 'daily' },
     { label: 'Weekly', value: 'weekly' },
     { label: 'Monthly', value: 'monthly' },
+    { label: 'Quarterly', value: 'quarterly' },
     { label: 'Yearly', value: 'yearly' }
   ];
 
   // Handle the changes made when updating the amount to be vested.
   const handleMinChange = (e: any) => {
-    console.log('Min changed', +e.target.value, tokenSupply);
+    console.log('Min changed', +e.target.value);
     setValue('amountToBeVested', +e.target.value);
   };
 
@@ -477,7 +486,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       const releaseFreqSeconds = DATE_FREQ_TO_TIMESTAMP[releaseFrequency.value];
       const cliffSeconds = CLIFFDURATION_TIMESTAMP[cliffDuration.value];
       const idealScheduleDuration = cliffSeconds + releaseFreqSeconds;
-      console.log('Difference', idealScheduleDuration, diffSeconds);
+      console.log('Difference', idealScheduleDuration, diffSeconds, releaseFreqSeconds, cliffSeconds);
       // Compare to cliff duration
       if (idealScheduleDuration > diffSeconds) {
         // Error
@@ -722,9 +731,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   label="Amount to be vested"
                   required
                   initial={+amountToBeVested.value}
-                  maximum={+tokenSupply}
+                  maximum={+mintFormState.initialSupply}
                   onMinChange={handleMinChange}
-                  onUseMax={() => setValue('amountToBeVested', +tokenSupply)}
+                  onUseMax={() => setValue('amountToBeVested', +mintFormState.initialSupply)}
                   maxReadOnly
                 />
               </div>

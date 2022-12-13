@@ -40,13 +40,7 @@ import { IToken, ITransaction, IVesting } from 'types/models';
 import { IRecipient } from 'types/vesting';
 import { convertAllToOptions, formatDate, formatTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
-import {
-  getCliffAmount,
-  getCliffDateTime,
-  getDuration,
-  getNumberOfReleases,
-  getProjectedEndDateTime
-} from 'utils/vesting';
+import { getChartData, getCliffAmount, getCliffDateTime, getDuration, getNumberOfReleases } from 'utils/vesting';
 
 interface IVestingSchedules {
   id: string;
@@ -61,7 +55,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { organizationId, safe } = useAuthContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
-  const { mintFormState, isTokenLoading, totalTokenSupply } = useTokenContext();
+  const { mintFormState, isTokenLoading } = useTokenContext();
 
   const [selected, setSelected] = useState('manual');
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
@@ -419,13 +413,21 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vesting.details.startDateTime;
         const vestingEndTimestamp =
           vesting.details.endDateTime && actualStartDateTime
-            ? getProjectedEndDateTime(
-                actualStartDateTime,
-                new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
-                numberOfReleases,
-                (DATE_FREQ_TO_TIMESTAMP as any)[vesting.details.releaseFrequency]
-              )
-            : null;
+            ? getChartData({
+                start: actualStartDateTime,
+                end: new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+                cliffDuration: vesting.details.cliffDuration,
+                cliffAmount: cliffAmountPerUser,
+                frequency: vesting.details.releaseFrequency,
+                vestedAmount: vestingAmountPerUser
+              }).projectedEndDateTime
+            : // getProjectedEndDateTime(
+              //   actualStartDateTime,
+              //   new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+              //   numberOfReleases,
+              //   vesting.details.releaseFrequency
+              // )
+              null;
         const vestingStartTimestamps1 = new Array(vesting.recipients.length).fill(
           cliffReleaseTimestamp
             ? cliffReleaseTimestamp
@@ -603,10 +605,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Sets the remaining based on the total supply
   useEffect(() => {
-    if (totalUsedSupply && totalTokenSupply) {
-      setRemaining(+totalTokenSupply - totalUsedSupply);
+    if (totalUsedSupply && mintFormState.initialSupply) {
+      setRemaining(+mintFormState.initialSupply - totalUsedSupply);
     }
-  }, [totalUsedSupply, totalTokenSupply]);
+  }, [totalUsedSupply, mintFormState.initialSupply]);
 
   return (
     <>
@@ -636,7 +638,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
               remainingAllocation={remaining}
-              totalAllocation={+totalTokenSupply || 0}
+              totalAllocation={+mintFormState.initialSupply || 0}
             />
           </div>
           {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">

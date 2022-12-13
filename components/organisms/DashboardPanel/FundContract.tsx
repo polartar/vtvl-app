@@ -35,7 +35,7 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { ITransaction } from 'types/models';
 import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
 import { formatNumber, parseTokenAmount } from 'utils/token';
-import { getCliffAmount, getCliffDateTime, getNumberOfReleases, getProjectedEndDateTime } from 'utils/vesting';
+import { getCliffAmount, getCliffDateTime, getNumberOfReleases } from 'utils/vesting';
 
 import FundingContractModal from '../FundingContractModal/FundingContractModal';
 

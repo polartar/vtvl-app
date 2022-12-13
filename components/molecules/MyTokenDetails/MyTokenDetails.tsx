@@ -6,6 +6,7 @@ import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
+import getUnixTime from 'date-fns/getUnixTime';
 import Decimal from 'decimal.js';
 import { ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
@@ -104,8 +105,9 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
             VTVL_VESTING_ABI.abi,
             ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
           );
-          vestingContract.numTokensReservedForVesting().then((res: string) => setTotalVested(res));
+          // vestingContract.numTokensReservedForVesting().then((res: string) => setTotalVested(res));
           vestingContract.claimableAmount(account).then((res: string) => setClaimable(res));
+          vestingContract.vestedAmount(account, getUnixTime(new Date())).then((res: string) => setTotalVested(res));
         }
       });
     }
@@ -145,7 +147,7 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
           <div>
             <p className="text-xs font-medium text-neutral-500 mb-1">Total vested</p>
             <p className="text-sm font-semibold text-neutral-600">
-              {claimable ? formatNumber(+totalVested / 10 ** 18, 0) : 0} {token?.symbol}
+              {totalVested ? formatNumber(+totalVested / 10 ** 18, 0) : 0} {token?.symbol}
             </p>
           </div>
         </div>

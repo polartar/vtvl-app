@@ -12,7 +12,15 @@ export type CliffDuration =
   | '6-months'
   | '1-year';
 
-export type ReleaseFrequency = 'continuous' | 'minute' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+export type ReleaseFrequency =
+  | 'continuous'
+  | 'minute'
+  | 'hourly'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'quarterly'
+  | 'yearly';
 
 export enum DateFrequencies {
   CONTINUOUS = 'continuous',
@@ -21,6 +29,7 @@ export enum DateFrequencies {
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
   YEARLY = 'yearly'
 }
 
@@ -31,6 +40,7 @@ export const DATE_FREQ_TO_LABEL = {
   [DateFrequencies.DAILY]: 'day',
   [DateFrequencies.WEEKLY]: 'week',
   [DateFrequencies.MONTHLY]: 'month',
+  [DateFrequencies.QUARTERLY]: 'quarter',
   [DateFrequencies.YEARLY]: 'year'
 };
 
@@ -41,6 +51,7 @@ export const DATE_FREQ_TO_OPTION = {
   [DateFrequencies.DAILY]: 'days',
   [DateFrequencies.WEEKLY]: 'weeks',
   [DateFrequencies.MONTHLY]: 'months',
+  [DateFrequencies.QUARTERLY]: 'quarters',
   [DateFrequencies.YEARLY]: 'years'
 };
 
@@ -70,6 +81,7 @@ export const DATE_FREQ_TO_TIMESTAMP: { [key in DateFrequencies]: number } = {
   daily: 86400,
   // Average monthly 30.416667 days
   monthly: 2628000,
+  quarterly: 7884000,
   // 2678400 31 days
   // 2592000 30 days
   // 2505600 29 days

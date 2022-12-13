@@ -18,7 +18,6 @@ import {
   getCliffDateTime,
   getDuration,
   getNumberOfReleases,
-  getProjectedEndDateTime,
   getReleaseAmount
 } from 'utils/vesting';
 
@@ -77,12 +76,9 @@ const ScheduleDetails = ({
   const chartData = getChartData({
     start: startDateTime || new Date(),
     end: endDateTime || new Date(),
-    cliffDate: cliffDate || new Date(),
     cliffDuration,
     cliffAmount,
     frequency: releaseFrequency,
-    numberOfReleases,
-    releaseAmount,
     vestedAmount: +amountToBeVested
   });
 
@@ -90,12 +86,11 @@ const ScheduleDetails = ({
     return chartData.release.length > 1 && chartData.release.filter((rel) => rel.value !== '0').length;
   };
 
-  const frequencyInterval = DATE_FREQ_TO_TIMESTAMP[releaseFrequency];
-  const actualStartDateTime = cliffDuration !== 'no-cliff' ? cliffDate : startDateTime;
-  const projectedEndDateTime =
-    endDateTime && actualStartDateTime
-      ? getProjectedEndDateTime(actualStartDateTime, endDateTime, numberOfReleases, frequencyInterval)
-      : null;
+  // const actualStartDateTime = cliffDuration !== 'no-cliff' ? cliffDate : startDateTime;
+  // const projectedEndDateTime =
+  //   endDateTime && actualStartDateTime
+  //     ? getProjectedEndDateTime(actualStartDateTime, endDateTime, numberOfReleases, releaseFrequency)
+  //     : null;
 
   const singleLineFrequencies = ['continuous', 'minute', 'hourly'];
 
@@ -118,6 +113,7 @@ const ScheduleDetails = ({
         dateFormat = 'MMM d yyyy';
         break;
       case 'monthly':
+      case 'quarterly':
         dateFormat = 'MMM yyyy';
         break;
       case 'yearly':
@@ -189,51 +185,49 @@ const ScheduleDetails = ({
           }
         />
       )}
-      {includeDetails ? (
-        <div className={`grid gap-3 mt-5 ${layout === 'small' ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4 '}`}>
-          <label>
-            <span>Cliff</span>
-            <p className="flex flex-row items-start gap-2 text-xs">
-              <img src="/icons/graph-stairs.svg" className="w-6 h-6" alt="Cliff" />
-              {formatNumber(cliffAmount)} {token}
-            </p>
-          </label>
-          <label>
-            <span>Linear Release</span>
-            <p className="flex flex-row items-start gap-2 text-xs">
-              <img src="/icons/graph-line.svg" className="w-6 h-6" alt="Cliff" />
-              {formatNumber(releaseAmount)} {token} /{DATE_FREQ_TO_LABEL[releaseFrequency]}
-            </p>
-          </label>
-          <label>
-            <span>Start</span>
-            <p className="flex flex-row items-start gap-2 text-xs">
-              <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
-              {startDateTime ? (
-                <>
-                  {formatDate(startDateTime)}
-                  <br />
-                  {formatTime(startDateTime)}
-                </>
-              ) : null}
-            </p>
-          </label>
-          <label>
-            <span>End</span>
-            <p className="flex flex-row items-start gap-2 text-xs">
-              <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
-              {projectedEndDateTime ? (
-                <>
-                  {formatDate(projectedEndDateTime)}
-                  <br />
-                  {formatTime(projectedEndDateTime)}
-                </>
-              ) : null}
-              {/* <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." /> */}
-            </p>
-          </label>
-        </div>
-      ) : null}
+      <div className={`grid gap-3 mt-5 ${layout === 'small' ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4 '}`}>
+        <label>
+          <span>Cliff</span>
+          <p className="flex flex-row items-start gap-2 text-xs">
+            <img src="/icons/graph-stairs.svg" className="w-6 h-6" alt="Cliff" />
+            {formatNumber(cliffAmount)} {token}
+          </p>
+        </label>
+        <label>
+          <span>Linear Release</span>
+          <p className="flex flex-row items-start gap-2 text-xs">
+            <img src="/icons/graph-line.svg" className="w-6 h-6" alt="Cliff" />
+            {formatNumber(releaseAmount)} {token} /{DATE_FREQ_TO_LABEL[releaseFrequency]}
+          </p>
+        </label>
+        <label>
+          <span>Start</span>
+          <p className="flex flex-row items-start gap-2 text-xs">
+            <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
+            {startDateTime ? (
+              <>
+                {formatDate(startDateTime)}
+                <br />
+                {formatTime(startDateTime)}
+              </>
+            ) : null}
+          </p>
+        </label>
+        <label>
+          <span>End</span>
+          <p className="flex flex-row items-start gap-2 text-xs">
+            <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
+            {chartData.projectedEndDateTime ? (
+              <>
+                {formatDate(chartData.projectedEndDateTime)}
+                <br />
+                {formatTime(chartData.projectedEndDateTime)}
+              </>
+            ) : null}
+            {/* <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." /> */}
+          </p>
+        </label>
+      </div>
     </>
   );
 };

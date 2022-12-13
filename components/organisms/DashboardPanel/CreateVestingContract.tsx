@@ -29,7 +29,7 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { ITransaction } from 'types/models';
 import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
 import { parseTokenAmount } from 'utils/token';
-import { getCliffAmount, getCliffDateTime, getNumberOfReleases, getProjectedEndDateTime } from 'utils/vesting';
+import { getChartData, getCliffAmount, getCliffDateTime, getNumberOfReleases } from 'utils/vesting';
 
 interface AddVestingSchedulesProps {
   className?: string;
@@ -99,7 +99,7 @@ AddVestingSchedulesProps) => {
 
   const { account, library, activate, chainId } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
-  const { mintFormState, totalTokenSupply } = useTokenContext();
+  const { mintFormState } = useTokenContext();
   const {
     vestings,
     transactions,
@@ -233,13 +233,21 @@ AddVestingSchedulesProps) => {
         vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vesting.details.startDateTime;
       const vestingEndTimestamp =
         vesting.details.endDateTime && actualStartDateTime
-          ? getProjectedEndDateTime(
-              actualStartDateTime,
-              new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
-              numberOfReleases,
-              DATE_FREQ_TO_TIMESTAMP[vesting.details.releaseFrequency]
-            )
-          : null;
+          ? getChartData({
+              start: actualStartDateTime,
+              end: new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+              cliffDuration: vesting.details.cliffDuration,
+              cliffAmount: cliffAmountPerUser,
+              frequency: vesting.details.releaseFrequency,
+              vestedAmount: vestingAmountPerUser
+            }).projectedEndDateTime
+          : // getProjectedEndDateTime(
+            //     actualStartDateTime,
+            //     new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+            //     numberOfReleases,
+            //     vesting.details.releaseFrequency
+            //   )
+            null;
       const vestingStartTimestamps = new Array(vesting.recipients.length).fill(
         cliffReleaseTimestamp
           ? cliffReleaseTimestamp
@@ -684,7 +692,7 @@ AddVestingSchedulesProps) => {
             tokenName={mintFormState.name}
             tokenSymbol={mintFormState.symbol}
             supplyCap={mintFormState.supplyCap}
-            maxSupply={mintFormState.maxSupply ? mintFormState.maxSupply : +totalTokenSupply}
+            maxSupply={mintFormState.initialSupply ? mintFormState.initialSupply : 0}
             address={mintFormState.address}
           />
         ) : null}
