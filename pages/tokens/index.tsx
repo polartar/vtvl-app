@@ -4,6 +4,7 @@ import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import MyTokenDetails from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import AuthContext from '@providers/auth.context';
+import { useClaimTokensContext } from '@providers/claim-tokens.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useWeb3React } from '@web3-react/core';
 import type { ERC20 } from 'contracts/ERC20';
@@ -11,6 +12,7 @@ import ERC20_ABI from 'contracts/abi/ERC20.json';
 import { Contract } from 'ethers';
 import useTokenContract from 'hooks/useTokenContract';
 import { getContract } from 'hooks/web3';
+import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useContext, useEffect, useState } from 'react';
 import { fetchTokenByQuery, fetchTokensByQuery } from 'services/db/token';
@@ -22,11 +24,22 @@ const MyTokenStatus: NextPageWithLayout = () => {
   const { account, library } = useWeb3React();
   const { user } = useContext(AuthContext);
   const { showLoading, hideLoading } = useLoaderContext();
+  const { vestingSchedules } = useClaimTokensContext();
+  const { route } = useRouter();
 
   const [organizations, setOrganizations] = useState<{ [key: string]: boolean }>({});
   const [tab, setTab] = useState('all');
   const [tokens, setTokens] = useState<IToken[]>([]);
   const [vestings, setVestings] = useState<{ [key: string]: IVesting }>({});
+
+  // Check for Vesting schedules, then redirect to the first record
+  // Dec 13, 2022 -- Retain the Old Claim portal, dont'redirect yet
+  // useEffect(() => {
+  //   if (vestingSchedules && vestingSchedules.length) {
+  //     const selectFirst = vestingSchedules[0];
+  //     Router.push(`/tokens/${selectFirst.id}`);
+  //   }
+  // }, [vestingSchedules]);
 
   const handleTabChange = (e: any) => {
     // Change token query based on currently selected tab
@@ -62,8 +75,8 @@ const MyTokenStatus: NextPageWithLayout = () => {
     hideLoading();
   };
 
-  // Remove this once there is an integration happening with the backend,
-  // but make sure to setIsPageLoading to false once actual data is loaded.
+  // // Remove this once there is an integration happening with the backend,
+  // // but make sure to setIsPageLoading to false once actual data is loaded.
   useEffect(() => {
     fetchOrganizations();
   }, [user, account]);

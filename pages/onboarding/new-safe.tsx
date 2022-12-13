@@ -9,6 +9,7 @@ import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
+import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
 import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useEffect, useState } from 'react';
@@ -32,7 +33,9 @@ const NewSafePage: NextPage = () => {
   const { fetchSafe } = useAuthContext();
   const { user } = useContext(AuthContext);
   const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
+  const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
   const { query } = useRouter();
+
   const [importedSafe, setImportedSafe] = useState<Safe>();
   const [owners, setOwners] = useState<{ name: string; address: string; email: string }[]>([
     { name: '', address: '', email: '' }
@@ -211,13 +214,24 @@ const NewSafePage: NextPage = () => {
         return;
       }
 
+      if (!importedSafe) {
+        setTransactionStatus('PENDING');
+      }
+      console.log({ values });
       const safe = importedSafe ? importedSafe : await deploySafe(library, owners, values.authorizedUsers);
+
+      if (!importedSafe) {
+        setTransactionStatus('IN_PROGRESS');
+      }
 
       if (!safe) {
         console.log('invalid safe configurations ');
         setFormMessage(
           importedSafe ? 'Error importing safe. Please try again.' : 'Error creating safe. Please try again.'
         );
+        if (!importedSafe) {
+          setTransactionStatus('ERROR');
+        }
         setFormError(true);
         return;
       }
@@ -235,11 +249,17 @@ const NewSafePage: NextPage = () => {
         safeRef
       );
       fetchSafe();
+      if (!importedSafe) {
+        setTransactionStatus('SUCCESS');
+      }
       return await onNext({ safeAddress: safe.getAddress() });
     } catch (error: any) {
       console.error('error getting safe info ', error);
       setFormMessage(`Multisig error: ${error.message}`);
       setFormError(true);
+      if (!importedSafe) {
+        setTransactionStatus('ERROR');
+      }
       return;
     }
   };

@@ -3,7 +3,7 @@ import { useWeb3React } from '@web3-react/core';
 import Decimal from 'decimal.js';
 import { ethers } from 'ethers';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { fetchTokenByQuery } from 'services/db/token';
+import { fetchTokenByQuery, fetchTokensByQuery } from 'services/db/token';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
@@ -23,6 +23,7 @@ export interface IMintFormState {
   createdAt: number;
   updatedAt: number;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
+  chainId: number;
 }
 
 interface ITokenContextData {
@@ -32,6 +33,22 @@ interface ITokenContextData {
   updateMintFormState: (v: any) => void;
 }
 
+const INITIAL_STATE: IMintFormState = {
+  name: '',
+  symbol: '',
+  logo: '',
+  supplyCap: 'UNLIMITED',
+  maxSupply: '',
+  initialSupply: '',
+  decimals: 18,
+  address: '',
+  imported: false,
+  createdAt: Math.floor(new Date().getTime() / 1000),
+  updatedAt: Math.floor(new Date().getTime() / 1000),
+  status: 'PENDING',
+  chainId: 0
+};
+
 const TokenContext = createContext({} as ITokenContextData);
 
 export function TokenContextProvider({ children }: any) {
@@ -40,20 +57,7 @@ export function TokenContextProvider({ children }: any) {
 
   const [isTokenLoading, setIsTokenLoading] = useState(true);
 
-  const [mintFormState, setMintFormState] = useState<IMintFormState>({
-    name: '',
-    symbol: '',
-    logo: '',
-    supplyCap: 'UNLIMITED',
-    maxSupply: '',
-    initialSupply: '',
-    decimals: 18,
-    address: '',
-    imported: false,
-    createdAt: Math.floor(new Date().getTime() / 1000),
-    updatedAt: Math.floor(new Date().getTime() / 1000),
-    status: 'PENDING'
-  });
+  const [mintFormState, setMintFormState] = useState<IMintFormState>(INITIAL_STATE);
 
   const [tokenId, setTokenId] = useState('');
 
@@ -103,41 +107,58 @@ export function TokenContextProvider({ children }: any) {
   };
 
   const fetchToken = () => {
-    if (organizationId) {
-      fetchTokenByQuery('organizationId', '==', organizationId)
+    if (organizationId && chainId) {
+      fetchTokensByQuery('organizationId', '==', organizationId)
         .then((res) => {
-          if (res && res.data) {
-            setMintFormState((mintFormState) => ({
-              ...mintFormState,
-              name: res.data?.name || '',
-              symbol: res.data?.symbol || '',
-              logo: res.data?.logo || '',
-              supplyCap: res.data?.supplyCap || ('UNLIMITED' as any),
-              maxSupply: res.data && res.data.maxSupply ? res.data?.maxSupply : 0,
-              initialSupply: res.data && res.data.initialSupply ? res.data?.initialSupply : 0,
-              decimals: 18,
-              address: res.data?.address || '',
-              imported: res.data?.imported || false,
-              createdAt: res.data?.createdAt ? res.data?.createdAt : Math.floor(new Date().getTime() / 1000),
-              updatedAt: res.data?.updatedAt ? res.data?.updatedAt : Math.floor(new Date().getTime() / 1000),
-              status: res.data?.status ? res.data?.status : 'PENDING',
-              tokenId: res.id
-            }));
-            setTokenId(res.id);
+          if (res) {
+            const token = res.find((token) => {
+              const data = token.data();
+              if (data && data.chainId) {
+                return data.chainId === chainId;
+              }
+              return false;
+            });
+            if (token && token.data()) {
+              const data = token.data();
+              setMintFormState((mintFormState) => ({
+                ...mintFormState,
+                address: data.address || '',
+                name: data.name || '',
+                symbol: data.symbol || '',
+                logo: data.logo || '',
+                supplyCap: data.supplyCap || ('UNLIMITED' as any),
+                maxSupply: data && data.maxSupply ? data.maxSupply : 0,
+                initialSupply: data && data.initialSupply ? data.initialSupply : 0,
+                decimals: 18,
+                imported: data?.imported || false,
+                createdAt: data?.createdAt ? data?.createdAt : Math.floor(new Date().getTime() / 1000),
+                updatedAt: data?.updatedAt ? data?.updatedAt : Math.floor(new Date().getTime() / 1000),
+                status: data?.status ? data?.status : 'PENDING',
+                tokenId: token.id,
+                chainId: data?.chainId || 0
+              }));
+              setTokenId(token.id);
+            } else {
+              setMintFormState((prevState) => ({ ...INITIAL_STATE }));
+            }
+          } else {
+            setMintFormState((prevState) => ({ ...INITIAL_STATE }));
           }
           setIsTokenLoading(false);
         })
         .catch((err) => {
+          setMintFormState((prevState) => ({ ...INITIAL_STATE }));
           setIsTokenLoading(false);
         });
     } else {
+      setMintFormState((prevState) => ({ ...INITIAL_STATE }));
       setIsTokenLoading(false);
     }
   };
 
   useEffect(() => {
     fetchToken();
-  }, [organizationId]);
+  }, [organizationId, chainId]);
 
   useEffect(() => {
     console.log('Mint supply was updated', mintFormState);

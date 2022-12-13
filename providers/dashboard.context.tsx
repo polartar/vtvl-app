@@ -7,7 +7,7 @@ import React, { SetStateAction, createContext, useCallback, useContext, useEffec
 import { MultiValue } from 'react-select';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
-import { fetchVestingContractByQuery } from 'services/db/vestingContract';
+import { fetchVestingContractByQuery, fetchVestingContractsByQuery } from 'services/db/vestingContract';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction, IVesting, IVestingContract } from 'types/models';
@@ -64,10 +64,21 @@ export function DashboardContextProvider({ children }: any) {
   const fetchDashboardVestingContract = async () => {
     try {
       setVestingContractLoading(true);
-      const res = await fetchVestingContractByQuery('organizationId', '==', organizationId!);
-      setVestingContract(res);
+      const res = await fetchVestingContractsByQuery('organizationId', '==', organizationId!);
+      if (res && res.length > 0) {
+        const contract = res.find((v) => {
+          if (v && v.data.chainId) {
+            return v.data.chainId === chainId;
+          }
+          return false;
+        });
+        setVestingContract(contract);
+      } else {
+        setVestingContract(undefined);
+      }
     } catch (err) {
       console.log('fetchDashboardVestingContract - ', err);
+      setVestingContract(undefined);
     }
     setVestingContractLoading(false);
   };
@@ -77,7 +88,7 @@ export function DashboardContextProvider({ children }: any) {
     try {
       const res = await fetchVestingsByQuery('organizationId', '==', organizationId!);
       // Filter out without the archived records
-      const filteredVestingSchedules = res.filter((v) => !v.data.archive);
+      const filteredVestingSchedules = res.filter((v) => !v.data.archive && v.data.chainId === chainId);
       setVestings(filteredVestingSchedules);
     } catch (err) {
       console.log('fetchDashboardVestings - ', err);
@@ -89,7 +100,7 @@ export function DashboardContextProvider({ children }: any) {
     setTransactionsLoading(true);
     try {
       const res = await fetchTransactionsByQuery('organizationId', '==', organizationId!);
-      setTransactions(res);
+      setTransactions(res.filter((v) => v.data.chainId === chainId));
     } catch (err) {
       console.log('fetchDashboardTransactions - ', err);
     }
@@ -97,7 +108,7 @@ export function DashboardContextProvider({ children }: any) {
   };
 
   const fetchDashboardData = async () => {
-    if (organizationId) {
+    if (organizationId && chainId) {
       showLoading();
       try {
         await fetchDashboardVestings();
@@ -105,8 +116,15 @@ export function DashboardContextProvider({ children }: any) {
         await fetchDashboardTransactions();
       } catch (err) {
         console.log('fetchDashboardData - ', err);
+        setVestings([]);
+        setVestingContract(undefined);
+        setTransactions([]);
       }
       hideLoading();
+    } else {
+      setVestings([]);
+      setVestingContract(undefined);
+      setTransactions([]);
     }
   };
 
@@ -116,7 +134,7 @@ export function DashboardContextProvider({ children }: any) {
       vestings
         .filter((vesting) => vesting.data.status !== 'COMPLETED')
         .forEach(
-          (vesting) => (totalVestingAmount += parseInt(vesting.data.details.amountToBeVested as unknown as string))
+          (vesting) => (totalVestingAmount += parseFloat(vesting.data.details.amountToBeVested as unknown as string))
         );
       const tokenContract = new ethers.Contract(
         mintFormState.address,
@@ -190,7 +208,7 @@ export function DashboardContextProvider({ children }: any) {
 
   useEffect(() => {
     if (organizationId || (router && router.pathname === '/dashboard')) fetchDashboardData();
-  }, [organizationId, router]);
+  }, [organizationId, router, chainId]);
 
   useEffect(() => {
     fetchVestingContractBalance();

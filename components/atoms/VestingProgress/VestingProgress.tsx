@@ -1,3 +1,5 @@
+import { formatNumber } from 'utils/token';
+
 import Chip from '../Chip/Chip';
 
 interface IVestingProgress {
@@ -11,10 +13,12 @@ const VestingProgress = ({ duration = '', progress = 0 }: IVestingProgress) => {
   return (
     <>
       <div className="row-center justify-between text-xs font-medium text-neutral-500 mb-2.5">
-        <span>Vesting progress</span>
+        <span>
+          Vesting progress <small>({formatNumber(progress, 0)}%)</small>
+        </span>
         <Chip label={duration} color="primaryAlt" rounded size="small" />
       </div>
-      <progress value={progress} max="100" className="w-full">
+      <progress value={progress.toString()} max="100" className="w-full">
         {progress}%
       </progress>
     </>

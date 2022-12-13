@@ -51,6 +51,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
     watch: recipientsWatch,
     getFieldState: recipientsGetFieldState,
     setValue: recipientsSetValue,
+    clearErrors: recipientClearErrors,
     formState: { errors: beneficiariesErrors }
   } = useForm({
     defaultValues: {
@@ -122,6 +123,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
     console.log(`action: ${actionMeta.action}`);
     console.groupEnd();
     recipientsSetValue('recipients', newValue);
+    recipientClearErrors();
   };
 
   const addRecipient = (data: IRecipient) => {
@@ -160,6 +162,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
    */
   const onSubmit: SubmitHandler<IRecipient> = (data) => {
     addRecipient(data);
+    recipientClearErrors();
   };
 
   /**
@@ -386,7 +389,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
                   placeholder="Find or create recipient type"
                 />
                 {errors.recipientType ? (
-                  <div className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a beneficiary</div>
+                  <div className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a beneficiary type</div>
                 ) : null}
               </label>
             )}

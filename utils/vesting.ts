@@ -100,6 +100,18 @@ export const getCliffAmount = (
   return 0;
 };
 
+// Decimal version of getCliffAmount
+export const getCliffAmountDecimal = (
+  cliffDuration: CliffDuration,
+  amountAfterCliff: Decimal,
+  amountToBeVested: Decimal
+) => {
+  if (amountAfterCliff && cliffDuration !== 'no-cliff') {
+    return amountToBeVested.times(amountAfterCliff.div(new Decimal(100)));
+  }
+  return new Decimal(0);
+};
+
 /**
  * Get the frequency interval based on the releaseFrequency value
  * minute, hourly, daily, weekly, monthly or yearly.
@@ -152,6 +164,13 @@ export const getReleaseAmount = (amountToBeVested: number, cliffAmount: number, 
   const releaseAmount = amountToBeVested - cliffAmount;
   const totalReleaseAmount = releaseAmount / numberOfReleases;
   return new Decimal(totalReleaseAmount).toDP(6, Decimal.ROUND_UP);
+};
+
+// Decimal version of get release amount
+export const getReleaseAmountDecimal = (amountToBeVested: Decimal, cliffAmount: Decimal, numberOfReleases: number) => {
+  const releaseAmount = amountToBeVested.minus(cliffAmount);
+  const totalReleaseAmount = releaseAmount.div(numberOfReleases);
+  return totalReleaseAmount.toDP(6, Decimal.ROUND_UP);
 };
 
 /**
@@ -278,4 +297,38 @@ export const getChartData = ({ start, end, cliffDuration, cliffAmount, frequency
   }
   // Move the projected end date time here
   return { release: releaseData, cliff: cliffData, projectedEndDateTime };
+};
+
+/**
+ * Get the total allocation of an individual recipient in a vesting schedule
+ */
+export const getIndividualTotalAllocation = (amountVested: number | Decimal, numberOfRecipients: number) => {
+  return new Decimal(amountVested).div(new Decimal(numberOfRecipients)).toDP(6, Decimal.ROUND_UP);
+};
+
+/**
+ * Get the date and time of the next unlocked token
+ */
+export const getNextUnlock = (projectedEndDateTime: Date, releaseFrequency: ReleaseFrequency, cliffDateTime: Date) => {
+  // Get cliff date time to compare
+  // Check current date time if it's within the cliff date time
+  const currentDateTimeSeconds = getUnixTime(new Date());
+  const cliffDateTimeSeconds = getUnixTime(cliffDateTime);
+  const projectedEndDateTimeSeconds = getUnixTime(projectedEndDateTime);
+  // If so, use the cliff release date time as the next unlock (as seconds countdown)
+  if (currentDateTimeSeconds < cliffDateTimeSeconds) {
+    return cliffDateTimeSeconds - currentDateTimeSeconds;
+  } else {
+    // If not, use the projected end date time and subtract the current date time (as seconds)
+    const remainingDateTimeSeconds = projectedEndDateTimeSeconds - currentDateTimeSeconds;
+    // then, divide the subtracted result into the release frequency
+    const remainder = remainingDateTimeSeconds % DATE_FREQ_TO_TIMESTAMP[releaseFrequency];
+    if (remainder) {
+      // If remainder has value, use the remainder as the countdown for the next unlock
+      return remainder;
+    } else {
+      // If the remainder is 0, find the next unlock by adding the current date time to the release frequency
+      return DATE_FREQ_TO_TIMESTAMP[releaseFrequency];
+    }
+  }
 };

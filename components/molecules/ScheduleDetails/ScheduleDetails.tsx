@@ -38,6 +38,7 @@ interface ScheduleDetailProps extends React.AllHTMLAttributes<HTMLDivElement> {
    */
   token: string;
   layout?: 'small' | 'default';
+  includeDetails?: boolean;
 }
 
 const ScheduleDetails = ({
@@ -51,6 +52,7 @@ const ScheduleDetails = ({
   token,
   layout = 'default',
   hint = true,
+  includeDetails = true,
   ...props
 }: ScheduleDetailProps) => {
   /**
@@ -83,7 +85,6 @@ const ScheduleDetails = ({
   const hasChartValidValues = () => {
     return chartData.release.length > 1 && chartData.release.filter((rel) => rel.value !== '0').length;
   };
-  console.log('Chart data', chartData);
 
   // const actualStartDateTime = cliffDuration !== 'no-cliff' ? cliffDate : startDateTime;
   // const projectedEndDateTime =
@@ -147,7 +148,7 @@ const ScheduleDetails = ({
               domain={[0, amountToBeVested]}
               tickFormatter={(value) => formatNumber(value, 0).toString()}
             />
-            <Tooltip />
+            <Tooltip formatter={(value, name, props) => formatNumber(parseFloat(value.toString()), 6)} />
             <Line
               type="stepAfter"
               data={chartData.cliff}

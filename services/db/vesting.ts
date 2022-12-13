@@ -1,6 +1,7 @@
 import { WhereFilterOp, addDoc, doc, getDoc, getDocs, query, setDoc, where } from '@firebase/firestore';
 import { vestingCollection } from 'services/db/firestore';
 import { IVesting } from 'types/models';
+import { generateRandomName } from 'utils/shared';
 
 export const fetchVesting = async (id: string): Promise<IVesting | undefined> => {
   const vestingRef = doc(vestingCollection, id);
@@ -15,6 +16,15 @@ export const fetchAllVestings = async () => {
     documents.push(doc.data());
   });
   return documents;
+};
+
+export const fetchAllVestingsWithId = async () => {
+  const snapshot = await getDocs(vestingCollection);
+  const documentsWithId: { id: string; data: IVesting }[] = [];
+  snapshot.forEach((doc) => {
+    documentsWithId.push({ id: doc.id, data: doc.data() });
+  });
+  return documentsWithId;
 };
 
 export const fetchVestingsByQuery = async (
@@ -39,7 +49,7 @@ export const updateVesting = async (vesting: IVesting, id: string): Promise<void
 };
 
 export const createVesting = async (vesting: IVesting): Promise<string> => {
-  const vestingRef = await addDoc(vestingCollection, vesting);
+  const vestingRef = await addDoc(vestingCollection, { ...vesting, name: vesting.name || generateRandomName() });
   return vestingRef.id;
 };
 

@@ -22,6 +22,22 @@ export const fetchVestingContractByQuery = async (
   }
 };
 
+export const fetchVestingContractsByQuery = async (
+  field: string,
+  syntax: WhereFilterOp,
+  value: string
+): Promise<{ id: string; data: IVestingContract }[] | []> => {
+  const q = query(vestingContractCollection, where(field, syntax, value));
+  const querySnapshot = await getDocs(q);
+
+  const result: any = [];
+
+  if (querySnapshot && !querySnapshot.empty) {
+    querySnapshot.forEach((doc) => result.push({ id: doc.id, data: doc.data() }));
+  }
+  return result;
+};
+
 export const updateVestingContract = async (contract: IVestingContract, id: string): Promise<void> => {
   const vestingContractRef = doc(vestingContractCollection, id);
   await setDoc(vestingContractRef, contract);

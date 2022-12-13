@@ -12,6 +12,7 @@ import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { formatNumber } from 'utils/token';
 
 interface FormTypes {
   name: string;
@@ -233,7 +234,12 @@ const MintingToken: NextPageWithLayout = () => {
                     <Input
                       label={
                         <label className="required">
-                          <span>Amount to mint</span>
+                          <span>
+                            Amount to mint{' '}
+                            {supplyCap.value === 'LIMITED' ? (
+                              <small>({formatNumber((+initialSupply.value / +maxSupply.value) * 100, 0)}%)</small>
+                            ) : null}
+                          </span>
                         </label>
                       }
                       placeholder=""

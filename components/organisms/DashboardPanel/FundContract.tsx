@@ -160,7 +160,7 @@ const FundContract = () => {
 
   const handleFundContract = async (type: string, amount: string) => {
     try {
-      if (!account) {
+      if (!account || !chainId) {
         // activate(injected);
         toast.info('Connect your wallet and try again.');
         return;
@@ -243,7 +243,8 @@ const FundContract = () => {
               type: 'FUNDING_CONTRACT',
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
-              organizationId: organizationId
+              organizationId: organizationId,
+              chainId
             });
             setApproved(true);
             setTransaction({
@@ -256,7 +257,8 @@ const FundContract = () => {
                 type: 'FUNDING_CONTRACT',
                 createdAt: Math.floor(new Date().getTime() / 1000),
                 updatedAt: Math.floor(new Date().getTime() / 1000),
-                organizationId: organizationId
+                organizationId: organizationId,
+                chainId
               }
             });
             fetchSafeTransactionFromHash(txHash);
