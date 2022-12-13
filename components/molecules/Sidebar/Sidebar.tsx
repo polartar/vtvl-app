@@ -154,9 +154,6 @@ const SidebarContainer = styled.aside<{
   flex-direction: column;
   justify-content: space-between;
   padding: 32px 16px 16px;
-  @media only screen and (min-width: 1366px) {
-    width: 279px;
-  }
 `;
 const RoleTitle = styled.span`
   font-style: normal;

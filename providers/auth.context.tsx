@@ -96,12 +96,13 @@ export function AuthContextProvider({ children }: any) {
     const additionalInfo = getAdditionalUserInfo(credential);
     const memberInfo = await fetchMember(credential.user.uid);
     if (additionalInfo?.isNewUser) {
-      await newMember(credential.user.uid, {
+      const updatedMemberInfo: IMember = {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
-        name: credential.user.displayName || '',
-        wallets: account ? [{ walletAddress: account, chainId: chainId! }] : undefined
-      });
+        name: credential.user.displayName || ''
+      };
+      if (account) updatedMemberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+      await newMember(credential.user.uid, { ...updatedMemberInfo });
     }
     setIsNewUser(additionalInfo?.isNewUser || false);
     setOrganizationId(memberInfo?.org_id);
@@ -129,12 +130,13 @@ export function AuthContextProvider({ children }: any) {
     const memberInfo = await fetchMember(credential.user.uid);
     const additionalInfo = getAdditionalUserInfo(credential);
     if (additionalInfo?.isNewUser) {
-      await newMember(credential.user.uid, {
+      const updatedMemberInfo: IMember = {
         email: credential.user.email || '',
         companyEmail: credential.user.email || '',
-        name: credential.user.displayName || '',
-        wallets: account ? [{ walletAddress: account, chainId: chainId! }] : undefined
-      });
+        name: credential.user.displayName || ''
+      };
+      if (account) updatedMemberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+      await newMember(credential.user.uid, { ...updatedMemberInfo });
     }
     setOrganizationId(memberInfo?.org_id);
     setUser({ ...credential.user, memberInfo });
@@ -166,7 +168,9 @@ export function AuthContextProvider({ children }: any) {
       joined: Math.floor(new Date().getTime() / 1000)
     };
 
-    await newMember(user.uid, memberInfo);
+    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+
+    await newMember(user.uid, { ...memberInfo });
     setOrganizationId(org_id);
     setUser({ ...user, memberInfo });
     setIsNewUser(true);
@@ -196,9 +200,10 @@ export function AuthContextProvider({ children }: any) {
           type: newSignUp.type,
           org_id: newSignUp.org_id
         };
+
+    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
     await newMember(credential.user.uid, {
-      ...memberInfo,
-      wallets: account ? [{ walletAddress: account, chainId: chainId! }] : undefined
+      ...memberInfo
     });
     setUser({ ...credential.user, memberInfo });
 
@@ -230,10 +235,11 @@ export function AuthContextProvider({ children }: any) {
           type
         };
 
+    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+
     await newMember(credential.user.uid, {
       ...memberInfo,
-      type,
-      wallets: account ? [{ walletAddress: account, chainId: chainId! }] : undefined
+      type
     });
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
