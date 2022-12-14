@@ -234,12 +234,7 @@ const MintingToken: NextPageWithLayout = () => {
                     <Input
                       label={
                         <label className="required">
-                          <span>
-                            Amount to mint{' '}
-                            {supplyCap.value === 'LIMITED' ? (
-                              <small>({formatNumber((+initialSupply.value / +maxSupply.value) * 100, 0)}%)</small>
-                            ) : null}
-                          </span>
+                          <span>Amount to mint </span>
                         </label>
                       }
                       placeholder=""
