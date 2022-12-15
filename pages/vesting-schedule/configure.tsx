@@ -696,8 +696,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     rules={{ required: true }}
                     render={({ field, fieldState, formState }) => (
                       <Input
-                        label="Lumpsum release after cliff (%) (0-99)"
-                        placeholder="Enter lumpsum amount"
+                        label="Tokens unlocked after cliff (1-99%)"
+                        placeholder="Enter whole percentage amount"
                         className="mt-5"
                         required
                         error={Boolean(fieldState.error)}
@@ -805,12 +805,12 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const wizardSteps = [
     {
-      title: 'Create schedule',
-      desc: 'Setup the dates and cliffs'
+      title: 'Setup schedule',
+      desc: ''
     },
     {
-      title: 'Add beneficiary',
-      desc: 'Add recipient to this schedule'
+      title: 'Add recipient(s)',
+      desc: ''
     },
     {
       title: 'Schedule summary',

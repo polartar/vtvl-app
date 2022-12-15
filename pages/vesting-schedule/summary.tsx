@@ -142,12 +142,12 @@ ScheduleSummary.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const wizardSteps = [
     {
-      title: 'Create schedule',
-      desc: 'Setup the dates and cliffs'
+      title: 'Setup schedule',
+      desc: ''
     },
     {
-      title: 'Add beneficiary',
-      desc: 'Add recipient to this schedule'
+      title: 'Add recipient(s)',
+      desc: ''
     },
     {
       title: 'Schedule summary',
