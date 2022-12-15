@@ -155,10 +155,7 @@ export function DashboardContextProvider({ children }: any) {
         if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(totalVestingAmount)))) {
           setInsufficientBalance(true);
           setDepositAmount(
-            BigNumber.from(parseTokenAmount(totalVestingAmount))
-              .sub(BigNumber.from(res))
-              .div(BigNumber.from((10 ** 18).toString()))
-              .toString()
+            ethers.utils.formatEther(BigNumber.from(parseTokenAmount(totalVestingAmount)).sub(BigNumber.from(res)))
           );
           return;
         } else {

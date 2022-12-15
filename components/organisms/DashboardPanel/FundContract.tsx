@@ -184,9 +184,7 @@ const FundContract = () => {
         );
         const fundTransaction = await tokenContract.transfer(
           vestingContract?.data?.address,
-          BigNumber.from(amount)
-            .mul(BigNumber.from((10 ** 18).toString()))
-            .toString()
+          ethers.utils.parseEther(amount)
         );
         setTransactionStatus('IN_PROGRESS');
         await fundTransaction.wait();
@@ -202,9 +200,7 @@ const FundContract = () => {
         ]);
         const transferEncoded = tokenContractInterface.encodeFunctionData('transfer', [
           vestingContract?.data?.address,
-          BigNumber.from(amount)
-            .mul(BigNumber.from((10 ** 18).toString()))
-            .toString()
+          ethers.utils.parseEther(amount)
         ]);
         if (safe?.address && account && chainId && organizationId) {
           if (safe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())) {
