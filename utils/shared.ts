@@ -64,12 +64,14 @@ export const getActualDateTime = (data: IActualDateTimeProps) => {
     // Try first with the presumption that the dates provided are in Timestamp -- came from firebase.
     startDateTime = new Date((data.startDateTime as unknown as Timestamp).toMillis());
     endDateTime = new Date((data.endDateTime as unknown as Timestamp).toMillis());
-    originalEndDateTime = new Date((data.originalEndDateTime as unknown as Timestamp).toMillis());
+    originalEndDateTime = new Date(
+      ((data.originalEndDateTime ? data.originalEndDateTime : data.endDateTime) as unknown as Timestamp).toMillis()
+    );
   } catch (err) {
     // Catch it with the default as if it came from current form data
     startDateTime = data.startDateTime;
     endDateTime = data.endDateTime;
-    originalEndDateTime = data.originalEndDateTime;
+    originalEndDateTime = data.originalEndDateTime || data.endDateTime;
   }
   return {
     startDateTime,
