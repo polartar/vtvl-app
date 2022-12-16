@@ -4,7 +4,7 @@ import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import MyTokenDetails from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import AuthContext from '@providers/auth.context';
-import { useClaimTokensContext } from '@providers/claim-tokens.context';
+// import { useClaimTokensContext } from '@providers/claim-tokens.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useWeb3React } from '@web3-react/core';
 import type { ERC20 } from 'contracts/ERC20';
@@ -24,7 +24,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
   const { account, library } = useWeb3React();
   const { user } = useContext(AuthContext);
   const { showLoading, hideLoading } = useLoaderContext();
-  const { vestingSchedules } = useClaimTokensContext();
+  // const { vestingSchedules } = useClaimTokensContext();
   const { route } = useRouter();
 
   const [organizations, setOrganizations] = useState<{ [key: string]: boolean }>({});
