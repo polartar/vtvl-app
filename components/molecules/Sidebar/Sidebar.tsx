@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useClaimTokensContext } from '@providers/claim-tokens.context';
+// import { useClaimTokensContext } from '@providers/claim-tokens.context';
 import Router, { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect } from 'react';
 
@@ -31,7 +31,7 @@ interface Props {
 
 const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
   const { sidebarIsExpanded, expandSidebar, forceCollapseSidebar, user, logOut } = useContext(AuthContext);
-  const { vestingSchedules } = useClaimTokensContext();
+  // const { vestingSchedules } = useClaimTokensContext();
   const currentRoute = useRouter();
   const [selectedRoute, setSelectedRoute] = React.useState(currentRoute.pathname || '');
   const handleMenuClick = (route: string) => {
@@ -39,7 +39,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
     Router.push(route);
   };
 
-  const hasTokensToClaim = (menu: any) => false; // temporary -- to use the old claim token
+  // const hasTokensToClaim = (menu: any) => false; // temporary -- to use the old claim token
   // Boolean(menu.route === '/tokens' && vestingSchedules && vestingSchedules.length);
 
   // Force expand the sidebar on initial load when the device screen width is large
@@ -84,18 +84,18 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
                     }`}>
                     <div className="flex flex-row items-center justify-between mr-3">
                       <p>{menu.title}</p>
-                      {hasTokensToClaim(menu) ? (
+                      {/* {hasTokensToClaim(menu) ? (
                         <div className="bg-primary-700 text-xs text-white rounded-full py-0.5 px-2">
                           {vestingSchedules.length}
                         </div>
-                      ) : null}
+                      ) : null} */}
                     </div>
                     {!menu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
                   </div>
                 </SidebarItem>
                 {/* Display only when the Claim portal link is available and has claimable tokens */}
                 {/* We can probably refactor this one later into a component */}
-                {hasTokensToClaim(menu)
+                {/* {hasTokensToClaim(menu)
                   ? vestingSchedules.map((schedule) => (
                       <div
                         key={`schedule-${schedule.id}`}
@@ -106,7 +106,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
                         {sidebarIsExpanded ? schedule.data.name : schedule.data.name?.charAt(0)}
                       </div>
                     ))
-                  : null}
+                  : null} */}
               </Fragment>
             ))
           : null}
