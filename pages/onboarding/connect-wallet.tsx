@@ -98,7 +98,7 @@ const ConnectWalletPage: NextPage = () => {
 
   async function walletConnectActivate() {
     try {
-      await activate(walletconnect);
+      await activate(walletconnect, (error) => {}, true);
       setActivated(true);
       onNext({});
     } catch (error) {
@@ -124,8 +124,7 @@ const ConnectWalletPage: NextPage = () => {
       name: 'Wallet Connect',
       image: '/icons/wallets/walletconnect.svg',
       onClick: walletConnectActivate,
-      subLabel: 'Soon',
-      disabled: true
+      disabled: false
     },
     {
       name: 'Coinbase Wallet',

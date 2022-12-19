@@ -19,7 +19,15 @@ export const injected = new InjectedConnector({
 });
 
 export const walletconnect = new WalletConnectConnector({
-  rpc: { 1: `https://mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}` },
+  rpc: {
+    1: `https://mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`,
+    [SupportedChainId.BINANCE]: SupportedChains[SupportedChainId.BINANCE].rpc,
+    [SupportedChainId.POLYGON]: SupportedChains[SupportedChainId.POLYGON].rpc,
+    [SupportedChainId.AVALANCHE]: SupportedChains[SupportedChainId.AVALANCHE].rpc,
+    [SupportedChainId.FANTOM]: SupportedChains[SupportedChainId.FANTOM].rpc,
+    [SupportedChainId.CRONOS]: SupportedChains[SupportedChainId.CRONOS].rpc,
+    [SupportedChainId.MUMBAI]: SupportedChains[SupportedChainId.MUMBAI].rpc
+  },
   bridge: 'https://bridge.walletconnect.org',
   qrcode: true
 });
