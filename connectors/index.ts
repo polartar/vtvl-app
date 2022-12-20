@@ -26,7 +26,8 @@ export const walletconnect = new WalletConnectConnector({
     [SupportedChainId.AVALANCHE]: SupportedChains[SupportedChainId.AVALANCHE].rpc,
     [SupportedChainId.FANTOM]: SupportedChains[SupportedChainId.FANTOM].rpc,
     [SupportedChainId.CRONOS]: SupportedChains[SupportedChainId.CRONOS].rpc,
-    [SupportedChainId.MUMBAI]: SupportedChains[SupportedChainId.MUMBAI].rpc
+    [SupportedChainId.MUMBAI]: SupportedChains[SupportedChainId.MUMBAI].rpc,
+    [SupportedChainId.GOERLI]: SupportedChains[SupportedChainId.GOERLI].rpc
   },
   bridge: 'https://bridge.walletconnect.org',
   qrcode: true
