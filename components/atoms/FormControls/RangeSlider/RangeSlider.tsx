@@ -15,7 +15,8 @@ const RangeSlider = ({ max, ...props }: RangeSliderProps) => {
   const percentValue = Math.round(props.value ? (+props.value / max) * 100 : 0);
   return (
     <div className={`${props.className} relative`}>
-      <input type="range" min={1} max={max} list="rangelist" {...props} className="w-full" />
+      {/* Allow steps for up to 6 decimal places as well */}
+      <input type="range" min={0.000001} max={max} step="0.000001" list="rangelist" {...props} className="w-full" />
       <datalist
         id="rangelist"
         className="flex flex-row items-center justify-between text-xs text-neutral-700 font-medium">

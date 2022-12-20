@@ -4,6 +4,7 @@ import CreateLabel from '@components/atoms/CreateLabel/CreateLabel';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
@@ -38,6 +39,7 @@ import {
 } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
+import { formatNumber } from 'utils/token';
 import { getChartData, getCliffAmount, getNumberOfReleases } from 'utils/vesting';
 
 type DateTimeType = Date | null;
@@ -76,9 +78,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     getFieldState,
     getValues,
     setValue,
+    clearErrors,
     formState: { errors, isSubmitting }
   } = useForm({
-    defaultValues: scheduleFormState
+    defaultValues: { ...scheduleFormState, amountToBeVestedText: '' }
   });
 
   // Set the default values for the template form
@@ -134,6 +137,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   };
   const releaseFrequency = { value: watch('releaseFrequency'), state: getFieldState('releaseFrequency') };
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
+  // Stores the text version of the amount to be vested value
+  const amountToBeVestedText = { value: watch('amountToBeVestedText'), state: getFieldState('amountToBeVestedText') };
 
   console.log('Lumpsum release', lumpSumReleaseAfterCliff.value);
 
@@ -164,8 +169,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Handle the changes made when updating the amount to be vested.
   const handleMinChange = (e: any) => {
-    console.log('Min changed', +e.target.value);
-    setValue('amountToBeVested', +e.target.value);
+    console.log('Min changed', e);
+    // setValue('amountToBeVested', +e.target.value);
   };
 
   // These are used to show/hide the date or time pickers
@@ -515,6 +520,33 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
   }, [lumpSumReleaseAfterCliff.value]);
 
+  const totalTokenSupply = parseFloat(mintFormState.initialSupply.toString());
+
+  // Handles the clicking of the "MAX" button in the amount to be vested section
+  const handleMaxAmount = () => {
+    const newMaxValue = totalTokenSupply;
+    setValue('amountToBeVested', newMaxValue);
+    setValue('amountToBeVestedText', formatNumber(newMaxValue).toString());
+    clearErrors('amountToBeVestedText');
+  };
+
+  // Updates made when the user is interacting with the Range Slider component
+  // Should also update the text value -- for display -- of the number input
+  const handleAmountToBeVestedChange = (e: any) => {
+    const newValue = parseFloat(e.target.value);
+    setValue('amountToBeVested', newValue);
+    setValue('amountToBeVestedText', formatNumber(newValue).toString());
+    clearErrors('amountToBeVestedText');
+  };
+
+  // Add additional fields to contain the text value of the inputted numbers -- AMOUNT TO BE VESTED.
+  // Then updating the numeric value based on the current value of the text
+  useEffect(() => {
+    // Parse the text into floats to cater the decimals if any
+    const amountToBeVestedToFloat = parseFloat(amountToBeVestedText.value.replaceAll(',', ''));
+    setValue('amountToBeVested', !isNaN(amountToBeVestedToFloat) ? amountToBeVestedToFloat : 0);
+  }, [amountToBeVestedText.value]);
+
   /**
    * This section is used for anything that regards the Vesting Schedule templates
    * Should feature the ff:
@@ -727,15 +759,49 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 />
               </div>
               <div className="md:col-span-2 pb-5">
-                <LimitedSupply
-                  label="Amount to be vested"
-                  required
-                  initial={+amountToBeVested.value}
-                  maximum={+mintFormState.initialSupply}
-                  onMinChange={handleMinChange}
-                  onUseMax={() => setValue('amountToBeVested', +mintFormState.initialSupply)}
-                  maxReadOnly
-                />
+                <div className="relative">
+                  <Controller
+                    name="amountToBeVestedText"
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <>
+                        <label className="required w-full">
+                          <div className="flex flex-row items-center justify-between gap-3 w-full">
+                            <span className="form-label required">Amount to be vested</span>
+                            <p className="text-xs font-medium text-neutral-700">
+                              Token total supply: {formatNumber(totalTokenSupply)}
+                            </p>
+                          </div>
+                        </label>
+                        <Input
+                          placeholder="Enter amount"
+                          type="number"
+                          max={totalTokenSupply}
+                          error={Boolean(errors.amountToBeVestedText) || amountToBeVested.value > totalTokenSupply}
+                          message={errors.amountToBeVestedText ? 'Please enter amount to be vested' : ''}
+                          {...field}
+                        />
+                      </>
+                    )}
+                  />
+                  <Chip
+                    label="MAX"
+                    color={amountToBeVested.value < totalTokenSupply ? 'secondary' : 'default'}
+                    onClick={handleMaxAmount}
+                    className={`absolute right-6 cursor-pointer ${
+                      amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-2'
+                    }`}
+                  />
+                </div>
+                <div className="mt-6">
+                  <RangeSlider
+                    max={totalTokenSupply || 0}
+                    value={amountToBeVested.value ? amountToBeVested.value : 0}
+                    className="mt-5"
+                    onChange={handleAmountToBeVestedChange}
+                  />
+                </div>
               </div>
             </div>
             <div className="flex flex-row justify-end items-center border-t border-neutral-200 pt-5">

@@ -30,7 +30,8 @@ const LimitedSupply = ({
   onMaxChange,
   onMinChange,
   onUseMax,
-  maxReadOnly = false
+  maxReadOnly = false,
+  ...props
 }: LimitedSupplyProps) => {
   return (
     <>
@@ -55,6 +56,7 @@ const LimitedSupply = ({
           onMaxChange={onMaxChange}
           onUseMax={onUseMax}
           maxReadOnly={maxReadOnly}
+          placeholder={props.placeholder}
         />
         <RangeSlider max={maximum} value={initial} className="mt-5" onChange={onMinChange} />
       </label>
