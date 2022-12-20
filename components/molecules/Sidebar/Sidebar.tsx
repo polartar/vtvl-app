@@ -39,8 +39,8 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
     Router.push(route);
   };
 
-  const hasTokensToClaim = (menu: any) => false; // temporary -- to use the old claim token
-  // Boolean(menu.route === '/tokens' && vestingSchedules && vestingSchedules.length);
+  const hasTokensToClaim = (menu: any) =>
+    Boolean(menu.route === '/tokens' && vestingSchedules && vestingSchedules.length);
 
   // Force expand the sidebar on initial load when the device screen width is large
   useEffect(() => {

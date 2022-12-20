@@ -33,69 +33,68 @@ const MyTokenStatus: NextPageWithLayout = () => {
   const [vestings, setVestings] = useState<{ [key: string]: IVesting }>({});
 
   // Check for Vesting schedules, then redirect to the first record
-  // Dec 13, 2022 -- Retain the Old Claim portal, dont'redirect yet
-  // useEffect(() => {
-  //   if (vestingSchedules && vestingSchedules.length) {
-  //     const selectFirst = vestingSchedules[0];
-  //     Router.push(`/tokens/${selectFirst.id}`);
+  useEffect(() => {
+    if (vestingSchedules && vestingSchedules.length) {
+      const selectFirst = vestingSchedules[0];
+      Router.push(`/tokens/${selectFirst.id}`);
+    }
+  }, [vestingSchedules]);
+
+  // const handleTabChange = (e: any) => {
+  //   // Change token query based on currently selected tab
+  //   setTab(e.target.value);
+  // };
+
+  // const statuses = [
+  //   { label: 'All', value: 'all' },
+  //   { label: 'Claimed', value: 'claimed' },
+  //   { label: 'Unclaimed', value: 'unclaimed' }
+  // ];
+
+  // const fetchOrganizations = async () => {
+  //   const vestings = await fetchAllVestings();
+  //   if (vestings && vestings.length > 0 && account) {
+  //     vestings.forEach((vesting) => {
+  //       if (
+  //         vesting.recipients &&
+  //         vesting.recipients.length > 0 &&
+  //         vesting.recipients.find((recipient) => recipient.walletAddress.toLowerCase() === account.toLowerCase())
+  //       ) {
+  //         setOrganizations({
+  //           ...organizations,
+  //           [vesting.organizationId]: true
+  //         });
+  //         setVestings({
+  //           [vesting.organizationId]: vesting
+  //         });
+  //         hideLoading();
+  //       }
+  //     });
   //   }
-  // }, [vestingSchedules]);
+  //   hideLoading();
+  // };
 
-  const handleTabChange = (e: any) => {
-    // Change token query based on currently selected tab
-    setTab(e.target.value);
-  };
+  // // // Remove this once there is an integration happening with the backend,
+  // // // but make sure to setIsPageLoading to false once actual data is loaded.
+  // useEffect(() => {
+  //   fetchOrganizations();
+  // }, [user, account]);
 
-  const statuses = [
-    { label: 'All', value: 'all' },
-    { label: 'Claimed', value: 'claimed' },
-    { label: 'Unclaimed', value: 'unclaimed' }
-  ];
-
-  const fetchOrganizations = async () => {
-    const vestings = await fetchAllVestings();
-    if (vestings && vestings.length > 0 && account) {
-      vestings.forEach((vesting) => {
-        if (
-          vesting.recipients &&
-          vesting.recipients.length > 0 &&
-          vesting.recipients.find((recipient) => recipient.walletAddress.toLowerCase() === account.toLowerCase())
-        ) {
-          setOrganizations({
-            ...organizations,
-            [vesting.organizationId]: true
-          });
-          setVestings({
-            [vesting.organizationId]: vesting
-          });
-          hideLoading();
-        }
-      });
-    }
-    hideLoading();
-  };
-
-  // // Remove this once there is an integration happening with the backend,
-  // // but make sure to setIsPageLoading to false once actual data is loaded.
-  useEffect(() => {
-    fetchOrganizations();
-  }, [user, account]);
-
-  useEffect(() => {
-    if (organizations && Object.keys(organizations).length > 0) {
-      const orgIds = Object.keys(organizations);
-      orgIds.map((orgId) => {
-        fetchTokenByQuery('organizationId', '==', orgId).then((res) => {
-          if (res?.data) {
-            setTokens([
-              ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),
-              res.data
-            ]);
-          }
-        });
-      });
-    }
-  }, [organizations]);
+  // useEffect(() => {
+  //   if (organizations && Object.keys(organizations).length > 0) {
+  //     const orgIds = Object.keys(organizations);
+  //     orgIds.map((orgId) => {
+  //       fetchTokenByQuery('organizationId', '==', orgId).then((res) => {
+  //         if (res?.data) {
+  //           setTokens([
+  //             ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),
+  //             res.data
+  //           ]);
+  //         }
+  //       });
+  //     });
+  //   }
+  // }, [organizations]);
 
   return (
     <>
