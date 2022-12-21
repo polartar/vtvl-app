@@ -10,6 +10,7 @@ import CapTableOverview from '@components/molecules/CapTableOverview/CapTableOve
 import Table from '@components/molecules/Table/Table';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
+import { useWeb3React } from '@web3-react/core';
 import Decimal from 'decimal.js';
 import { useAuthContext } from 'providers/auth.context';
 import RecipientsIcon from 'public/icons/cap-table-recipients.svg';
@@ -23,6 +24,7 @@ import { formatNumber } from 'utils/token';
 import { NextPageWithLayout } from './_app';
 
 const CapTable: NextPageWithLayout = () => {
+  const { chainId } = useWeb3React();
   const { mintFormState } = useTokenContext();
   const { user, organizationId } = useAuthContext();
   const [showCapTable, setShowCapTable] = useState(false);
@@ -38,8 +40,8 @@ const CapTable: NextPageWithLayout = () => {
   const [totalAllocation, setTotalAllocation] = useState(0);
 
   useEffect(() => {
-    setUpCapTable();
-  }, []);
+    if (chainId) setUpCapTable();
+  }, [chainId]);
 
   // Renderer for the recipient types for UI purpose
   const CellRecipientType = ({ value }: any) => <Chip label={value} rounded size="small" color="gray" />;
@@ -211,9 +213,9 @@ const CapTable: NextPageWithLayout = () => {
       : undefined;
 
     const initialVestingData = await fetchVestingsByQuery(
-      'organizationId',
-      '==',
-      memberInfo?.org_id || organizationId || ''
+      ['organizationId', 'chainId'],
+      ['==', '=='],
+      [memberInfo?.org_id || organizationId || '', chainId!.toString()]
     );
     const vestingData = initialVestingData.filter((vd) => !vd.data.archive);
     console.log('vesting data here is ', vestingData);

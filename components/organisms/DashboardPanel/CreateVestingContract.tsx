@@ -175,9 +175,13 @@ AddVestingSchedulesProps) => {
 
   const handleTransferOwnership = async () => {
     try {
-      if (organizationId) {
+      if (organizationId && chainId) {
         setTransactionStatus('PENDING');
-        const vestingContractData = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        const vestingContractData = await fetchVestingContractByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [organizationId, chainId.toString()]
+        );
         if (vestingContractData?.data) {
           const vestingContract = new ethers.Contract(
             vestingContractData?.data?.address,
@@ -289,7 +293,11 @@ AddVestingSchedulesProps) => {
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
-        const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        const vestingContract = await fetchVestingContractByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [organizationId, chainId.toString()]
+        );
         const txData = {
           to: vestingContract?.data?.address ?? '',
           data: createClaimsBatchEncoded,
@@ -314,7 +322,11 @@ AddVestingSchedulesProps) => {
         });
 
         if (account && organizationId) {
-          const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+          const vestingContract = await fetchVestingContractByQuery(
+            ['organizationId', 'chainId'],
+            ['==', '=='],
+            [organizationId, chainId.toString()]
+          );
           const transactionId = await createTransaction({
             hash: txHash,
             safeHash: '',
@@ -442,14 +454,18 @@ AddVestingSchedulesProps) => {
 
   const handleRemoveDeployerOwnership = async () => {
     try {
-      if (!account || !library) {
+      if (!account || !library || !chainId) {
         activate(injected);
         return;
       }
 
       if (organizationId && safe?.address && account.toLowerCase() === safe?.owners[0].address.toLowerCase()) {
         setTransactionStatus('PENDING');
-        const vestingContractData = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        const vestingContractData = await fetchVestingContractByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [organizationId, chainId.toString()]
+        );
         if (vestingContractData?.data) {
           const vestingContract = new ethers.Contract(
             vestingContractData?.data?.address,

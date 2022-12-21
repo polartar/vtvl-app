@@ -50,7 +50,7 @@ interface IVestingData {
 const VestingContext = createContext({} as IVestingData);
 
 export function VestingContextProvider({ children }: any) {
-  const { account } = useWeb3React();
+  const { account, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
 
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
@@ -86,23 +86,25 @@ export function VestingContextProvider({ children }: any) {
   }, [account]);
 
   useEffect(() => {
-    if (organizationId) {
-      fetchVestingsByQuery('organizationId', '==', organizationId).then((res) => {
-        // Check if the vesting schedules already has name, if none, generate one
-        if (res.length) {
-          const newVestings = res.map((schedule) => {
-            const newScheduleDetails = { ...schedule };
-            if (!schedule.data.name) {
-              newScheduleDetails.data.name = generateRandomName();
-              updateVesting({ ...newScheduleDetails.data }, schedule.id);
-            }
-            return newScheduleDetails;
-          });
-          setVestings(newVestings);
+    if (organizationId && chainId) {
+      fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId.toString()]).then(
+        (res) => {
+          // Check if the vesting schedules already has name, if none, generate one
+          if (res.length) {
+            const newVestings = res.map((schedule) => {
+              const newScheduleDetails = { ...schedule };
+              if (!schedule.data.name) {
+                newScheduleDetails.data.name = generateRandomName();
+                updateVesting({ ...newScheduleDetails.data }, schedule.id);
+              }
+              return newScheduleDetails;
+            });
+            setVestings(newVestings);
+          }
         }
-      });
+      );
     }
-  }, [organizationId]);
+  }, [organizationId, chainId]);
 
   return <VestingContext.Provider value={value}>{children}</VestingContext.Provider>;
 }

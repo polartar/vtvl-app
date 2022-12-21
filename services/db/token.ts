@@ -19,11 +19,11 @@ export const fetchToken = async (id: string): Promise<IToken | undefined> => {
 };
 
 export const fetchTokensByQuery = async (
-  field: string,
-  syntax: WhereFilterOp,
-  value: string
+  fields: string[],
+  syntaxs: WhereFilterOp[],
+  values: string[]
 ): Promise<QueryDocumentSnapshot<IToken>[] | undefined> => {
-  const q = query(tokenCollection, where(field, syntax, value));
+  const q = query(tokenCollection, ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index])));
   const querySnapshot = await getDocs(q);
 
   if (querySnapshot && !querySnapshot.empty) {
@@ -32,11 +32,11 @@ export const fetchTokensByQuery = async (
 };
 
 export const fetchTokenByQuery = async (
-  field: string,
-  syntax: WhereFilterOp,
-  value: string
+  fields: string[],
+  syntaxs: WhereFilterOp[],
+  values: string[]
 ): Promise<{ id: string; data: IToken | undefined } | undefined> => {
-  const q = query(tokenCollection, where(field, syntax, value));
+  const q = query(tokenCollection, ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index])));
   const querySnapshot = await getDocs(q);
 
   if (querySnapshot && !querySnapshot.empty) {

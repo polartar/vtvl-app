@@ -64,15 +64,13 @@ export function DashboardContextProvider({ children }: any) {
   const fetchDashboardVestingContract = async () => {
     try {
       setVestingContractLoading(true);
-      const res = await fetchVestingContractsByQuery('organizationId', '==', organizationId!);
+      const res = await fetchVestingContractsByQuery(
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [organizationId!, chainId!.toString()]
+      );
       if (res && res.length > 0) {
-        const contract = res.find((v) => {
-          if (v && v.data.chainId) {
-            return v.data.chainId === chainId;
-          }
-          return false;
-        });
-        setVestingContract(contract);
+        setVestingContract(res[0]);
       } else {
         setVestingContract(undefined);
       }
@@ -86,7 +84,11 @@ export function DashboardContextProvider({ children }: any) {
   const fetchDashboardVestings = async () => {
     setVestingsLoading(true);
     try {
-      const res = await fetchVestingsByQuery('organizationId', '==', organizationId!);
+      const res = await fetchVestingsByQuery(
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [organizationId!, chainId!.toString()]
+      );
       // Filter out without the archived records
       const filteredVestingSchedules = res.filter((v) => !v.data.archive && v.data.chainId === chainId);
       setVestings(filteredVestingSchedules);
@@ -99,8 +101,12 @@ export function DashboardContextProvider({ children }: any) {
   const fetchDashboardTransactions = async () => {
     setTransactionsLoading(true);
     try {
-      const res = await fetchTransactionsByQuery('organizationId', '==', organizationId!);
-      setTransactions(res.filter((v) => v.data.chainId === chainId));
+      const res = await fetchTransactionsByQuery(
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [organizationId!, chainId!.toString()]
+      );
+      setTransactions(res);
     } catch (err) {
       console.log('fetchDashboardTransactions - ', err);
     }

@@ -10,11 +10,14 @@ export const fetchVestingContract = async (id: string): Promise<IVestingContract
 };
 
 export const fetchVestingContractByQuery = async (
-  field: string,
-  syntax: WhereFilterOp,
-  value: string
+  fields: string[],
+  syntaxs: WhereFilterOp[],
+  values: string[]
 ): Promise<{ id: string; data: IVestingContract | undefined } | undefined> => {
-  const q = query(vestingContractCollection, where(field, syntax, value));
+  const q = query(
+    vestingContractCollection,
+    ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index]))
+  );
   const querySnapshot = await getDocs(q);
 
   if (querySnapshot && !querySnapshot.empty) {
@@ -23,11 +26,14 @@ export const fetchVestingContractByQuery = async (
 };
 
 export const fetchVestingContractsByQuery = async (
-  field: string,
-  syntax: WhereFilterOp,
-  value: string
+  fields: string[],
+  syntaxs: WhereFilterOp[],
+  values: string[]
 ): Promise<{ id: string; data: IVestingContract }[] | []> => {
-  const q = query(vestingContractCollection, where(field, syntax, value));
+  const q = query(
+    vestingContractCollection,
+    ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index]))
+  );
   const querySnapshot = await getDocs(q);
 
   const result: any = [];

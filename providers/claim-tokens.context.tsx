@@ -141,11 +141,11 @@ export function ClaimTokensContextProvider({ children }: any) {
 
   // A function that gets the vesting contract for the user
   const fetchContract = async () => {
-    if (selectedSchedule && selectedSchedule.data) {
+    if (selectedSchedule && selectedSchedule.data && chainId) {
       const contractFromDB = await fetchVestingContractByQuery(
-        'organizationId',
-        '==',
-        selectedSchedule?.data.organizationId
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [selectedSchedule?.data.organizationId, chainId.toString()]
       );
       console.log('contract from db', contractFromDB);
 
@@ -205,7 +205,11 @@ export function ClaimTokensContextProvider({ children }: any) {
   const getTokenDetails = async () => {
     if (selectedSchedule && selectedSchedule.data) {
       try {
-        const getTokenFromDB = await fetchTokenByQuery('organizationId', '==', selectedSchedule?.data.organizationId);
+        const getTokenFromDB = await fetchTokenByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [selectedSchedule?.data.organizationId, chainId!.toString()]
+        );
         console.log('Token', getTokenFromDB);
         if (getTokenFromDB && getTokenFromDB.data) {
           setSelectedToken({
@@ -239,10 +243,10 @@ export function ClaimTokensContextProvider({ children }: any) {
 
   // Stores the token list of the current user
   useEffect(() => {
-    if (organizations && Object.keys(organizations).length > 0) {
+    if (organizations && Object.keys(organizations).length > 0 && chainId) {
       const orgIds = Object.keys(organizations);
       orgIds.map((orgId) => {
-        fetchTokenByQuery('organizationId', '==', orgId).then((res) => {
+        fetchTokenByQuery(['organizationId', 'chainId'], ['==', '=='], [orgId, chainId!.toString()]).then((res) => {
           if (res?.data) {
             setTokens([
               ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),
@@ -252,7 +256,7 @@ export function ClaimTokensContextProvider({ children }: any) {
         });
       });
     }
-  }, [organizations]);
+  }, [organizations, chainId]);
 
   // Watch for route changes that has [schedule]
   useEffect(() => {
@@ -318,7 +322,7 @@ export function ClaimTokensContextProvider({ children }: any) {
     fetchContract();
     // Get the current token
     getTokenDetails();
-  }, [userTokenDetails.releaseAmount]);
+  }, [userTokenDetails.releaseAmount, chainId]);
 
   // Computes the claimed, unclaimed and remaining tokens of the individual user
   useEffect(() => {

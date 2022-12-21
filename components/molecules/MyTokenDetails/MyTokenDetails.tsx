@@ -97,7 +97,11 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
           new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()).getTime()) /
         (1000 * 60 * 60 * 24);
       setProgress(Math.floor(daysPassed / (daysLeft + daysPassed)));
-      fetchVestingContractByQuery('organizationId', '==', vesting.organizationId).then((res) => {
+      fetchVestingContractByQuery(
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [vesting.organizationId, chainId.toString()]
+      ).then((res) => {
         if (res?.data) {
           setVestingContractAddress(res.data.address);
           const vestingContract = new ethers.Contract(

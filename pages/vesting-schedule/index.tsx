@@ -74,8 +74,12 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const getVestings = async (loader = true) => {
     if (loader) setIsFetchingSchedules(true);
     try {
-      if (organizationId) {
-        const schedules = await fetchVestingsByQuery('organizationId', '==', organizationId);
+      if (organizationId && chainId) {
+        const schedules = await fetchVestingsByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [organizationId, chainId.toString()]
+        );
         setVestingSchedules(schedules);
         // Manually count all necessary data since we're fetching all of the schedules for this particular organization
         let inProgress = 0;
@@ -111,7 +115,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   useEffect(() => {
     getVestings();
-  }, []);
+  }, [chainId]);
 
   useEffect(() => {
     if (isFetchingSchedules || isTokenLoading) {
@@ -478,7 +482,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
-        const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        const vestingContract = await fetchVestingContractByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [organizationId, chainId.toString()]
+        );
         const txData = {
           to: vestingContract?.data?.address ?? '',
           data: createClaimsBatchEncoded,
@@ -532,7 +540,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
         setTransactionStatus('PENDING');
-        const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        const vestingContract = await fetchVestingContractByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [organizationId, chainId.toString()]
+        );
         const vestingContractInstance = new ethers.Contract(
           vestingContract?.data?.address ?? '',
           VTVL_VESTING_ABI.abi,

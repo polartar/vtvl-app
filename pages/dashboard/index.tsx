@@ -14,19 +14,9 @@ import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import CreateVestingContract from 'components/organisms/DashboardPanel/CreateVestingContract';
 import FundContract from 'components/organisms/DashboardPanel/FundContract';
-import { injected } from 'connectors';
-import VtvlVesting from 'contracts/abi/VtvlVesting.json';
-import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useState } from 'react';
-import { fetchVestingsByQuery } from 'services/db/vesting';
-import { createVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
-import { IVesting } from 'types/models';
-import { IScheduleOverviewProps, IVestingContractProps } from 'types/models/vesting';
-import { timestampToDateString } from 'utils/date';
-import { formatNumber, parseTokenAmount } from 'utils/token';
 
 import { NextPageWithLayout } from '../_app';
 

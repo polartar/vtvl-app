@@ -108,7 +108,7 @@ export function TokenContextProvider({ children }: any) {
 
   const fetchToken = () => {
     if (organizationId && chainId) {
-      fetchTokensByQuery('organizationId', '==', organizationId)
+      fetchTokensByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId.toString()])
         .then((res) => {
           if (res) {
             const token = res.find((token) => {

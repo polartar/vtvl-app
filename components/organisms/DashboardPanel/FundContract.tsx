@@ -28,14 +28,9 @@ import {
   fetchTransactionsByQuery,
   updateTransaction
 } from 'services/db/transaction';
-import { updateVesting } from 'services/db/vesting';
-import { createVestingContract, fetchVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
-import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
-import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
 import { formatNumber, parseTokenAmount } from 'utils/token';
-import { getCliffAmount, getCliffDateTime, getNumberOfReleases } from 'utils/vesting';
 
 import FundingContractModal from '../FundingContractModal/FundingContractModal';
 
@@ -379,16 +374,18 @@ const FundContract = () => {
   };
 
   useEffect(() => {
-    if (organizationId) {
-      fetchTransactionsByQuery('organizationId', '==', organizationId).then((res) => {
-        setTransaction(
-          res.find(
-            (transaction) => transaction.data.status === 'PENDING' && transaction.data.type === 'FUNDING_CONTRACT'
-          )
-        );
-      });
+    if (organizationId && chainId) {
+      fetchTransactionsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId?.toString()]).then(
+        (res) => {
+          setTransaction(
+            res.find(
+              (transaction) => transaction.data.status === 'PENDING' && transaction.data.type === 'FUNDING_CONTRACT'
+            )
+          );
+        }
+      );
     }
-  }, [organizationId]);
+  }, [organizationId, chainId]);
 
   useEffect(() => {
     if (transaction) {
