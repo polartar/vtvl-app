@@ -49,7 +49,7 @@ const CapTableOverview = ({
           <p className="paragraphy-tiny-medium neutral-text mb-6">Claimed</p>
           <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
-              {formatNumber(claimed)} {token}
+              {formatNumber(+claimed.toString())} {token}
             </p>
             <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(claimed)}</div>
           </div>
@@ -58,20 +58,20 @@ const CapTableOverview = ({
           <p className="paragraphy-tiny-medium neutral-text mb-6">Unclaimed</p>
           <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
-              {formatNumber(unclaimed)} {token}
+              {formatNumber(+unclaimed.toString())} {token}
             </p>
             <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(unclaimed)}</div>
           </div>
         </div>
-        <div>
+        {/* <div>
           <p className="paragraphy-tiny-medium neutral-text mb-6">Total withdrawn</p>
           <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
-              {formatNumber(totalWithdrawn)} {token}
+              {formatNumber(+totalWithdrawn.toString())} {token}
             </p>
             <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(totalWithdrawn)}</div>
           </div>
-        </div>
+        </div> */}
         <div>
           <p className="paragraphy-tiny-medium neutral-text mb-6">Total allocation</p>
           <div className="paragraphy-large-semibold text-neutral-900">

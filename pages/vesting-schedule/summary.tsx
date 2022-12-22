@@ -71,6 +71,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
       createdAt: Math.floor(new Date().getTime() / 1000),
       updatedAt: Math.floor(new Date().getTime() / 1000),
       transactionId: '',
+      vestingContractId: '',
       tokenAddress: mintFormState.address,
       tokenId,
       chainId

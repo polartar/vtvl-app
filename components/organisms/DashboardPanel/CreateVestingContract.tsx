@@ -151,11 +151,13 @@ AddVestingSchedulesProps) => {
           chainId
         });
         // Ensure that the initial vesting schedule record is also updated
+        // Since vesting contract is being created, status should be CREATED
         if (vestings && vestings[activeVestingIndex]) {
           await updateVesting(
             {
               ...vestings[activeVestingIndex].data,
-              status: 'SUCCESS',
+              status: 'CREATED',
+              vestingContractId,
               updatedAt: Math.floor(new Date().getTime() / 1000)
             },
             vestings[activeVestingIndex].id
@@ -234,7 +236,9 @@ AddVestingSchedulesProps) => {
             )
           : 0;
       const actualStartDateTime =
-        vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vesting.details.startDateTime;
+        vesting.details.cliffDuration !== 'no-cliff'
+          ? cliffReleaseDate
+          : new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
       const vestingEndTimestamp =
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
@@ -352,7 +356,12 @@ AddVestingSchedulesProps) => {
           updateVesting(
             {
               ...vesting,
-              transactionId
+              transactionId,
+              // Because this has been executed via multi-sig which requires approval
+              // We should check first if this current approval is the last one
+              // If so, the status should be LIVE
+              // else, WAITING_APPROVAL
+              status: 'WAITING_APPROVAL'
             },
             vestingId
           );
@@ -400,6 +409,17 @@ AddVestingSchedulesProps) => {
         setTransactionStatus('SUCCESS');
         // const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         // await executeTransactionResponse.transactionResponse?.wait();
+        // ----------------------------
+        // Add something to determine if this approval is the last one among all the required approvers
+        // Then, update the vesting schedule's status based on that one into 'LIVE'
+        const vesting = vestings[activeVestingIndex];
+        updateVesting(
+          {
+            ...vesting.data,
+            status: 'LIVE'
+          },
+          vesting.id
+        );
       }
     } catch (err) {
       console.log('handleApproveTransaction - ', err);
@@ -444,6 +464,9 @@ AddVestingSchedulesProps) => {
         );
         setTransactionStatus('SUCCESS');
         toast.success('Executed successfully.');
+
+        // What's the purpose of this, should we add an updateVesting here as well?
+        // So that the statuses of the vesting schedules are updated an in line with the current transaction statuses
       }
     } catch (err) {
       console.log('handleExecuteTransaction - ', err);

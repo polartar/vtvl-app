@@ -11,26 +11,12 @@ import { fetchAllVestingsWithId } from 'services/db/vesting';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IToken, IVesting } from 'types/models';
+import { TUserTokenDetails } from 'types/models/token';
 import { getActualDateTime } from 'utils/shared';
 import { getCliffAmountDecimal, getCliffDateTime, getNumberOfReleases, getReleaseAmountDecimal } from 'utils/vesting';
 
 import { useAuthContext } from './auth.context';
 
-type TUserTokenDetails = {
-  name: string;
-  symbol: string;
-  totalAllocation: Decimal;
-  cliffAmount: Decimal;
-  releaseAmount: Decimal;
-  claimableAmount: Decimal;
-  claimedAmount: Decimal;
-  remainingAmount: Decimal;
-  vestedAmount: Decimal;
-  vestingProgress: number;
-  cliffDate: string | Date;
-  numberOfReleases: number;
-  vestingContractAddress: string;
-};
 interface IClaimTokensData {
   tokens: IToken[];
   vestingSchedules: { id: string; data: IVesting }[];

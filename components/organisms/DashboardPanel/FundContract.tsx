@@ -28,6 +28,7 @@ import {
   fetchTransactionsByQuery,
   updateTransaction
 } from 'services/db/transaction';
+import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';
@@ -183,6 +184,20 @@ const FundContract = () => {
         );
         setTransactionStatus('IN_PROGRESS');
         await fundTransaction.wait();
+        // This should have a function to update the vesting schedule status
+        // From INITIALIZED into WAITING_APPROVAL
+        const getVestingSchedule = await fetchVestingsByQuery(['vestingContractId'], ['=='], [vestingContract?.id]);
+        if (getVestingSchedule.length) {
+          const vestingSched = getVestingSchedule[0];
+          await updateVesting(
+            {
+              ...vestingSched.data,
+              status: 'WAITING_APPROVAL',
+              updatedAt: Math.floor(new Date().getTime() / 1000)
+            },
+            vestingSched.id
+          );
+        }
         toast.success('Token deposited successfully');
         setStatus('success');
         fetchVestingContractBalance();
@@ -238,6 +253,21 @@ const FundContract = () => {
               chainId
             });
             setApproved(true);
+            // This does not tie-up with what the vesting schedule is being vested
+            // This should have a function to update the vesting schedule status
+            // From INITIALIZED into WAITING_APPROVAL
+            const getVestingSchedule = await fetchVestingsByQuery(['vestingContractId'], ['=='], [vestingContract?.id]);
+            if (getVestingSchedule.length) {
+              const vestingSched = getVestingSchedule[0];
+              await updateVesting(
+                {
+                  ...vestingSched.data,
+                  status: 'WAITING_APPROVAL',
+                  updatedAt: Math.floor(new Date().getTime() / 1000)
+                },
+                vestingSched.id
+              );
+            }
             setTransaction({
               id: transactionId,
               data: {

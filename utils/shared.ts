@@ -1,7 +1,16 @@
+import ERC20 from '@contracts/abi/ERC20.json';
+import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import format from 'date-fns/format';
+import getUnixTime from 'date-fns/getUnixTime';
+import sub from 'date-fns/sub';
 import Decimal from 'decimal.js';
+import { ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
+import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { spaceMissions } from 'types/constants/shared';
+import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
+import { IVesting } from 'types/models';
+import { TUserTokenDetails } from 'types/models/token';
 
 import { formatNumber } from './token';
 
@@ -91,4 +100,108 @@ export const generateRandomName = (l = 4) => {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return `${spaceMission}-${result}`;
+};
+
+/**
+ * This function is used to get all the token details needed for a specific user.
+ * Requirements for the claimed, unclaimed etc.
+ * @param selectedSchedule
+ * @param userWalletAddress
+ * @param chainId
+ * @returns the data of the user's token
+ */
+export const getUserTokenDetails = async (
+  selectedSchedule: { id: string; data: IVesting },
+  userWalletAddress: string,
+  chainId: number,
+  timeStamp?: Date
+) => {
+  // All details for the specific user
+  const userTokenDetails: TUserTokenDetails = {
+    name: '',
+    symbol: '',
+    totalAllocation: new Decimal(0),
+    cliffAmount: new Decimal(0),
+    releaseAmount: new Decimal(0),
+    claimableAmount: new Decimal(0),
+    claimedAmount: new Decimal(0),
+    remainingAmount: new Decimal(0),
+    vestedAmount: new Decimal(0),
+    vestingProgress: 0,
+    cliffDate: '',
+    numberOfReleases: 0,
+    vestingContractAddress: ''
+  };
+  // Start getting datas when the selected schedule is present
+  if (selectedSchedule && selectedSchedule.data) {
+    const contractFromDB = await fetchVestingContractByQuery(
+      ['organizationId'],
+      ['=='],
+      [selectedSchedule?.data.organizationId]
+    );
+
+    if (contractFromDB?.data) {
+      userTokenDetails.vestingContractAddress = contractFromDB.data.address;
+      console.log('Contract address', contractFromDB.data);
+      const vestingContract = await new ethers.Contract(
+        contractFromDB?.data?.address ?? '',
+        VTVL_VESTING_ABI.abi,
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+
+      // Get the token details in the blockchain
+      const tokenDetails = await new ethers.Contract(
+        contractFromDB?.data?.tokenAddress,
+        ERC20,
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+
+      // Added a 10 second difference to ensure 0 claimed data points
+      // when the frequency is continuous -- per second -- and if recipient is not claiming yet
+      const getRecipientClaimTimeStamp =
+        selectedSchedule.data.details.releaseFrequency === 'continuous'
+          ? sub(timeStamp || new Date(), { seconds: 10 })
+          : new Date();
+
+      const [totalAllocatedToUser, totalClaimableByUser, totalVestedToUser, tokenName, tokenSymbol] = await Promise.all(
+        [
+          vestingContract.finalVestedAmount(userWalletAddress),
+          vestingContract.claimableAmount(userWalletAddress),
+          vestingContract.vestedAmount(userWalletAddress, getUnixTime(getRecipientClaimTimeStamp)),
+          tokenDetails.name(),
+          tokenDetails.symbol()
+        ]
+      );
+
+      if (totalAllocatedToUser && totalClaimableByUser && totalVestedToUser && tokenName && tokenSymbol) {
+        // gets the total allocation of an individual user
+        const totalAllocation = new Decimal(+totalAllocatedToUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
+        // gets the currently claimable token of the individual user
+        const claimableAmount = new Decimal(+totalClaimableByUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
+        // gets the total vested amount that the individual user holds
+        // claimed and unclaimed
+        const vestedAmount = new Decimal(+totalVestedToUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
+        userTokenDetails.totalAllocation = totalAllocation;
+        userTokenDetails.claimableAmount = claimableAmount;
+        userTokenDetails.vestedAmount = vestedAmount;
+        userTokenDetails.name = tokenName;
+        userTokenDetails.symbol = tokenSymbol;
+
+        // Compute amounts based on the results above
+        if (totalAllocation || claimableAmount || vestedAmount) {
+          const claimedTokens = vestedAmount.greaterThanOrEqualTo(claimableAmount)
+            ? vestedAmount.minus(claimableAmount)
+            : new Decimal(0);
+          const remainingTokens = totalAllocation.minus(vestedAmount.minus(claimedTokens));
+          const vestingProgress = +vestedAmount.div(totalAllocation) * 100;
+          userTokenDetails.claimedAmount = claimedTokens;
+          userTokenDetails.remainingAmount = remainingTokens;
+          userTokenDetails.vestingProgress = vestingProgress;
+        }
+      }
+    }
+  }
+
+  console.log('userTokenDetails ' + userWalletAddress, userTokenDetails);
+  return userTokenDetails;
 };

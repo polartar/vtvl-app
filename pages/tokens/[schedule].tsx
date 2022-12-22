@@ -322,17 +322,21 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                       OR probably be the date time of the next linear release
                       all in milliseconds
                     */}
-                      <Countdown
-                        ref={countDownComponent}
-                        autoStart={false}
-                        date={Date.now() + nextUnlock}
-                        renderer={({ days, hours, minutes, seconds }) => (
-                          <>
-                            {days}d {hours}h {minutes}m {seconds}s
-                          </>
-                        )}
-                        onComplete={handleCountdownComplete}
-                      />
+                      {selectedSchedule.data.details.releaseFrequency !== 'continuous' ? (
+                        <Countdown
+                          ref={countDownComponent}
+                          autoStart={false}
+                          date={Date.now() + nextUnlock}
+                          renderer={({ days, hours, minutes, seconds }) => (
+                            <>
+                              {days}d {hours}h {minutes}m {seconds}s
+                            </>
+                          )}
+                          onComplete={handleCountdownComplete}
+                        />
+                      ) : (
+                        <span>You gain tokens every second</span>
+                      )}
                     </div>
                   </div>
                 </div>

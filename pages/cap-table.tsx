@@ -9,6 +9,7 @@ import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import CapTableOverview from '@components/molecules/CapTableOverview/CapTableOverview';
 import Table from '@components/molecules/Table/Table';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import Decimal from 'decimal.js';
@@ -18,7 +19,7 @@ import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { fetchMember } from 'services/db/member';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { IVesting } from 'types/models';
-import { convertAllToOptions, minifyAddress } from 'utils/shared';
+import { convertAllToOptions, getUserTokenDetails, minifyAddress } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 
 import { NextPageWithLayout } from './_app';
@@ -34,14 +35,17 @@ const CapTable: NextPageWithLayout = () => {
   const [filteredRecipientsData, setFilteredRecipientsData] = useState<any[]>([]);
   const [schedules, setSchedules] = useState<any[]>([]);
   const recipientTypes = convertAllToOptions(['Founder', 'Employee', 'Investor']);
-  const [isPageLoading, setPageLoading] = useState(true);
-  const [totalClaimed, setTotalClaimed] = useState(0);
-  const [totalUnClaimed, setTotalUnClaimed] = useState(0);
+  const { loading, showLoading, hideLoading } = useLoaderContext();
+  const [totalClaimed, setTotalClaimed] = useState<Decimal | number>(0);
+  const [totalUnClaimed, setTotalUnClaimed] = useState<Decimal | number>(0);
   const [totalAllocation, setTotalAllocation] = useState(0);
 
   useEffect(() => {
-    if (chainId) setUpCapTable();
-  }, [chainId]);
+    setRecipientsData([]);
+    if (mintFormState.name && organizationId && chainId) {
+      setUpCapTable();
+    }
+  }, [mintFormState.name, organizationId, chainId]);
 
   // Renderer for the recipient types for UI purpose
   const CellRecipientType = ({ value }: any) => <Chip label={value} rounded size="small" color="gray" />;
@@ -121,30 +125,30 @@ const CapTable: NextPageWithLayout = () => {
         Header: 'Unclaimed',
         accessor: 'unclaimed',
         Cell: CellUnclaimedAmount
-      },
-      {
-        id: 'withdrawn',
-        Header: 'Withdrawn',
-        accessor: 'withdrawn',
-        Cell: CellWithdrawnAmount
-      },
-      {
-        id: 'alert',
-        Header: 'Alert',
-        accessor: 'alert',
-        Cell: CellToggleSwitch,
-        getProps: () => ({
-          updateAlertStatus: (value: any, id: string) => {
-            // Save the update alert status to the DB
-            console.log('ALERT STATUS', value, id);
-          }
-        })
-      },
-      {
-        id: 'action',
-        Header: '',
-        accessor: 'action'
       }
+      // {
+      //   id: 'withdrawn',
+      //   Header: 'Withdrawn',
+      //   accessor: 'withdrawn',
+      //   Cell: CellWithdrawnAmount
+      // },
+      // {
+      //   id: 'alert',
+      //   Header: 'Alert',
+      //   accessor: 'alert',
+      //   Cell: CellToggleSwitch,
+      //   getProps: () => ({
+      //     updateAlertStatus: (value: any, id: string) => {
+      //       // Save the update alert status to the DB
+      //       console.log('ALERT STATUS', value, id);
+      //     }
+      //   })
+      // },
+      // {
+      //   id: 'action',
+      //   Header: '',
+      //   accessor: 'action'
+      // }
     ],
     []
   );
@@ -224,61 +228,34 @@ const CapTable: NextPageWithLayout = () => {
 
     if (!vestingData || vestingData.length == 0) {
       console.log('no vesting table details');
-      setPageLoading(false);
+      hideLoading();
       return;
     }
 
-    let sumClaimed = 0;
-    let sumUnclaimed = 0;
+    let sumUnclaimed = new Decimal(0);
+    let sumClaimed = new Decimal(0);
     let sumAllocation = 0;
 
-    const transformedVestings = [...vestingData].reduce((acc: any, obj: { id: string; data: IVesting }) => {
-      // This is based on `amount to be vested` per schedule
-      sumAllocation += obj.data.details.amountToBeVested;
-      const o = [...obj.data.recipients].reduce((a: any, o: any) => {
-        // Based on claimed, unclaimed per each recipient per vesting schedule
-        sumUnclaimed += obj.data.details.amountClaimed;
-        sumClaimed += obj.data.details.amountUnclaimed;
-        return [
-          ...a,
-          {
-            name: o.name,
-            company: o.company,
-            recipientType: o.recipientType[0]?.label,
-            address: o.walletAddress,
-            // Ensure that the totalAllocation for each recipient is divided by the number of recipients
-            totalAllocation: new Decimal(obj.data.details.amountToBeVested)
-              .div(new Decimal(obj.data.recipients.length))
-              .toDP(6, Decimal.ROUND_UP)
-          }
-        ];
-      }, []);
-      return [...acc, ...o];
-    }, []);
-
-    setTotalClaimed(sumClaimed);
-    setTotalUnClaimed(sumUnclaimed);
-    setTotalAllocation(sumAllocation);
-    console.log('transformed vestings ', transformedVestings);
-    setVestingsData(vestingData);
-    setRecipientsData(transformedVestings);
-    setShowCapTable(true);
-    setPageLoading(false);
-  };
-
-  // Todo Arvin: Optimize / Abstract this along with the transformedVesting one to avoid repeating codes
-  useEffect(() => {
-    if (tab !== 'all') {
-      console.log('Filter start', vestingsData, tab);
-      // Filter the data based on the schedule
-      const filteredVestings = [...vestingsData].filter((vesting) => vesting.id === tab);
-      const filteredRecipients = [...filteredVestings].reduce((acc: any, obj: { id: string; data: IVesting }) => {
+    showLoading();
+    // Loop through each of the vesting schedules
+    const transformedVestings = await [...vestingData].reduce(
+      async (accu: any, obj: { id: string; data: IVesting }) => {
+        const acc = await accu;
         // This is based on `amount to be vested` per schedule
-        const o = [...obj.data.recipients].reduce((a: any, o: any) => {
+        sumAllocation += obj.data.details.amountToBeVested;
+        // Loop through all the recipients under a specific vesting schedule
+        const o = await [...obj.data.recipients].reduce(async (accum: any, o: any) => {
+          const a = await accum;
           // Based on claimed, unclaimed per each recipient per vesting schedule
+          const recipientTokenDetails = await getUserTokenDetails(obj, o.walletAddress, chainId!);
+          sumUnclaimed = sumUnclaimed.plus(recipientTokenDetails.claimableAmount);
+          sumClaimed = sumClaimed.plus(recipientTokenDetails.claimedAmount);
+          // sumUnclaimed += obj.data.details.amountClaimed;
+          // sumClaimed += obj.data.details.amountUnclaimed;
           return [
             ...a,
             {
+              scheduleId: obj.id,
               name: o.name,
               company: o.company,
               recipientType: o.recipientType[0]?.label,
@@ -286,12 +263,44 @@ const CapTable: NextPageWithLayout = () => {
               // Ensure that the totalAllocation for each recipient is divided by the number of recipients
               totalAllocation: new Decimal(obj.data.details.amountToBeVested)
                 .div(new Decimal(obj.data.recipients.length))
-                .toDP(6, Decimal.ROUND_UP)
+                .toDP(6, Decimal.ROUND_UP),
+              // Set recipient's claimed and unclaimed datas
+              claimed: recipientTokenDetails.claimedAmount,
+              unclaimed: recipientTokenDetails.claimableAmount
             }
           ];
-        }, []);
+        }, Promise.resolve([]));
         return [...acc, ...o];
-      }, []);
+      },
+      Promise.resolve([])
+    );
+
+    // const newRecipients = await transformedVestings();
+    console.group('Before transformed vestings ');
+    console.log('Recipients', transformedVestings);
+    console.log('ClaimedTotal', sumClaimed);
+    console.log('Unclaimed Total', sumUnclaimed);
+    console.groupEnd();
+    setTotalUnClaimed(sumUnclaimed);
+    setTotalClaimed(sumClaimed);
+    setTotalAllocation(sumAllocation);
+    setVestingsData(vestingData);
+    setRecipientsData(transformedVestings);
+    setShowCapTable(true);
+    hideLoading();
+    console.group('After transformed vestings ');
+    console.log('Recipients', transformedVestings);
+    console.log('ClaimedTotal', sumClaimed);
+    console.log('Unclaimed Total', sumUnclaimed);
+    console.groupEnd();
+  };
+
+  // Todo Arvin: Optimize / Abstract this along with the transformedVesting one to avoid repeating codes
+  useEffect(() => {
+    if (tab !== 'all') {
+      console.log('Filter start', vestingsData, tab);
+      // Filter the data based on the schedule
+      const filteredRecipients = [...recipientsData].filter((recipient) => recipient.scheduleId === tab);
       setFilteredRecipientsData(filteredRecipients);
     } else {
       setFilteredRecipientsData(recipientsData);
@@ -335,7 +344,7 @@ const CapTable: NextPageWithLayout = () => {
               <Input label="Unclaimed" placeholder="any" /> */}
             </div>
 
-            <Table columns={columns} data={filteredRecipientsData} pagination={true} exports={true} />
+            <Table columns={columns} data={filteredRecipientsData} pagination={true} />
           </>
         ) : (
           <EmptyState
