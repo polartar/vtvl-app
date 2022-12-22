@@ -145,7 +145,7 @@ export function ClaimTokensContextProvider({ children }: any) {
       const contractFromDB = await fetchVestingContractByQuery(
         ['organizationId', 'chainId'],
         ['==', '=='],
-        [selectedSchedule?.data.organizationId, chainId.toString()]
+        [selectedSchedule?.data.organizationId, chainId]
       );
       console.log('contract from db', contractFromDB);
 
@@ -208,7 +208,7 @@ export function ClaimTokensContextProvider({ children }: any) {
         const getTokenFromDB = await fetchTokenByQuery(
           ['organizationId', 'chainId'],
           ['==', '=='],
-          [selectedSchedule?.data.organizationId, chainId!.toString()]
+          [selectedSchedule?.data.organizationId, chainId!]
         );
         console.log('Token', getTokenFromDB);
         if (getTokenFromDB && getTokenFromDB.data) {
@@ -246,7 +246,7 @@ export function ClaimTokensContextProvider({ children }: any) {
     if (organizations && Object.keys(organizations).length > 0 && chainId) {
       const orgIds = Object.keys(organizations);
       orgIds.map((orgId) => {
-        fetchTokenByQuery(['organizationId', 'chainId'], ['==', '=='], [orgId, chainId!.toString()]).then((res) => {
+        fetchTokenByQuery(['organizationId', 'chainId'], ['==', '=='], [orgId, chainId!]).then((res) => {
           if (res?.data) {
             setTokens([
               ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),

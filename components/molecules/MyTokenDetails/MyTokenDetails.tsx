@@ -97,23 +97,21 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
           new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()).getTime()) /
         (1000 * 60 * 60 * 24);
       setProgress(Math.floor(daysPassed / (daysLeft + daysPassed)));
-      fetchVestingContractByQuery(
-        ['organizationId', 'chainId'],
-        ['==', '=='],
-        [vesting.organizationId, chainId.toString()]
-      ).then((res) => {
-        if (res?.data) {
-          setVestingContractAddress(res.data.address);
-          const vestingContract = new ethers.Contract(
-            res?.data?.address ?? '',
-            VTVL_VESTING_ABI.abi,
-            ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-          );
-          // vestingContract.numTokensReservedForVesting().then((res: string) => setTotalVested(res));
-          vestingContract.claimableAmount(account).then((res: string) => setClaimable(res));
-          vestingContract.vestedAmount(account, getUnixTime(new Date())).then((res: string) => setTotalVested(res));
+      fetchVestingContractByQuery(['organizationId', 'chainId'], ['==', '=='], [vesting.organizationId, chainId]).then(
+        (res) => {
+          if (res?.data) {
+            setVestingContractAddress(res.data.address);
+            const vestingContract = new ethers.Contract(
+              res?.data?.address ?? '',
+              VTVL_VESTING_ABI.abi,
+              ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+            );
+            // vestingContract.numTokensReservedForVesting().then((res: string) => setTotalVested(res));
+            vestingContract.claimableAmount(account).then((res: string) => setClaimable(res));
+            vestingContract.vestedAmount(account, getUnixTime(new Date())).then((res: string) => setTotalVested(res));
+          }
         }
-      });
+      );
     }
   }, [vesting, token, chainId, account]);
 

@@ -30,7 +30,7 @@ export const fetchAllVestingsWithId = async () => {
 export const fetchVestingsByQuery = async (
   fields: string[],
   syntaxs: WhereFilterOp[],
-  values: string[]
+  values: any[]
 ): Promise<{ id: string; data: IVesting }[] | []> => {
   const q = query(vestingCollection, ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index])));
   const querySnapshot = await getDocs(q);

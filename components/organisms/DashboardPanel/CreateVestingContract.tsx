@@ -180,7 +180,7 @@ AddVestingSchedulesProps) => {
         const vestingContractData = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
           ['==', '=='],
-          [organizationId, chainId.toString()]
+          [organizationId, chainId]
         );
         if (vestingContractData?.data) {
           const vestingContract = new ethers.Contract(
@@ -296,7 +296,7 @@ AddVestingSchedulesProps) => {
         const vestingContract = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
           ['==', '=='],
-          [organizationId, chainId.toString()]
+          [organizationId, chainId]
         );
         const txData = {
           to: vestingContract?.data?.address ?? '',
@@ -325,7 +325,7 @@ AddVestingSchedulesProps) => {
           const vestingContract = await fetchVestingContractByQuery(
             ['organizationId', 'chainId'],
             ['==', '=='],
-            [organizationId, chainId.toString()]
+            [organizationId, chainId]
           );
           const transactionId = await createTransaction({
             hash: txHash,
@@ -464,7 +464,7 @@ AddVestingSchedulesProps) => {
         const vestingContractData = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
           ['==', '=='],
-          [organizationId, chainId.toString()]
+          [organizationId, chainId]
         );
         if (vestingContractData?.data) {
           const vestingContract = new ethers.Contract(

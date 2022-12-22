@@ -12,7 +12,7 @@ export const fetchVestingContract = async (id: string): Promise<IVestingContract
 export const fetchVestingContractByQuery = async (
   fields: string[],
   syntaxs: WhereFilterOp[],
-  values: string[]
+  values: any[]
 ): Promise<{ id: string; data: IVestingContract | undefined } | undefined> => {
   const q = query(
     vestingContractCollection,
@@ -28,7 +28,7 @@ export const fetchVestingContractByQuery = async (
 export const fetchVestingContractsByQuery = async (
   fields: string[],
   syntaxs: WhereFilterOp[],
-  values: string[]
+  values: any[]
 ): Promise<{ id: string; data: IVestingContract }[] | []> => {
   const q = query(
     vestingContractCollection,

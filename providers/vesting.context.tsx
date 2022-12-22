@@ -87,22 +87,20 @@ export function VestingContextProvider({ children }: any) {
 
   useEffect(() => {
     if (organizationId && chainId) {
-      fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId.toString()]).then(
-        (res) => {
-          // Check if the vesting schedules already has name, if none, generate one
-          if (res.length) {
-            const newVestings = res.map((schedule) => {
-              const newScheduleDetails = { ...schedule };
-              if (!schedule.data.name) {
-                newScheduleDetails.data.name = generateRandomName();
-                updateVesting({ ...newScheduleDetails.data }, schedule.id);
-              }
-              return newScheduleDetails;
-            });
-            setVestings(newVestings);
-          }
+      fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]).then((res) => {
+        // Check if the vesting schedules already has name, if none, generate one
+        if (res.length) {
+          const newVestings = res.map((schedule) => {
+            const newScheduleDetails = { ...schedule };
+            if (!schedule.data.name) {
+              newScheduleDetails.data.name = generateRandomName();
+              updateVesting({ ...newScheduleDetails.data }, schedule.id);
+            }
+            return newScheduleDetails;
+          });
+          setVestings(newVestings);
         }
-      );
+      });
     }
   }, [organizationId, chainId]);
 

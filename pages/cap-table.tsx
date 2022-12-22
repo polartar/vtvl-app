@@ -215,7 +215,7 @@ const CapTable: NextPageWithLayout = () => {
     const initialVestingData = await fetchVestingsByQuery(
       ['organizationId', 'chainId'],
       ['==', '=='],
-      [memberInfo?.org_id || organizationId || '', chainId!.toString()]
+      [memberInfo?.org_id || organizationId || '', chainId!]
     );
     const vestingData = initialVestingData.filter((vd) => !vd.data.archive);
     console.log('vesting data here is ', vestingData);

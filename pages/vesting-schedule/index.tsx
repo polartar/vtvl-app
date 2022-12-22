@@ -78,7 +78,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const schedules = await fetchVestingsByQuery(
           ['organizationId', 'chainId'],
           ['==', '=='],
-          [organizationId, chainId.toString()]
+          [organizationId, chainId]
         );
         setVestingSchedules(schedules);
         // Manually count all necessary data since we're fetching all of the schedules for this particular organization
@@ -485,7 +485,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const vestingContract = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
           ['==', '=='],
-          [organizationId, chainId.toString()]
+          [organizationId, chainId]
         );
         const txData = {
           to: vestingContract?.data?.address ?? '',
@@ -543,7 +543,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const vestingContract = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
           ['==', '=='],
-          [organizationId, chainId.toString()]
+          [organizationId, chainId]
         );
         const vestingContractInstance = new ethers.Contract(
           vestingContract?.data?.address ?? '',

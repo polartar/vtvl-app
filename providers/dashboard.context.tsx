@@ -67,7 +67,7 @@ export function DashboardContextProvider({ children }: any) {
       const res = await fetchVestingContractsByQuery(
         ['organizationId', 'chainId'],
         ['==', '=='],
-        [organizationId!, chainId!.toString()]
+        [organizationId!, chainId!]
       );
       if (res && res.length > 0) {
         setVestingContract(res[0]);
@@ -82,13 +82,11 @@ export function DashboardContextProvider({ children }: any) {
   };
 
   const fetchDashboardVestings = async () => {
+    console.log({ chainId });
     setVestingsLoading(true);
     try {
-      const res = await fetchVestingsByQuery(
-        ['organizationId', 'chainId'],
-        ['==', '=='],
-        [organizationId!, chainId!.toString()]
-      );
+      const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId!, chainId!]);
+      console.log({ res });
       // Filter out without the archived records
       const filteredVestingSchedules = res.filter((v) => !v.data.archive && v.data.chainId === chainId);
       setVestings(filteredVestingSchedules);
@@ -104,7 +102,7 @@ export function DashboardContextProvider({ children }: any) {
       const res = await fetchTransactionsByQuery(
         ['organizationId', 'chainId'],
         ['==', '=='],
-        [organizationId!, chainId!.toString()]
+        [organizationId!, chainId!]
       );
       setTransactions(res);
     } catch (err) {
@@ -210,7 +208,7 @@ export function DashboardContextProvider({ children }: any) {
   );
 
   useEffect(() => {
-    if (organizationId || (router && router.pathname === '/dashboard')) fetchDashboardData();
+    if (chainId && (organizationId || (router && router.pathname === '/dashboard'))) fetchDashboardData();
   }, [organizationId, router, chainId]);
 
   useEffect(() => {

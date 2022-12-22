@@ -35,7 +35,7 @@ export const fetchTransactionByQuery = async (
 export const fetchTransactionsByQuery = async (
   fields: string[],
   syntaxs: WhereFilterOp[],
-  values: string[]
+  values: any[]
 ): Promise<{ id: string; data: ITransaction }[] | []> => {
   const q = query(
     transactionCollection,
