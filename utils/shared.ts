@@ -81,7 +81,7 @@ export const getActualDateTime = (data: IActualDateTimeProps) => {
     // Catch it with the default as if it came from current form data
     startDateTime = data.startDateTime;
     endDateTime = data.endDateTime;
-    originalEndDateTime = data.originalEndDateTime;
+    originalEndDateTime = data.originalEndDateTime || data.endDateTime;
   }
   return {
     startDateTime,
