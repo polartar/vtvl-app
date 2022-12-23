@@ -355,12 +355,6 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                       OR probably be the date time of the next linear release
                       all in milliseconds
                     */}
-                      {selectedSchedule.data.details.releaseFrequency === 'continuous' ? (
-                        <div>
-                          <div>You gain tokens every second</div>
-                          <small className="text-normal text-xxs">This refreshes every minute</small>
-                        </div>
-                      ) : null}
                       <Countdown
                         ref={countDownComponent}
                         autoStart={false}
@@ -372,6 +366,12 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                         )}
                         onComplete={handleCountdownComplete}
                       />
+                      {selectedSchedule.data.details.releaseFrequency === 'continuous' ? (
+                        <div className="leading-4 font-normal text-xs text-neutral-500">
+                          Whilst tokens are streamed per second, the claimable amount will only get updated every
+                          minute.
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>
