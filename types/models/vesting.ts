@@ -23,7 +23,7 @@ export interface IVesting {
   organizationId: string;
   tokenAddress?: string;
   tokenId?: string;
-  vestingContract?: string;
+  vestingContractId?: string;
   createdAt?: number;
   updatedAt?: number;
   transactionId: string;

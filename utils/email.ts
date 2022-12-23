@@ -31,7 +31,13 @@ export default async function SendMail({ to, templateId, subject, data }: SendMa
     if (!templateId) return ' Email template is needed';
 
     const dynamicTemplateData = { ...data, subject };
-    await mail.send({ to, from: 'no-reply@vtvl.io', templateId, dynamicTemplateData, subject });
+    await mail.send({
+      to,
+      from: { name: 'VTVL', email: 'no-reply@vtvl.io' },
+      templateId,
+      dynamicTemplateData,
+      subject
+    });
     return 'email sent';
   } catch (error) {
     console.error(error);

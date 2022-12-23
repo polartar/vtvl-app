@@ -4,7 +4,7 @@ import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import MyTokenDetails from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import AuthContext from '@providers/auth.context';
-// import { useClaimTokensContext } from '@providers/claim-tokens.context';
+import { useClaimTokensContext } from '@providers/claim-tokens.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useWeb3React } from '@web3-react/core';
 import type { ERC20 } from 'contracts/ERC20';
@@ -24,7 +24,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
   const { account, library } = useWeb3React();
   const { user } = useContext(AuthContext);
   const { showLoading, hideLoading } = useLoaderContext();
-  // const { vestingSchedules } = useClaimTokensContext();
+  const { vestingSchedules } = useClaimTokensContext();
   const { route } = useRouter();
 
   const [organizations, setOrganizations] = useState<{ [key: string]: boolean }>({});
@@ -33,69 +33,68 @@ const MyTokenStatus: NextPageWithLayout = () => {
   const [vestings, setVestings] = useState<{ [key: string]: IVesting }>({});
 
   // Check for Vesting schedules, then redirect to the first record
-  // Dec 13, 2022 -- Retain the Old Claim portal, dont'redirect yet
-  // useEffect(() => {
-  //   if (vestingSchedules && vestingSchedules.length) {
-  //     const selectFirst = vestingSchedules[0];
-  //     Router.push(`/tokens/${selectFirst.id}`);
+  useEffect(() => {
+    if (vestingSchedules && vestingSchedules.length) {
+      const selectFirst = vestingSchedules[0];
+      Router.push(`/tokens/${selectFirst.id}`);
+    }
+  }, [vestingSchedules]);
+
+  // const handleTabChange = (e: any) => {
+  //   // Change token query based on currently selected tab
+  //   setTab(e.target.value);
+  // };
+
+  // const statuses = [
+  //   { label: 'All', value: 'all' },
+  //   { label: 'Claimed', value: 'claimed' },
+  //   { label: 'Unclaimed', value: 'unclaimed' }
+  // ];
+
+  // const fetchOrganizations = async () => {
+  //   const vestings = await fetchAllVestings();
+  //   if (vestings && vestings.length > 0 && account) {
+  //     vestings.forEach((vesting) => {
+  //       if (
+  //         vesting.recipients &&
+  //         vesting.recipients.length > 0 &&
+  //         vesting.recipients.find((recipient) => recipient.walletAddress.toLowerCase() === account.toLowerCase())
+  //       ) {
+  //         setOrganizations({
+  //           ...organizations,
+  //           [vesting.organizationId]: true
+  //         });
+  //         setVestings({
+  //           [vesting.organizationId]: vesting
+  //         });
+  //         hideLoading();
+  //       }
+  //     });
   //   }
-  // }, [vestingSchedules]);
+  //   hideLoading();
+  // };
 
-  const handleTabChange = (e: any) => {
-    // Change token query based on currently selected tab
-    setTab(e.target.value);
-  };
+  // // // Remove this once there is an integration happening with the backend,
+  // // // but make sure to setIsPageLoading to false once actual data is loaded.
+  // useEffect(() => {
+  //   fetchOrganizations();
+  // }, [user, account]);
 
-  const statuses = [
-    { label: 'All', value: 'all' },
-    { label: 'Claimed', value: 'claimed' },
-    { label: 'Unclaimed', value: 'unclaimed' }
-  ];
-
-  const fetchOrganizations = async () => {
-    const vestings = await fetchAllVestings();
-    if (vestings && vestings.length > 0 && account) {
-      vestings.forEach((vesting) => {
-        if (
-          vesting.recipients &&
-          vesting.recipients.length > 0 &&
-          vesting.recipients.find((recipient) => recipient.walletAddress.toLowerCase() === account.toLowerCase())
-        ) {
-          setOrganizations({
-            ...organizations,
-            [vesting.organizationId]: true
-          });
-          setVestings({
-            [vesting.organizationId]: vesting
-          });
-          hideLoading();
-        }
-      });
-    }
-    hideLoading();
-  };
-
-  // // Remove this once there is an integration happening with the backend,
-  // // but make sure to setIsPageLoading to false once actual data is loaded.
-  useEffect(() => {
-    fetchOrganizations();
-  }, [user, account]);
-
-  useEffect(() => {
-    if (organizations && Object.keys(organizations).length > 0) {
-      const orgIds = Object.keys(organizations);
-      orgIds.map((orgId) => {
-        fetchTokenByQuery('organizationId', '==', orgId).then((res) => {
-          if (res?.data) {
-            setTokens([
-              ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),
-              res.data
-            ]);
-          }
-        });
-      });
-    }
-  }, [organizations]);
+  // useEffect(() => {
+  //   if (organizations && Object.keys(organizations).length > 0) {
+  //     const orgIds = Object.keys(organizations);
+  //     orgIds.map((orgId) => {
+  //       fetchTokenByQuery('organizationId', '==', orgId).then((res) => {
+  //         if (res?.data) {
+  //           setTokens([
+  //             ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),
+  //             res.data
+  //           ]);
+  //         }
+  //       });
+  //     });
+  //   }
+  // }, [organizations]);
 
   return (
     <>

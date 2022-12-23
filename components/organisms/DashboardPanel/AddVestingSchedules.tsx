@@ -142,7 +142,7 @@ AddVestingSchedulesProps) => {
         setTransactionStatus('IN_PROGRESS');
         await vestingContract.deployed();
         // Add a contract record
-        await createVestingContract({
+        const vestingContractId = await createVestingContract({
           tokenAddress: mintFormState.address,
           address: vestingContract.address,
           status: 'SUCCESS',
@@ -153,14 +153,17 @@ AddVestingSchedulesProps) => {
           chainId
         });
         // Ensure that the initial vesting schedule record is also updated
-        await updateVesting(
-          {
-            ...vestings[activeVestingIndex].data,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          vestings[activeVestingIndex].id
-        );
+        if (vestings && vestings[activeVestingIndex]) {
+          await updateVesting(
+            {
+              ...vestings[activeVestingIndex].data,
+              status: 'CREATED',
+              vestingContractId,
+              updatedAt: Math.floor(new Date().getTime() / 1000)
+            },
+            vestings[activeVestingIndex].id
+          );
+        }
 
         fetchDashboardVestingContract();
         setStatus('transferToMultisigSafe');
@@ -173,8 +176,12 @@ AddVestingSchedulesProps) => {
   };
 
   const handleTransferOwnership = async () => {
-    if (organizationId) {
-      const vestingContractData = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+    if (organizationId && chainId) {
+      const vestingContractData = await fetchVestingContractByQuery(
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [organizationId, chainId]
+      );
       if (vestingContractData?.data) {
         try {
           setTransactionStatus('PENDING');
@@ -230,7 +237,9 @@ AddVestingSchedulesProps) => {
             )
           : 0;
       const actualStartDateTime =
-        vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vesting.details.startDateTime;
+        vesting.details.cliffDuration !== 'no-cliff'
+          ? cliffReleaseDate
+          : new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
       const vestingEndTimestamp =
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
@@ -288,7 +297,11 @@ AddVestingSchedulesProps) => {
         });
         setTransactionStatus('PENDING');
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
-        const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        const vestingContract = await fetchVestingContractByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [organizationId, chainId]
+        );
         const txData = {
           to: vestingContract?.data?.address ?? '',
           data: createClaimsBatchEncoded,
@@ -340,7 +353,11 @@ AddVestingSchedulesProps) => {
           updateVesting(
             {
               ...vesting,
-              transactionId
+              transactionId,
+              // Because the schedule contract is created and initially signed for Multi-sig
+              // If last approval, use "LIVE"
+              // Else, 'WAITING_APPROVAL'
+              status: 'WAITING_APPROVAL'
             },
             vestingId
           );
@@ -350,7 +367,11 @@ AddVestingSchedulesProps) => {
         setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
         setTransactionStatus('PENDING');
-        const vestingContract = await fetchVestingContractByQuery('organizationId', '==', organizationId);
+        const vestingContract = await fetchVestingContractByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [organizationId, chainId]
+        );
         const vestingContractInstance = new ethers.Contract(
           vestingContract?.data?.address ?? '',
           VTVL_VESTING_ABI.abi,
@@ -381,7 +402,9 @@ AddVestingSchedulesProps) => {
         updateVesting(
           {
             ...vesting,
-            transactionId
+            transactionId,
+            // Because the schedule is now confirmed and ready for the vesting
+            status: 'LIVE'
           },
           vestingId
         );
@@ -484,7 +507,11 @@ AddVestingSchedulesProps) => {
             },
             vestings[activeVestingIndex].data.transactionId
           );
-          const batchVestings = await fetchVestingsByQuery('transactionId', '==', transaction.id);
+          const batchVestings = await fetchVestingsByQuery(
+            ['transactionId', 'chainId'],
+            ['==', '=='],
+            [transaction.id, chainId]
+          );
           const activeBatchVestings = batchVestings.filter((bv) => !bv.data.archive);
 
           await Promise.all(
@@ -492,7 +519,8 @@ AddVestingSchedulesProps) => {
               await updateVesting(
                 {
                   ...vesting.data,
-                  status: 'COMPLETED'
+                  // Because all batched vesting schedules are now ready for distribution
+                  status: 'LIVE'
                 },
                 vesting.id
               );

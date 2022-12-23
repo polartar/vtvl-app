@@ -64,15 +64,13 @@ export function DashboardContextProvider({ children }: any) {
   const fetchDashboardVestingContract = async () => {
     try {
       setVestingContractLoading(true);
-      const res = await fetchVestingContractsByQuery('organizationId', '==', organizationId!);
+      const res = await fetchVestingContractsByQuery(
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [organizationId!, chainId!]
+      );
       if (res && res.length > 0) {
-        const contract = res.find((v) => {
-          if (v && v.data.chainId) {
-            return v.data.chainId === chainId;
-          }
-          return false;
-        });
-        setVestingContract(contract);
+        setVestingContract(res[0]);
       } else {
         setVestingContract(undefined);
       }
@@ -84,9 +82,11 @@ export function DashboardContextProvider({ children }: any) {
   };
 
   const fetchDashboardVestings = async () => {
+    console.log({ chainId });
     setVestingsLoading(true);
     try {
-      const res = await fetchVestingsByQuery('organizationId', '==', organizationId!);
+      const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId!, chainId!]);
+      console.log({ res });
       // Filter out without the archived records
       const filteredVestingSchedules = res.filter((v) => !v.data.archive && v.data.chainId === chainId);
       setVestings(filteredVestingSchedules);
@@ -99,8 +99,12 @@ export function DashboardContextProvider({ children }: any) {
   const fetchDashboardTransactions = async () => {
     setTransactionsLoading(true);
     try {
-      const res = await fetchTransactionsByQuery('organizationId', '==', organizationId!);
-      setTransactions(res.filter((v) => v.data.chainId === chainId));
+      const res = await fetchTransactionsByQuery(
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [organizationId!, chainId!]
+      );
+      setTransactions(res);
     } catch (err) {
       console.log('fetchDashboardTransactions - ', err);
     }
@@ -155,10 +159,7 @@ export function DashboardContextProvider({ children }: any) {
         if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(totalVestingAmount)))) {
           setInsufficientBalance(true);
           setDepositAmount(
-            BigNumber.from(parseTokenAmount(totalVestingAmount))
-              .sub(BigNumber.from(res))
-              .div(BigNumber.from((10 ** 18).toString()))
-              .toString()
+            ethers.utils.formatEther(BigNumber.from(parseTokenAmount(totalVestingAmount)).sub(BigNumber.from(res)))
           );
           return;
         } else {
@@ -207,7 +208,7 @@ export function DashboardContextProvider({ children }: any) {
   );
 
   useEffect(() => {
-    if (organizationId || (router && router.pathname === '/dashboard')) fetchDashboardData();
+    if (chainId && (organizationId || (router && router.pathname === '/dashboard'))) fetchDashboardData();
   }, [organizationId, router, chainId]);
 
   useEffect(() => {

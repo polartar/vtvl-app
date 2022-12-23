@@ -10,6 +10,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   success?: boolean;
   icon?: string;
+  max?: number;
   iconPosition?: 'left' | 'right';
 }
 
@@ -36,6 +37,7 @@ const Input = ({
   success = false,
   icon = '',
   iconPosition = 'left',
+  max = 0,
   ...props
 }: InputProps) => {
   return (
@@ -45,8 +47,25 @@ const Input = ({
         <div className="input-component__input">
           {icon ? <img src={icon} alt={label?.toString() || 'Input icon'} className="w-6 h-6 fill-current" /> : null}
           {props.type === 'number' ? (
-            <InputNumberCommas {...props} type="text" className="grow w-full outline-0 border-0 bg-transparent" />
-          ) : props.type === 'percent' ? (
+            <NumericFormat
+              {...props}
+              defaultValue={props.defaultValue as string | number}
+              value={props.value as string | number}
+              type="text"
+              thousandSeparator=","
+              decimalScale={6}
+              className="grow w-full outline-0 border-0 bg-transparent"
+              isAllowed={(values) => {
+                // Add max check if any
+                const { formattedValue, floatValue } = values;
+                if (max) {
+                  return formattedValue === '' || (floatValue ? floatValue >= 0 && floatValue <= max : false);
+                }
+                return true;
+              }}
+            />
+          ) : // <InputNumberCommas {...props} type="text" className="grow w-full outline-0 border-0 bg-transparent" />
+          props.type === 'percent' ? (
             <NumericFormat
               {...props}
               defaultValue={props.defaultValue as string | number}

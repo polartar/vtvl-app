@@ -42,12 +42,12 @@ const YourSafesPage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
-      <h1 className="text-neutral-900">Setup your multi-sig safe</h1>
+      <h1 className="text-neutral-900">Setup your multi-sig Safe</h1>
       <div className="w-full my-6 panel">
-        <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
-        <p className="text-sm text-neutral-500">Natively create a new Safe or login to your existing one</p>
+        <h2 className="h5 font-semibold text-neutral-900">Your Safes</h2>
+        <p className="text-sm text-neutral-500">Create a new Safe or import an existing Safe</p>
         <div className="mt-5">
-          <p className="text-sm text-neutral-500">List of {safes?.length} safes</p>
+          <p className="text-sm text-neutral-500">Your existing Safe(s)</p>
           {safes?.length && (
             /* Display all safes to import */
             <div className="flex flex-col gap-5 mt-5" style={{ marginBottom: '1.5em' }}>
@@ -72,7 +72,7 @@ const YourSafesPage: NextPage = () => {
                 type="button"
                 disabled={importSafeError}
                 onClick={() => Router.push('/onboarding/new-safe')}>
-                Create New Safe
+                Create new Safe
               </button>
             </div>
           </>

@@ -25,7 +25,7 @@ import { fetchVesting } from 'services/db/vesting';
 import { DATE_FREQ_TO_LABEL } from 'types/constants/schedule-configuration';
 import { formatDate, formatTime, getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
-import { getCliffDateTime, getNextUnlock } from 'utils/vesting';
+import { getChartData, getCliffAmount, getCliffDateTime, getNextUnlock } from 'utils/vesting';
 
 const MyTokenSchedule: NextPageWithLayout = () => {
   const { library, chainId, account, activate } = useWeb3React();
@@ -42,11 +42,16 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   const [isClaiming, setIsClaiming] = useState(false);
   const [isNextUnlockUpdated, setIsNextUnlockUpdated] = useState(true);
   const [isCliffComplete, setIsCliffComplete] = useState(false);
+  const [projectionData, setProjectionData] = useState<any>({
+    release: [{ date: '', value: '' }],
+    cliff: [{ date: '', value: '' }],
+    projectedEndDateTime: new Date()
+  });
   const countDownComponent = useRef<Countdown>(null);
 
   const [chartData, setChartData] = useState([
     { name: 'Claimed', value: 0 },
-    { name: 'Unclaimed', value: 0 },
+    { name: 'Amount vested to-date', value: 0 },
     { name: 'Remaining', value: 0 }
   ]);
 
@@ -57,6 +62,9 @@ const MyTokenSchedule: NextPageWithLayout = () => {
     // Just to the refetch contract
     fetchContract();
   };
+
+  // Handle the continuous frequency data point updates
+  const handleContinuousData = () => {};
 
   // When the claim button is clicked
   const handleClaim = async () => {
@@ -153,6 +161,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
             newValue = parseFloat(userTokenDetails.claimedAmount.toString());
             break;
           case 'Unclaimed':
+          case 'Amount vested to-date':
             newValue = parseFloat(userTokenDetails.claimableAmount.toString());
             break;
           case 'Remaining':
@@ -168,12 +177,16 @@ const MyTokenSchedule: NextPageWithLayout = () => {
       })
     ]);
 
-    // Get the next unlock
+    // Get the next unlock -- only on non-continuous
     if (selectedSchedule && selectedSchedule.data) {
       const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = selectedSchedule.data.details;
       if (startDateTime && endDateTime && releaseFrequency && cliffDuration) {
         const computeCliffDateTime = getCliffDateTime(startDateTime, cliffDuration);
-        const computeNextUnlock = getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime);
+        // Next unlock is 60 seconds for continuous frequency schedules
+        const computeNextUnlock =
+          selectedSchedule.data.details.releaseFrequency !== 'continuous'
+            ? getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime)
+            : 60;
         console.log('NEXT UNLOCK', computeCliffDateTime, computeNextUnlock);
         // Milliseconds
         setNextUnlock(computeNextUnlock * 1000);
@@ -198,6 +211,26 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   useEffect(() => {
     // Initially
     showLoading();
+    if (selectedSchedule && selectedSchedule.data) {
+      const {
+        cliffDuration,
+        lumpSumReleaseAfterCliff,
+        amountToBeVested,
+        startDateTime,
+        endDateTime,
+        releaseFrequency
+      } = selectedSchedule.data.details;
+      const cliffAmount = getCliffAmount(cliffDuration, +lumpSumReleaseAfterCliff, +amountToBeVested);
+      const projectionChartData = getChartData({
+        start: startDateTime || new Date(),
+        end: endDateTime || new Date(),
+        cliffDuration,
+        cliffAmount,
+        frequency: releaseFrequency,
+        vestedAmount: +amountToBeVested
+      });
+      setProjectionData(projectionChartData);
+    }
   }, [selectedSchedule]);
 
   useEffect(() => {
@@ -219,7 +252,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
             <div className="md:col-span-7">
               <h1 className="text-neutral-900 mb-2">{selectedSchedule?.data.name}</h1>
               <p className="paragraphy-small text-neutral-500 mb-4">
-                Withdraw your <strong>{mintFormState.symbol || 'Token'}</strong> tokens from this vesting schedule.
+                Withdraw your <strong>{userTokenDetails.symbol || 'Token'}</strong> tokens from this vesting schedule.
               </p>
               <div className="panel">
                 <ResponsiveContainer width={'99%'} height={300}>
@@ -238,7 +271,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                       textAnchor="middle"
                       dominantBaseline="middle"
                       className="paragraphy-medium-medium fill-neutral-900">
-                      {formatNumber(userTokenDetails.totalAllocation)} {mintFormState.symbol || 'Token'}
+                      {formatNumber(userTokenDetails.totalAllocation)} {userTokenDetails.symbol || 'Token'}
                     </text>
                     <text
                       x={'50%'}
@@ -262,7 +295,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                           fill={
                             entry.name === 'Claimed'
                               ? 'var(--secondary-900)'
-                              : entry.name === 'Unclaimed'
+                              : entry.name === 'Unclaimed' || entry.name === 'Amount vested to-date'
                               ? 'var(--primary-900)'
                               : 'var(--success-500)'
                           }
@@ -275,7 +308,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                 <p className="text-lg text-neutral-900 my-6">Your schedule summary</p>
                 <ScheduleDetails
                   {...selectedSchedule.data.details}
-                  token={mintFormState.symbol || 'Token'}
+                  token={userTokenDetails.symbol || 'Token'}
                   includeDetails={false}
                 />
                 <div className="mt-9">
@@ -292,16 +325,16 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     <div className="paragraphy-small-semibold text-neutral-600 flex flex-row gap-1">
                       <div className="mt-1 w-3 h-3 rounded-full bg-secondary-900 flex-shrink-0"></div>
                       <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
-                        {formatNumber(userTokenDetails.claimedAmount, 6)} {mintFormState.symbol || 'Token'}
+                        {formatNumber(userTokenDetails.claimedAmount, 6)} {userTokenDetails.symbol || 'Token'}
                       </span>
                     </div>
                   </div>
                   <div className="border-b border-gray-200 pb-3 lg:border-0 lg:pb-0">
-                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Unclaimed</p>
+                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Amount vested to-date</p>
                     <div className="paragraphy-small-semibold text-neutral-600 flex flex-row gap-1">
                       <div className="mt-1 w-3 h-3 rounded-full bg-primary-900 flex-shrink-0"></div>
                       <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
-                        {formatNumber(userTokenDetails.claimableAmount, 6)} {mintFormState.symbol || 'Token'}
+                        {formatNumber(userTokenDetails.claimableAmount, 6)} {userTokenDetails.symbol || 'Token'}
                       </span>
                     </div>
                   </div>
@@ -310,7 +343,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     <div className="paragraphy-small-semibold text-neutral-600 flex flex-row gap-1">
                       <div className="mt-1 w-3 h-3 rounded-full bg-success-500 flex-shrink-0"></div>
                       <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
-                        {formatNumber(userTokenDetails.remainingAmount, 6)} {mintFormState.symbol || 'Token'}
+                        {formatNumber(userTokenDetails.remainingAmount, 6)} {userTokenDetails.symbol || 'Token'}
                       </span>
                     </div>
                   </div>
@@ -333,6 +366,12 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                         )}
                         onComplete={handleCountdownComplete}
                       />
+                      {selectedSchedule.data.details.releaseFrequency === 'continuous' ? (
+                        <div className="leading-4 font-normal text-xs text-neutral-500">
+                          Whilst tokens are streamed per second, the claimable amount will only get updated every
+                          minute.
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -345,7 +384,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                   onClick={handleClaim}>
                   <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
                     Claim <strong>{formatNumber(userTokenDetails.claimableAmount, 6)}</strong>{' '}
-                    {mintFormState.symbol || 'Token'}
+                    {userTokenDetails.symbol || 'Token'}
                   </span>
                 </Button>
               </div>
@@ -353,7 +392,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
             <div className="md:col-span-5">
               <h2 className="h1 text-neutral-900 mb-2">Token summary</h2>
               <p className="paragraphy-small text-neutral-500 mb-4">
-                Here is the summary of your <strong>{mintFormState.symbol}</strong> tokens.
+                Here is the summary of your <strong>{userTokenDetails.symbol}</strong> tokens.
               </p>
               <div className="panel p-0 grid sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
                 <div className="p-6 flex flex-row items-center gap-6 border-b border-gray-200 sm:col-span-2 md:col-span-1 lg:col-span-2">
@@ -364,7 +403,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                   <div>
                     <p className="text-sm text-neutral-500 mb-2">Total granted</p>
                     <p className="text-2xl text-neutral-900">
-                      {formatNumber(userTokenDetails.totalAllocation, 6)} <strong>{mintFormState.symbol}</strong>
+                      {formatNumber(userTokenDetails.totalAllocation, 6)} <strong>{userTokenDetails.symbol}</strong>
                     </p>
                   </div>
                 </div>
@@ -375,7 +414,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                   </div>
                   <div className="text-lg text-neutral-900">
                     <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
-                      {formatNumber(userTokenDetails.remainingAmount, 6)} <strong>{mintFormState.symbol}</strong>
+                      {formatNumber(userTokenDetails.remainingAmount, 6)} <strong>{userTokenDetails.symbol}</strong>
                     </span>
                   </div>
                 </div>
@@ -386,7 +425,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                   </div>
                   <div className="text-lg text-neutral-900">
                     <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
-                      {formatNumber(userTokenDetails.vestedAmount, 6)} <strong>{mintFormState.symbol}</strong>
+                      {formatNumber(userTokenDetails.vestedAmount, 6)} <strong>{userTokenDetails.symbol}</strong>
                     </span>
                   </div>
                 </div>
@@ -408,14 +447,14 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                 <div className="p-6 border-b lg:border-l border-gray-200">
                   <div className="flex flex-row items-center gap-2 mb-2.5">
                     <CalendarClockIcon className="h-6 fill-current" />
-                    <span className="text-sm text-neutral-500">Total Unlocked</span>
+                    <span className="text-sm text-neutral-500">Unlock End</span>
                   </div>
                   <div className="text-neutral-900">
-                    {selectedSchedule.data.details.startDateTime ? (
+                    {projectionData && projectionData.projectedEndDateTime ? (
                       <>
-                        {formatDate(selectedSchedule.data.details.startDateTime)}
+                        {formatDate(projectionData.projectedEndDateTime)}
                         <br />
-                        {formatTime(selectedSchedule.data.details.startDateTime)}
+                        {formatTime(projectionData.projectedEndDateTime)}
                       </>
                     ) : null}
                   </div>
@@ -426,13 +465,15 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     <span className={`text-sm text-neutral-500${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
                       Cliff
                     </span>
-                    {isCliffComplete ? <Chip label="Finished" rounded color="successAlt" size="small" /> : null}
+                    {isCliffComplete && selectedSchedule.data.details.cliffDuration !== 'no-cliff' ? (
+                      <Chip label="Finished" rounded color="successAlt" size="small" />
+                    ) : null}
                   </div>
                   <div className="text-lg text-neutral-900">
                     <span className="capitalize">{selectedSchedule.data.details.cliffDuration.replace('-', ' ')}</span>
                     {selectedSchedule.data.details.cliffDuration !== 'no-cliff' ? (
                       <>
-                        /{formatNumber(userTokenDetails.cliffAmount, 6)} <strong>{mintFormState.symbol}</strong>
+                        /{formatNumber(userTokenDetails.cliffAmount, 6)} <strong>{userTokenDetails.symbol}</strong>
                       </>
                     ) : null}
                   </div>

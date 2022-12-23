@@ -266,7 +266,7 @@ const NewSafePage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
-      <h1 className="text-neutral-900">Setup your multi-sig safe</h1>
+      <h1 className="text-neutral-900">Setup your multi-sig Safe</h1>
       <Form
         className="w-full my-6"
         isSubmitting={isSubmitting}
@@ -274,8 +274,8 @@ const NewSafePage: NextPage = () => {
         error={formError}
         success={formSuccess}
         message={formMessage}>
-        <h2 className="h5 font-semibold text-neutral-900">Your safes</h2>
-        <p className="text-sm text-neutral-500">Natively create a new Safe or login to your existing one</p>
+        <h2 className="h5 font-semibold text-neutral-900">Your Safes</h2>
+        <p className="text-sm text-neutral-500">Create a new Safe or import an existing Safe</p>
         <div className="grid md:grid-cols-3 py-5 gap-5 border-b border-neutral-200 mb-5">
           <Controller
             name="organizationName"

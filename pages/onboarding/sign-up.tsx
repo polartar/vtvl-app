@@ -151,6 +151,7 @@ const SignUpPage: NextPage = () => {
                 />
               )}
             />
+            <Consent variant="check" className="mt-5" onAgree={handleAgree} />
             <Button className="secondary mt-5 mx-auto" type="submit" loading={isSubmitting}>
               Create account
             </Button>
@@ -163,8 +164,6 @@ const SignUpPage: NextPage = () => {
             Login
           </button>
         </div>
-
-        <Consent variant="check" className="mt-5" onAgree={handleAgree} />
       </Form>
     </div>
   );
