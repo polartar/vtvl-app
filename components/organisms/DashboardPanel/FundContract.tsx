@@ -178,6 +178,16 @@ const FundContract = () => {
           ],
           library.getSigner()
         );
+
+        const allowance = await tokenContract.allowance(account, vestingContract?.data?.address);
+        if (allowance.lt(ethers.utils.parseEther(amount))) {
+          const approveTx = await tokenContract.approve(
+            vestingContract?.data?.address,
+            ethers.utils.parseEther(amount).sub(allowance)
+          );
+          await approveTx.wait();
+        }
+
         const fundTransaction = await tokenContract.transfer(
           vestingContract?.data?.address,
           ethers.utils.parseEther(amount)
