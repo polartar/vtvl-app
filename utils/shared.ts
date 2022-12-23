@@ -13,6 +13,7 @@ import { IVesting } from 'types/models';
 import { TUserTokenDetails } from 'types/models/token';
 
 import { formatNumber } from './token';
+import { getCliffAmountDecimal, getCliffDateTime, getNumberOfReleases, getReleaseAmountDecimal } from './vesting';
 
 /**
  * Converts a single label item into an option with a label and value -- to be used on select inputs
@@ -134,15 +135,42 @@ export const getUserTokenDetails = async (
   };
   // Start getting datas when the selected schedule is present
   if (selectedSchedule && selectedSchedule.data) {
+    // Compute datas that are currently not available
+    const { cliffDuration, lumpSumReleaseAfterCliff, amountToBeVested, startDateTime, endDateTime, releaseFrequency } =
+      selectedSchedule.data.details;
+    // Get the cliff date so we can proceed
+    const cliffDate = startDateTime ? getCliffDateTime(startDateTime, cliffDuration) : '';
+    // Get the cliff amount
+    const cliffAmount = getCliffAmountDecimal(
+      cliffDuration,
+      new Decimal(lumpSumReleaseAfterCliff),
+      new Decimal(amountToBeVested)
+    );
+    // Get the number of releases this schedule will take
+    const numberOfReleases =
+      startDateTime && endDateTime ? getNumberOfReleases(releaseFrequency, cliffDate || startDateTime, endDateTime) : 0;
+    // Get the amount for each release on this schedule
+    const releaseAmount = getReleaseAmountDecimal(new Decimal(amountToBeVested), cliffAmount, numberOfReleases);
+
+    // Update the current user token details based on the initially gathered data
+    userTokenDetails.cliffAmount = cliffAmount;
+    userTokenDetails.releaseAmount = releaseAmount;
+    userTokenDetails.cliffDate = cliffDate;
+    userTokenDetails.numberOfReleases = numberOfReleases;
+
+    // Check for the vesting contract so we can query it in the blockchain
     const contractFromDB = await fetchVestingContractByQuery(
       ['organizationId'],
       ['=='],
       [selectedSchedule?.data.organizationId]
     );
 
+    // We can now query via ethers
     if (contractFromDB?.data) {
+      // Update user token details for the contract address
       userTokenDetails.vestingContractAddress = contractFromDB.data.address;
       console.log('Contract address', contractFromDB.data);
+      // Query the blockchain for the data we need
       const vestingContract = await new ethers.Contract(
         contractFromDB?.data?.address ?? '',
         VTVL_VESTING_ABI.abi,
@@ -163,6 +191,7 @@ export const getUserTokenDetails = async (
           ? sub(timeStamp || new Date(), { seconds: 10 })
           : new Date();
 
+      // Simultaneously query below datas in preparation for computations
       const [totalAllocatedToUser, totalClaimableByUser, totalVestedToUser, tokenName, tokenSymbol] = await Promise.all(
         [
           vestingContract.finalVestedAmount(userWalletAddress),
@@ -181,6 +210,8 @@ export const getUserTokenDetails = async (
         // gets the total vested amount that the individual user holds
         // claimed and unclaimed
         const vestedAmount = new Decimal(+totalVestedToUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
+
+        // Update the user token details based on the gathered data from blockchain
         userTokenDetails.totalAllocation = totalAllocation;
         userTokenDetails.claimableAmount = claimableAmount;
         userTokenDetails.vestedAmount = vestedAmount;
@@ -194,6 +225,7 @@ export const getUserTokenDetails = async (
             : new Decimal(0);
           const remainingTokens = totalAllocation.minus(vestedAmount.minus(claimedTokens));
           const vestingProgress = +vestedAmount.div(totalAllocation) * 100;
+          // Update the user token details based on computed values
           userTokenDetails.claimedAmount = claimedTokens;
           userTokenDetails.remainingAmount = remainingTokens;
           userTokenDetails.vestingProgress = vestingProgress;

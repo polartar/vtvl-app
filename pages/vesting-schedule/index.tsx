@@ -20,6 +20,7 @@ import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import differenceInSeconds from 'date-fns/differenceInSeconds';
 import toDate from 'date-fns/toDate';
 import { ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
@@ -38,7 +39,7 @@ import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IToken, ITransaction, IVesting } from 'types/models';
 import { IRecipient } from 'types/vesting';
-import { convertAllToOptions, formatDate, formatTime, minifyAddress } from 'utils/shared';
+import { convertAllToOptions, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import { getChartData, getCliffAmount, getCliffDateTime, getDuration, getNumberOfReleases } from 'utils/vesting';
 
@@ -182,12 +183,21 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   };
 
   // Renderer for progress field
-  const CellProgress = ({ value }: any) => (
-    <div className="row-center">
-      <ProgressCircle value={value} max={100} />
-      {value}%
-    </div>
-  );
+  const CellProgress = ({ value, row }: any) => {
+    const actualDates = getActualDateTime(row.original.data.details);
+    let progress = 0;
+    if (actualDates.startDateTime && actualDates.endDateTime && row.original.data.status === 'LIVE') {
+      const totalSeconds = differenceInSeconds(actualDates.endDateTime, actualDates.startDateTime);
+      const secondsFromNow = differenceInSeconds(new Date(), actualDates.startDateTime);
+      progress = Math.round((secondsFromNow / totalSeconds) * 100);
+    }
+    return (
+      <div className="row-center">
+        <ProgressCircle value={progress} max={100} />
+        {progress}%
+      </div>
+    );
+  };
 
   // Renderer for cliff duration
   const CellCliff = ({ value }: any) => {

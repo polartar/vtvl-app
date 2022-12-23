@@ -134,7 +134,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
 
   const chartData = [
     { name: 'Claimed', value: 1000 },
-    { name: 'Unclaimed', value: 500 },
+    { name: 'Amount vested to-date', value: 500 },
     { name: 'Remaining', value: 9630 }
   ];
 
@@ -213,7 +213,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                         fill={
                           entry.name === 'Claimed'
                             ? 'var(--secondary-900)'
-                            : entry.name === 'Unclaimed'
+                            : entry.name === 'Unclaimed' || entry.name === 'Amount vested to-date'
                             ? 'var(--primary-900)'
                             : 'var(--success-500)'
                         }
@@ -234,7 +234,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Unclaimed</p>
+                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Amount vested to-date</p>
                   <div className="paragraphy-small-semibold text-neutral-600 row-center">
                     <div className="w-3 h-3 rounded-full bg-primary-900"></div>
                     {formatNumber(500)} {mintFormState.symbol || 'Token'}

@@ -55,7 +55,7 @@ const CapTableOverview = ({
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Unclaimed</p>
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Amount vested to-date</p>
           <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
               {formatNumber(+unclaimed.toString())} {token}

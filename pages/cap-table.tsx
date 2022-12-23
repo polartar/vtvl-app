@@ -122,7 +122,7 @@ const CapTable: NextPageWithLayout = () => {
       },
       {
         id: 'unclaimed',
-        Header: 'Unclaimed',
+        Header: 'Amount vested to-date',
         accessor: 'unclaimed',
         Cell: CellUnclaimedAmount
       }
@@ -131,7 +131,7 @@ const CapTable: NextPageWithLayout = () => {
       //   Header: 'Withdrawn',
       //   accessor: 'withdrawn',
       //   Cell: CellWithdrawnAmount
-      // },
+      // }
       // {
       //   id: 'alert',
       //   Header: 'Alert',
@@ -222,77 +222,75 @@ const CapTable: NextPageWithLayout = () => {
       [memberInfo?.org_id || organizationId || '', chainId!]
     );
     const vestingData = initialVestingData.filter((vd) => !vd.data.archive);
-    console.log('vesting data here is ', vestingData);
-    // Set the bar radio selector based on the schedules fetched
-    setSchedules([{ label: 'All', value: 'all' }, ...vestingData.map((vd) => ({ label: vd.data.name, value: vd.id }))]);
+    if (vestingData && vestingData.length) {
+      console.log('vesting data here is ', vestingData);
+      // Set the bar radio selector based on the schedules fetched
+      setSchedules([
+        { label: 'All', value: 'all' },
+        ...vestingData.map((vd) => ({ label: vd.data.name, value: vd.id }))
+      ]);
 
-    if (!vestingData || vestingData.length == 0) {
-      console.log('no vesting table details');
+      let sumUnclaimed = new Decimal(0);
+      let sumClaimed = new Decimal(0);
+      let sumAllocation = 0;
+
+      // Loop through each of the vesting schedules
+      const transformedVestings = await [...vestingData].reduce(
+        async (accu: any, obj: { id: string; data: IVesting }) => {
+          const acc = await accu;
+          // This is based on `amount to be vested` per schedule
+          sumAllocation += obj.data.details.amountToBeVested;
+          // Loop through all the recipients under a specific vesting schedule
+          const o = await [...obj.data.recipients].reduce(async (accum: any, o: any) => {
+            const a = await accum;
+            // Based on claimed, unclaimed per each recipient per vesting schedule
+            const recipientTokenDetails = await getUserTokenDetails(obj, o.walletAddress, chainId!);
+            sumUnclaimed = sumUnclaimed.plus(recipientTokenDetails.claimableAmount);
+            sumClaimed = sumClaimed.plus(recipientTokenDetails.claimedAmount);
+            // sumUnclaimed += obj.data.details.amountClaimed;
+            // sumClaimed += obj.data.details.amountUnclaimed;
+            return [
+              ...a,
+              {
+                scheduleId: obj.id,
+                name: o.name,
+                company: o.company,
+                recipientType: o.recipientType[0]?.label,
+                address: o.walletAddress,
+                // Ensure that the totalAllocation for each recipient is divided by the number of recipients
+                totalAllocation: new Decimal(obj.data.details.amountToBeVested)
+                  .div(new Decimal(obj.data.recipients.length))
+                  .toDP(6, Decimal.ROUND_UP),
+                // Set recipient's claimed and unclaimed datas
+                claimed: recipientTokenDetails.claimedAmount,
+                unclaimed: recipientTokenDetails.claimableAmount
+              }
+            ];
+          }, Promise.resolve([]));
+          return [...acc, ...o];
+        },
+        Promise.resolve([])
+      );
+
+      // const newRecipients = await transformedVestings();
+      console.group('Before transformed vestings ');
+      console.log('Recipients', transformedVestings);
+      console.log('ClaimedTotal', sumClaimed);
+      console.log('Unclaimed Total', sumUnclaimed);
+      console.groupEnd();
+      setTotalUnClaimed(sumUnclaimed);
+      setTotalClaimed(sumClaimed);
+      setTotalAllocation(sumAllocation);
+      setVestingsData(vestingData);
+      setRecipientsData(transformedVestings);
+      setShowCapTable(true);
       hideLoading();
-      return;
+      console.group('After transformed vestings ');
+      console.log('Recipients', transformedVestings);
+      console.log('ClaimedTotal', sumClaimed);
+      console.log('Unclaimed Total', sumUnclaimed);
+      console.groupEnd();
     }
-
-    let sumUnclaimed = new Decimal(0);
-    let sumClaimed = new Decimal(0);
-    let sumAllocation = 0;
-
-    showLoading();
-    // Loop through each of the vesting schedules
-    const transformedVestings = await [...vestingData].reduce(
-      async (accu: any, obj: { id: string; data: IVesting }) => {
-        const acc = await accu;
-        // This is based on `amount to be vested` per schedule
-        sumAllocation += obj.data.details.amountToBeVested;
-        // Loop through all the recipients under a specific vesting schedule
-        const o = await [...obj.data.recipients].reduce(async (accum: any, o: any) => {
-          const a = await accum;
-          // Based on claimed, unclaimed per each recipient per vesting schedule
-          const recipientTokenDetails = await getUserTokenDetails(obj, o.walletAddress, chainId!);
-          sumUnclaimed = sumUnclaimed.plus(recipientTokenDetails.claimableAmount);
-          sumClaimed = sumClaimed.plus(recipientTokenDetails.claimedAmount);
-          // sumUnclaimed += obj.data.details.amountClaimed;
-          // sumClaimed += obj.data.details.amountUnclaimed;
-          return [
-            ...a,
-            {
-              scheduleId: obj.id,
-              name: o.name,
-              company: o.company,
-              recipientType: o.recipientType[0]?.label,
-              address: o.walletAddress,
-              // Ensure that the totalAllocation for each recipient is divided by the number of recipients
-              totalAllocation: new Decimal(obj.data.details.amountToBeVested)
-                .div(new Decimal(obj.data.recipients.length))
-                .toDP(6, Decimal.ROUND_UP),
-              // Set recipient's claimed and unclaimed datas
-              claimed: recipientTokenDetails.claimedAmount,
-              unclaimed: recipientTokenDetails.claimableAmount
-            }
-          ];
-        }, Promise.resolve([]));
-        return [...acc, ...o];
-      },
-      Promise.resolve([])
-    );
-
-    // const newRecipients = await transformedVestings();
-    console.group('Before transformed vestings ');
-    console.log('Recipients', transformedVestings);
-    console.log('ClaimedTotal', sumClaimed);
-    console.log('Unclaimed Total', sumUnclaimed);
-    console.groupEnd();
-    setTotalUnClaimed(sumUnclaimed);
-    setTotalClaimed(sumClaimed);
-    setTotalAllocation(sumAllocation);
-    setVestingsData(vestingData);
-    setRecipientsData(transformedVestings);
-    setShowCapTable(true);
-    hideLoading();
-    console.group('After transformed vestings ');
-    console.log('Recipients', transformedVestings);
-    console.log('ClaimedTotal', sumClaimed);
-    console.log('Unclaimed Total', sumUnclaimed);
-    console.groupEnd();
   };
 
   // Todo Arvin: Optimize / Abstract this along with the transformedVesting one to avoid repeating codes
@@ -307,6 +305,14 @@ const CapTable: NextPageWithLayout = () => {
     }
     console.log('REcipient data', recipientsData);
   }, [recipientsData, tab]);
+
+  // Ensure loading state is correct
+  useEffect(() => {
+    console.log('Loading recipients', loading, recipientsData);
+    if (!loading && !recipientsData.length) {
+      showLoading();
+    }
+  }, [loading]);
 
   return (
     <>

@@ -25,7 +25,7 @@ import { fetchVesting } from 'services/db/vesting';
 import { DATE_FREQ_TO_LABEL } from 'types/constants/schedule-configuration';
 import { formatDate, formatTime, getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
-import { getCliffDateTime, getNextUnlock } from 'utils/vesting';
+import { getChartData, getCliffAmount, getCliffDateTime, getNextUnlock } from 'utils/vesting';
 
 const MyTokenSchedule: NextPageWithLayout = () => {
   const { library, chainId, account, activate } = useWeb3React();
@@ -42,11 +42,16 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   const [isClaiming, setIsClaiming] = useState(false);
   const [isNextUnlockUpdated, setIsNextUnlockUpdated] = useState(true);
   const [isCliffComplete, setIsCliffComplete] = useState(false);
+  const [projectionData, setProjectionData] = useState<any>({
+    release: [{ date: '', value: '' }],
+    cliff: [{ date: '', value: '' }],
+    projectedEndDateTime: new Date()
+  });
   const countDownComponent = useRef<Countdown>(null);
 
   const [chartData, setChartData] = useState([
     { name: 'Claimed', value: 0 },
-    { name: 'Unclaimed', value: 0 },
+    { name: 'Amount vested to-date', value: 0 },
     { name: 'Remaining', value: 0 }
   ]);
 
@@ -57,6 +62,9 @@ const MyTokenSchedule: NextPageWithLayout = () => {
     // Just to the refetch contract
     fetchContract();
   };
+
+  // Handle the continuous frequency data point updates
+  const handleContinuousData = () => {};
 
   // When the claim button is clicked
   const handleClaim = async () => {
@@ -153,6 +161,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
             newValue = parseFloat(userTokenDetails.claimedAmount.toString());
             break;
           case 'Unclaimed':
+          case 'Amount vested to-date':
             newValue = parseFloat(userTokenDetails.claimableAmount.toString());
             break;
           case 'Remaining':
@@ -168,12 +177,16 @@ const MyTokenSchedule: NextPageWithLayout = () => {
       })
     ]);
 
-    // Get the next unlock
+    // Get the next unlock -- only on non-continuous
     if (selectedSchedule && selectedSchedule.data) {
       const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = selectedSchedule.data.details;
       if (startDateTime && endDateTime && releaseFrequency && cliffDuration) {
         const computeCliffDateTime = getCliffDateTime(startDateTime, cliffDuration);
-        const computeNextUnlock = getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime);
+        // Next unlock is 60 seconds for continuous frequency schedules
+        const computeNextUnlock =
+          selectedSchedule.data.details.releaseFrequency !== 'continuous'
+            ? getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime)
+            : 60;
         console.log('NEXT UNLOCK', computeCliffDateTime, computeNextUnlock);
         // Milliseconds
         setNextUnlock(computeNextUnlock * 1000);
@@ -198,6 +211,26 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   useEffect(() => {
     // Initially
     showLoading();
+    if (selectedSchedule && selectedSchedule.data) {
+      const {
+        cliffDuration,
+        lumpSumReleaseAfterCliff,
+        amountToBeVested,
+        startDateTime,
+        endDateTime,
+        releaseFrequency
+      } = selectedSchedule.data.details;
+      const cliffAmount = getCliffAmount(cliffDuration, +lumpSumReleaseAfterCliff, +amountToBeVested);
+      const projectionChartData = getChartData({
+        start: startDateTime || new Date(),
+        end: endDateTime || new Date(),
+        cliffDuration,
+        cliffAmount,
+        frequency: releaseFrequency,
+        vestedAmount: +amountToBeVested
+      });
+      setProjectionData(projectionChartData);
+    }
   }, [selectedSchedule]);
 
   useEffect(() => {
@@ -262,7 +295,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                           fill={
                             entry.name === 'Claimed'
                               ? 'var(--secondary-900)'
-                              : entry.name === 'Unclaimed'
+                              : entry.name === 'Unclaimed' || entry.name === 'Amount vested to-date'
                               ? 'var(--primary-900)'
                               : 'var(--success-500)'
                           }
@@ -297,7 +330,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     </div>
                   </div>
                   <div className="border-b border-gray-200 pb-3 lg:border-0 lg:pb-0">
-                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Unclaimed</p>
+                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Amount vested to-date</p>
                     <div className="paragraphy-small-semibold text-neutral-600 flex flex-row gap-1">
                       <div className="mt-1 w-3 h-3 rounded-full bg-primary-900 flex-shrink-0"></div>
                       <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
@@ -322,21 +355,23 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                       OR probably be the date time of the next linear release
                       all in milliseconds
                     */}
-                      {selectedSchedule.data.details.releaseFrequency !== 'continuous' ? (
-                        <Countdown
-                          ref={countDownComponent}
-                          autoStart={false}
-                          date={Date.now() + nextUnlock}
-                          renderer={({ days, hours, minutes, seconds }) => (
-                            <>
-                              {days}d {hours}h {minutes}m {seconds}s
-                            </>
-                          )}
-                          onComplete={handleCountdownComplete}
-                        />
-                      ) : (
-                        <span>You gain tokens every second</span>
-                      )}
+                      {selectedSchedule.data.details.releaseFrequency === 'continuous' ? (
+                        <div>
+                          <div>You gain tokens every second</div>
+                          <small className="text-normal text-xxs">This refreshes every minute</small>
+                        </div>
+                      ) : null}
+                      <Countdown
+                        ref={countDownComponent}
+                        autoStart={false}
+                        date={Date.now() + nextUnlock}
+                        renderer={({ days, hours, minutes, seconds }) => (
+                          <>
+                            {days}d {hours}h {minutes}m {seconds}s
+                          </>
+                        )}
+                        onComplete={handleCountdownComplete}
+                      />
                     </div>
                   </div>
                 </div>
@@ -415,11 +450,11 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     <span className="text-sm text-neutral-500">Unlock End</span>
                   </div>
                   <div className="text-neutral-900">
-                    {selectedSchedule.data.details.startDateTime ? (
+                    {projectionData && projectionData.projectedEndDateTime ? (
                       <>
-                        {formatDate(selectedSchedule.data.details.startDateTime)}
+                        {formatDate(projectionData.projectedEndDateTime)}
                         <br />
-                        {formatTime(selectedSchedule.data.details.startDateTime)}
+                        {formatTime(projectionData.projectedEndDateTime)}
                       </>
                     ) : null}
                   </div>
