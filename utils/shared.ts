@@ -160,9 +160,9 @@ export const getUserTokenDetails = async (
 
     // Check for the vesting contract so we can query it in the blockchain
     const contractFromDB = await fetchVestingContractByQuery(
-      ['organizationId'],
-      ['=='],
-      [selectedSchedule?.data.organizationId]
+      ['organizationId', 'chainId'],
+      ['==', '=='],
+      [selectedSchedule?.data.organizationId, chainId]
     );
 
     // We can now query via ethers
