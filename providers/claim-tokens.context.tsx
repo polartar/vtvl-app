@@ -1,3 +1,4 @@
+import ERC20 from '@contracts/abi/ERC20.json';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import getUnixTime from 'date-fns/getUnixTime';
@@ -10,25 +11,11 @@ import { fetchAllVestingsWithId } from 'services/db/vesting';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IToken, IVesting } from 'types/models';
-import { getActualDateTime } from 'utils/shared';
-import { formatNumber } from 'utils/token';
-import { getCliffAmountDecimal, getCliffDateTime, getNumberOfReleases, getReleaseAmountDecimal } from 'utils/vesting';
+import { TUserTokenDetails } from 'types/models/token';
+import { getActualDateTime, getUserTokenDetails } from 'utils/shared';
 
 import { useAuthContext } from './auth.context';
 
-type TUserTokenDetails = {
-  totalAllocation: Decimal;
-  cliffAmount: Decimal;
-  releaseAmount: Decimal;
-  claimableAmount: Decimal;
-  claimedAmount: Decimal;
-  remainingAmount: Decimal;
-  vestedAmount: Decimal;
-  vestingProgress: number;
-  cliffDate: string | Date;
-  numberOfReleases: number;
-  vestingContractAddress: string;
-};
 interface IClaimTokensData {
   tokens: IToken[];
   vestingSchedules: { id: string; data: IVesting }[];
@@ -87,6 +74,8 @@ export function ClaimTokensContextProvider({ children }: any) {
 
   // Stores the essential data for the individual user based on the current selected schedule
   const [userTokenDetails, setUserTokenDetails] = useState<TUserTokenDetails>({
+    name: '',
+    symbol: '',
     totalAllocation: new Decimal(0),
     cliffAmount: new Decimal(0),
     releaseAmount: new Decimal(0),
@@ -114,7 +103,7 @@ export function ClaimTokensContextProvider({ children }: any) {
           // MOCK DATA
           // vesting.data.recipients.find(
           //   (recipient) =>
-          //     recipient.walletAddress.toLowerCase() === '0x2395ab434522ed26d49839cca7568da48c5c8d4a'.toLowerCase()
+          //     recipient.walletAddress.toLowerCase() === '0x821C2d64f6c9a9E15Cdd81f3D952884740BC013E'.toLowerCase()
           // )
         ) {
           setOrganizations({
@@ -125,7 +114,11 @@ export function ClaimTokensContextProvider({ children }: any) {
           // Attach the vesting name or generated name in the vesting schedule key
           // In case that there are multiple schedules that the current user can claim
           // This is so that we can list every schedule down to the sidebar
-          setVestingSchedules([...vestingSchedules, vesting]);
+          // Check if there is already the same schedule in the list
+          const isAlreadyExisting = vestingSchedules.find((sched) => sched.id === vesting.id);
+          if (!isAlreadyExisting) {
+            setVestingSchedules([...vestingSchedules, vesting]);
+          }
         }
       });
     }
@@ -133,53 +126,79 @@ export function ClaimTokensContextProvider({ children }: any) {
 
   // A function that gets the vesting contract for the user
   const fetchContract = async () => {
-    if (selectedSchedule && selectedSchedule.data) {
-      const contractFromDB = await fetchVestingContractByQuery(
-        'organizationId',
-        '==',
-        selectedSchedule?.data.organizationId
-      );
-
-      console.log('contract from db', contractFromDB);
-
-      if (contractFromDB?.data) {
-        setUserTokenDetails({ ...userTokenDetails, vestingContractAddress: contractFromDB.data.address });
-        console.log('Contract address', contractFromDB.data);
-        const vestingContract = await new ethers.Contract(
-          contractFromDB?.data?.address ?? '',
-          VTVL_VESTING_ABI.abi,
-          ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-        );
-
-        const [totalAllocatedToUser, totalClaimableByUser, totalVestedToUser] = await Promise.all([
-          // MOCK DATAS
-          // vestingContract.finalVestedAmount('0x2395ab434522ed26d49839cca7568da48c5c8d4a'),
-          // vestingContract.claimableAmount('0x2395ab434522ed26d49839cca7568da48c5c8d4a'),
-          // vestingContract.vestedAmount('0x2395ab434522ed26d49839cca7568da48c5c8d4a', getUnixTime(new Date()))
-          vestingContract.finalVestedAmount(account),
-          vestingContract.claimableAmount(account),
-          vestingContract.vestedAmount(account, getUnixTime(new Date()))
-        ]);
-
-        if (totalAllocatedToUser && totalClaimableByUser && totalVestedToUser) {
-          // gets the total allocation of an individual user
-          const totalAllocation = new Decimal(+totalAllocatedToUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
-          // gets the currently claimable token of the individual user
-          const claimableAmount = new Decimal(+totalClaimableByUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
-          // gets the total vested amount that the individual user holds
-          // claimed and unclaimed
-          const vestedAmount = new Decimal(+totalVestedToUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
-          setUserTokenDetails({ ...userTokenDetails, totalAllocation, claimableAmount, vestedAmount });
-        }
-      }
+    if (selectedSchedule && account && chainId) {
+      const tokenDetails = await getUserTokenDetails(selectedSchedule, account, chainId);
+      setUserTokenDetails({ ...userTokenDetails, ...tokenDetails });
     }
+    // if (selectedSchedule && selectedSchedule.data && chainId) {
+    //   const contractFromDB = await fetchVestingContractByQuery(
+    //     ['organizationId', 'chainId'],
+    //     ['==', '=='],
+    //     [selectedSchedule?.data.organizationId, chainId]
+    //   );
+    //   console.log('contract from db', contractFromDB);
+
+    //   if (contractFromDB?.data) {
+    //     setUserTokenDetails({ ...userTokenDetails, vestingContractAddress: contractFromDB.data.address });
+    //     console.log('Contract address', contractFromDB.data);
+    //     const vestingContract = await new ethers.Contract(
+    //       contractFromDB?.data?.address ?? '',
+    //       VTVL_VESTING_ABI.abi,
+    //       ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+    //     );
+
+    //     // Get the token details in the blockchain
+    //     const tokenDetails = await new ethers.Contract(
+    //       contractFromDB?.data?.tokenAddress,
+    //       ERC20,
+    //       ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+    //     );
+
+    //     const [totalAllocatedToUser, totalClaimableByUser, totalVestedToUser, tokenName, tokenSymbol] =
+    //       await Promise.all([
+    //         // MOCK DATAS
+    //         // vestingContract.finalVestedAmount('0x821C2d64f6c9a9E15Cdd81f3D952884740BC013E'),
+    //         // vestingContract.claimableAmount('0x821C2d64f6c9a9E15Cdd81f3D952884740BC013E'),
+    //         // vestingContract.vestedAmount('0x821C2d64f6c9a9E15Cdd81f3D952884740BC013E', getUnixTime(new Date())),
+    //         vestingContract.finalVestedAmount(account),
+    //         vestingContract.claimableAmount(account),
+    //         vestingContract.vestedAmount(account, getUnixTime(new Date())),
+    //         tokenDetails.name(),
+    //         tokenDetails.symbol()
+    //       ]);
+
+    //     console.log('Contract ', vestingContract, tokenDetails);
+
+    //     if (totalAllocatedToUser && totalClaimableByUser && totalVestedToUser && tokenName && tokenSymbol) {
+    //       // gets the total allocation of an individual user
+    //       const totalAllocation = new Decimal(+totalAllocatedToUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
+    //       // gets the currently claimable token of the individual user
+    //       const claimableAmount = new Decimal(+totalClaimableByUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
+    //       // gets the total vested amount that the individual user holds
+    //       // claimed and unclaimed
+    //       const vestedAmount = new Decimal(+totalVestedToUser.toString() / 1e18).toDP(6, Decimal.ROUND_UP);
+    //       setUserTokenDetails({
+    //         ...userTokenDetails,
+    //         totalAllocation,
+    //         claimableAmount,
+    //         vestedAmount,
+    //         name: tokenName,
+    //         symbol: tokenSymbol
+    //       });
+    //     }
+    //   }
+    // }
   };
 
   // Gets the token details
   const getTokenDetails = async () => {
     if (selectedSchedule && selectedSchedule.data) {
       try {
-        const getTokenFromDB = await fetchTokenByQuery('organizationId', '==', selectedSchedule?.data.organizationId);
+        const getTokenFromDB = await fetchTokenByQuery(
+          ['organizationId', 'chainId'],
+          ['==', '=='],
+          [selectedSchedule?.data.organizationId, chainId!]
+        );
         console.log('Token', getTokenFromDB);
         if (getTokenFromDB && getTokenFromDB.data) {
           setSelectedToken({
@@ -213,10 +232,10 @@ export function ClaimTokensContextProvider({ children }: any) {
 
   // Stores the token list of the current user
   useEffect(() => {
-    if (organizations && Object.keys(organizations).length > 0) {
+    if (organizations && Object.keys(organizations).length > 0 && chainId) {
       const orgIds = Object.keys(organizations);
       orgIds.map((orgId) => {
-        fetchTokenByQuery('organizationId', '==', orgId).then((res) => {
+        fetchTokenByQuery(['organizationId', 'chainId'], ['==', '=='], [orgId, chainId!]).then((res) => {
           if (res?.data) {
             setTokens([
               ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),
@@ -226,7 +245,7 @@ export function ClaimTokensContextProvider({ children }: any) {
         });
       });
     }
-  }, [organizations]);
+  }, [organizations, chainId]);
 
   // Watch for route changes that has [schedule]
   useEffect(() => {
@@ -252,38 +271,38 @@ export function ClaimTokensContextProvider({ children }: any) {
   }, [schedule, vestingSchedules]);
 
   // Computes user token detail datas based on the current selected schedule
-  useEffect(() => {
-    if (selectedSchedule && selectedSchedule.data) {
-      const {
-        cliffDuration,
-        lumpSumReleaseAfterCliff,
-        amountToBeVested,
-        startDateTime,
-        endDateTime,
-        releaseFrequency
-      } = selectedSchedule.data.details;
-      const cliffDate = startDateTime ? getCliffDateTime(startDateTime, cliffDuration) : '';
-      const cliffAmount = getCliffAmountDecimal(
-        cliffDuration,
-        new Decimal(lumpSumReleaseAfterCliff),
-        new Decimal(amountToBeVested)
-      );
-      const numberOfReleases =
-        startDateTime && endDateTime
-          ? getNumberOfReleases(releaseFrequency, cliffDate || startDateTime, endDateTime)
-          : 0;
+  // useEffect(() => {
+  //   if (selectedSchedule && selectedSchedule.data) {
+  //     const {
+  //       cliffDuration,
+  //       lumpSumReleaseAfterCliff,
+  //       amountToBeVested,
+  //       startDateTime,
+  //       endDateTime,
+  //       releaseFrequency
+  //     } = selectedSchedule.data.details;
+  //     const cliffDate = startDateTime ? getCliffDateTime(startDateTime, cliffDuration) : '';
+  //     const cliffAmount = getCliffAmountDecimal(
+  //       cliffDuration,
+  //       new Decimal(lumpSumReleaseAfterCliff),
+  //       new Decimal(amountToBeVested)
+  //     );
+  //     const numberOfReleases =
+  //       startDateTime && endDateTime
+  //         ? getNumberOfReleases(releaseFrequency, cliffDate || startDateTime, endDateTime)
+  //         : 0;
 
-      const releaseAmount = getReleaseAmountDecimal(new Decimal(amountToBeVested), cliffAmount, numberOfReleases);
+  //     const releaseAmount = getReleaseAmountDecimal(new Decimal(amountToBeVested), cliffAmount, numberOfReleases);
 
-      setUserTokenDetails({
-        ...userTokenDetails,
-        cliffAmount,
-        releaseAmount,
-        cliffDate,
-        numberOfReleases
-      });
-    }
-  }, [selectedSchedule]);
+  //     setUserTokenDetails({
+  //       ...userTokenDetails,
+  //       cliffAmount,
+  //       releaseAmount,
+  //       cliffDate,
+  //       numberOfReleases
+  //     });
+  //   }
+  // }, [selectedSchedule]);
 
   // Waits for the releaseAmount to finish before fetching other records
   // Fixes the said amounts being defaulted to 0
@@ -292,26 +311,26 @@ export function ClaimTokensContextProvider({ children }: any) {
     fetchContract();
     // Get the current token
     getTokenDetails();
-  }, [userTokenDetails.releaseAmount]);
+  }, [selectedSchedule, account, chainId]);
 
   // Computes the claimed, unclaimed and remaining tokens of the individual user
-  useEffect(() => {
-    const { totalAllocation, claimableAmount, vestedAmount } = userTokenDetails;
-    // At least one of them is not zero, then let's compute
-    if (totalAllocation || claimableAmount || vestedAmount) {
-      const claimedTokens = vestedAmount.greaterThanOrEqualTo(claimableAmount)
-        ? vestedAmount.minus(claimableAmount)
-        : new Decimal(0);
-      const remainingTokens = totalAllocation.minus(vestedAmount.minus(claimedTokens));
-      const vestingProgress = +vestedAmount.div(totalAllocation) * 100;
-      setUserTokenDetails({
-        ...userTokenDetails,
-        claimedAmount: claimedTokens,
-        remainingAmount: remainingTokens,
-        vestingProgress
-      });
-    }
-  }, [userTokenDetails.totalAllocation, userTokenDetails.claimableAmount, userTokenDetails.vestedAmount]);
+  // useEffect(() => {
+  //   const { totalAllocation, claimableAmount, vestedAmount } = userTokenDetails;
+  //   // At least one of them is not zero, then let's compute
+  //   if (totalAllocation || claimableAmount || vestedAmount) {
+  //     const claimedTokens = vestedAmount.greaterThanOrEqualTo(claimableAmount)
+  //       ? vestedAmount.minus(claimableAmount)
+  //       : new Decimal(0);
+  //     const remainingTokens = totalAllocation.minus(vestedAmount.minus(claimedTokens));
+  //     const vestingProgress = +vestedAmount.div(totalAllocation) * 100;
+  //     setUserTokenDetails({
+  //       ...userTokenDetails,
+  //       claimedAmount: claimedTokens,
+  //       remainingAmount: remainingTokens,
+  //       vestingProgress
+  //     });
+  //   }
+  // }, [userTokenDetails.totalAllocation, userTokenDetails.claimableAmount, userTokenDetails.vestedAmount]);
 
   return <ClaimTokensContext.Provider value={value}>{children}</ClaimTokensContext.Provider>;
 }

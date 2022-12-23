@@ -1,8 +1,10 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
+import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
 import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
@@ -16,7 +18,7 @@ import Decimal from 'decimal.js';
 import { ethers } from 'ethers';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { updateToken } from 'services/db/token';
@@ -24,10 +26,12 @@ import { formatNumber, parseTokenAmount } from 'utils/token';
 
 interface IAdditionalSupply {
   additionalTokens: number | '';
+  additionalTokensText: string;
 }
 
 const defaultValues: IAdditionalSupply = {
-  additionalTokens: ''
+  additionalTokens: '',
+  additionalTokensText: ''
 };
 
 const MintSuppy: NextPageWithLayout = () => {
@@ -44,6 +48,7 @@ const MintSuppy: NextPageWithLayout = () => {
     getFieldState,
     getValues,
     setValue,
+    clearErrors,
     formState: { errors, isSubmitting }
   } = useForm({
     defaultValues
@@ -52,6 +57,10 @@ const MintSuppy: NextPageWithLayout = () => {
   const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply } = mintFormState;
 
   const additionalTokens = { value: watch('additionalTokens'), fieldState: getFieldState('additionalTokens') };
+  const additionalTokensText = {
+    value: watch('additionalTokensText'),
+    fieldState: getFieldState('additionalTokensText')
+  };
   const maxAllowableToMint = +maxSupply - +initialSupply;
 
   const handleMinChange = (e: any) => {
@@ -111,6 +120,29 @@ const MintSuppy: NextPageWithLayout = () => {
     }
   };
 
+  // Handles the clicking of the "MAX" button in the amount to be minted section
+  const handleMaxAmount = () => {
+    const newMaxValue = maxAllowableToMint;
+    setValue('additionalTokens', newMaxValue);
+    setValue('additionalTokensText', formatNumber(newMaxValue).toString());
+    clearErrors('additionalTokensText');
+  };
+
+  // Updates made when the user is interacting with the Range Slider component
+  // Should also update the text value -- for display -- of the number input
+  const handleAmountToBeMintedChange = (e: any) => {
+    const newValue = parseFloat(e.target.value);
+    setValue('additionalTokens', newValue);
+    setValue('additionalTokensText', formatNumber(newValue).toString());
+    clearErrors('additionalTokensText');
+  };
+
+  // Update the actual numbers based on the formatted ones
+  useEffect(() => {
+    const additionalTokensToFloat = parseFloat(additionalTokensText.value.replaceAll(',', ''));
+    setValue('additionalTokens', !isNaN(additionalTokensToFloat) ? additionalTokensToFloat : 0);
+  }, [additionalTokensText.value]);
+
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-lg">
       <h1 className="text-neutral-900">Mint additional tokens</h1>
@@ -144,7 +176,7 @@ const MintSuppy: NextPageWithLayout = () => {
         </div>
         {mintFormState.supplyCap === 'UNLIMITED' ? (
           <Controller
-            name="additionalTokens"
+            name="additionalTokensText"
             control={control}
             rules={{ required: true }}
             render={({ field }) => (
@@ -154,25 +186,60 @@ const MintSuppy: NextPageWithLayout = () => {
                     <span>Amount to be minted</span>
                   </label>
                 }
-                placeholder=""
+                placeholder="Enter amount"
                 type="number"
-                error={Boolean(errors.additionalTokens)}
-                message={errors.additionalTokens ? 'Please enter amount to mint' : ''}
+                error={Boolean(errors.additionalTokensText)}
+                message={errors.additionalTokensText ? 'Please enter amount to mint' : ''}
                 {...field}
               />
             )}
           />
         ) : (
-          <LimitedSupply
-            label="Amount to be minted"
-            maximumLabel="Unminted supply"
-            required
-            initial={+additionalTokens.value}
-            maximum={+maxAllowableToMint}
-            onMinChange={handleMinChange}
-            onUseMax={() => setValue('additionalTokens', +maxAllowableToMint)}
-            maxReadOnly
-          />
+          <>
+            <div className="relative">
+              <Controller
+                name="additionalTokensText"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <>
+                    <label className="required w-full">
+                      <div className="flex flex-row items-center justify-between gap-3 w-full">
+                        <span className="form-label required">Amount to be minted</span>
+                        <p className="text-xs font-medium text-neutral-700">
+                          Unminted supply: {formatNumber(maxAllowableToMint)}
+                        </p>
+                      </div>
+                    </label>
+                    <Input
+                      placeholder="Enter amount"
+                      type="number"
+                      max={maxAllowableToMint}
+                      error={Boolean(errors.additionalTokensText) || additionalTokens.value > maxAllowableToMint}
+                      message={errors.additionalTokensText ? 'Please enter amount to be vested' : ''}
+                      {...field}
+                    />
+                  </>
+                )}
+              />
+              <Chip
+                label="MAX"
+                color={additionalTokens.value < maxAllowableToMint ? 'secondary' : 'default'}
+                onClick={handleMaxAmount}
+                className={`absolute right-6 cursor-pointer ${
+                  additionalTokens.value > maxAllowableToMint || errors.additionalTokensText ? 'bottom-9' : 'bottom-2'
+                }`}
+              />
+            </div>
+            <div className="mt-6">
+              <RangeSlider
+                max={maxAllowableToMint || 0}
+                value={additionalTokens.value ? additionalTokens.value : 0}
+                className="mt-5"
+                onChange={handleAmountToBeMintedChange}
+              />
+            </div>
+          </>
         )}
         <div className="flex flex-row justify-between items-center border-t border-gray-200 pt-5 mt-6">
           <BackButton

@@ -30,7 +30,8 @@ const LimitedSupply = ({
   onMaxChange,
   onMinChange,
   onUseMax,
-  maxReadOnly = false
+  maxReadOnly = false,
+  ...props
 }: LimitedSupplyProps) => {
   return (
     <>
@@ -38,9 +39,7 @@ const LimitedSupply = ({
         <div className="flex flex-row items-center justify-between gap-3">
           {label ? (
             <>
-              <span className={`form-label ${required ? 'required' : ''}`}>
-                {label} <small>({formatNumber((initial / maximum) * 100, 0)}%)</small>
-              </span>
+              <span className={`form-label ${required ? 'required' : ''}`}>{label}</span>
               {maxReadOnly ? (
                 <p className="text-xs font-medium text-neutral-700">
                   {maximumLabel}: {formatNumber(maximum)}
@@ -57,6 +56,7 @@ const LimitedSupply = ({
           onMaxChange={onMaxChange}
           onUseMax={onUseMax}
           maxReadOnly={maxReadOnly}
+          placeholder={props.placeholder}
         />
         <RangeSlider max={maximum} value={initial} className="mt-5" onChange={onMinChange} />
       </label>

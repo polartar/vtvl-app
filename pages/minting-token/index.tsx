@@ -8,9 +8,10 @@ import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider'
 import Uploader from '@components/atoms/Uploader/Uploader';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
+import Decimal from 'decimal.js';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { formatNumber } from 'utils/token';
 
@@ -37,7 +38,9 @@ const MintingToken: NextPageWithLayout = () => {
     formState: { errors, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
-      ...mintFormState
+      ...mintFormState,
+      initialSupplyText: '',
+      maxSupplyText: ''
     }
   });
 
@@ -46,14 +49,23 @@ const MintingToken: NextPageWithLayout = () => {
   const symbol = { value: watch('symbol'), state: getFieldState('symbol') };
   const supplyCap = { value: watch('supplyCap'), state: getFieldState('supplyCap') };
   const initialSupply = { value: watch('initialSupply'), state: getFieldState('initialSupply') };
+  const initialSupplyText = { value: watch('initialSupplyText'), state: getFieldState('initialSupplyText') };
   const maxSupply = { value: watch('maxSupply'), state: getFieldState('maxSupply') };
+  const maxSupplyText = { value: watch('maxSupplyText'), state: getFieldState('maxSupplyText') };
 
+  // Updates made when the user is interacting with the Range Slider component
+  // Should also update the text value -- for display -- of the number input
   const handleinitialSupplyChange = (e: any) => {
-    setValue('initialSupply', +e.target.value);
+    const newValue = parseFloat(e.target.value);
+    setValue('initialSupply', newValue);
+    setValue('initialSupplyText', formatNumber(newValue).toString());
   };
 
+  // Make sure that when the user clicks the "MAX" button, we update both the number and text values of the field
   const handleMaxMintAmouont = () => {
-    setValue('initialSupply', +maxSupply.value);
+    const newMaxValue = parseFloat(maxSupply.value.toString());
+    setValue('initialSupply', newMaxValue);
+    setValue('initialSupplyText', formatNumber(newMaxValue).toString());
   };
 
   const handleUpload = (url: string) => {
@@ -118,6 +130,16 @@ const MintingToken: NextPageWithLayout = () => {
       )
     }
   ];
+
+  // Add additional fields to contain the text value of the inputted numbers -- INITIAL SUPPLY AND MAX SUPPLY.
+  // Then updating the numeric value based on the current value of the text
+  useEffect(() => {
+    // Parse the text into floats to cater the decimals if any
+    const initialSupplyToFloat = parseFloat(initialSupplyText.value.replaceAll(',', ''));
+    const maxSupplyToFloat = parseFloat(maxSupplyText.value.replaceAll(',', ''));
+    setValue('initialSupply', !isNaN(initialSupplyToFloat) ? initialSupplyToFloat : 0);
+    setValue('maxSupply', !isNaN(maxSupplyToFloat) ? maxSupplyToFloat : 0);
+  }, [initialSupplyText.value, maxSupplyText.value]);
 
   return (
     <>
@@ -205,7 +227,7 @@ const MintingToken: NextPageWithLayout = () => {
             <div className="border-t border-neutral-200 py-5">
               {supplyCap.value === 'LIMITED' ? (
                 <Controller
-                  name="maxSupply"
+                  name="maxSupplyText"
                   control={control}
                   rules={{ required: true }}
                   render={({ field }) => (
@@ -216,7 +238,7 @@ const MintingToken: NextPageWithLayout = () => {
                           <span>Maximum amount of tokens</span>
                         </label>
                       }
-                      placeholder=""
+                      placeholder="Enter amount"
                       type="number"
                       error={Boolean(errors.maxSupply)}
                       message={errors.maxSupply ? 'Please enter the initial total supply' : ''}
@@ -227,31 +249,26 @@ const MintingToken: NextPageWithLayout = () => {
               ) : null}
               <div className="relative">
                 <Controller
-                  name="initialSupply"
+                  name="initialSupplyText"
                   control={control}
                   rules={{ required: true }}
                   render={({ field }) => (
                     <Input
                       label={
                         <label className="required">
-                          <span>
-                            Amount to mint{' '}
-                            {supplyCap.value === 'LIMITED' ? (
-                              <small>({formatNumber((+initialSupply.value / +maxSupply.value) * 100, 0)}%)</small>
-                            ) : null}
-                          </span>
+                          <span>Amount to mint </span>
                         </label>
                       }
-                      placeholder=""
+                      placeholder="Enter amount"
                       type="number"
                       error={
                         Boolean(errors.initialSupply) ||
-                        (+initialSupply.value > +maxSupply.value && supplyCap.value === 'LIMITED')
+                        (initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED')
                       }
                       message={
                         errors.initialSupply
                           ? 'Please enter amount to mint'
-                          : +initialSupply.value > +maxSupply.value && supplyCap.value === 'LIMITED'
+                          : initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED'
                           ? 'Amount to mint should be smaller than the maximum amount'
                           : ''
                       }
@@ -262,10 +279,10 @@ const MintingToken: NextPageWithLayout = () => {
                 {supplyCap.value === 'LIMITED' ? (
                   <Chip
                     label="MAX"
-                    color="secondary"
+                    color={+initialSupply.value < +maxSupply.value ? 'secondary' : 'default'}
                     onClick={handleMaxMintAmouont}
                     className={`absolute right-6 cursor-pointer ${
-                      +initialSupply.value > +maxSupply.value || errors.initialSupply ? 'bottom-9' : 'bottom-2'
+                      initialSupply.value > maxSupply.value || errors.initialSupply ? 'bottom-9' : 'bottom-2'
                     }`}
                   />
                 ) : null}
@@ -273,8 +290,8 @@ const MintingToken: NextPageWithLayout = () => {
               {supplyCap.value === 'LIMITED' ? (
                 <div className="mt-6">
                   <RangeSlider
-                    max={+maxSupply.value ? +maxSupply.value : 0}
-                    value={+initialSupply.value ? +initialSupply.value : 0}
+                    max={maxSupply.value ? maxSupply.value : 0}
+                    value={initialSupply.value ? initialSupply.value : 0}
                     className="mt-5"
                     onChange={handleinitialSupplyChange}
                   />

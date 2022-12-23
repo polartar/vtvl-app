@@ -33,11 +33,14 @@ export const fetchTransactionByQuery = async (
 };
 
 export const fetchTransactionsByQuery = async (
-  field: string,
-  syntax: WhereFilterOp,
-  value: string
+  fields: string[],
+  syntaxs: WhereFilterOp[],
+  values: any[]
 ): Promise<{ id: string; data: ITransaction }[] | []> => {
-  const q = query(transactionCollection, where(field, syntax, value));
+  const q = query(
+    transactionCollection,
+    ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index]))
+  );
   const querySnapshot = await getDocs(q);
 
   const result: any = [];
