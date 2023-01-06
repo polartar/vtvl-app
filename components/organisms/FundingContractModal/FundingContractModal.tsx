@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Modal, { Styles } from 'react-modal';
+import { connectionAssets } from 'types/constants/shared';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IFundContractProps } from 'types/models/vestingContract';
 import { formatNumber, parseTokenAmount } from 'utils/token';
@@ -40,7 +41,7 @@ const FundingContractModal = ({
   const { account, chainId } = useWeb3React();
   const { vestingContract } = useDashboardContext();
   const { mintFormState } = useTokenContext();
-  const { safe } = useAuthContext();
+  const { safe, connection } = useAuthContext();
 
   // Make Modal styles scrollable when exceeding the device view height
   const modalStyles: Styles = {
@@ -170,7 +171,7 @@ const FundingContractModal = ({
               rules={{ required: true }}
               render={({ field }) => (
                 <WalletRadioButton
-                  icon={'/icons/wallets/metamask.svg'}
+                  icon={connection ? connectionAssets[connection].walletIcon : connectionAssets.default.walletIcon}
                   address={account ?? ''}
                   balance={walletBalance}
                   symbol={mintFormState.symbol}

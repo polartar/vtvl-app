@@ -190,7 +190,8 @@ const AccountSetupPage: NextPage = () => {
           </div>
         </div>
         <div className="grid md:grid-cols-2 py-5 gap-5 border-b border-neutral-200 mb-5">
-          <Controller
+          {/* REMOVE USER TYPE - Organization / Individual */}
+          {/* <Controller
             name="type"
             control={control}
             rules={{ required: true }}
@@ -217,7 +218,7 @@ const AccountSetupPage: NextPage = () => {
                 value="individual"
               />
             )}
-          />
+          /> */}
           <Controller
             name="name"
             control={control}
@@ -281,14 +282,12 @@ const AccountSetupPage: NextPage = () => {
                     rules={{ required: true }}
                     render={({ field }) => (
                       <Input
-                        label="Contributor's name"
-                        placeholder="Enter contributor's name"
+                        label="Team member name"
+                        placeholder="Enter team member name"
                         required
                         error={Boolean(getContributorState(contributorIndex).name.state.error)}
                         message={
-                          getContributorState(contributorIndex).name.state.error
-                            ? "Please enter contributor's name"
-                            : ''
+                          getContributorState(contributorIndex).name.state.error ? 'Please enter team member name' : ''
                         }
                         {...field}
                       />
@@ -300,13 +299,13 @@ const AccountSetupPage: NextPage = () => {
                     rules={{ required: true, pattern: emailPattern }}
                     render={({ field }) => (
                       <Input
-                        label="Contributor's email"
-                        placeholder="Enter contributor's email"
+                        label="Team member email"
+                        placeholder="Enter team member email"
                         required
                         error={Boolean(getContributorState(contributorIndex).email.state.error)}
                         message={
                           getContributorState(contributorIndex).email.state.error
-                            ? "Please enter contributor's email"
+                            ? 'Please enter team member email'
                             : ''
                         }
                         {...field}
@@ -325,8 +324,8 @@ const AccountSetupPage: NextPage = () => {
               type="button"
               className="secondary mb-5 flex flex-row items-center gap-2 py-1.5"
               onClick={addContributor}>
-              <PlusIcon alt="Add more members" aria-hidden="true" />
-              Add more members
+              <PlusIcon alt="Invite" aria-hidden="true" />
+              Invite
             </button>
           </>
         ) : null}

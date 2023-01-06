@@ -32,7 +32,7 @@ const userTypes = {
       value: 'investor',
       label: (
         <>
-          I’m an <span className="text-secondary-900">employee / investor</span> looking to claim my tokens
+          I’m a <span className="text-secondary-900">token recipient</span> looking to claim my tokens
         </>
       )
     }

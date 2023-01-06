@@ -218,3 +218,18 @@ export const spaceMissions = [
   'Neptune',
   'Pluto'
 ];
+
+export const connectionAssets = {
+  metamask: {
+    walletIcon: '/icons/wallets/metamask.svg',
+    animatedWalletIcon: ''
+  },
+  walletconnect: {
+    walletIcon: '/icons/wallets/walletconnect.svg',
+    animatedWalletIcon: ''
+  },
+  default: {
+    walletIcon: '/icons/wallets/space-suit.svg',
+    animatedWalletIcon: ''
+  }
+};

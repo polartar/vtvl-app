@@ -388,12 +388,19 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   };
 
   const handleDateTimeChange = (e: any, field: string) => {
+    let newDate = e;
+    // Ensure that changing the date will update the time into 00:00
+    if (field.includes('Date')) {
+      newDate = new Date(new Date(e).setHours(0, 0, 0, 0));
+    }
+
+    console.log('Date time changing', newDate, field);
     if (field.includes('start')) {
-      setPickerStartDateTime(e);
+      setPickerStartDateTime(newDate);
     }
 
     if (field.includes('end')) {
-      setPickerEndDateTime(e);
+      setPickerEndDateTime(newDate);
     }
   };
 
