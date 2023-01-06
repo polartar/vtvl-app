@@ -151,7 +151,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const selections: Record<string, Record<string, string>> = {
     manual: {
       label: 'Create Schedule',
-      url: '/vesting-schedule/configure'
+      url: '/vesting-schedule/add-recipients'
     },
     import: {
       label: 'Upload CSV File',
@@ -648,7 +648,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                 </Copy>
               </div>
               <div className="flex flex-row items-center justify-start gap-2">
-                <button className="secondary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
+                <button
+                  className="secondary row-center"
+                  onClick={() => Router.push('/vesting-schedule/add-recipients')}>
                   <PlusIcon className="w-5 h-5" />
                   <span className="whitespace-nowrap">Create Schedule</span>
                 </button>

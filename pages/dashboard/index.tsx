@@ -146,7 +146,7 @@ const Dashboard: NextPageWithLayout = () => {
               <button
                 className="primary row-center"
                 onClick={() => {
-                  router.push('/vesting-schedule/configure');
+                  router.push('/vesting-schedule/add-recipients');
                 }}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Create Schedule</span>

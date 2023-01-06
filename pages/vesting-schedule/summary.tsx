@@ -116,7 +116,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
           <ScheduleDetails {...scheduleFormState} token={mintFormState.symbol || 'Token'} />
         </div>
         <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-          <BackButton label="Return to add recipient" href="/vesting-schedule/add-beneficiary" />
+          <BackButton label="Return to configuration" href="/vesting-schedule/configure" />
           <button
             className="primary"
             type="button"
@@ -137,17 +137,17 @@ ScheduleSummary.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },
-    { title: 'Configure schedule', route: '/vesting-schedule/configure' }
+    { title: 'Configure schedule', route: '/vesting-schedule/add-recipients' }
   ];
 
   // Update these into a state coming from the context
   const wizardSteps = [
     {
-      title: 'Setup schedule',
+      title: 'Add recipient(s)',
       desc: ''
     },
     {
-      title: 'Add recipient(s)',
+      title: 'Setup schedule',
       desc: ''
     },
     {

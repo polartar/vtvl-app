@@ -172,7 +172,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
   const onRecipientsSubmit: SubmitHandler<IRecipientFormState> = (data) => {
     console.log('Recipient is now submitted', data);
     updateRecipients([...data.recipients]);
-    Router.push('/vesting-schedule/summary');
+    Router.push('/vesting-schedule/configure');
   };
 
   /**
@@ -410,7 +410,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
         <form
           className="flex flex-row justify-between items-center pt-5"
           onSubmit={beneficiariesSubmit(onRecipientsSubmit)}>
-          <BackButton label="Back to details" onClick={() => Router.push('/vesting-schedule/configure')} />
+          <BackButton label="Back" onClick={() => Router.push('/vesting-schedule')} />
           <button className="primary" type="submit">
             Continue
           </button>
@@ -434,17 +434,17 @@ AddBeneficiary.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },
-    { title: 'Configure schedule', route: '/vesting-schedule/configure' }
+    { title: 'Configure schedule', route: '/vesting-schedule/add-recipients' }
   ];
 
   // Update these into a state coming from the context
   const wizardSteps = [
     {
-      title: 'Setup schedule',
+      title: 'Add recipient(s)',
       desc: ''
     },
     {
-      title: 'Add recipient(s)',
+      title: 'Setup schedule',
       desc: ''
     },
     {
@@ -453,7 +453,7 @@ AddBeneficiary.getLayout = function getLayout(page: ReactElement) {
     }
   ];
   return (
-    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={1}>
+    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={0}>
       {page}
     </SteppedLayout>
   );

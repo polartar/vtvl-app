@@ -1,3 +1,4 @@
+import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import CreateLabel from '@components/atoms/CreateLabel/CreateLabel';
@@ -123,7 +124,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         originalEndDateTime: endDateTime,
         endDateTime: projectedEndDateTime
       });
-      Router.push('/vesting-schedule/add-beneficiary');
+      Router.push('/vesting-schedule/add-recipients');
     }
   };
 
@@ -811,7 +812,11 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-row justify-end items-center border-t border-neutral-200 pt-5">
+            <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
+              <BackButton
+                label="Return to add recipients"
+                onClick={() => Router.push('/vesting-schedule/add-recipients')}
+              />
               <Button className="primary" type="submit" loading={isSubmitting} disabled={formError}>
                 Continue
               </Button>
@@ -872,17 +877,17 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },
-    { title: 'Configure schedule', route: '/vesting-schedule/configure' }
+    { title: 'Configure schedule', route: '/vesting-schedule/add-recipients' }
   ];
 
   // Update these into a state coming from the context
   const wizardSteps = [
     {
-      title: 'Setup schedule',
+      title: 'Add recipient(s)',
       desc: ''
     },
     {
-      title: 'Add recipient(s)',
+      title: 'Setup schedule',
       desc: ''
     },
     {
@@ -891,7 +896,7 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
     }
   ];
   return (
-    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={0}>
+    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={1}>
       {page}
     </SteppedLayout>
   );
