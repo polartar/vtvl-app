@@ -13,7 +13,7 @@ import { useDashboardContext } from 'providers/dashboard.context';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Modal, { Styles } from 'react-modal';
-import Select, { ActionMeta, OnChangeValue } from 'react-select';
+import Select, { ActionMeta, MultiValue, OnChangeValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { IRecipient, IRecipientFormState, IRecipientType } from 'types/vesting';
 import { convertLabelToOption } from 'utils/shared';
@@ -30,7 +30,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
     recipientType: []
   };
   const { recipients: recipientsData, updateRecipients, scheduleFormState } = useVestingContext();
-  const { vestings } = useDashboardContext();
+  const { vestings, recipients: organizationRecipients } = useDashboardContext();
 
   const {
     control,
@@ -115,7 +115,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
 
   // Higher level recipient dropdown
   const recipients = { value: recipientsWatch('recipients'), state: recipientsGetFieldState('recipients') };
-  const [recipientOptions, setRecipientOptions] = useState<IRecipient[]>([]);
+  const [recipientOptions, setRecipientOptions] = useState<MultiValue<IRecipient>>([]);
 
   const onChangeRecipient = (newValue: OnChangeValue<IRecipient, true>, actionMeta: ActionMeta<IRecipient>) => {
     console.group('Recipient Value Changed');
@@ -270,6 +270,13 @@ const AddBeneficiary: NextPageWithLayout = () => {
   useEffect(() => {
     setRecipientDuplicated(false);
   }, [walletAddress.value]);
+
+  useEffect(() => {
+    if (organizationRecipients) {
+      setRecipientOptions(organizationRecipients);
+      // recipientsSetValue('recipients', organizationRecipients);
+    }
+  }, [organizationRecipients]);
 
   return (
     <>

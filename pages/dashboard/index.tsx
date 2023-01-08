@@ -24,7 +24,7 @@ const Dashboard: NextPageWithLayout = () => {
   const { library, account, activate } = useWeb3React();
   const { organizationId, safe, emailSignUp, user } = useAuthContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
-  const { recipients, scheduleFormState } = useVestingContext();
+  const { scheduleFormState } = useVestingContext();
   const {
     vestings,
     vestingContract,
@@ -36,7 +36,8 @@ const Dashboard: NextPageWithLayout = () => {
     vestingContractLoading,
     vestingsLoading,
     transactionsLoading,
-    fetchDashboardData
+    fetchDashboardData,
+    recipients
   } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
 
