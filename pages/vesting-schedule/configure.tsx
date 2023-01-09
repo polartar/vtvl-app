@@ -124,7 +124,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         originalEndDateTime: endDateTime,
         endDateTime: projectedEndDateTime
       });
-      Router.push('/vesting-schedule/add-recipients');
+      Router.push('/vesting-schedule/summary');
     }
   };
 
