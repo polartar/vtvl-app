@@ -85,18 +85,6 @@ export function AuthContextProvider({ children }: any) {
 
   console.log({ user });
 
-  // This is used to determine which icons or assets to use across the app,
-  // especially on Funding Contract and Transaction Modals.
-  // Will surely update and refactor this function later as we add in
-  // more wallet options like coinbase and ledger.
-  connector?.getProvider().then((res) => {
-    // Assumes that this is coming from a WalletConnect
-    // Normally the value of this is "wc" for WalletConnect
-    // If so, we set the connection to "walletconnect"
-    // Else, we set it to the default "metamask"
-    setConnection(res.connector && res.connector.protocol ? 'walletconnect' : 'metamask');
-  });
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -108,6 +96,22 @@ export function AuthContextProvider({ children }: any) {
 
     return unsubscribe;
   }, []);
+
+  // This is used to determine which icons or assets to use across the app,
+  // especially on Funding Contract and Transaction Modals.
+  // Will surely update and refactor this function later as we add in
+  // more wallet options like coinbase and ledger.
+  useEffect(() => {
+    if (connector) {
+      connector?.getProvider().then((res) => {
+        //   // Assumes that this is coming from a WalletConnect
+        //   // Normally the value of this is "wc" for WalletConnect
+        //   // If so, we set the connection to "walletconnect"
+        //   // Else, we set it to the default "metamask"
+        setConnection(res.connector && res.connector.protocol ? 'walletconnect' : 'metamask');
+      });
+    }
+  }, [connector]);
 
   const signInWithGoogle = async (): Promise<NewLogin | undefined> => {
     setLoading(true);
