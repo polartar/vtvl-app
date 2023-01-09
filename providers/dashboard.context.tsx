@@ -138,7 +138,7 @@ export function DashboardContextProvider({ children }: any) {
     if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {
       let totalVestingAmount = 0;
       vestings
-        .filter((vesting) => vesting.data.status !== 'COMPLETED')
+        .filter((vesting) => vesting.data.status !== 'COMPLETED' && vesting.data.status !== 'LIVE')
         .forEach(
           (vesting) => (totalVestingAmount += parseFloat(vesting.data.details.amountToBeVested as unknown as string))
         );
