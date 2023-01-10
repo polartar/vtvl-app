@@ -42,7 +42,7 @@ interface IDashboardData {
 const DashboardContext = createContext({} as IDashboardData);
 
 export function DashboardContextProvider({ children }: any) {
-  const { account, chainId } = useWeb3React();
+  const { account, chainId, library } = useWeb3React();
   const { mintFormState } = useTokenContext();
   const { organizationId, safe } = useAuthContext();
   const { showLoading, hideLoading } = useLoaderContext();
@@ -133,33 +133,55 @@ export function DashboardContextProvider({ children }: any) {
   };
 
   const fetchVestingContractBalance = async () => {
-    if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {
-      let totalVestingAmount = 0;
-      vestings
-        .filter((vesting) => vesting.data.status !== 'COMPLETED' && vesting.data.status !== 'LIVE')
-        .forEach(
-          (vesting) => (totalVestingAmount += parseFloat(vesting.data.details.amountToBeVested as unknown as string))
+    try {
+      if (
+        vestings &&
+        vestings.length > 0 &&
+        vestingContract &&
+        vestingContract.id &&
+        mintFormState.address &&
+        chainId
+      ) {
+        let totalVestingAmount = 0;
+        vestings
+          .filter((vesting) => vesting.data.status !== 'COMPLETED' && vesting.data.status !== 'LIVE')
+          .forEach(
+            (vesting) => (totalVestingAmount += parseFloat(vesting.data.details.amountToBeVested as unknown as string))
+          );
+        const tokenContract = new ethers.Contract(
+          mintFormState.address,
+          [
+            // Read-Only Functions
+            'function balanceOf(address owner) view returns (uint256)',
+            'function decimals() view returns (uint8)',
+            'function symbol() view returns (string)',
+            // Authenticated Functions
+            'function transfer(address to, uint amount) returns (bool)',
+            // Events
+            'event Transfer(address indexed from, address indexed to, uint amount)'
+          ],
+          ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
         );
-      const tokenContract = new ethers.Contract(
-        mintFormState.address,
-        [
-          // Read-Only Functions
-          'function balanceOf(address owner) view returns (uint256)',
-          'function decimals() view returns (uint8)',
-          'function symbol() view returns (string)',
-          // Authenticated Functions
-          'function transfer(address to, uint amount) returns (bool)',
-          // Events
-          'event Transfer(address indexed from, address indexed to, uint amount)'
-        ],
-        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-      );
-      // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
-      tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
-        if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(totalVestingAmount)))) {
+        const vestingContractInstance = new ethers.Contract(
+          vestingContract.data!.address,
+          VTVL_VESTING_ABI.abi,
+          library.getSigner()
+        );
+        const tokenBalance = await tokenContract.balanceOf(vestingContract.data?.address);
+        const numberOfTokensReservedForVesting = await vestingContractInstance.numTokensReservedForVesting();
+        if (
+          BigNumber.from(tokenBalance).gte(BigNumber.from(numberOfTokensReservedForVesting)) &&
+          BigNumber.from(tokenBalance)
+            .sub(BigNumber.from(numberOfTokensReservedForVesting))
+            .lt(BigNumber.from(parseTokenAmount(totalVestingAmount)))
+        ) {
           setInsufficientBalance(true);
           setDepositAmount(
-            ethers.utils.formatEther(BigNumber.from(parseTokenAmount(totalVestingAmount)).sub(BigNumber.from(res)))
+            ethers.utils.formatEther(
+              BigNumber.from(parseTokenAmount(totalVestingAmount)).sub(
+                BigNumber.from(tokenBalance).sub(BigNumber.from(numberOfTokensReservedForVesting))
+              )
+            )
           );
           return;
         } else {
@@ -167,10 +189,12 @@ export function DashboardContextProvider({ children }: any) {
           setInsufficientBalance(false);
           return;
         }
-      });
+      }
+      setInsufficientBalance(false);
+      setDepositAmount('');
+    } catch (err) {
+      console.log('fetchVestingContractBalance - ', err);
     }
-    setInsufficientBalance(false);
-    setDepositAmount('');
   };
 
   const value = useMemo(
