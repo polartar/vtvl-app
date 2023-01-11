@@ -26,7 +26,7 @@ import { formatNumber, parseTokenAmount } from 'utils/token';
 const Summary: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
   const { library, account, activate, chainId } = useWeb3React();
-  const { mintFormState, updateMintFormState } = useTokenContext();
+  const { mintFormState, updateMintFormState, updateTokenId } = useTokenContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
 
   const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply } = mintFormState;
@@ -40,11 +40,11 @@ const Summary: NextPageWithLayout = () => {
       } else if (organizationId && chainId) {
         setTransactionStatus('PENDING');
         setLoading(true);
-        const tokenTemplate = supplyCap === 'LIMITED' ? VariableSupplyERC20Token : FullPremintERC20Token;
+        const tokenTemplate = supplyCap === 'LIMITED' ? FullPremintERC20Token : VariableSupplyERC20Token;
         const TokenFactory = new ethers.ContractFactory(tokenTemplate.abi, tokenTemplate.bytecode, library.getSigner());
 
         const tokenContract =
-          supplyCap === 'LIMITED'
+          supplyCap === 'UNLIMITED'
             ? await TokenFactory.deploy(
                 name,
                 symbol,
@@ -55,7 +55,7 @@ const Summary: NextPageWithLayout = () => {
         setTransactionStatus('IN_PROGRESS');
         await tokenContract.deployed();
 
-        createToken({
+        const tokenId = await createToken({
           name: name,
           symbol: symbol,
           address: tokenContract.address,
@@ -72,6 +72,7 @@ const Summary: NextPageWithLayout = () => {
         });
 
         updateMintFormState({ ...mintFormState, address: tokenContract.address, status: 'SUCCESS', chainId });
+        updateTokenId(tokenId);
 
         console.log('Address:', tokenContract.address);
         toast.success('Token created successfully');

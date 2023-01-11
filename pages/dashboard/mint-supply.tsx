@@ -10,6 +10,7 @@ import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
+import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import FullPremintERC20Token from 'contracts/abi/FullPremintERC20Token.json';
@@ -37,6 +38,7 @@ const defaultValues: IAdditionalSupply = {
 const MintSuppy: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
+  const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
   const { mintFormState, tokenId } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -74,22 +76,26 @@ const MintSuppy: NextPageWithLayout = () => {
       // Connect to wallet first
       if (!library || !chainId) {
         activate(injected);
-      } else {
-        const tokenTemplate = supplyCap === 'LIMITED' ? VariableSupplyERC20Token : FullPremintERC20Token;
-        const TokenFactory = new ethers.ContractFactory(tokenTemplate.abi, tokenTemplate.bytecode, library.getSigner());
+      } else if (
+        mintFormState.address &&
+        !mintFormState.imported &&
+        mintFormState.supplyCap === 'UNLIMITED' &&
+        additionalTokens.value > 0
+      ) {
+        setTransactionStatus('PENDING');
+        const tokenContract = new ethers.Contract(
+          mintFormState.address,
+          VariableSupplyERC20Token.abi,
+          library.getSigner()
+        );
+        const mintTx = await tokenContract.mint(
+          account,
+          ethers.utils.parseEther(additionalTokens.value.toString()).toString()
+        );
+        setTransactionStatus('IN_PROGRESS');
+        await mintTx.wait();
 
-        const tokenContract =
-          supplyCap === 'LIMITED'
-            ? await TokenFactory.deploy(
-                name,
-                symbol,
-                parseTokenAmount(+additionalTokens, decimals),
-                parseTokenAmount(maxSupply, decimals)
-              )
-            : await TokenFactory.deploy(name, symbol, parseTokenAmount(+additionalTokens, decimals));
-        await tokenContract.deployed();
-
-        updateToken(
+        await updateToken(
           {
             name: name,
             symbol: symbol,
@@ -101,7 +107,7 @@ const MintSuppy: NextPageWithLayout = () => {
             imported: mintFormState.imported,
             supplyCap: supplyCap,
             maxSupply: +maxSupply,
-            initialSupply: +additionalTokens,
+            initialSupply: +additionalTokens + +initialSupply,
             status: mintFormState.status,
             chainId
           },
@@ -111,11 +117,13 @@ const MintSuppy: NextPageWithLayout = () => {
         console.log('Deployed an ERC Token for testing.');
         console.log('Address:', tokenContract.address);
         toast.success('Additional tokens successfully minted!');
+        setTransactionStatus('SUCCESS');
         return;
       }
     } catch (err) {
       console.log('err - ', err);
       toast.error('Additional tokens minting failed!');
+      setTransactionStatus('ERROR');
       return;
     }
   };

@@ -152,10 +152,12 @@ const Dashboard: NextPageWithLayout = () => {
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Create Schedule</span>
               </button>
-              <button className="secondary row-center" onClick={() => router.push('/dashboard/mint-supply')}>
-                <PlusIcon className="w-5 h-5" />
-                <span className="whitespace-nowrap">Mint Supply</span>
-              </button>
+              {mintFormState.address && !mintFormState.imported && mintFormState.supplyCap === 'UNLIMITED' && (
+                <button className="secondary row-center" onClick={() => router.push('/dashboard/mint-supply')}>
+                  <PlusIcon className="w-5 h-5" />
+                  <span className="whitespace-nowrap">Mint Supply</span>
+                </button>
+              )}
             </div>
           </div>
 

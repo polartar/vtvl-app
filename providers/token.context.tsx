@@ -31,6 +31,7 @@ interface ITokenContextData {
   tokenId: string;
   isTokenLoading: boolean;
   updateMintFormState: (v: any) => void;
+  updateTokenId: (v: string) => void;
 }
 
 const INITIAL_STATE: IMintFormState = {
@@ -66,7 +67,8 @@ export function TokenContextProvider({ children }: any) {
       mintFormState,
       tokenId,
       isTokenLoading,
-      updateMintFormState: setMintFormState
+      updateMintFormState: setMintFormState,
+      updateTokenId: setTokenId
     }),
     [mintFormState, isTokenLoading]
   );
