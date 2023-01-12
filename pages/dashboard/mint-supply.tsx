@@ -39,7 +39,7 @@ const MintSuppy: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
   const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
-  const { mintFormState, tokenId } = useTokenContext();
+  const { mintFormState, tokenId, updateMintFormState } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formMessage, setFormMessage] = useState('');
@@ -107,23 +107,34 @@ const MintSuppy: NextPageWithLayout = () => {
             imported: mintFormState.imported,
             supplyCap: supplyCap,
             maxSupply: +maxSupply,
-            initialSupply: +additionalTokens + +initialSupply,
+            initialSupply: +additionalTokens.value + +initialSupply,
             status: mintFormState.status,
             chainId
           },
           tokenId
         );
 
+        updateMintFormState({
+          ...mintFormState,
+          initialSupply: +additionalTokens.value + +initialSupply
+        });
+
         console.log('Deployed an ERC Token for testing.');
         console.log('Address:', tokenContract.address);
         toast.success('Additional tokens successfully minted!');
         setTransactionStatus('SUCCESS');
+        setTimeout(() => {
+          Router.push('/dashboard');
+        }, 1000);
         return;
       }
     } catch (err) {
       console.log('err - ', err);
       toast.error('Additional tokens minting failed!');
       setTransactionStatus('ERROR');
+      setTimeout(() => {
+        Router.push('/dashboard');
+      }, 1000);
       return;
     }
   };
