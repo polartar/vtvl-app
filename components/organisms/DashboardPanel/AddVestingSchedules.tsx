@@ -12,7 +12,7 @@ import ScheduleOverview from 'components/molecules/ScheduleOverview/ScheduleOver
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, doc, onSnapshot } from 'firebase/firestore';
 import Router from 'next/router';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
@@ -21,6 +21,7 @@ import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { transactionCollection, vestingCollection } from 'services/db/firestore';
 import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
@@ -272,7 +273,7 @@ AddVestingSchedulesProps) => {
       );
       const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
-        vesting.details.startDateTime as Date,
+        new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
         vesting.details.releaseFrequency
       );
       const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
@@ -406,27 +407,40 @@ AddVestingSchedulesProps) => {
           chainId
         };
         const transactionId = await createTransaction(transactionData);
-        updateVesting(
-          {
-            ...vesting,
-            transactionId,
-            // Because the schedule is now confirmed and ready for the vesting
-            status: 'LIVE'
-          },
-          vestingId
-        );
-        await addingClaimsTransaction.wait();
-        updateTransaction(
-          {
-            ...transactionData,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          transactionId
-        );
-        setStatus('success');
-        toast.success('Added schedules successfully.');
-        setTransactionStatus('SUCCESS');
+        console.log({ transactionId });
+        onSnapshot(doc(transactionCollection, transactionId), (transaction: any) => {
+          if (transaction.data().status === 'SUCCESS') {
+            setTransactionStatus('SUCCESS');
+          }
+        });
+
+        onSnapshot(doc(vestingCollection, vestingId), (vesting: any) => {
+          if (vesting.data().status === 'LIVE') {
+            setStatus('SUCCESS');
+            toast.success('Added schedules successfully.');
+          }
+        });
+        // updateVesting(
+        //   {
+        //     ...vesting,
+        //     transactionId,
+        //     // Because the schedule is now confirmed and ready for the vesting
+        //     status: 'LIVE'
+        //   },
+        //   vestingId
+        // );
+        // await addingClaimsTransaction.wait();
+        // updateTransaction(
+        //   {
+        //     ...transactionData,
+        //     status: 'SUCCESS',
+        //     updatedAt: Math.floor(new Date().getTime() / 1000)
+        //   },
+        //   transactionId
+        // );
+        // setStatus('success');
+        // toast.success('Added schedules successfully.');
+        // setTransactionStatus('SUCCESS');
       }
     } catch (err) {
       console.log('handleCreateSignTransaction - ', err);
