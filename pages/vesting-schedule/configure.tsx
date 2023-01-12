@@ -3,9 +3,11 @@ import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import CreateLabel from '@components/atoms/CreateLabel/CreateLabel';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
+import Checkbox from '@components/atoms/FormControls/Checkbox/Checkbox';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import QuantityInput from '@components/atoms/FormControls/QuantityInput/QuantityInput';
+import Radio from '@components/atoms/FormControls/Radio/Radio';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
 import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
@@ -28,6 +30,7 @@ import { IScheduleFormState, useVestingContext } from 'providers/vesting.context
 import { ElementType, ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
+import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
@@ -89,7 +92,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       ...scheduleFormState,
       amountToBeVestedText: '',
       cliffDurationNumber: 1,
-      cliffDurationOption: defaultCliffDurationOption,
+      cliffDurationOption: defaultCliffDurationOption as CliffDuration | DateDurationOptionValues,
       releaseFrequencySelectedOption: 'continuous',
       customReleaseFrequencyNumber: 1,
       customReleaseFrequencyOption: 'days'
@@ -100,13 +103,27 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const defaultTemplateValue: TemplateType = {};
 
   // Use for to initially assign default values
-  const { control: control2, setValue: setValue2 } = useForm({
+  const {
+    control: tControl,
+    watch: tWatch,
+    getFieldState: tGetFieldState,
+    setValue: tSetValue
+  } = useForm({
     defaultValues: defaultTemplateValue
   });
 
+  // Watch for template details
+  const template = { value: tWatch('template'), state: tGetFieldState('template') };
+
   // Handle the submit of the form
-  const onSubmit: SubmitHandler<IScheduleFormState> = (data) => {
+  const onSubmit: SubmitHandler<IScheduleFormState> = async (data) => {
     console.log('Form Submitted', data, getValues());
+    // Check first if the user is saving the configuration as a template as well.
+    if (saveAsTemplate.value && !templateName.value) {
+      fuSetError('templateName', { type: 'required', message: 'Template name is required' });
+      return;
+    }
+
     // Map the correct data
     // FORM's endDateTime will be saved to originalEndDateTime
     // DB's endDateTime will save the projectedEndDateTime
@@ -129,12 +146,15 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       //   numberOfReleases,
       //   releaseFrequency
       // );
-      updateScheduleFormState({
+      await updateScheduleFormState({
         ...scheduleFormState,
         ...data,
         originalEndDateTime: endDateTime,
         endDateTime: projectedEndDateTime
       });
+
+      // Create the template and save it to the DB
+      await onCreateTemplate(templateName.value);
       Router.push('/vesting-schedule/summary');
     }
   };
@@ -319,14 +339,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     console.log('Changing vaule', newValue, actionMeta);
     if (actionMeta.action === 'clear') {
       // remove selection
-      setValue2('template', null);
+      tSetValue('template', null);
       handleTemplateChange(scheduleFormState);
     } else if (newValue) {
       console.group('Value Changed');
       console.log(newValue);
       console.log(`action: ${actionMeta.action}`);
       console.groupEnd();
-      setValue2('template', newValue);
+      tSetValue('template', newValue);
       handleTemplateChange(newValue?.details);
     }
   };
@@ -344,6 +364,67 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue('releaseFrequency', newDetails.releaseFrequency);
     setValue('cliffDuration', newDetails.cliffDuration);
     setValue('lumpSumReleaseAfterCliff', newDetails.lumpSumReleaseAfterCliff);
+    // Set values for the arbitrary ones
+    setValue('amountToBeVestedText', formatNumber(newDetails.amountToBeVested).toString());
+
+    // Cliff duration checks
+    if (newDetails.cliffDuration === 'no-cliff') {
+      setValue('cliffDurationNumber', 1);
+      setValue('cliffDurationOption', 'no-cliff');
+    } else {
+      const cliffSplit = newDetails.cliffDuration.split('-');
+      const cliffOption = cliffSplit[1].charAt(cliffSplit[1].length - 1) !== 's' ? `${cliffSplit[1]}s` : cliffSplit[1];
+      setValue('cliffDurationNumber', +cliffSplit[0]);
+      setValue('cliffDurationOption', cliffOption as CliffDuration | DateDurationOptionValues);
+    }
+
+    // Release frequency checks
+    let selectedFrequency = newDetails.releaseFrequency as string;
+    let frequencyNumber = 0;
+    let frequencyOption = 'hours';
+
+    if (newDetails.releaseFrequency.includes('every')) {
+      // Set selected to custom
+      selectedFrequency = 'custom';
+
+      // Set the right number and selected option
+      const freqValueSplit = newDetails.releaseFrequency.split('-');
+      frequencyNumber = +freqValueSplit[1];
+      frequencyOption = freqValueSplit[2];
+    } else {
+      // Default number to 1 when using the regular frequency
+      frequencyNumber = 1;
+      // Update option based on the frequency
+      switch (newDetails.releaseFrequency) {
+        case 'continuous':
+          frequencyOption = 'seconds';
+          break;
+        case 'minute':
+          frequencyOption = 'minute';
+          break;
+        case 'hourly':
+          frequencyOption = 'hours';
+          break;
+        case 'daily':
+          frequencyOption = 'days';
+          break;
+        case 'weekly':
+          frequencyOption = 'weeks';
+          break;
+        case 'monthly':
+          frequencyOption = 'months';
+          break;
+        case 'yearly':
+          frequencyOption = 'years';
+          break;
+        default:
+          break;
+      }
+    }
+    // Set the selected values
+    setValue('releaseFrequencySelectedOption', selectedFrequency);
+    setValue('customReleaseFrequencyNumber', frequencyNumber);
+    setValue('customReleaseFrequencyOption', frequencyOption);
   };
 
   /**
@@ -358,7 +439,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       // Validate current values of the form
       // Should not be the default values
       if (organizationId && endDateTime.value && startDateTime.value) {
-        setValue2('template', null);
+        tSetValue('template', null);
         const selectOption = createTemplate(inputValue);
         const newOption = {
           name: selectOption.label,
@@ -369,8 +450,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             originalEndDateTime: endDateTime.value,
             endDateTime: endDateTime.value,
             cliffDuration: cliffDuration.value,
+            cliffDurationOption: cliffDurationOption.value,
+            cliffDurationNumber: cliffDurationNumber.value,
             lumpSumReleaseAfterCliff: lumpSumReleaseAfterCliff.value,
             releaseFrequency: releaseFrequency.value,
+            releaseFrequencySelectedOption: releaseFrequencySelectedOption.value,
+            customReleaseFrequencyNumber: customReleaseFrequencyNumber.value,
+            customReleaseFrequencyOption: customReleaseFrequencyOption.value,
             amountToBeVested: amountToBeVested.value,
             tokenId,
             tokenAddress: mintFormState.address,
@@ -385,7 +471,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         if (amountToBeVested.value && diffSeconds) {
           const vestingTemplate = await createVestingTemplate(newOption);
           setTemplateOptions([...templateOptions, newOption]);
-          setValue2('template', newOption);
+          tSetValue('template', newOption);
           setTemplateLoading(false);
           toast.success(`Template ${newOption.label} saved!`);
         } else {
@@ -675,14 +761,136 @@ const ConfigureSchedule: NextPageWithLayout = () => {
    * 3. Typing / Creating a template will save the current configuration form data into the new template document.
    */
 
+  // Stores the state for the initial loading of configuration form.
+  // Ask the user if they want to use existing templates or just start from scratch.
+  const {
+    control: fuControl,
+    handleSubmit: fuSubmitHandler,
+    watch: fuWatch,
+    getFieldState: fuGetFieldState,
+    getValues: fuGetValues,
+    setValue: fuSetValue,
+    setError: fuSetError,
+    clearErrors: fuClearErrors,
+    formState: { errors: fuErrors, isSubmitting: fuIsSubmitting }
+  } = useForm({
+    defaultValues: {
+      formUsage: '',
+      templateName: '',
+      saveAsTemplate: false
+    }
+  });
+
+  // Stores all related data about the template prompt and its behavior.
+  const formUsage = { value: fuWatch('formUsage'), state: fuGetFieldState('formUsage') };
+  const templateName = { value: fuWatch('templateName'), state: fuGetFieldState('templateName') };
+  const saveAsTemplate = { value: fuWatch('saveAsTemplate'), state: fuGetFieldState('saveAsTemplate') };
+
+  // Checks for the prompt status first before letting the user interact with the form
+  const isUserTemplatePromptActive = () => {
+    // If there is no selected option in the prompt
+    if (!formUsage.value) return true;
+    // If the user selects to use saved templates but does not yet select one
+    if (formUsage.value === 'USE_TEMPLATE' && !template.value) return true;
+    return false;
+  };
+
+  // Automatically selects the "start from scratch" option when there is no template available.
+  useEffect(() => {
+    if (templateOptions && !templateOptions.length) {
+      fuSetValue('formUsage', 'FROM_SCRATCH');
+    } else {
+      fuSetValue('formUsage', '');
+    }
+  }, [templateOptions]);
+
   return (
     <>
-      <div className="grid md:grid-cols-12 w-full gap-3.5">
+      {/* TEMPLATE PROMPT AND SELECTION SECTION */}
+      <div className="w-full text-left">
+        <label className="text-neutral-900 font-medium text-base">Do you want to use an existing template?</label>
+        {/* PROMP SECTION */}
+        <div className="inline-flex flex-col gap-2 mt-4">
+          <Controller
+            name="formUsage"
+            control={fuControl}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Radio
+                variant="input-style"
+                checked={formUsage.value === 'USE_TEMPLATE'}
+                label="Yes, I want to use saved template"
+                {...field}
+                value="USE_TEMPLATE"
+              />
+            )}
+          />
+          <Controller
+            name="formUsage"
+            control={fuControl}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Radio
+                variant="input-style"
+                checked={formUsage.value === 'FROM_SCRATCH'}
+                label="No, I want to start from scratch"
+                {...field}
+                value="FROM_SCRATCH"
+              />
+            )}
+          />
+        </div>
+        {/* TEMPLATE SELECTION SECTION */}
+        {formUsage.value === 'USE_TEMPLATE' ? (
+          <div className="mt-5 transition-all">
+            {/*
+             * In this form control, we should be able to do the following:
+             * 1. List of options should come from DB. The data should contain the name of the template, and its form values.
+             * 2. Selecting a template option will automatically update all form fields above (defaultValues) based on the template's form values.
+             * 3. Creating a new template from this input should save the name and all current form field values to the DB.
+             * Possible Validations:
+             * 1. Creating a template with incomplete form above should not be allowed.
+             * 2. If there is a value in the form above, when the user selects a new template it should prompt for unsaved changes (and will override the current values above if the user accepts).
+             */}
+            <Controller
+              name="template"
+              control={tControl}
+              rules={{ required: true }}
+              render={({ field, fieldState }) => (
+                <label className="required">
+                  <span className="text-sm text-neutral-700 font-medium mb-0">
+                    Select from previously saved templates
+                  </span>
+                  <Select
+                    {...field}
+                    isLoading={templateLoading}
+                    options={templateOptions}
+                    isClearable
+                    value={field.value || null}
+                    onChange={onTemplateChange}
+                    placeholder={templateLoading ? `Saving template...` : 'Search saved templates'}
+                    noOptionsMessage={() => 'Type to search for saved templates'}
+                    className="select-container mt-2.5"
+                    classNamePrefix="select"
+                  />
+                  {fieldState.error ? (
+                    <div className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a template</div>
+                  ) : null}
+                </label>
+              )}
+            />
+          </div>
+        ) : null}
+      </div>
+
+      {/* CONFIGURATION FORM SECTION */}
+      <div className={`grid md:grid-cols-12 w-full gap-3.5 ${isUserTemplatePromptActive() ? 'opacity-30' : ''}`}>
         <div className="md:col-span-7">
           <Form
             isSubmitting={isSubmitting}
             className="w-full mb-6"
             padded={false}
+            disabled={isUserTemplatePromptActive()}
             onSubmit={handleSubmit(onSubmit)}
             error={formError}
             success={formSuccess}
@@ -1077,6 +1285,32 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             </StepLabel>
 
             <hr className="mx-6" />
+            <div className="px-6 pt-6">
+              {/* Convert to component later */}
+              <Checkbox
+                label="Save as template"
+                checked={saveAsTemplate.value}
+                name="save-as-template"
+                onChange={() => fuSetValue('saveAsTemplate', !saveAsTemplate.value)}
+              />
+              {saveAsTemplate.value ? (
+                <Controller
+                  name="templateName"
+                  control={fuControl}
+                  rules={{ required: true }}
+                  render={({ field, fieldState }) => (
+                    <Input
+                      label="Template name"
+                      placeholder="Enter template name"
+                      className="mt-3"
+                      error={Boolean(fieldState.error)}
+                      message={fieldState.error ? 'Please enter template name' : ''}
+                      {...field}
+                    />
+                  )}
+                />
+              ) : null}
+            </div>
 
             <div className="flex flex-row justify-between items-center p-6">
               <BackButton
@@ -1091,45 +1325,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         </div>
         <div className="md:col-span-5">
           <div className="panel">
-            <div className="border-b border-neutral-200 pb-5 mb-5">
-              {/*
-               * In this form control, we should be able to do the following:
-               * 1. List of options should come from DB. The data should contain the name of the template, and its form values.
-               * 2. Selecting a template option will automatically update all form fields above (defaultValues) based on the template's form values.
-               * 3. Creating a new template from this input should save the name and all current form field values to the DB.
-               * Possible Validations:
-               * 1. Creating a template with incomplete form above should not be allowed.
-               * 2. If there is a value in the form above, when the user selects a new template it should prompt for unsaved changes (and will override the current values above if the user accepts).
-               */}
-              <Controller
-                name="template"
-                control={control2}
-                rules={{ required: true }}
-                render={({ field, fieldState }) => (
-                  <label className="required md:col-span-2">
-                    <span>Vesting template</span>
-                    <CreatableSelect
-                      {...field}
-                      isLoading={templateLoading}
-                      allowCreateWhileLoading
-                      formatCreateLabel={(inputValue: string) => <CreateLabel inputValue={inputValue} />}
-                      onCreateOption={onCreateTemplate}
-                      options={templateOptions}
-                      isClearable
-                      value={field.value || null}
-                      onChange={onTemplateChange}
-                      placeholder={templateLoading ? `Saving template...` : 'Find or type to create template'}
-                      noOptionsMessage={() => 'Type to create a template'}
-                      className="select-container"
-                      classNamePrefix="select"
-                    />
-                    {fieldState.error ? (
-                      <div className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a template</div>
-                    ) : null}
-                  </label>
-                )}
-              />
-            </div>
             <ScheduleDetails {...getValues()} token={mintFormState.symbol || 'Token'} layout="small" />
           </div>
         </div>

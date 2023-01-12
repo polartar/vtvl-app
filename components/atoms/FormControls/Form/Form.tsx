@@ -1,5 +1,6 @@
 interface IFormProps extends React.FormHTMLAttributes<HTMLFormElement> {
   isSubmitting: boolean;
+  disabled?: boolean;
   message?: string | string[] | JSX.Element | JSX.Element[];
   success?: boolean;
   error?: boolean;
@@ -11,6 +12,7 @@ const Form = ({
   isSubmitting = false,
   message = '',
   padded = true,
+  disabled = false,
   ...props
 }: IFormProps) => {
   console.log('FORM IS SUBMITTING', isSubmitting);
@@ -21,7 +23,7 @@ const Form = ({
       className={`form ${error ? 'form-error' : ''} ${success ? 'form-success' : ''} ${!padded ? 'p-0' : ''} ${
         props.className
       }`}>
-      <fieldset disabled={isSubmitting} className={!padded ? 'no-padding' : ''}>
+      <fieldset disabled={isSubmitting || disabled} className={!padded ? 'no-padding' : ''}>
         {props.children}
       </fieldset>
       {message && (error || success) ? (
