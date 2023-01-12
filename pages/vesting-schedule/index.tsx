@@ -15,6 +15,7 @@ import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
@@ -63,6 +64,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
+  const { vestingContract } = useDashboardContext();
 
   const [selected, setSelected] = useState('manual');
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
@@ -236,20 +238,47 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // Renderer for more action items
   const CellActions = (props: any) => {
     const { data, id } = props.row.original;
-    const menuItems = [
-      {
-        label: `${data.archive ? 'Unarchive' : 'Archive'}`,
-        onClick: () => handleArchiving(id, data)
-      },
-      { label: 'Revoke', onClick: () => alert('Revoke clicked') }
-    ];
+    // const menuItems =
+    //   (data as IVesting).status === 'COMPLETED' || (data as IVesting).status === 'LIVE'
+    //     ? [{ label: 'Revoke', onClick: () => handleRevoke(id, data) }]
+    //     : [
+    //         {
+    //           label: `${data.archive ? 'Unarchive' : 'Archive'}`,
+    //           onClick: () => handleArchiving(id, data)
+    //         }
+    //       ];
     return (
-      <div className="row-center">
-        <button className="line small" onClick={() => Router.push(`/vesting-schedule/${props.row.original.id}`)}>
-          Details
-        </button>
-        <DropdownMenu items={menuItems} />
-      </div>
+      <table className="-my-3.5 -mx-6">
+        <tbody>
+          {data.recipients.map((recipient: IRecipient, rIndex: number) => {
+            return (
+              <tr key={`recipient-${rIndex}`} className="group">
+                <td className="group-last:border-b-0">
+                  <div className="py-2 flex items-center flex-nowrap">
+                    <button
+                      className="line small"
+                      onClick={() => Router.push(`/vesting-schedule/${props.row.original.id}`)}>
+                      Details
+                    </button>
+                    <DropdownMenu
+                      items={
+                        (data as IVesting).status === 'COMPLETED' || (data as IVesting).status === 'LIVE'
+                          ? [{ label: 'Revoke', onClick: () => handleRevoke(id, data, rIndex) }]
+                          : [
+                              {
+                                label: `${data.archive ? 'Unarchive' : 'Archive'}`,
+                                onClick: () => handleArchiving(id, data)
+                              }
+                            ]
+                      }
+                    />
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     );
   };
 
@@ -301,6 +330,36 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     );
     toast.success(`Schedule: ${data.name} ${!data.archive ? '' : 'un'}archived!`);
     getVestings(false);
+  };
+
+  // Handles revoking process
+  const handleRevoke = async (id: string, data: IVesting, rIndex: number) => {
+    if (data.status === 'COMPLETED' || data.status === 'LIVE') {
+      try {
+        setTransactionStatus('PENDING');
+        const vestingContractInstance = new ethers.Contract(
+          vestingContract?.data?.address ?? '',
+          VTVL_VESTING_ABI.abi,
+          library.getSigner()
+        );
+        const revokeTransaction = await vestingContractInstance.revoke(data.recipients[rIndex].walletAddress);
+        setTransactionStatus('IN_PROGRESS');
+        await revokeTransaction.wait();
+        await updateVesting(
+          {
+            ...data,
+            status: 'REVOKED'
+          },
+          id
+        );
+        toast.success('Revoking is done successfully.');
+        setTransactionStatus('SUCCESS');
+      } catch (err) {
+        console.log('handleRevoke - ', err);
+        toast.success('Something went wrong. Try agaiin later.');
+        setTransactionStatus('ERROR');
+      }
+    }
   };
 
   // Defines the columns used and their functions in the table
