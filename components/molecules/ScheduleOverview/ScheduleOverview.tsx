@@ -4,12 +4,13 @@ import { IScheduleOverviewProps, IVesting } from 'types/models/vesting';
 import { timestampToDateString } from 'utils/date';
 import { formatDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
+import { humanizeFrequency } from 'utils/vesting';
 
 const ScheduleOverview = (vesting: IVesting) => {
   const startDate = timestampToDateString((vesting.details.startDateTime as unknown as Timestamp).toMillis());
   const endDate = timestampToDateString((vesting.details.endDateTime as unknown as Timestamp).toMillis());
   const cliff = vesting.details.cliffDuration.split('-').join(' ');
-  const linearRelease = vesting.details.releaseFrequency;
+  const linearRelease = humanizeFrequency(vesting.details.releaseFrequency);
   const totalAllocated = vesting.details.amountToBeVested;
 
   return (

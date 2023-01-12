@@ -24,12 +24,17 @@ import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
-import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
 import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
 import { parseTokenAmount } from 'utils/token';
-import { getChartData, getCliffAmount, getCliffDateTime, getNumberOfReleases } from 'utils/vesting';
+import {
+  getChartData,
+  getCliffAmount,
+  getCliffDateTime,
+  getNumberOfReleases,
+  getReleaseFrequencyTimestamp
+} from 'utils/vesting';
 
 interface AddVestingSchedulesProps {
   className?: string;
@@ -265,9 +270,11 @@ AddVestingSchedulesProps) => {
         Math.floor(vestingEndTimestamp!.getTime() / 1000)
       );
       const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
-      const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(
-        DATE_FREQ_TO_TIMESTAMP[vesting.details.releaseFrequency]
+      const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
+        vesting.details.startDateTime as Date,
+        vesting.details.releaseFrequency
       );
+      const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
       const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
         parseTokenAmount(vestingAmountPerUser, 18)
       );

@@ -21,12 +21,7 @@ import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
 import { createVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContractByQuery, updateVestingContract } from 'services/db/vestingContract';
-import {
-  CLIFFDURATION_TIMESTAMP,
-  CliffDuration,
-  DATE_FREQ_TO_TIMESTAMP,
-  ReleaseFrequency
-} from 'types/constants/schedule-configuration';
+import { CLIFFDURATION_TIMESTAMP, CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChains } from 'types/constants/supported-chains';
 import { generateRandomName } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
@@ -64,7 +59,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
     const ABI = [PERFORM_CREATE_FUNCTION];
     const vestingId = await createVesting({
       name: generateRandomName(4) || '',
-      details: scheduleFormState,
+      details: { ...scheduleFormState },
       recipients,
       organizationId: organizationId!,
       status: 'INITIALIZED',

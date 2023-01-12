@@ -45,7 +45,9 @@ const Input = ({
       {label ? <span>{label}</span> : null}
       <div className={`input-component__container ${success ? 'success' : ''} ${error ? 'error' : ''}`}>
         <div className="input-component__input">
-          {icon ? <img src={icon} alt={label?.toString() || 'Input icon'} className="w-6 h-6 fill-current" /> : null}
+          {icon && iconPosition === 'left' ? (
+            <img src={icon} alt={label?.toString() || 'Input icon'} className="w-6 h-6 fill-current" />
+          ) : null}
           {props.type === 'number' ? (
             <NumericFormat
               {...props}
@@ -81,6 +83,9 @@ const Input = ({
           ) : (
             <input type="text" {...props} className="grow w-full outline-0 border-0 bg-transparent" />
           )}
+          {icon && iconPosition === 'right' ? (
+            <img src={icon} alt={label?.toString() || 'Input icon'} className="w-6 h-6 fill-current" />
+          ) : null}
         </div>
         {message ? <p className="input-component__message">{message}</p> : null}
       </div>

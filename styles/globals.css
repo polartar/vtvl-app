@@ -408,7 +408,7 @@
   .input-component__container,
   /* Form and form control styles for error and success states */
   .form {
-    @apply rounded-xl border border-transparent transition-all duration-500;
+    @apply rounded-xl border border-transparent overflow-hidden transition-all duration-500;
   }
 
   .form {
@@ -446,6 +446,10 @@
 
   .form > fieldset {
     @apply bg-white p-6 rounded-3xl w-full;
+  }
+
+  .form > fieldset.no-padding {
+    @apply p-0;
   }
 
   label > div.error > input,
@@ -757,4 +761,12 @@ html {
 html,
 .inter {
   font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* Show the hint content when hovered */
+.hint-content { display: none; }
+.hint:hover .hint-content,
+.hint:focus .hint-content,
+.hint:focus-visible .hint-content {
+  display: block;
 }

@@ -1,12 +1,10 @@
 import add from 'date-fns/add';
-import differenceInSeconds from 'date-fns/differenceInSeconds';
 import format from 'date-fns/format';
 import formatDuration from 'date-fns/formatDuration';
 import getUnixTime from 'date-fns/getUnixTime';
 import intervalToDuration from 'date-fns/intervalToDuration';
-import toDate from 'date-fns/toDate';
 import Decimal from 'decimal.js';
-import { CliffDuration, DATE_FREQ_TO_TIMESTAMP, ReleaseFrequency } from 'types/constants/schedule-configuration';
+import { CliffDuration, DateDurationOptionsPlural, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IChartDataTypes } from 'types/vesting';
 
 /**
@@ -31,6 +29,11 @@ export const getDuration = (start: Date, end: Date): string => {
  * cliff is computed from (start date time) + cliff duration (2 mins, 1 hour, 1 month etc) - this point in time.
  */
 export const getCliffDateTime = (startDate: Date, cliffDuration: CliffDuration) => {
+  const durationInput = cliffDuration.split('-');
+  const durationNumber = +durationInput[0];
+  const durationDate = durationInput[1];
+
+  // Default option before adding to actual dates
   const durationOption = {
     years: 0,
     months: 0,
@@ -39,46 +42,41 @@ export const getCliffDateTime = (startDate: Date, cliffDuration: CliffDuration) 
     hours: 0,
     minutes: 0
   };
-  switch (cliffDuration) {
-    case '1-minute':
-      durationOption.minutes = 1;
-      break;
-    case '1-hour':
-      durationOption.hours = 1;
-      break;
-    case '6-hours':
-      durationOption.hours = 6;
-      break;
-    case '12-hours':
-      durationOption.hours = 12;
-      break;
-    case '1-day':
-      durationOption.days = 1;
-      break;
-    case '5-days':
-      durationOption.days = 5;
-      break;
-    case '2-weeks':
-      durationOption.weeks = 2;
-      break;
-    case '1-month':
-      durationOption.months = 1;
-      break;
-    case '3-months':
-      durationOption.months = 3;
-      break;
-    case '6-months':
-      durationOption.months = 6;
-      break;
-    case '1-year':
-      durationOption.years = 1;
-      break;
-    case 'no-cliff':
-    default:
-      break;
+
+  if (durationDate.includes('year')) {
+    durationOption.years = durationNumber;
+  } else if (durationDate.includes('month')) {
+    durationOption.months = durationNumber;
+  } else if (durationDate.includes('week')) {
+    durationOption.weeks = durationNumber;
+  } else if (durationDate.includes('day')) {
+    durationOption.days = durationNumber;
+  } else if (durationDate.includes('hour')) {
+    durationOption.hours = durationNumber;
+  } else if (durationDate.includes('minute')) {
+    durationOption.minutes = durationNumber;
   }
 
   return add(startDate, durationOption);
+};
+
+/**
+ * Get the timestamp based on the cliffDuration
+ * Our technique is to utilize the date-fns add function so that we'll have accurate timestamps especially when dealing with leap years.
+ * We also reference the start date for additional accuracy
+ */
+export const getCliffDurationTimestamp = (cliffDuration: CliffDuration, startDate: Date) => {
+  // Add start date and cliff duration
+  const cliffDurationDate = getCliffDateTime(startDate, cliffDuration);
+  // Convert to seconds start date
+  const startDateSeconds = getUnixTime(startDate);
+  // Convert to seconds start date + cliff duration
+  const cliffDurationDateSeconds = getUnixTime(cliffDurationDate);
+  // Subtract
+  const cliffDurationTimestamp = cliffDurationDateSeconds - startDateSeconds;
+
+  console.log('All about durations', cliffDuration, startDateSeconds, cliffDurationDateSeconds, cliffDurationTimestamp);
+  return cliffDurationTimestamp;
 };
 
 /**
@@ -113,6 +111,131 @@ export const getCliffAmountDecimal = (
 };
 
 /**
+ * This function is intended to get the release frequency timestamp
+ * the purpose of this is to accurately add dates before computing the timestamp
+ */
+export const getReleaseFrequencyTimestamp = (
+  startDate: Date,
+  releaseFrequency: ReleaseFrequency,
+  cliffDuration?: CliffDuration
+) => {
+  // When cliff duration is provide, get the cliff date time first as the actual start date
+  const actualStartDateTime =
+    cliffDuration && cliffDuration !== 'no-cliff' ? getCliffDateTime(startDate, cliffDuration) : startDate;
+
+  // Default option before adding to actual dates
+  const dateOption = {
+    years: 0,
+    months: 0,
+    weeks: 0,
+    days: 0,
+    hours: 0,
+    minutes: 0
+  };
+
+  // Check release frequency value for the right addition
+  switch (releaseFrequency) {
+    case 'continuous':
+      dateOption.minutes = 1;
+      break;
+    case 'hourly':
+      dateOption.hours = 1;
+      break;
+    case 'daily':
+      dateOption.days = 1;
+      break;
+    case 'weekly':
+      dateOption.weeks = 1;
+      break;
+    case 'monthly':
+      dateOption.months = 1;
+      break;
+    case 'quarterly':
+      dateOption.months = 3;
+      break;
+    case 'yearly':
+      dateOption.years = 1;
+      break;
+    default:
+      {
+        // every-1-days, every-2-days & every-4-weeks
+        const splitFrequencyValue = releaseFrequency.split('-');
+        const count = splitFrequencyValue[1];
+        const duration = splitFrequencyValue[2];
+        // Update corresponding date option and its value
+        dateOption[duration as DateDurationOptionsPlural] = +count;
+      }
+      break;
+  }
+
+  const startWithInterval = add(actualStartDateTime, dateOption);
+  const startWithIntervalSeconds = getUnixTime(startWithInterval);
+  const intervalSeconds = startWithIntervalSeconds - getUnixTime(actualStartDateTime);
+
+  return intervalSeconds;
+};
+
+/**
+ * Function to display the correct label based on release frequency value
+ */
+export const getReleaseFrequencyLabel = (releaseFrequency: ReleaseFrequency) => {
+  switch (releaseFrequency) {
+    case 'continuous':
+      return 'second';
+    case 'hourly':
+      return 'hour';
+    case 'daily':
+      return 'day';
+    case 'weekly':
+      return 'week';
+    case 'monthly':
+      return 'month';
+    case 'quarterly':
+      return 'quarter';
+    case 'yearly':
+      return 'year';
+    default: {
+      // every-1-days, every-2-days & every-4-weeks
+      const splitFrequencyValue = releaseFrequency.split('-')[2];
+      // Remove 's' on all labels
+      return splitFrequencyValue.slice(0, -1);
+    }
+  }
+};
+
+/**
+ * Make the frequency -- especially custom ones -- human readable
+ */
+export const humanizeFrequency = (releaseFrequency: ReleaseFrequency) => {
+  // Custom ones
+  if (releaseFrequency.includes('-')) {
+    // every-1-days, every-2-days & every-4-weeks
+    const splitFrequencyValue = releaseFrequency.split('-');
+    const count = +splitFrequencyValue[1];
+    const duration = splitFrequencyValue[2];
+    if (count === 1) {
+      switch (duration) {
+        case 'seconds':
+          return 'second';
+        case 'hours':
+          return 'hourly';
+        case 'days':
+          return 'daily';
+        case 'weeks':
+          return 'weekly';
+        case 'months':
+          return 'monthly';
+        case 'years':
+          return 'yearly';
+        default:
+          return `every ${count} ${duration}`;
+      }
+    }
+  }
+  return releaseFrequency;
+};
+
+/**
  * Get the frequency interval based on the releaseFrequency value
  * minute, hourly, daily, weekly, monthly or yearly.
  * "start" should be the cliff date time if there is a cliff and start date time none
@@ -122,8 +245,9 @@ export const getNumberOfReleases = (frequency: ReleaseFrequency, startDate: Date
   const start = getUnixTime(startDate);
   const end = getUnixTime(endDate);
   const cliffToEndDateTime = end - start;
+  const frequencyTimestamp = getReleaseFrequencyTimestamp(startDate, frequency);
   // Make the number of releases whole number
-  return Math.round(cliffToEndDateTime / DATE_FREQ_TO_TIMESTAMP[frequency]);
+  return Math.round(cliffToEndDateTime / frequencyTimestamp);
 };
 
 /**
@@ -212,6 +336,14 @@ export const getFrequencyDuration = (startDate: Date, releaseFrequency: ReleaseF
       durationOption.years = 1;
       break;
     default:
+      {
+        // every-1-days, every-2-days & every-4-weeks
+        const splitFrequencyValue = releaseFrequency.split('-');
+        const count = splitFrequencyValue[1];
+        const duration = splitFrequencyValue[2];
+        // Update corresponding date option and its value
+        durationOption[duration as DateDurationOptionsPlural] = +count;
+      }
       break;
   }
 
@@ -309,7 +441,12 @@ export const getIndividualTotalAllocation = (amountVested: number | Decimal, num
 /**
  * Get the date and time of the next unlocked token
  */
-export const getNextUnlock = (projectedEndDateTime: Date, releaseFrequency: ReleaseFrequency, cliffDateTime: Date) => {
+export const getNextUnlock = (
+  projectedEndDateTime: Date,
+  releaseFrequency: ReleaseFrequency,
+  // Can be treated as the start date time
+  cliffDateTime: Date
+) => {
   // Get cliff date time to compare
   // Check current date time if it's within the cliff date time
   const currentDateTimeSeconds = getUnixTime(new Date());
@@ -321,14 +458,15 @@ export const getNextUnlock = (projectedEndDateTime: Date, releaseFrequency: Rele
   } else {
     // If not, use the projected end date time and subtract the current date time (as seconds)
     const remainingDateTimeSeconds = projectedEndDateTimeSeconds - currentDateTimeSeconds;
+    const frequencyTimestamp = getReleaseFrequencyTimestamp(cliffDateTime, releaseFrequency);
     // then, divide the subtracted result into the release frequency
-    const remainder = remainingDateTimeSeconds % DATE_FREQ_TO_TIMESTAMP[releaseFrequency];
+    const remainder = remainingDateTimeSeconds % frequencyTimestamp;
     if (remainder) {
       // If remainder has value, use the remainder as the countdown for the next unlock
       return remainder;
     } else {
       // If the remainder is 0, find the next unlock by adding the current date time to the release frequency
-      return DATE_FREQ_TO_TIMESTAMP[releaseFrequency];
+      return frequencyTimestamp;
     }
   }
 };
