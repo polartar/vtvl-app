@@ -726,6 +726,12 @@ AddVestingSchedulesProps) => {
   }, [type, vestingContract, ownershipTransfered]);
 
   useEffect(() => {
+    if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
+      setStatus('SUCCESS');
+    }
+  }, [activeVestingIndex, vestings]);
+
+  useEffect(() => {
     if (type === 'schedule' && !transaction) {
       setStatus('createSignTransaction');
     } else if (transaction && transaction.data?.status === 'SUCCESS') {
