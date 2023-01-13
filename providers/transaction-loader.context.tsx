@@ -1,5 +1,7 @@
 import TransactionModal, { TransactionStatuses } from '@components/molecules/TransactionModal/TransactionModal';
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import { onSnapshot } from 'firebase/firestore';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { transactionCollection } from 'services/db/firestore';
 
 interface ITransactionLoadeerData {
   transactionStatus: TransactionStatuses;
@@ -20,6 +22,27 @@ export function TransactionLoaderContextProvider({ children }: any) {
     }),
     [transactionStatus, setTransactionStatus]
   );
+
+  // useEffect(() => {
+  //   const unsub = onSnapshot(transactionCollection, (snapshot) => {
+  //     snapshot.docChanges().forEach((change) => {
+  //       if (change.type === 'modified') {
+  //         const vestingInfo = change.doc.data();
+  //         if (vestingInfo.status === 'LIVE') {
+  //           const tmpVestings = vestings.map((vesting) => {
+  //             if (vesting.id === change.doc.id) {
+  //               return {
+  //                 id: vesting.id,
+  //                 data: vestingInfo
+  //               };
+  //             }
+  //             return vesting;
+  //           });
+  //         }
+  //       }
+  //     });
+  //   });
+  // }, [])
 
   return (
     <TransactionLoader.Provider value={value}>

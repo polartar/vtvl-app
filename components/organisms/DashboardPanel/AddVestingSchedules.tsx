@@ -374,7 +374,7 @@ AddVestingSchedulesProps) => {
         toast.success('Transaction has been created successfully.');
         setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
-        setTransactionStatus('PENDING');
+        // setTransactionStatus('PENDING');
         const vestingContract = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
           ['==', '=='],
@@ -394,7 +394,7 @@ AddVestingSchedulesProps) => {
           vestingLinearVestAmounts,
           vestingCliffAmounts
         );
-        setTransactionStatus('IN_PROGRESS');
+        // setTransactionStatus('IN_PROGRESS');
         const transactionData: ITransaction = {
           hash: addingClaimsTransaction.hash,
           safeHash: '',
@@ -408,18 +408,7 @@ AddVestingSchedulesProps) => {
         };
         const transactionId = await createTransaction(transactionData);
         console.log({ transactionId });
-        onSnapshot(doc(transactionCollection, transactionId), (transaction: any) => {
-          if (transaction.data().status === 'SUCCESS') {
-            setTransactionStatus('SUCCESS');
-          }
-        });
 
-        onSnapshot(doc(vestingCollection, vestingId), (vesting: any) => {
-          if (vesting.data().status === 'LIVE') {
-            setStatus('SUCCESS');
-            toast.success('Added schedules successfully.');
-          }
-        });
         // updateVesting(
         //   {
         //     ...vesting,

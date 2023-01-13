@@ -1,7 +1,9 @@
 import { useWeb3React } from '@web3-react/core';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, onSnapshot } from 'firebase/firestore';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
+import { toast } from 'react-toastify';
+import { vestingCollection } from 'services/db/firestore';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVesting } from 'types/models';
@@ -84,6 +86,33 @@ export function VestingContextProvider({ children }: any) {
       // });
     }
   }, [account]);
+
+  useEffect(() => {
+    onSnapshot(vestingCollection, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'modified') {
+          console.log('Modified');
+          const vestingInfo = change.doc.data();
+          if (vestingInfo.status === 'LIVE') {
+            const newVestings = vestings.map((vesting) => {
+              if (vesting.id === change.doc.id) {
+                console.log('Updated');
+                toast.success('Added schedules successfully.');
+
+                return {
+                  id: vesting.id,
+                  data: vestingInfo
+                };
+              }
+              return vesting;
+            });
+            console.log({ newVestings });
+            setVestings(newVestings);
+          }
+        }
+      });
+    });
+  }, [account, chainId]);
 
   useEffect(() => {
     if (organizationId && chainId) {
