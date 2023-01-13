@@ -342,7 +342,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           VTVL_VESTING_ABI.abi,
           library.getSigner()
         );
-        const revokeTransaction = await vestingContractInstance.revoke(data.recipients[rIndex].walletAddress);
+        const revokeTransaction = await vestingContractInstance.revokeClaim(data.recipients[rIndex].walletAddress);
         setTransactionStatus('IN_PROGRESS');
         await revokeTransaction.wait();
         await updateVesting(
@@ -461,6 +461,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       let vestingReleaseIntervals: any = [];
       let vestingLinearVestAmounts: any = [];
       let vestingCliffAmounts: any = [];
+      const vestingIds = selectedRows.map((row: any) => row.id);
       selectedRows.forEach((row: any) => {
         const vesting = row.data;
         const vestingId = row.id;
@@ -596,7 +597,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
-            chainId
+            chainId,
+            vestingIds
           });
           await Promise.all(
             selectedRows.map(async (row: any) => {
@@ -645,7 +647,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           organizationId: organizationId,
-          chainId
+          chainId,
+          vestingIds
         };
         const transactionId = await createTransaction(transactionData);
         await Promise.all(

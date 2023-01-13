@@ -338,7 +338,8 @@ AddVestingSchedulesProps) => {
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
-            chainId
+            chainId,
+            vestingIds: [vestingId]
           });
           setTransaction({
             id: transactionId,
@@ -351,7 +352,8 @@ AddVestingSchedulesProps) => {
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
-              chainId
+              chainId,
+              vestingIds: [vestingId]
             }
           });
           updateVesting(
@@ -400,7 +402,8 @@ AddVestingSchedulesProps) => {
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           organizationId: organizationId,
-          chainId
+          chainId,
+          vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
         updateVesting(
