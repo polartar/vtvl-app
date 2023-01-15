@@ -226,26 +226,23 @@ AddVestingSchedulesProps) => {
         ) / vesting.recipients.length;
       const vestingAmountPerUser = +vesting.details.amountToBeVested / vesting.recipients.length - cliffAmountPerUser;
       const addresses = vesting.recipients.map((recipient) => recipient.walletAddress);
+
+      const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+
       const cliffReleaseDate =
         vesting.details.startDateTime && vesting.details.cliffDuration !== 'no-cliff'
-          ? getCliffDateTime(
-              new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-              vesting.details.cliffDuration
-            )
+          ? getCliffDateTime(vestingStartTime, vesting.details.cliffDuration)
           : '';
       const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
       const numberOfReleases =
         vesting.details.startDateTime && vesting.details.endDateTime
           ? getNumberOfReleases(
               vesting.details.releaseFrequency,
-              cliffReleaseDate || new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
+              cliffReleaseDate || vestingStartTime,
               new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
             )
           : 0;
-      const actualStartDateTime =
-        vesting.details.cliffDuration !== 'no-cliff'
-          ? cliffReleaseDate
-          : new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+      const actualStartDateTime = vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vestingStartTime;
       const vestingEndTimestamp =
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
@@ -273,7 +270,7 @@ AddVestingSchedulesProps) => {
       );
       const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
-        new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
+        vestingStartTime,
         vesting.details.releaseFrequency
       );
       const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
@@ -342,7 +339,8 @@ AddVestingSchedulesProps) => {
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
-            chainId
+            chainId,
+            vestingIds: [vestingId]
           });
           setTransaction({
             id: transactionId,
@@ -355,7 +353,8 @@ AddVestingSchedulesProps) => {
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
-              chainId
+              chainId,
+              vestingIds: [vestingId]
             }
           });
           updateVesting(
@@ -374,7 +373,7 @@ AddVestingSchedulesProps) => {
         toast.success('Transaction has been created successfully.');
         setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
-        // setTransactionStatus('PENDING');
+        setTransactionStatus('PENDING');
         const vestingContract = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
           ['==', '=='],
@@ -394,7 +393,7 @@ AddVestingSchedulesProps) => {
           vestingLinearVestAmounts,
           vestingCliffAmounts
         );
-        // setTransactionStatus('IN_PROGRESS');
+        setTransactionStatus('IN_PROGRESS');
         const transactionData: ITransaction = {
           hash: addingClaimsTransaction.hash,
           safeHash: '',
@@ -404,11 +403,11 @@ AddVestingSchedulesProps) => {
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           organizationId: organizationId,
-          chainId
+          chainId,
+          vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
-        console.log({ transactionId });
-
+        setTransactionStatus('');
         // updateVesting(
         //   {
         //     ...vesting,

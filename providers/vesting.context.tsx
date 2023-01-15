@@ -91,12 +91,10 @@ export function VestingContextProvider({ children }: any) {
     onSnapshot(vestingCollection, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'modified') {
-          console.log('Modified');
           const vestingInfo = change.doc.data();
           if (vestingInfo.status === 'LIVE') {
             const newVestings = vestings.map((vesting) => {
               if (vesting.id === change.doc.id) {
-                console.log('Updated');
                 toast.success('Added schedules successfully.');
 
                 return {
@@ -106,7 +104,6 @@ export function VestingContextProvider({ children }: any) {
               }
               return vesting;
             });
-            console.log({ newVestings });
             setVestings(newVestings);
           }
         }

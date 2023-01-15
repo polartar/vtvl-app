@@ -17,6 +17,7 @@ export interface IVesting {
     | 'CREATING'
     | 'CREATED'
     | 'COMPLETED'
+    | 'REVOKED'
     | 'APPROVED'
     | 'SUCCESS'
     | 'FAILED';

@@ -84,13 +84,13 @@ export function DashboardContextProvider({ children }: any) {
   };
 
   const fetchDashboardVestings = async () => {
-    console.log({ chainId });
     setVestingsLoading(true);
     try {
       const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId!, chainId!]);
-      console.log({ res });
       // Filter out without the archived records
-      const filteredVestingSchedules = res.filter((v) => !v.data.archive && v.data.chainId === chainId);
+      const filteredVestingSchedules = res.filter(
+        (v) => !v.data.archive && v.data.status !== 'REVOKED' && v.data.chainId === chainId
+      );
       setVestings(filteredVestingSchedules);
     } catch (err) {
       console.log('fetchDashboardVestings - ', err);

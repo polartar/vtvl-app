@@ -8,4 +8,5 @@ export interface ITransaction {
   updatedAt: number;
   organizationId: string;
   chainId: number;
+  vestingIds?: string[];
 }
