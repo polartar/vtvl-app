@@ -407,7 +407,6 @@ AddVestingSchedulesProps) => {
           vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
-        setTransactionStatus('');
         // updateVesting(
         //   {
         //     ...vesting,
@@ -417,7 +416,7 @@ AddVestingSchedulesProps) => {
         //   },
         //   vestingId
         // );
-        // await addingClaimsTransaction.wait();
+        await addingClaimsTransaction.wait();
         // updateTransaction(
         //   {
         //     ...transactionData,
@@ -426,9 +425,9 @@ AddVestingSchedulesProps) => {
         //   },
         //   transactionId
         // );
-        // setStatus('success');
+        setStatus('success');
         // toast.success('Added schedules successfully.');
-        // setTransactionStatus('SUCCESS');
+        setTransactionStatus('SUCCESS');
       }
     } catch (err) {
       console.log('handleCreateSignTransaction - ', err);
@@ -715,7 +714,7 @@ AddVestingSchedulesProps) => {
 
   useEffect(() => {
     if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
-      setStatus('SUCCESS');
+      setStatus('success');
     }
   }, [activeVestingIndex, vestings]);
 

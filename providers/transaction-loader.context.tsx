@@ -1,5 +1,6 @@
 import TransactionModal, { TransactionStatuses } from '@components/molecules/TransactionModal/TransactionModal';
 import { onSnapshot } from 'firebase/firestore';
+import { useAuthContext } from 'providers/auth.context';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { transactionCollection } from 'services/db/firestore';
 
@@ -14,7 +15,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatuses>('');
 
   console.log('Tx Loader Context', transactionStatus);
-
+  const { safe, organizationId } = useAuthContext();
   const value = useMemo(
     () => ({
       transactionStatus,
@@ -23,26 +24,27 @@ export function TransactionLoaderContextProvider({ children }: any) {
     [transactionStatus, setTransactionStatus]
   );
 
-  // useEffect(() => {
-  //   const unsub = onSnapshot(transactionCollection, (snapshot) => {
-  //     snapshot.docChanges().forEach((change) => {
-  //       if (change.type === 'modified') {
-  //         const vestingInfo = change.doc.data();
-  //         if (vestingInfo.status === 'LIVE') {
-  //           const tmpVestings = vestings.map((vesting) => {
-  //             if (vesting.id === change.doc.id) {
-  //               return {
-  //                 id: vesting.id,
-  //                 data: vestingInfo
-  //               };
-  //             }
-  //             return vesting;
-  //           });
-  //         }
-  //       }
-  //     });
-  //   });
-  // }, [])
+  useEffect(() => {
+    const unsubscribe = onSnapshot(transactionCollection, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'modified') {
+          const transactionInfo = change.doc.data();
+          if (transactionInfo.organizationId === organizationId) {
+            if (transactionInfo.status === 'SUCCESS') {
+              setTransactionStatus('SUCCESS');
+            }
+            if (transactionInfo.status === 'FAILED') {
+              setTransactionStatus('ERROR');
+            }
+          }
+        }
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   return (
     <TransactionLoader.Provider value={value}>

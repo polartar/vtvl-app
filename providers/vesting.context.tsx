@@ -88,7 +88,26 @@ export function VestingContextProvider({ children }: any) {
   }, [account]);
 
   useEffect(() => {
-    onSnapshot(vestingCollection, (snapshot) => {
+    if (organizationId && chainId) {
+      fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]).then((res) => {
+        // Check if the vesting schedules already has name, if none, generate one
+        if (res.length) {
+          const newVestings = res.map((schedule) => {
+            const newScheduleDetails = { ...schedule };
+            if (!schedule.data.name) {
+              newScheduleDetails.data.name = generateRandomName();
+              updateVesting({ ...newScheduleDetails.data }, schedule.id);
+            }
+            return newScheduleDetails;
+          });
+          setVestings(newVestings);
+        }
+      });
+    }
+  }, [organizationId, chainId]);
+
+  useEffect(() => {
+    const subscribe = onSnapshot(vestingCollection, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'modified') {
           const vestingInfo = change.doc.data();
@@ -109,26 +128,11 @@ export function VestingContextProvider({ children }: any) {
         }
       });
     });
-  }, [account, chainId]);
 
-  useEffect(() => {
-    if (organizationId && chainId) {
-      fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]).then((res) => {
-        // Check if the vesting schedules already has name, if none, generate one
-        if (res.length) {
-          const newVestings = res.map((schedule) => {
-            const newScheduleDetails = { ...schedule };
-            if (!schedule.data.name) {
-              newScheduleDetails.data.name = generateRandomName();
-              updateVesting({ ...newScheduleDetails.data }, schedule.id);
-            }
-            return newScheduleDetails;
-          });
-          setVestings(newVestings);
-        }
-      });
-    }
-  }, [organizationId, chainId]);
+    return () => {
+      subscribe();
+    };
+  }, [vestings]);
 
   return <VestingContext.Provider value={value}>{children}</VestingContext.Provider>;
 }
