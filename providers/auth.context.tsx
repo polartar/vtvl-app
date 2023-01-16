@@ -108,7 +108,9 @@ export function AuthContextProvider({ children }: any) {
         //   // Normally the value of this is "wc" for WalletConnect
         //   // If so, we set the connection to "walletconnect"
         //   // Else, we set it to the default "metamask"
-        setConnection(res.connector && res.connector.protocol ? 'walletconnect' : 'metamask');
+        setConnection(
+          res && res.signer && res.signer.connection && res.signer.connection.wc ? 'walletconnect' : 'metamask'
+        );
       });
     }
   }, [connector]);
