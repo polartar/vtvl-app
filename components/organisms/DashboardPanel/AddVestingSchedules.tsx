@@ -12,7 +12,7 @@ import ScheduleOverview from 'components/molecules/ScheduleOverview/ScheduleOver
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, doc, onSnapshot } from 'firebase/firestore';
 import Router from 'next/router';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
@@ -21,6 +21,7 @@ import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { transactionCollection, vestingCollection } from 'services/db/firestore';
 import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
@@ -406,26 +407,26 @@ AddVestingSchedulesProps) => {
           vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
-        updateVesting(
-          {
-            ...vesting,
-            transactionId,
-            // Because the schedule is now confirmed and ready for the vesting
-            status: 'LIVE'
-          },
-          vestingId
-        );
+        // updateVesting(
+        //   {
+        //     ...vesting,
+        //     transactionId,
+        //     // Because the schedule is now confirmed and ready for the vesting
+        //     status: 'LIVE'
+        //   },
+        //   vestingId
+        // );
         await addingClaimsTransaction.wait();
-        updateTransaction(
-          {
-            ...transactionData,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          transactionId
-        );
+        // updateTransaction(
+        //   {
+        //     ...transactionData,
+        //     status: 'SUCCESS',
+        //     updatedAt: Math.floor(new Date().getTime() / 1000)
+        //   },
+        //   transactionId
+        // );
         setStatus('success');
-        toast.success('Added schedules successfully.');
+        // toast.success('Added schedules successfully.');
         setTransactionStatus('SUCCESS');
       }
     } catch (err) {
@@ -710,6 +711,12 @@ AddVestingSchedulesProps) => {
       setStatus('transferToMultisigSafe');
     }
   }, [type, vestingContract, ownershipTransfered]);
+
+  useEffect(() => {
+    if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
+      setStatus('success');
+    }
+  }, [activeVestingIndex, vestings]);
 
   useEffect(() => {
     if (type === 'schedule' && !transaction) {
