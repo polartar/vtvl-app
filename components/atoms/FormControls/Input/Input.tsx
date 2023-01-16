@@ -1,6 +1,5 @@
 import React from 'react';
 import { NumericFormat } from 'react-number-format';
-import { InputNumberCommas } from 'react-number-format-with-commas';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   required?: boolean;
@@ -77,7 +76,10 @@ const Input = ({
               className="grow w-full outline-0 border-0 bg-transparent"
               isAllowed={(values) => {
                 const { formattedValue, floatValue } = values;
-                return formattedValue === '' || (floatValue ? floatValue >= 0 && floatValue <= 99 : false);
+                return (
+                  formattedValue === '' ||
+                  (typeof floatValue === 'number' ? floatValue >= 0 && floatValue <= 99 : false)
+                );
               }}
             />
           ) : (

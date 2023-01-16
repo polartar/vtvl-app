@@ -385,6 +385,13 @@
     @apply opacity-80;
   }
 
+  :disabled input[type="radio"],
+  :disabled input[type="checkbox"],
+  [disabled] input[type="radio"],
+  [disabled] input[type="checkbox"] {
+    @apply opacity-0;
+  }
+
   /* Input disabled styles */
   .input-component__input:has(:disabled),
   .input-component__input:has([disabled]),

@@ -27,7 +27,7 @@ import format from 'date-fns/format';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
-import { ElementType, ReactElement, useEffect, useState } from 'react';
+import { ElementType, ForwardedRef, ReactElement, useEffect, useRef, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import Select from 'react-select';
@@ -36,7 +36,7 @@ import { toast } from 'react-toastify';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
-import { getActualDateTime } from 'utils/shared';
+import { getActualDateTime, scrollIntoView } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import {
   getChartData,
@@ -86,11 +86,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue,
     setError,
     clearErrors,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting, touchedFields, dirtyFields, isDirty }
   } = useForm({
     defaultValues: {
       ...scheduleFormState,
-      amountToBeVestedText: '',
+      // Set default amount to be vested to be the total token supply
+      amountToBeVested: parseFloat(mintFormState.initialSupply.toString()),
+      amountToBeVestedText: formatNumber(parseFloat(mintFormState.initialSupply.toString())).toString(),
       cliffDurationNumber: 1,
       cliffDurationOption: defaultCliffDurationOption as CliffDuration | DateDurationOptionValues,
       releaseFrequencySelectedOption: 'continuous',
@@ -119,9 +121,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const onSubmit: SubmitHandler<IScheduleFormState> = async (data) => {
     console.log('Form Submitted', data, getValues());
     // Check first if the user is saving the configuration as a template as well.
-    if (saveAsTemplate.value && !templateName.value) {
-      fuSetError('templateName', { type: 'required', message: 'Template name is required' });
-      return;
+    if (saveAsTemplate.value) {
+      if (templateName.value) {
+        // Create the template and save it to the DB
+        await onCreateTemplate(templateName.value);
+      } else {
+        fuSetError('templateName', { type: 'required', message: 'Template name is required' });
+        return;
+      }
     }
 
     // Map the correct data
@@ -153,8 +160,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         endDateTime: projectedEndDateTime
       });
 
-      // Create the template and save it to the DB
-      await onCreateTemplate(templateName.value);
       Router.push('/vesting-schedule/summary');
     }
   };
@@ -425,6 +430,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue('releaseFrequencySelectedOption', selectedFrequency);
     setValue('customReleaseFrequencyNumber', frequencyNumber);
     setValue('customReleaseFrequencyOption', frequencyOption);
+
+    // Focus on step 1
+    setTimeout(() => {
+      if (step[0].ref && step[0].ref.current) {
+        step[0].ref.current?.focus();
+        scrollIntoView(step[0].ref.current);
+      }
+    }, 300);
   };
 
   /**
@@ -576,6 +589,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       setValue('startDateTime', prospectiveStartDateTime);
       setValue('endDateTime', prospectiveEndDateTime);
     }
+
+    // Focus on the step 2
+    goToActiveStep(1);
   };
 
   const handleDateTimeChange = (e: any, field: string) => {
@@ -603,12 +619,16 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         break;
       case 'endTime':
         setShowEndTimePicker(false);
+        // Focus on the step 3 section
+        goToActiveStep(2);
         break;
       case 'startDate':
         setShowStartDatePicker(false);
         break;
       case 'endDate':
         setShowEndDatePicker(false);
+        // Focus on the step 2 section
+        goToActiveStep(1);
         break;
       default:
         break;
@@ -746,11 +766,11 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Add additional fields to contain the text value of the inputted numbers -- AMOUNT TO BE VESTED.
   // Then updating the numeric value based on the current value of the text
-  useEffect(() => {
-    // Parse the text into floats to cater the decimals if any
-    const amountToBeVestedToFloat = parseFloat(amountToBeVestedText.value.replaceAll(',', ''));
-    setValue('amountToBeVested', !isNaN(amountToBeVestedToFloat) ? amountToBeVestedToFloat : 0);
-  }, [amountToBeVestedText.value]);
+  // useEffect(() => {
+  //   // Parse the text into floats to cater the decimals if any
+  //   const amountToBeVestedToFloat = parseFloat(amountToBeVestedText.value.replaceAll(',', ''));
+  //   setValue('amountToBeVested', !isNaN(amountToBeVestedToFloat) ? amountToBeVestedToFloat : 0);
+  // }, [amountToBeVestedText.value]);
 
   /**
    * This section is used for anything that regards the Vesting Schedule templates
@@ -799,92 +819,165 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   useEffect(() => {
     if (templateOptions && !templateOptions.length) {
       fuSetValue('formUsage', 'FROM_SCRATCH');
+      setTimeout(() => {
+        if (step[0].ref && step[0].ref.current) {
+          step[0].ref.current?.focus();
+          scrollIntoView(step[0].ref.current);
+        }
+      }, 300);
     } else {
       fuSetValue('formUsage', '');
     }
   }, [templateOptions]);
 
+  // This contains step section auto focusing during interaction
+  // Contains 5 steps by default
+  const [step, setStep] = useState<{ active: boolean; isExpanded: boolean; interactionCount: number; ref: any }[]>([
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) }
+  ]);
+
+  const goToActiveStep = (indexUpdate: number) => {
+    setActiveStep(indexUpdate);
+    setTimeout(() => {
+      if (step[indexUpdate].ref && step[indexUpdate].ref.current) {
+        step[indexUpdate].ref.current?.focus();
+        scrollIntoView(step[indexUpdate].ref.current);
+      }
+    }, 600);
+  };
+
+  const setActiveStep = (indexUpdate: number) => {
+    setStep((prevState) => {
+      const prevIndex = indexUpdate - 1;
+      const newState = [...prevState].map((step, stepIndex) => {
+        if (stepIndex === indexUpdate) {
+          return { ...step, active: true, isExpanded: true };
+        } else if (prevIndex >= 0 && stepIndex < indexUpdate) {
+          return { ...step, active: false, isExpanded: false };
+        } else {
+          return { ...step, active: false };
+        }
+      });
+      return newState;
+    });
+  };
+
+  // Focuses on the 1st step when the current template usage value is from scratch
+  useEffect(() => {
+    if (formUsage.value && formUsage.value === 'FROM_SCRATCH') {
+      goToActiveStep(0);
+    }
+  }, [formUsage.value]);
+
+  // This contains the triggers for each section to focus after interacting with the form
+  // Step 1 interaction -- Go to handleDateTimeChange
+  // Step 2 interaction -- Go to handleDateTimeChange
+  // useEffect(() => {
+  //   // Step 3 interaction
+  //   if (cliffDuration.value === 'no-cliff') {
+  //     goToActiveStep(3);
+  //   }
+  // }, [cliffDuration.value]);
+
+  // Step 4 interaction
+  // useEffect(() => {
+  //   if (
+  //     releaseFrequencySelectedOption.value !== 'custom' ||
+  //     (customReleaseFrequencyNumber.value && customReleaseFrequencyOption.value)
+  //   ) {
+  //     goToActiveStep(4);
+  //   }
+  // }, [releaseFrequency.value]);
+
+  console.log('TOUCHED AND DIRTY', releaseFrequency.state.isTouched, releaseFrequency.state.isDirty);
+
   return (
     <>
       {/* TEMPLATE PROMPT AND SELECTION SECTION */}
-      <div className="w-full text-left">
-        <label className="text-neutral-900 font-medium text-base">Do you want to use an existing template?</label>
-        {/* PROMP SECTION */}
-        <div className="inline-flex flex-col gap-2 mt-4">
-          <Controller
-            name="formUsage"
-            control={fuControl}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Radio
-                variant="input-style"
-                checked={formUsage.value === 'USE_TEMPLATE'}
-                label="Yes, I want to use saved template"
-                {...field}
-                value="USE_TEMPLATE"
-              />
-            )}
-          />
-          <Controller
-            name="formUsage"
-            control={fuControl}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Radio
-                variant="input-style"
-                checked={formUsage.value === 'FROM_SCRATCH'}
-                label="No, I want to start from scratch"
-                {...field}
-                value="FROM_SCRATCH"
-              />
-            )}
-          />
-        </div>
-        {/* TEMPLATE SELECTION SECTION */}
-        {formUsage.value === 'USE_TEMPLATE' ? (
-          <div className="mt-5 transition-all">
-            {/*
-             * In this form control, we should be able to do the following:
-             * 1. List of options should come from DB. The data should contain the name of the template, and its form values.
-             * 2. Selecting a template option will automatically update all form fields above (defaultValues) based on the template's form values.
-             * 3. Creating a new template from this input should save the name and all current form field values to the DB.
-             * Possible Validations:
-             * 1. Creating a template with incomplete form above should not be allowed.
-             * 2. If there is a value in the form above, when the user selects a new template it should prompt for unsaved changes (and will override the current values above if the user accepts).
-             */}
+      {templateOptions && templateOptions.length ? (
+        <div className="w-full text-left">
+          <label className="text-neutral-900 font-medium text-base">Do you want to use an existing template?</label>
+          {/* PROMP SECTION */}
+          <div className="inline-flex flex-col gap-2 mt-4">
             <Controller
-              name="template"
-              control={tControl}
+              name="formUsage"
+              control={fuControl}
               rules={{ required: true }}
-              render={({ field, fieldState }) => (
-                <label className="required">
-                  <span className="text-sm text-neutral-700 font-medium mb-0">
-                    Select from previously saved templates
-                  </span>
-                  <Select
-                    {...field}
-                    isLoading={templateLoading}
-                    options={templateOptions}
-                    isClearable
-                    value={field.value || null}
-                    onChange={onTemplateChange}
-                    placeholder={templateLoading ? `Saving template...` : 'Search saved templates'}
-                    noOptionsMessage={() => 'Type to search for saved templates'}
-                    className="select-container mt-2.5"
-                    classNamePrefix="select"
-                  />
-                  {fieldState.error ? (
-                    <div className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a template</div>
-                  ) : null}
-                </label>
+              render={({ field }) => (
+                <Radio
+                  variant="input-style"
+                  checked={formUsage.value === 'USE_TEMPLATE'}
+                  label="Yes, I want to use saved template"
+                  {...field}
+                  value="USE_TEMPLATE"
+                />
+              )}
+            />
+            <Controller
+              name="formUsage"
+              control={fuControl}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Radio
+                  variant="input-style"
+                  checked={formUsage.value === 'FROM_SCRATCH'}
+                  label="No, I want to start from scratch"
+                  {...field}
+                  value="FROM_SCRATCH"
+                />
               )}
             />
           </div>
-        ) : null}
-      </div>
+          {/* TEMPLATE SELECTION SECTION */}
+          {formUsage.value === 'USE_TEMPLATE' ? (
+            <div className="mt-5 transition-all">
+              {/*
+               * In this form control, we should be able to do the following:
+               * 1. List of options should come from DB. The data should contain the name of the template, and its form values.
+               * 2. Selecting a template option will automatically update all form fields above (defaultValues) based on the template's form values.
+               * 3. Creating a new template from this input should save the name and all current form field values to the DB.
+               * Possible Validations:
+               * 1. Creating a template with incomplete form above should not be allowed.
+               * 2. If there is a value in the form above, when the user selects a new template it should prompt for unsaved changes (and will override the current values above if the user accepts).
+               */}
+              <Controller
+                name="template"
+                control={tControl}
+                rules={{ required: true }}
+                render={({ field, fieldState }) => (
+                  <label className="required">
+                    <span className="text-sm text-neutral-700 font-medium mb-0">
+                      Select from previously saved templates
+                    </span>
+                    <Select
+                      {...field}
+                      isLoading={templateLoading}
+                      options={templateOptions}
+                      isClearable
+                      value={field.value || null}
+                      onChange={onTemplateChange}
+                      placeholder={templateLoading ? `Saving template...` : 'Search saved templates'}
+                      noOptionsMessage={() => 'Type to search for saved templates'}
+                      className="select-container mt-2.5"
+                      classNamePrefix="select"
+                    />
+                    {fieldState.error ? (
+                      <div className="text-danger-500 text-xs mt-1 mb-3">Please select or enter a template</div>
+                    ) : null}
+                  </label>
+                )}
+              />
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* CONFIGURATION FORM SECTION */}
-      <div className={`grid md:grid-cols-12 w-full gap-3.5 ${isUserTemplatePromptActive() ? 'opacity-30' : ''}`}>
+      <div className={`grid md:grid-cols-12 w-full gap-3.5 ${isUserTemplatePromptActive() ? 'opacity-20' : ''}`}>
         <div className="md:col-span-7">
           <Form
             isSubmitting={isSubmitting}
@@ -897,8 +990,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             message={formMessage}>
             {/* Step 1: Date selection section */}
             <StepLabel
+              ref={step[0].ref}
               step={1}
+              isExpanded={step[0].isExpanded}
+              isActive={step[0].active}
               label="Date selection"
+              className="rounded-t-3xl"
               required
               description={
                 <>
@@ -913,7 +1010,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   .
                 </>
               }
-              note="Or, make it easier by choosing from the selection of pre-defined lengths of time above.">
+              note="Or, make it easier by choosing from the selection of pre-defined lengths of time above."
+              onFocus={() => setActiveStep(0)}>
               <div className="flex flex-row gap-3">
                 {/* Step 1 start date section */}
                 <div className="flex-grow">
@@ -922,7 +1020,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       <Input
                         required
                         value={format(startDateTime.value, 'MM/dd/yyyy')}
-                        onFocus={() => setShowStartDatePicker(true)}
+                        onFocus={() => {
+                          setShowStartDatePicker(true);
+                          setActiveStep(0);
+                        }}
                       />
                       {showStartDatePicker ? (
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -952,7 +1053,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       <Input
                         required
                         value={format(endDateTime.value, 'MM/dd/yyyy')}
-                        onFocus={() => setShowEndDatePicker(true)}
+                        onFocus={() => {
+                          setShowEndDatePicker(true);
+                          setActiveStep(0);
+                        }}
                       />
                       {showEndDatePicker ? (
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -974,18 +1078,21 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 </div>
               </div>
               {/* Step 1 quick date adding section */}
-              <div className="mt-4 row-center flex-wrap">
-                {quickDates.map((quickDate, qdIndex) => (
-                  <Chip
-                    key={`Quick-date-${qdIndex}`}
-                    label={quickDate.label}
-                    rounded
-                    color="alt"
-                    className="cursor-pointer transform transition-all hover:-translate-y-px hover:bg-primary-900 hover:text-neutral-50 hover:border-primary-900"
-                    onClick={() => addDateToSchedule(quickDate.value)}
-                  />
-                ))}
-              </div>
+              {step[0] && (step[0].isExpanded || step[0].active) ? (
+                <div className="mt-4 row-center flex-wrap">
+                  {quickDates.map((quickDate, qdIndex) => (
+                    <Chip
+                      key={`Quick-date-${qdIndex}`}
+                      label={quickDate.label}
+                      rounded
+                      color="alt"
+                      className="cursor-pointer transform transition-all hover:-translate-y-px hover:bg-primary-900 hover:text-neutral-50 hover:border-primary-900"
+                      onFocus={() => setActiveStep(0)}
+                      onClick={() => addDateToSchedule(quickDate.value)}
+                    />
+                  ))}
+                </div>
+              ) : null}
             </StepLabel>
 
             <hr className="mx-6" />
@@ -993,6 +1100,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             {/* Step 2: Time selection section */}
             <StepLabel
               step={2}
+              ref={step[1].ref}
+              isExpanded={step[1].isExpanded}
+              isActive={step[1].active}
               label="Time selection"
               required
               description={
@@ -1008,7 +1118,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   .<br />
                   This is in your local timezone.
                 </>
-              }>
+              }
+              onFocus={() => setActiveStep(1)}>
               <div className="flex flex-row gap-3">
                 {/* Step 2 start time section */}
                 <div className="flex-grow">
@@ -1018,7 +1129,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         type="text"
                         required
                         value={format(startDateTime.value, 'hh:mm a')}
-                        onFocus={() => setShowStartTimePicker(true)}
+                        onFocus={() => {
+                          setShowStartTimePicker(true);
+                          setActiveStep(1);
+                        }}
                       />
                       {showStartTimePicker ? (
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -1048,7 +1162,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       <Input
                         required
                         value={format(endDateTime.value, 'h:mm aa')}
-                        onFocus={() => setShowEndTimePicker(true)}
+                        onFocus={() => {
+                          setShowEndTimePicker(true);
+                          setActiveStep(1);
+                        }}
                       />
                       {showEndTimePicker ? (
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -1076,6 +1193,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             {/* Step 3: Cliff duration selection section */}
             <StepLabel
               step={3}
+              ref={step[2].ref}
+              isExpanded={step[2].isExpanded}
+              isActive={step[2].active}
               label="Cliff duration"
               required
               description="Select the length of your lock-up period"
@@ -1088,7 +1208,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   </strong>{' '}
                   period. Recipients will receive no tokens during this period.
                 </>
-              }>
+              }
+              onFocus={() => setActiveStep(2)}>
               {/* Step 3 cliff duration selection */}
               <Controller
                 name="cliffDurationOption"
@@ -1101,6 +1222,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     error={Boolean(errors.cliffDurationOption)}
                     message={errors.cliffDurationOption ? 'Please select cliff duration' : ''}
                     variant="pill"
+                    onFocus={() => setActiveStep(2)}
                     {...field}
                   />
                 )}
@@ -1120,6 +1242,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           required
                           error={Boolean(fieldState.error)}
                           message={fieldState.error ? 'Please enter number of ' + cliffDurationOption.value : ''}
+                          onFocus={() => setActiveStep(2)}
                           {...field}
                           type="number"
                         />
@@ -1140,12 +1263,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     rules={{ required: true }}
                     render={({ field, fieldState, formState }) => (
                       <Input
-                        label="Tokens unlocked after cliff (1-99%)"
+                        label="Tokens unlocked after cliff (0-99%)"
                         placeholder="Enter whole percentage amount"
                         className="mt-4"
                         required
                         error={Boolean(fieldState.error)}
                         message={fieldState.error ? 'Please enter lump sum amount' : ''}
+                        onFocus={() => setActiveStep(2)}
                         {...field}
                         type="percent"
                       />
@@ -1160,10 +1284,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             {/* Step 4: Release frequency section */}
             <StepLabel
               step={4}
+              ref={step[3].ref}
+              isExpanded={step[3].isExpanded}
+              isActive={step[3].active}
               label="Release frequency"
               required
               description="Determine how often recipients will receive their tokens over the course of their schedule."
-              hint="Our platform currently only supports linear vesting which dictates that the same amount of tokens be equally distributed to the recipient periodically by the frequency that you set.">
+              hint="Our platform currently only supports linear vesting which dictates that the same amount of tokens be equally distributed to the recipient periodically by the frequency that you set."
+              onFocus={() => setActiveStep(3)}>
               {/* Step 4 release frequency input */}
               <Controller
                 name="releaseFrequencySelectedOption"
@@ -1176,6 +1304,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     error={Boolean(errors.releaseFrequencySelectedOption)}
                     message={errors.releaseFrequencySelectedOption ? 'Please select release frequency' : ''}
                     variant="pill"
+                    onFocus={() => setActiveStep(3)}
                     {...field}
                   />
                 )}
@@ -1193,6 +1322,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           error={Boolean(errors.customReleaseFrequencyNumber)}
                           onPlus={handlePlusQuantity}
                           onMinus={handleMinusQuantity}
+                          onFocus={() => setActiveStep(3)}
                           {...field}
                         />
                       )}
@@ -1209,6 +1339,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           error={Boolean(errors.customReleaseFrequencyOption)}
                           message={errors.customReleaseFrequencyOption ? 'Please select frequency' : ''}
                           variant="pill"
+                          onFocus={() => setActiveStep(3)}
                           {...field}
                         />
                       )}
@@ -1226,25 +1357,20 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             {/* Step 5: Amount to be vested section */}
             <StepLabel
               step={5}
+              ref={step[4].ref}
+              isExpanded={step[4].isExpanded}
+              isActive={step[4].active}
               label="Amount to be vested"
               required
-              description={
-                <>
-                  Select the total amount of tokens to be locked up in this schedule. If you have added multiple users,
-                  note that this amount will be equally split between each user. Your current available supply is{' '}
-                  <strong>
-                    {formatNumber(totalTokenSupply)} {mintFormState.symbol}
-                  </strong>
-                  .
-                </>
-              }
+              description="You can edit this amount on the Add Recipient(s) page"
               hint={
                 <>
                   An example is if you have added 3 users in the previous step and the total amount to be vested is
                   600,000 <strong>{mintFormState.symbol}</strong>, then each user will be allocated 200,000{' '}
                   <strong>{mintFormState.symbol}</strong>.
                 </>
-              }>
+              }
+              onFocus={() => setActiveStep(4)}>
               <div className="relative">
                 {/* Step 5 Input field for the amount to be vested */}
                 <Controller
@@ -1256,32 +1382,34 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       <Input
                         placeholder="Enter amount"
                         type="number"
+                        readOnly
                         max={totalTokenSupply}
                         error={Boolean(errors.amountToBeVestedText) || amountToBeVested.value > totalTokenSupply}
                         message={errors.amountToBeVestedText ? 'Please enter amount to be vested' : ''}
+                        onFocus={() => setActiveStep(4)}
                         {...field}
                       />
                     </>
                   )}
                 />
-                <Chip
+                {/* <Chip
                   label="MAX"
                   color={amountToBeVested.value < totalTokenSupply ? 'secondary' : 'default'}
                   onClick={handleMaxAmount}
                   className={`absolute right-6 cursor-pointer ${
                     amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-2'
                   }`}
-                />
+                /> */}
               </div>
               {/* Step 5 Slider section */}
-              <div className="mt-6">
+              {/* <div className="mt-6">
                 <RangeSlider
                   max={totalTokenSupply || 0}
                   value={amountToBeVested.value ? amountToBeVested.value : 0}
                   className="mt-5"
                   onChange={handleAmountToBeVestedChange}
                 />
-              </div>
+              </div> */}
             </StepLabel>
 
             <hr className="mx-6" />
@@ -1325,6 +1453,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         </div>
         <div className="md:col-span-5">
           <div className="panel">
+            <label className="font-medium text-base text-neutral-900 mb-3">Schedule details</label>
             <ScheduleDetails {...getValues()} token={mintFormState.symbol || 'Token'} layout="small" />
           </div>
         </div>
