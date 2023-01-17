@@ -753,6 +753,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue('amountToBeVested', newMaxValue);
     setValue('amountToBeVestedText', formatNumber(newMaxValue).toString());
     clearErrors('amountToBeVestedText');
+
+    // Make the amount to be vested an active section
+    setActiveStep(4);
   };
 
   // Updates made when the user is interacting with the Range Slider component
@@ -762,6 +765,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue('amountToBeVested', newValue);
     setValue('amountToBeVestedText', formatNumber(newValue).toString());
     clearErrors('amountToBeVestedText');
+
+    // Make the amount to be vested an active section
+    setActiveStep(4);
   };
 
   // Add additional fields to contain the text value of the inputted numbers -- AMOUNT TO BE VESTED.
@@ -844,8 +850,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setActiveStep(indexUpdate);
     setTimeout(() => {
       if (step[indexUpdate].ref && step[indexUpdate].ref.current) {
-        step[indexUpdate].ref.current?.focus();
         scrollIntoView(step[indexUpdate].ref.current);
+        step[indexUpdate].ref.current?.focus();
       }
     }, 600);
   };
@@ -1224,6 +1230,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     variant="pill"
                     onFocus={() => setActiveStep(2)}
                     {...field}
+                    onBlur={() => {
+                      if (cliffDurationOption.value === 'no-cliff') setActiveStep(5);
+                    }}
                   />
                 )}
               />
@@ -1244,6 +1253,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           message={fieldState.error ? 'Please enter number of ' + cliffDurationOption.value : ''}
                           onFocus={() => setActiveStep(2)}
                           {...field}
+                          onBlur={() => setActiveStep(5)}
                           type="number"
                         />
                         <span
@@ -1271,6 +1281,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         message={fieldState.error ? 'Please enter lump sum amount' : ''}
                         onFocus={() => setActiveStep(2)}
                         {...field}
+                        onBlur={() => setActiveStep(5)}
                         type="percent"
                       />
                     )}
@@ -1306,6 +1317,11 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     variant="pill"
                     onFocus={() => setActiveStep(3)}
                     {...field}
+                    onBlur={() => {
+                      if (releaseFrequencySelectedOption.value !== 'custom') {
+                        setActiveStep(5);
+                      }
+                    }}
                   />
                 )}
               />
@@ -1341,6 +1357,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           variant="pill"
                           onFocus={() => setActiveStep(3)}
                           {...field}
+                          onBlur={() => setActiveStep(5)}
                         />
                       )}
                     />
@@ -1362,7 +1379,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               isActive={step[4].active}
               label="Amount to be vested"
               required
-              description="You can edit this amount on the Add Recipient(s) page"
+              description={
+                <>
+                  Select the total amount of tokens to be locked up in this schedule. If you have added multiple users,
+                  note that this amount will be equally split between each user. Your current available supply is{' '}
+                  <strong>{formatNumber(totalTokenSupply)}</strong> <strong>{mintFormState.symbol}</strong>.
+                </>
+              }
               hint={
                 <>
                   An example is if you have added 3 users in the previous step and the total amount to be vested is
@@ -1382,34 +1405,36 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       <Input
                         placeholder="Enter amount"
                         type="number"
-                        readOnly
                         max={totalTokenSupply}
                         error={Boolean(errors.amountToBeVestedText) || amountToBeVested.value > totalTokenSupply}
                         message={errors.amountToBeVestedText ? 'Please enter amount to be vested' : ''}
                         onFocus={() => setActiveStep(4)}
                         {...field}
+                        onBlur={() => setActiveStep(5)}
                       />
                     </>
                   )}
                 />
-                {/* <Chip
+                <Chip
                   label="MAX"
                   color={amountToBeVested.value < totalTokenSupply ? 'secondary' : 'default'}
                   onClick={handleMaxAmount}
+                  onBlur={() => setActiveStep(5)}
                   className={`absolute right-6 cursor-pointer ${
                     amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-2'
                   }`}
-                /> */}
+                />
               </div>
               {/* Step 5 Slider section */}
-              {/* <div className="mt-6">
+              <div className="mt-6">
                 <RangeSlider
                   max={totalTokenSupply || 0}
                   value={amountToBeVested.value ? amountToBeVested.value : 0}
                   className="mt-5"
                   onChange={handleAmountToBeVestedChange}
+                  onBlur={() => setActiveStep(5)}
                 />
-              </div> */}
+              </div>
             </StepLabel>
 
             <hr className="mx-6" />
