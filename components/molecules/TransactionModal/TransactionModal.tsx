@@ -1,10 +1,12 @@
 import Chip from '@components/atoms/Chip/Chip';
 import Loader from '@components/atoms/Loader/Loader';
+import { useAuthContext } from '@providers/auth.context';
 import Lottie from 'lottie-react';
 import ErrorAnimation from 'public/error-state.json';
 import WarningIcon from 'public/icons/warning.svg';
 import MetaMaskWalletAnimation from 'public/metamask_wallet_loader.json';
 import SuccessAnimation from 'public/successfully-done.json';
+import WalletConnectAnimation from 'public/walletconnect_loader.json';
 import { useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 
@@ -14,6 +16,7 @@ export interface TransactionModalProps {
 }
 
 const TransactionModal = ({ status }: TransactionModalProps) => {
+  const { connection } = useAuthContext();
   // Make Modal styles scrollable when exceeding the device view height
   const modalStyles: Styles = {
     overlay: {
@@ -39,9 +42,17 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
     }
   };
 
+  const getLoaderAnimatedIcon = () => {
+    if (connection && connection === 'walletconnect') {
+      return WalletConnectAnimation;
+    } else {
+      return MetaMaskWalletAnimation;
+    }
+  };
+
   const txTypes = {
     IN_PROGRESS: {
-      image: <Lottie animationData={MetaMaskWalletAnimation} style={{ width: '132px' }} />,
+      image: <Lottie animationData={getLoaderAnimatedIcon()} style={{ width: '132px' }} />,
       title: (
         <div className="flex flex-row items-center gap-2">
           <img src="/images/tx-inprogress.png" className="w-7 h-7" />
@@ -51,7 +62,7 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
       description: <>Your transaction is in progress. Just a few more seconds...</>
     },
     PENDING: {
-      image: <Lottie animationData={MetaMaskWalletAnimation} style={{ width: '132px' }} />,
+      image: <Lottie animationData={getLoaderAnimatedIcon()} style={{ width: '132px' }} />,
       title: (
         <div className="flex flex-row items-center gap-2">
           <img src="/images/tx-pending.png" className="w-7 h-7" />A wallet transaction is in progress
