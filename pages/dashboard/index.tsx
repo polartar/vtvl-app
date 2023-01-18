@@ -10,13 +10,14 @@ import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
+import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import CreateVestingContract from 'components/organisms/DashboardPanel/CreateVestingContract';
 import FundContract from 'components/organisms/DashboardPanel/FundContract';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, useCallback, useEffect } from 'react';
 
 import { NextPageWithLayout } from '../_app';
 
@@ -40,6 +41,7 @@ const Dashboard: NextPageWithLayout = () => {
     recipients
   } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
+  const { pendingTransactions } = useTransactionLoaderContext();
 
   const router = useRouter();
 
@@ -49,6 +51,11 @@ const Dashboard: NextPageWithLayout = () => {
     if (email) loginWithUrl(email);
     fetchDashboardData();
   }, []);
+
+  const isMintAvailabe = useCallback(() => {
+    const mintingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'TOKEN_DEPLOYMENT');
+    return !mintingTransaction;
+  }, [pendingTransactions]);
 
   const loginWithUrl = async (email: string) => {
     try {
@@ -92,7 +99,7 @@ const Dashboard: NextPageWithLayout = () => {
       hideLoading();
     }
   }, [organizationId]);
-
+  console.log('IS Mint', isMintAvailabe());
   return (
     <>
       {!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED' ? (
@@ -105,6 +112,7 @@ const Dashboard: NextPageWithLayout = () => {
             <button
               type="button"
               className="primary flex flex-row gap-2 items-center"
+              disabled={!isMintAvailabe()}
               onClick={() => router.push('/minting-token')}>
               <PlusIcon className="w-5 h-5" />
               Mint a new token
