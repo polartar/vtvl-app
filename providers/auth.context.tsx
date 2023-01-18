@@ -370,7 +370,7 @@ export function AuthContextProvider({ children }: any) {
       agreedOnConsent,
       setAgreedOnConsent
     }),
-    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent]
+    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent, connection]
   );
   console.log('organzationId - ', organizationId);
 
