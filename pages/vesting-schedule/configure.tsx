@@ -1,12 +1,15 @@
+import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import CreateLabel from '@components/atoms/CreateLabel/CreateLabel';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
+import Checkbox from '@components/atoms/FormControls/Checkbox/Checkbox';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import QuantityInput from '@components/atoms/FormControls/QuantityInput/QuantityInput';
+import Radio from '@components/atoms/FormControls/Radio/Radio';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
-import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
-import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
+import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import TextField from '@mui/material/TextField';
@@ -21,26 +24,27 @@ import { useWeb3React } from '@web3-react/core';
 import add from 'date-fns/add';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import format from 'date-fns/format';
-import { Timestamp } from 'firebase/firestore';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
-import { ElementType, ReactElement, forwardRef, useEffect, useState } from 'react';
+import { ElementType, ForwardedRef, ReactElement, useEffect, useRef, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
+import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
-import {
-  CLIFFDURATION_TIMESTAMP,
-  CliffDuration,
-  DATE_FREQ_TO_TIMESTAMP,
-  ReleaseFrequency
-} from 'types/constants/schedule-configuration';
+import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
-import { getActualDateTime } from 'utils/shared';
+import { getActualDateTime, scrollIntoView } from 'utils/shared';
 import { formatNumber } from 'utils/token';
-import { getChartData, getCliffAmount, getNumberOfReleases } from 'utils/vesting';
+import {
+  getChartData,
+  getCliffAmount,
+  getCliffDurationTimestamp,
+  getNumberOfReleases,
+  getReleaseFrequencyTimestamp
+} from 'utils/vesting';
 
 type DateTimeType = Date | null;
 
@@ -62,6 +66,8 @@ interface CustomActionBarProps {
   field: CustomActionBarDateTimeField;
 }
 
+const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no-cliff';
+
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
   const { account } = useWeb3React();
@@ -78,30 +84,60 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     getFieldState,
     getValues,
     setValue,
+    setError,
     clearErrors,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting, touchedFields, dirtyFields, isDirty }
   } = useForm({
-    defaultValues: { ...scheduleFormState, amountToBeVestedText: '' }
+    defaultValues: {
+      ...scheduleFormState,
+      // Set default amount to be vested to be the total token supply
+      amountToBeVested: parseFloat(mintFormState.initialSupply.toString()),
+      amountToBeVestedText: formatNumber(parseFloat(mintFormState.initialSupply.toString())).toString(),
+      cliffDurationNumber: 1,
+      cliffDurationOption: defaultCliffDurationOption as CliffDuration | DateDurationOptionValues,
+      releaseFrequencySelectedOption: 'continuous',
+      customReleaseFrequencyNumber: 1,
+      customReleaseFrequencyOption: 'days'
+    }
   });
 
   // Set the default values for the template form
   const defaultTemplateValue: TemplateType = {};
 
   // Use for to initially assign default values
-  const { control: control2, setValue: setValue2 } = useForm({
+  const {
+    control: tControl,
+    watch: tWatch,
+    getFieldState: tGetFieldState,
+    setValue: tSetValue
+  } = useForm({
     defaultValues: defaultTemplateValue
   });
 
+  // Watch for template details
+  const template = { value: tWatch('template'), state: tGetFieldState('template') };
+
   // Handle the submit of the form
-  const onSubmit: SubmitHandler<IScheduleFormState> = (data) => {
+  const onSubmit: SubmitHandler<IScheduleFormState> = async (data) => {
     console.log('Form Submitted', data, getValues());
+    // Check first if the user is saving the configuration as a template as well.
+    if (saveAsTemplate.value) {
+      if (templateName.value) {
+        // Create the template and save it to the DB
+        await onCreateTemplate(templateName.value);
+      } else {
+        fuSetError('templateName', { type: 'required', message: 'Template name is required' });
+        return;
+      }
+    }
+
     // Map the correct data
     // FORM's endDateTime will be saved to originalEndDateTime
     // DB's endDateTime will save the projectedEndDateTime
     const { releaseFrequency, startDateTime, endDateTime, cliffDuration, amountToBeVested, lumpSumReleaseAfterCliff } =
       data;
     if (startDateTime && endDateTime) {
-      const numberOfReleases = getNumberOfReleases(releaseFrequency, startDateTime, endDateTime);
+      // const numberOfReleases = getNumberOfReleases(releaseFrequency, startDateTime, endDateTime);
       const cliffAmount = getCliffAmount(cliffDuration, +lumpSumReleaseAfterCliff, amountToBeVested);
       const projectedEndDateTime = getChartData({
         start: startDateTime,
@@ -117,13 +153,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       //   numberOfReleases,
       //   releaseFrequency
       // );
-      updateScheduleFormState({
+      await updateScheduleFormState({
         ...scheduleFormState,
         ...data,
         originalEndDateTime: endDateTime,
         endDateTime: projectedEndDateTime
       });
-      Router.push('/vesting-schedule/add-beneficiary');
+
+      Router.push('/vesting-schedule/summary');
     }
   };
 
@@ -131,11 +168,36 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const startDateTime = { value: watch('startDateTime'), state: getFieldState('startDateTime') };
   const endDateTime = { value: watch('endDateTime'), state: getFieldState('endDateTime') };
   const cliffDuration = { value: watch('cliffDuration'), state: getFieldState('cliffDuration') };
+  // Stores the count portion of the cliffDuration
+  const cliffDurationNumber = { value: watch('cliffDurationNumber'), state: getFieldState('cliffDurationNumber') };
+  // Stores the duration itself of the cliffDuration
+  const cliffDurationOption = { value: watch('cliffDurationOption'), state: getFieldState('cliffDurationOption') };
   const lumpSumReleaseAfterCliff = {
     value: watch('lumpSumReleaseAfterCliff'),
     state: getFieldState('lumpSumReleaseAfterCliff')
   };
+
+  // Stores the actual release frequency value -- the one that is submitted and saved to the DB
   const releaseFrequency = { value: watch('releaseFrequency'), state: getFieldState('releaseFrequency') };
+
+  // This stores an arbitrary value to cater the active state of the 'custom' pill when selected
+  const releaseFrequencySelectedOption = {
+    value: watch('releaseFrequencySelectedOption'),
+    state: getFieldState('releaseFrequencySelectedOption')
+  };
+
+  // Stores the custom release frequency count before updating the actual release frequency
+  const customReleaseFrequencyNumber = {
+    value: watch('customReleaseFrequencyNumber'),
+    state: getFieldState('customReleaseFrequencyNumber')
+  };
+
+  // Stores the custom release frequency option before updating the actual release frequency
+  const customReleaseFrequencyOption = {
+    value: watch('customReleaseFrequencyOption'),
+    state: getFieldState('customReleaseFrequencyOption')
+  };
+
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
   // Stores the text version of the amount to be vested value
   const amountToBeVestedText = { value: watch('amountToBeVestedText'), state: getFieldState('amountToBeVestedText') };
@@ -144,28 +206,104 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   const cliffOptions = [
     { label: 'No cliff', value: 'no-cliff' },
-    { label: '1 hour', value: '1-hour' },
-    { label: '6 hours', value: '6-hours' },
-    { label: '12 hours', value: '12-hours' },
-    { label: '1 day', value: '1-day' },
-    { label: '5 days', value: '5-days' },
-    { label: '2 weeks', value: '2-weeks' },
-    { label: '1 month', value: '1-month' },
-    { label: '3 months', value: '3-months' },
-    { label: '6 months', value: '6-months' },
-    { label: '1 year', value: '1-year' }
+    // { label: 'Hours', value: 'hours' },
+    // { label: 'Days', value: 'days' },
+    { label: 'Weeks', value: 'weeks' },
+    { label: 'Months', value: 'months' },
+    { label: 'Years', value: 'years' }
+    // { label: '1 hour', value: '1-hour' },
+    // { label: '6 hours', value: '6-hours' },
+    // { label: '12 hours', value: '12-hours' },
+    // { label: '1 day', value: '1-day' },
+    // { label: '5 days', value: '5-days' },
+    // { label: '2 weeks', value: '2-weeks' },
+    // { label: '1 month', value: '1-month' },
+    // { label: '3 months', value: '3-months' },
+    // { label: '6 months', value: '6-months' },
+    // { label: '1 year', value: '1-year' }
   ];
+
+  /**
+   * Simple function to remove the 's' of the duration label
+   */
+  const formatCliffDurationOption = (duration: number, label: DateDurationOptionValues | CliffDuration) => {
+    return label.charAt(label.length - 1) === 's' && +duration === 1 ? label.slice(0, -1) : label;
+  };
+
+  /**
+   * Add a listener for the new implementation of the cliff duration
+   * Cliff duration contains two parts
+   * 1. the number ie., 1, 2 etc.
+   * 2. the type of duration ie., year, month etc.
+   * the cliffDuration.value should contain a format like these:
+   * 1-year / 2-years
+   * 1-month / 2-months
+   * 1-week / 2-weeks
+   * 1-day / 2-days
+   * 1-hour / 2-hours
+   * no-cliff
+   *
+   * cannot and should not contain 0 starting value like 0-day etc.
+   */
+  useEffect(() => {
+    // Update the cliffDuration actual value based on these two inputs
+    if (cliffDurationNumber.value && cliffDurationOption.value) {
+      if (cliffDurationOption.value === 'no-cliff') {
+        setValue('cliffDuration', cliffDurationOption.value);
+      } else {
+        const formattedLabel = formatCliffDurationOption(+cliffDurationNumber.value, cliffDurationOption.value);
+        setValue('cliffDuration', `${cliffDurationNumber.value}-${formattedLabel as DateDurationOptionValues}`);
+      }
+    }
+
+    // Trigger an error in the cliff duration when the number is 0 if there is a cliff
+    clearErrors('cliffDurationNumber');
+    if (!+cliffDurationNumber.value && cliffDurationOption.value !== 'no-cliff') {
+      setError('cliffDurationNumber', {
+        type: 'custom',
+        message: `Please enter number of ${cliffDurationOption.value}`
+      });
+    }
+  }, [cliffDurationNumber.value, cliffDurationOption.value]);
+
+  // Update the releaseFrequency form control when the releaseFrequencySelectedOption changes
+  useEffect(() => {
+    setValue(
+      'releaseFrequency',
+      (releaseFrequencySelectedOption.value === 'custom'
+        ? `every-${customReleaseFrequencyNumber.value}-${customReleaseFrequencyOption.value}`
+        : releaseFrequencySelectedOption.value) as ReleaseFrequency
+    );
+  }, [releaseFrequencySelectedOption.value, customReleaseFrequencyNumber.value, customReleaseFrequencyOption.value]);
 
   const radioOptions = [
     { label: 'Continuous', value: 'continuous' },
     // { label: 'Minute', value: 'minute' },
-    { label: 'Hourly', value: 'hourly' },
+    // { label: 'Hourly', value: 'hourly' },
     { label: 'Daily', value: 'daily' },
     { label: 'Weekly', value: 'weekly' },
     { label: 'Monthly', value: 'monthly' },
-    { label: 'Quarterly', value: 'quarterly' },
-    { label: 'Yearly', value: 'yearly' }
+    // { label: 'Quarterly', value: 'quarterly' },
+    { label: 'Yearly', value: 'yearly' },
+    { label: 'Custom', value: 'custom' }
   ];
+
+  const customReleaseFrequencyOptions = [
+    { label: 'Days', value: 'days' },
+    { label: 'Weeks', value: 'weeks' },
+    { label: 'Months', value: 'months' },
+    { label: 'Years', value: 'years' }
+  ];
+
+  const handlePlusQuantity = () => {
+    setValue('customReleaseFrequencyNumber', +customReleaseFrequencyNumber.value + 1);
+  };
+
+  const handleMinusQuantity = () => {
+    if (customReleaseFrequencyNumber.value > 1) {
+      setValue('customReleaseFrequencyNumber', +customReleaseFrequencyNumber.value - 1);
+    }
+  };
 
   // Handle the changes made when updating the amount to be vested.
   const handleMinChange = (e: any) => {
@@ -174,21 +312,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   };
 
   // These are used to show/hide the date or time pickers
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   // These will be used to store current selection of date and time
   const [pickerStartDateTime, setPickerStartDateTime] = useState(new Date());
   const [pickerEndDateTime, setPickerEndDateTime] = useState(new Date());
-
-  // Shows the calendar set when a date input is focused
-  const handleFocusDatePicker = () => {
-    setShowDatePicker(true);
-  };
-
-  // Shows the time selection set when a time input is focused
-  const handleFocusTimePicker = () => {
-    setShowTimePicker(true);
-  };
 
   // Handlers for the template input
   // Create function that returns an object for the options list -- lowercased and no spaces.
@@ -214,14 +344,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     console.log('Changing vaule', newValue, actionMeta);
     if (actionMeta.action === 'clear') {
       // remove selection
-      setValue2('template', null);
+      tSetValue('template', null);
       handleTemplateChange(scheduleFormState);
     } else if (newValue) {
       console.group('Value Changed');
       console.log(newValue);
       console.log(`action: ${actionMeta.action}`);
       console.groupEnd();
-      setValue2('template', newValue);
+      tSetValue('template', newValue);
       handleTemplateChange(newValue?.details);
     }
   };
@@ -239,6 +369,75 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue('releaseFrequency', newDetails.releaseFrequency);
     setValue('cliffDuration', newDetails.cliffDuration);
     setValue('lumpSumReleaseAfterCliff', newDetails.lumpSumReleaseAfterCliff);
+    // Set values for the arbitrary ones
+    setValue('amountToBeVestedText', formatNumber(newDetails.amountToBeVested).toString());
+
+    // Cliff duration checks
+    if (newDetails.cliffDuration === 'no-cliff') {
+      setValue('cliffDurationNumber', 1);
+      setValue('cliffDurationOption', 'no-cliff');
+    } else {
+      const cliffSplit = newDetails.cliffDuration.split('-');
+      const cliffOption = cliffSplit[1].charAt(cliffSplit[1].length - 1) !== 's' ? `${cliffSplit[1]}s` : cliffSplit[1];
+      setValue('cliffDurationNumber', +cliffSplit[0]);
+      setValue('cliffDurationOption', cliffOption as CliffDuration | DateDurationOptionValues);
+    }
+
+    // Release frequency checks
+    let selectedFrequency = newDetails.releaseFrequency as string;
+    let frequencyNumber = 0;
+    let frequencyOption = 'hours';
+
+    if (newDetails.releaseFrequency.includes('every')) {
+      // Set selected to custom
+      selectedFrequency = 'custom';
+
+      // Set the right number and selected option
+      const freqValueSplit = newDetails.releaseFrequency.split('-');
+      frequencyNumber = +freqValueSplit[1];
+      frequencyOption = freqValueSplit[2];
+    } else {
+      // Default number to 1 when using the regular frequency
+      frequencyNumber = 1;
+      // Update option based on the frequency
+      switch (newDetails.releaseFrequency) {
+        case 'continuous':
+          frequencyOption = 'seconds';
+          break;
+        case 'minute':
+          frequencyOption = 'minute';
+          break;
+        case 'hourly':
+          frequencyOption = 'hours';
+          break;
+        case 'daily':
+          frequencyOption = 'days';
+          break;
+        case 'weekly':
+          frequencyOption = 'weeks';
+          break;
+        case 'monthly':
+          frequencyOption = 'months';
+          break;
+        case 'yearly':
+          frequencyOption = 'years';
+          break;
+        default:
+          break;
+      }
+    }
+    // Set the selected values
+    setValue('releaseFrequencySelectedOption', selectedFrequency);
+    setValue('customReleaseFrequencyNumber', frequencyNumber);
+    setValue('customReleaseFrequencyOption', frequencyOption);
+
+    // Focus on step 1
+    setTimeout(() => {
+      if (step[0].ref && step[0].ref.current) {
+        step[0].ref.current?.focus();
+        scrollIntoView(step[0].ref.current);
+      }
+    }, 300);
   };
 
   /**
@@ -253,7 +452,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       // Validate current values of the form
       // Should not be the default values
       if (organizationId && endDateTime.value && startDateTime.value) {
-        setValue2('template', null);
+        tSetValue('template', null);
         const selectOption = createTemplate(inputValue);
         const newOption = {
           name: selectOption.label,
@@ -264,8 +463,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             originalEndDateTime: endDateTime.value,
             endDateTime: endDateTime.value,
             cliffDuration: cliffDuration.value,
+            cliffDurationOption: cliffDurationOption.value,
+            cliffDurationNumber: cliffDurationNumber.value,
             lumpSumReleaseAfterCliff: lumpSumReleaseAfterCliff.value,
             releaseFrequency: releaseFrequency.value,
+            releaseFrequencySelectedOption: releaseFrequencySelectedOption.value,
+            customReleaseFrequencyNumber: customReleaseFrequencyNumber.value,
+            customReleaseFrequencyOption: customReleaseFrequencyOption.value,
             amountToBeVested: amountToBeVested.value,
             tokenId,
             tokenAddress: mintFormState.address,
@@ -280,7 +484,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         if (amountToBeVested.value && diffSeconds) {
           const vestingTemplate = await createVestingTemplate(newOption);
           setTemplateOptions([...templateOptions, newOption]);
-          setValue2('template', newOption);
+          tSetValue('template', newOption);
           setTemplateLoading(false);
           toast.success(`Template ${newOption.label} saved!`);
         } else {
@@ -385,15 +589,49 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       setValue('startDateTime', prospectiveStartDateTime);
       setValue('endDateTime', prospectiveEndDateTime);
     }
+
+    // Focus on the step 2
+    goToActiveStep(1);
   };
 
   const handleDateTimeChange = (e: any, field: string) => {
+    let newDate = e;
+    // Ensure that changing the date will update the time into 00:00
+    if (field.includes('Date')) {
+      newDate = new Date(new Date(e).setHours(0, 0, 0, 0));
+    }
+
+    console.log('Date time changing', newDate, field);
     if (field.includes('start')) {
-      setPickerStartDateTime(e);
+      setPickerStartDateTime(newDate);
     }
 
     if (field.includes('end')) {
-      setPickerEndDateTime(e);
+      setPickerEndDateTime(newDate);
+    }
+  };
+
+  const handleHidePickers = (field: CustomActionBarDateTimeField) => {
+    // Close the corresponding picker
+    switch (field) {
+      case 'startTime':
+        setShowStartTimePicker(false);
+        break;
+      case 'endTime':
+        setShowEndTimePicker(false);
+        // Focus on the step 3 section
+        goToActiveStep(2);
+        break;
+      case 'startDate':
+        setShowStartDatePicker(false);
+        break;
+      case 'endDate':
+        setShowEndDatePicker(false);
+        // Focus on the step 2 section
+        goToActiveStep(1);
+        break;
+      default:
+        break;
     }
   };
 
@@ -409,14 +647,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       setPickerEndDateTime(endDateTime.value);
     }
 
-    // Close the corresponding picker
-    if (field === 'startTime' || field === 'endTime') {
-      setShowTimePicker(false);
-    }
-
-    if (field === 'startDate' || field === 'endDate') {
-      setShowDatePicker(false);
-    }
+    handleHidePickers(field);
   };
 
   // Set the value of the date time in the form into the state of selected date time
@@ -432,13 +663,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
 
     // Close the corresponding picker
-    if (field === 'startTime' || field === 'endTime') {
-      setShowTimePicker(false);
-    }
-
-    if (field === 'startDate' || field === 'endDate') {
-      setShowDatePicker(false);
-    }
+    handleHidePickers(field);
   };
 
   const CustomActionBar = ({ field }: CustomActionBarProps) => {
@@ -488,8 +713,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     if (startDateTime.value && endDateTime.value && cliffDuration.value !== 'no-cliff') {
       // Compute duration of start and end dates
       const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
-      const releaseFreqSeconds = DATE_FREQ_TO_TIMESTAMP[releaseFrequency.value];
-      const cliffSeconds = CLIFFDURATION_TIMESTAMP[cliffDuration.value];
+      const releaseFreqSeconds = getReleaseFrequencyTimestamp(startDateTime.value, releaseFrequency.value);
+      const cliffSeconds = getCliffDurationTimestamp(cliffDuration.value, startDateTime.value);
       const idealScheduleDuration = cliffSeconds + releaseFreqSeconds;
       console.log('Difference', idealScheduleDuration, diffSeconds, releaseFreqSeconds, cliffSeconds);
       // Compare to cliff duration
@@ -528,15 +753,21 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue('amountToBeVested', newMaxValue);
     setValue('amountToBeVestedText', formatNumber(newMaxValue).toString());
     clearErrors('amountToBeVestedText');
+
+    // Make the amount to be vested an active section
+    setActiveStep(4);
   };
 
   // Updates made when the user is interacting with the Range Slider component
   // Should also update the text value -- for display -- of the number input
   const handleAmountToBeVestedChange = (e: any) => {
     const newValue = parseFloat(e.target.value);
-    setValue('amountToBeVested', newValue);
+    // setValue('amountToBeVested', newValue);
     setValue('amountToBeVestedText', formatNumber(newValue).toString());
     clearErrors('amountToBeVestedText');
+
+    // Make the amount to be vested an active section
+    setActiveStep(4);
   };
 
   // Add additional fields to contain the text value of the inputted numbers -- AMOUNT TO BE VESTED.
@@ -556,264 +787,160 @@ const ConfigureSchedule: NextPageWithLayout = () => {
    * 3. Typing / Creating a template will save the current configuration form data into the new template document.
    */
 
+  // Stores the state for the initial loading of configuration form.
+  // Ask the user if they want to use existing templates or just start from scratch.
+  const {
+    control: fuControl,
+    handleSubmit: fuSubmitHandler,
+    watch: fuWatch,
+    getFieldState: fuGetFieldState,
+    getValues: fuGetValues,
+    setValue: fuSetValue,
+    setError: fuSetError,
+    clearErrors: fuClearErrors,
+    formState: { errors: fuErrors, isSubmitting: fuIsSubmitting }
+  } = useForm({
+    defaultValues: {
+      formUsage: '',
+      templateName: '',
+      saveAsTemplate: false
+    }
+  });
+
+  // Stores all related data about the template prompt and its behavior.
+  const formUsage = { value: fuWatch('formUsage'), state: fuGetFieldState('formUsage') };
+  const templateName = { value: fuWatch('templateName'), state: fuGetFieldState('templateName') };
+  const saveAsTemplate = { value: fuWatch('saveAsTemplate'), state: fuGetFieldState('saveAsTemplate') };
+
+  // Checks for the prompt status first before letting the user interact with the form
+  const isUserTemplatePromptActive = () => {
+    // If there is no selected option in the prompt
+    if (!formUsage.value) return true;
+    // If the user selects to use saved templates but does not yet select one
+    if (formUsage.value === 'USE_TEMPLATE' && !template.value) return true;
+    return false;
+  };
+
+  // Automatically selects the "start from scratch" option when there is no template available.
+  useEffect(() => {
+    if (templateOptions && !templateOptions.length) {
+      fuSetValue('formUsage', 'FROM_SCRATCH');
+      setTimeout(() => {
+        if (step[0].ref && step[0].ref.current) {
+          step[0].ref.current?.focus();
+          scrollIntoView(step[0].ref.current);
+        }
+      }, 300);
+    } else {
+      fuSetValue('formUsage', '');
+    }
+  }, [templateOptions]);
+
+  // This contains step section auto focusing during interaction
+  // Contains 5 steps by default
+  const [step, setStep] = useState<{ active: boolean; isExpanded: boolean; interactionCount: number; ref: any }[]>([
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) }
+  ]);
+
+  const goToActiveStep = (indexUpdate: number) => {
+    setActiveStep(indexUpdate);
+    setTimeout(() => {
+      if (step[indexUpdate].ref && step[indexUpdate].ref.current) {
+        scrollIntoView(step[indexUpdate].ref.current);
+        step[indexUpdate].ref.current?.focus();
+      }
+    }, 600);
+  };
+
+  const setActiveStep = (indexUpdate: number) => {
+    setStep((prevState) => {
+      const prevIndex = indexUpdate - 1;
+      const newState = [...prevState].map((step, stepIndex) => {
+        if (stepIndex === indexUpdate) {
+          return { ...step, active: true, isExpanded: true };
+        } else if (prevIndex >= 0 && stepIndex < indexUpdate) {
+          return { ...step, active: false, isExpanded: false };
+        } else {
+          return { ...step, active: false };
+        }
+      });
+      return newState;
+    });
+  };
+
+  // Focuses on the 1st step when the current template usage value is from scratch
+  useEffect(() => {
+    if (formUsage.value && formUsage.value === 'FROM_SCRATCH') {
+      goToActiveStep(0);
+    }
+  }, [formUsage.value]);
+
+  // This contains the triggers for each section to focus after interacting with the form
+  // Step 1 interaction -- Go to handleDateTimeChange
+  // Step 2 interaction -- Go to handleDateTimeChange
+  // useEffect(() => {
+  //   // Step 3 interaction
+  //   if (cliffDuration.value === 'no-cliff') {
+  //     goToActiveStep(3);
+  //   }
+  // }, [cliffDuration.value]);
+
+  // Step 4 interaction
+  // useEffect(() => {
+  //   if (
+  //     releaseFrequencySelectedOption.value !== 'custom' ||
+  //     (customReleaseFrequencyNumber.value && customReleaseFrequencyOption.value)
+  //   ) {
+  //     goToActiveStep(4);
+  //   }
+  // }, [releaseFrequency.value]);
+
+  console.log('TOUCHED AND DIRTY', releaseFrequency.state.isTouched, releaseFrequency.state.isDirty);
+
   return (
     <>
-      <div className="grid md:grid-cols-12 w-full gap-3.5">
-        <div className="md:col-span-7">
-          <Form
-            isSubmitting={isSubmitting}
-            className="w-full mb-6"
-            onSubmit={handleSubmit(onSubmit)}
-            error={formError}
-            success={formSuccess}
-            message={formMessage}>
-            <div className="grid md:grid-cols-2 gap-5 mb-5">
-              {/**
-               * Date picker start
-               * Shows a custom input and the date picker itself
-               * */}
-              <div>
-                {startDateTime.value ? (
-                  <>
-                    <Input
-                      label="Start date"
-                      required
-                      value={format(startDateTime.value, 'MM/dd/yyyy')}
-                      onFocus={handleFocusDatePicker}
-                    />
-                    {showDatePicker ? (
-                      <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <StaticDatePicker
-                          displayStaticWrapperAs="mobile"
-                          value={pickerStartDateTime}
-                          onChange={(newValue) => {
-                            handleDateTimeChange(newValue, 'startDate');
-                          }}
-                          renderInput={(params) => <TextField {...params} />}
-                          components={{
-                            ActionBar: ActionBarStartDate
-                          }}
-                        />
-                      </LocalizationProvider>
-                    ) : null}
-                  </>
-                ) : null}
-              </div>
-              <div>
-                {endDateTime.value ? (
-                  <>
-                    <Input
-                      label="End date"
-                      required
-                      value={format(endDateTime.value, 'MM/dd/yyyy')}
-                      onFocus={handleFocusDatePicker}
-                    />
-                    {showDatePicker ? (
-                      <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <StaticDatePicker
-                          displayStaticWrapperAs="mobile"
-                          value={pickerEndDateTime}
-                          onChange={(newValue) => {
-                            handleDateTimeChange(newValue, 'endDate');
-                          }}
-                          renderInput={(params) => <TextField {...params} />}
-                          components={{
-                            ActionBar: ActionBarEndDate
-                          }}
-                        />
-                      </LocalizationProvider>
-                    ) : null}
-                  </>
-                ) : null}
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-5 mb-5">
-              {/* Date picker end */}
-              <div className="md:col-span-2 row-center gap-3">
-                <div className="row-center flex-wrap">
-                  {quickDates.map((quickDate, qdIndex) => (
-                    <Chip
-                      key={`Quick-date-${qdIndex}`}
-                      label={quickDate.label}
-                      rounded
-                      color="alt"
-                      className="cursor-pointer transform transition-all hover:-translate-y-px hover:bg-primary-900 hover:text-neutral-50 hover:border-primary-900"
-                      onClick={() => addDateToSchedule(quickDate.value)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/**
-               * Time picker start
-               * Same behavior as the date picker
-               * */}
-              <div>
-                {startDateTime.value ? (
-                  <>
-                    <Input
-                      type="text"
-                      label="Start time"
-                      required
-                      value={format(startDateTime.value, 'hh:mm a')}
-                      onFocus={handleFocusTimePicker}
-                    />
-                    {showTimePicker ? (
-                      <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <StaticTimePicker
-                          displayStaticWrapperAs="mobile"
-                          value={pickerStartDateTime}
-                          onChange={(newValue) => {
-                            handleDateTimeChange(newValue, 'startTime');
-                          }}
-                          renderInput={(params) => <TextField {...params} />}
-                          components={{
-                            ActionBar: ActionBarStartTime
-                          }}
-                        />
-                      </LocalizationProvider>
-                    ) : null}
-                  </>
-                ) : null}
-              </div>
-              <div>
-                {endDateTime.value ? (
-                  <>
-                    <Input
-                      label="End time"
-                      required
-                      value={format(endDateTime.value, 'h:mm aa')}
-                      onFocus={handleFocusTimePicker}
-                    />
-                    {showTimePicker ? (
-                      <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <StaticTimePicker
-                          displayStaticWrapperAs="mobile"
-                          value={pickerEndDateTime}
-                          onChange={(newValue) => {
-                            handleDateTimeChange(newValue, 'endTime');
-                          }}
-                          renderInput={(params) => <TextField {...params} />}
-                          components={{
-                            ActionBar: ActionBarEndTime
-                          }}
-                        />
-                      </LocalizationProvider>
-                    ) : null}
-                  </>
-                ) : null}
-              </div>
-              {/* Time picker end */}
-              <div className="md:col-span-2 border-b border-neutral-300 pb-5">
-                <Controller
-                  name="cliffDuration"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <SelectInput
-                      label="Cliff duration"
-                      placeholder="Select how many"
-                      options={cliffOptions}
-                      required
-                      error={Boolean(errors.cliffDuration)}
-                      message={errors.cliffDuration ? 'Please select cliff duration' : ''}
-                      {...field}
-                    />
-                  )}
+      {/* TEMPLATE PROMPT AND SELECTION SECTION */}
+      {templateOptions && templateOptions.length ? (
+        <div className="w-full text-left">
+          <label className="text-neutral-900 font-medium text-base">Do you want to use an existing template?</label>
+          {/* PROMP SECTION */}
+          <div className="inline-flex flex-col gap-2 mt-4">
+            <Controller
+              name="formUsage"
+              control={fuControl}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Radio
+                  variant="input-style"
+                  checked={formUsage.value === 'USE_TEMPLATE'}
+                  label="Yes, I want to use saved template"
+                  {...field}
+                  value="USE_TEMPLATE"
                 />
-                {cliffDuration.value === 'no-cliff' ? null : (
-                  <Controller
-                    name="lumpSumReleaseAfterCliff"
-                    control={control}
-                    rules={{ required: true }}
-                    render={({ field, fieldState, formState }) => (
-                      <Input
-                        label="Tokens unlocked after cliff (1-99%)"
-                        placeholder="Enter whole percentage amount"
-                        className="mt-5"
-                        required
-                        error={Boolean(fieldState.error)}
-                        message={fieldState.error ? 'Please enter lump sum amount' : ''}
-                        {...field}
-                        type="percent"
-                      />
-                    )}
-                  />
-                )}
-              </div>
-              <div className="md:col-span-2 border-b border-neutral-300 pb-5">
-                <Controller
-                  name="releaseFrequency"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <BarRadio
-                      label="Release frequency"
-                      options={radioOptions}
-                      required
-                      error={Boolean(errors.releaseFrequency)}
-                      message={errors.releaseFrequency ? 'Please select cliff duration' : ''}
-                      {...field}
-                    />
-                  )}
+              )}
+            />
+            <Controller
+              name="formUsage"
+              control={fuControl}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Radio
+                  variant="input-style"
+                  checked={formUsage.value === 'FROM_SCRATCH'}
+                  label="No, I want to start from scratch"
+                  {...field}
+                  value="FROM_SCRATCH"
                 />
-              </div>
-              <div className="md:col-span-2 pb-5">
-                <div className="relative">
-                  <Controller
-                    name="amountToBeVestedText"
-                    control={control}
-                    rules={{ required: true }}
-                    render={({ field }) => (
-                      <>
-                        <label className="required w-full">
-                          <div className="flex flex-row items-center justify-between gap-3 w-full">
-                            <span className="form-label required">Amount to be vested</span>
-                            <p className="text-xs font-medium text-neutral-700">
-                              Token total supply: {formatNumber(totalTokenSupply)}
-                            </p>
-                          </div>
-                        </label>
-                        <Input
-                          placeholder="Enter amount"
-                          type="number"
-                          max={totalTokenSupply}
-                          error={Boolean(errors.amountToBeVestedText) || amountToBeVested.value > totalTokenSupply}
-                          message={errors.amountToBeVestedText ? 'Please enter amount to be vested' : ''}
-                          {...field}
-                        />
-                      </>
-                    )}
-                  />
-                  <Chip
-                    label="MAX"
-                    color={amountToBeVested.value < totalTokenSupply ? 'secondary' : 'default'}
-                    onClick={handleMaxAmount}
-                    className={`absolute right-6 cursor-pointer ${
-                      amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-2'
-                    }`}
-                  />
-                </div>
-                <div className="mt-6">
-                  <RangeSlider
-                    max={totalTokenSupply || 0}
-                    value={amountToBeVested.value ? amountToBeVested.value : 0}
-                    className="mt-5"
-                    onChange={handleAmountToBeVestedChange}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-row justify-end items-center border-t border-neutral-200 pt-5">
-              <Button className="primary" type="submit" loading={isSubmitting} disabled={formError}>
-                Continue
-              </Button>
-            </div>
-          </Form>
-        </div>
-        <div className="md:col-span-5">
-          <div className="panel">
-            <div className="border-b border-neutral-200 pb-5 mb-5">
+              )}
+            />
+          </div>
+          {/* TEMPLATE SELECTION SECTION */}
+          {formUsage.value === 'USE_TEMPLATE' ? (
+            <div className="mt-5 transition-all">
               {/*
                * In this form control, we should be able to do the following:
                * 1. List of options should come from DB. The data should contain the name of the template, and its form values.
@@ -825,24 +952,23 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                */}
               <Controller
                 name="template"
-                control={control2}
+                control={tControl}
                 rules={{ required: true }}
                 render={({ field, fieldState }) => (
-                  <label className="required md:col-span-2">
-                    <span>Vesting template</span>
-                    <CreatableSelect
+                  <label className="required">
+                    <span className="text-sm text-neutral-700 font-medium mb-0">
+                      Select from previously saved templates
+                    </span>
+                    <Select
                       {...field}
                       isLoading={templateLoading}
-                      allowCreateWhileLoading
-                      formatCreateLabel={(inputValue: string) => <CreateLabel inputValue={inputValue} />}
-                      onCreateOption={onCreateTemplate}
                       options={templateOptions}
                       isClearable
                       value={field.value || null}
                       onChange={onTemplateChange}
-                      placeholder={templateLoading ? `Saving template...` : 'Find or type to create template'}
-                      noOptionsMessage={() => 'Type to create a template'}
-                      className="select-container"
+                      placeholder={templateLoading ? `Saving template...` : 'Search saved templates'}
+                      noOptionsMessage={() => 'Type to search for saved templates'}
+                      className="select-container mt-2.5"
                       classNamePrefix="select"
                     />
                     {fieldState.error ? (
@@ -852,6 +978,507 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 )}
               />
             </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {/* CONFIGURATION FORM SECTION */}
+      <div className={`grid md:grid-cols-12 w-full gap-3.5 ${isUserTemplatePromptActive() ? 'opacity-20' : ''}`}>
+        <div className="md:col-span-7">
+          <Form
+            isSubmitting={isSubmitting}
+            className="w-full mb-6"
+            padded={false}
+            disabled={isUserTemplatePromptActive()}
+            onSubmit={handleSubmit(onSubmit)}
+            error={formError}
+            success={formSuccess}
+            message={formMessage}>
+            {/* Step 1: Date selection section */}
+            <StepLabel
+              ref={step[0].ref}
+              step={1}
+              isExpanded={step[0].isExpanded}
+              isActive={step[0].active}
+              label="Date selection"
+              className="rounded-t-3xl"
+              required
+              description={
+                <>
+                  Select the dates for when this schedule should{' '}
+                  <strong>
+                    <i>start</i>
+                  </strong>{' '}
+                  and{' '}
+                  <strong>
+                    <i>end</i>
+                  </strong>
+                  .
+                </>
+              }
+              note="Or, make it easier by choosing from the selection of pre-defined lengths of time above."
+              onFocus={() => setActiveStep(0)}>
+              <div className="flex flex-row gap-3">
+                {/* Step 1 start date section */}
+                <div className="flex-grow">
+                  {startDateTime.value ? (
+                    <>
+                      <Input
+                        required
+                        value={format(startDateTime.value, 'MM/dd/yyyy')}
+                        onFocus={() => {
+                          setShowStartDatePicker(true);
+                          setActiveStep(0);
+                        }}
+                      />
+                      {showStartDatePicker ? (
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                          <StaticDatePicker
+                            displayStaticWrapperAs="mobile"
+                            value={pickerStartDateTime}
+                            onChange={(newValue) => {
+                              handleDateTimeChange(newValue, 'startDate');
+                            }}
+                            renderInput={(params) => <TextField {...params} />}
+                            components={{
+                              ActionBar: ActionBarStartDate
+                            }}
+                          />
+                        </LocalizationProvider>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
+                <span className="flex-shrink-0 text-xs font-medium text-neutral-500 flex flex-row items-center justify-center h-10">
+                  to
+                </span>
+                {/* Step 1 end date section */}
+                <div className="flex-grow">
+                  {endDateTime.value ? (
+                    <>
+                      <Input
+                        required
+                        value={format(endDateTime.value, 'MM/dd/yyyy')}
+                        onFocus={() => {
+                          setShowEndDatePicker(true);
+                          setActiveStep(0);
+                        }}
+                      />
+                      {showEndDatePicker ? (
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                          <StaticDatePicker
+                            displayStaticWrapperAs="mobile"
+                            value={pickerEndDateTime}
+                            onChange={(newValue) => {
+                              handleDateTimeChange(newValue, 'endDate');
+                            }}
+                            renderInput={(params) => <TextField {...params} />}
+                            components={{
+                              ActionBar: ActionBarEndDate
+                            }}
+                          />
+                        </LocalizationProvider>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
+              </div>
+              {/* Step 1 quick date adding section */}
+              {step[0] && (step[0].isExpanded || step[0].active) ? (
+                <div className="mt-4 row-center flex-wrap">
+                  {quickDates.map((quickDate, qdIndex) => (
+                    <Chip
+                      key={`Quick-date-${qdIndex}`}
+                      label={quickDate.label}
+                      rounded
+                      color="alt"
+                      className="cursor-pointer transform transition-all hover:-translate-y-px hover:bg-primary-900 hover:text-neutral-50 hover:border-primary-900"
+                      onFocus={() => setActiveStep(0)}
+                      onClick={() => addDateToSchedule(quickDate.value)}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </StepLabel>
+
+            <hr className="mx-6" />
+
+            {/* Step 2: Time selection section */}
+            <StepLabel
+              step={2}
+              ref={step[1].ref}
+              isExpanded={step[1].isExpanded}
+              isActive={step[1].active}
+              label="Time selection"
+              required
+              description={
+                <>
+                  Customise the time for when this schedule should{' '}
+                  <strong>
+                    <i>start</i>
+                  </strong>{' '}
+                  and{' '}
+                  <strong>
+                    <i>end</i>
+                  </strong>
+                  .<br />
+                  This is in your local timezone.
+                </>
+              }
+              onFocus={() => setActiveStep(1)}>
+              <div className="flex flex-row gap-3">
+                {/* Step 2 start time section */}
+                <div className="flex-grow">
+                  {startDateTime.value ? (
+                    <>
+                      <Input
+                        type="text"
+                        required
+                        value={format(startDateTime.value, 'hh:mm a')}
+                        onFocus={() => {
+                          setShowStartTimePicker(true);
+                          setActiveStep(1);
+                        }}
+                      />
+                      {showStartTimePicker ? (
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                          <StaticTimePicker
+                            displayStaticWrapperAs="mobile"
+                            value={pickerStartDateTime}
+                            onChange={(newValue) => {
+                              handleDateTimeChange(newValue, 'startTime');
+                            }}
+                            renderInput={(params) => <TextField {...params} />}
+                            components={{
+                              ActionBar: ActionBarStartTime
+                            }}
+                          />
+                        </LocalizationProvider>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
+                <span className="flex-shrink-0 text-xs font-medium text-neutral-500 flex flex-row items-center justify-center h-10">
+                  to
+                </span>
+                {/* Step 2 end time section */}
+                <div className="flex-grow">
+                  {endDateTime.value ? (
+                    <>
+                      <Input
+                        required
+                        value={format(endDateTime.value, 'h:mm aa')}
+                        onFocus={() => {
+                          setShowEndTimePicker(true);
+                          setActiveStep(1);
+                        }}
+                      />
+                      {showEndTimePicker ? (
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                          <StaticTimePicker
+                            displayStaticWrapperAs="mobile"
+                            value={pickerEndDateTime}
+                            onChange={(newValue) => {
+                              handleDateTimeChange(newValue, 'endTime');
+                            }}
+                            renderInput={(params) => <TextField {...params} />}
+                            components={{
+                              ActionBar: ActionBarEndTime
+                            }}
+                          />
+                        </LocalizationProvider>
+                      ) : null}
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </StepLabel>
+
+            <hr className="mx-6" />
+
+            {/* Step 3: Cliff duration selection section */}
+            <StepLabel
+              step={3}
+              ref={step[2].ref}
+              isExpanded={step[2].isExpanded}
+              isActive={step[2].active}
+              label="Cliff duration"
+              required
+              description="Select the length of your lock-up period"
+              hint={
+                <>
+                  A cliff typically means a period of time that must be passed before recipients start unlocking tokens.
+                  Also known as the{' '}
+                  <strong>
+                    <i>“lock up”</i>
+                  </strong>{' '}
+                  period. Recipients will receive no tokens during this period.
+                </>
+              }
+              onFocus={() => setActiveStep(2)}>
+              {/* Step 3 cliff duration selection */}
+              <Controller
+                name="cliffDurationOption"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <BarRadio
+                    options={cliffOptions}
+                    required
+                    error={Boolean(errors.cliffDurationOption)}
+                    message={errors.cliffDurationOption ? 'Please select cliff duration' : ''}
+                    variant="pill"
+                    onFocus={() => setActiveStep(2)}
+                    {...field}
+                    onBlur={() => {
+                      if (cliffDurationOption.value === 'no-cliff') setActiveStep(5);
+                    }}
+                  />
+                )}
+              />
+              {cliffDurationOption.value === 'no-cliff' ? null : (
+                <>
+                  {/* Step 3 cliff duration value */}
+                  <Controller
+                    name="cliffDurationNumber"
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field, fieldState }) => (
+                      <div className="relative mt-4">
+                        <Input
+                          placeholder={`Enter number of ${cliffDurationOption.value}`}
+                          className="mt-4"
+                          required
+                          error={Boolean(fieldState.error)}
+                          message={fieldState.error ? 'Please enter number of ' + cliffDurationOption.value : ''}
+                          onFocus={() => setActiveStep(2)}
+                          {...field}
+                          onBlur={() => setActiveStep(5)}
+                          type="number"
+                        />
+                        <span
+                          className={`absolute top-0 right-0 transform transition-all text-sm text-neutral-700 ${
+                            fieldState.error ? 'translate-y-3.5 -translate-x-4' : 'translate-y-2.5 -translate-x-3.5'
+                          }`}>
+                          {formatCliffDurationOption(+cliffDurationNumber.value, cliffDurationOption.value)}
+                        </span>
+                      </div>
+                    )}
+                  />
+
+                  {/* Step 3 lumpsum release when there is cliff duration */}
+                  <Controller
+                    name="lumpSumReleaseAfterCliff"
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field, fieldState, formState }) => (
+                      <Input
+                        label="Tokens unlocked after cliff (0-99%)"
+                        placeholder="Enter whole percentage amount"
+                        className="mt-4"
+                        required
+                        error={Boolean(fieldState.error)}
+                        message={fieldState.error ? 'Please enter lump sum amount' : ''}
+                        onFocus={() => setActiveStep(2)}
+                        {...field}
+                        onBlur={() => setActiveStep(5)}
+                        type="percent"
+                      />
+                    )}
+                  />
+                </>
+              )}
+            </StepLabel>
+
+            <hr className="mx-6" />
+
+            {/* Step 4: Release frequency section */}
+            <StepLabel
+              step={4}
+              ref={step[3].ref}
+              isExpanded={step[3].isExpanded}
+              isActive={step[3].active}
+              label="Release frequency"
+              required
+              description="Determine how often recipients will receive their tokens over the course of their schedule."
+              hint="Our platform currently only supports linear vesting which dictates that the same amount of tokens be equally distributed to the recipient periodically by the frequency that you set."
+              onFocus={() => setActiveStep(3)}>
+              {/* Step 4 release frequency input */}
+              <Controller
+                name="releaseFrequencySelectedOption"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <BarRadio
+                    options={radioOptions}
+                    required
+                    error={Boolean(errors.releaseFrequencySelectedOption)}
+                    message={errors.releaseFrequencySelectedOption ? 'Please select release frequency' : ''}
+                    variant="pill"
+                    onFocus={() => setActiveStep(3)}
+                    {...field}
+                    onBlur={() => {
+                      if (releaseFrequencySelectedOption.value !== 'custom') {
+                        setActiveStep(5);
+                      }
+                    }}
+                  />
+                )}
+              />
+              {releaseFrequencySelectedOption.value === 'custom' ? (
+                <>
+                  <div className="flex flex-row items-center gap-3 mt-4">
+                    <Controller
+                      name="customReleaseFrequencyNumber"
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <QuantityInput
+                          placeholder="0"
+                          error={Boolean(errors.customReleaseFrequencyNumber)}
+                          onPlus={handlePlusQuantity}
+                          onMinus={handleMinusQuantity}
+                          onFocus={() => setActiveStep(3)}
+                          {...field}
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="customReleaseFrequencyOption"
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <BarRadio
+                          className="flex-grow flex-shrink-0"
+                          options={customReleaseFrequencyOptions}
+                          required
+                          error={Boolean(errors.customReleaseFrequencyOption)}
+                          message={errors.customReleaseFrequencyOption ? 'Please select frequency' : ''}
+                          variant="pill"
+                          onFocus={() => setActiveStep(3)}
+                          {...field}
+                          onBlur={() => setActiveStep(5)}
+                        />
+                      )}
+                    />
+                  </div>
+                  {errors.customReleaseFrequencyNumber || errors.customReleaseFrequencyOption ? (
+                    <div className="text-red-700 text-xs mt-3">Please select and enter custom frequency</div>
+                  ) : null}
+                </>
+              ) : null}
+            </StepLabel>
+
+            <hr className="mx-6" />
+
+            {/* Step 5: Amount to be vested section */}
+            <StepLabel
+              step={5}
+              ref={step[4].ref}
+              isExpanded={step[4].isExpanded}
+              isActive={step[4].active}
+              label="Amount to be vested"
+              required
+              description={
+                <>
+                  Select the total amount of tokens to be locked up in this schedule. If you have added multiple users,
+                  note that this amount will be equally split between each user. Your current available supply is{' '}
+                  <strong>{formatNumber(totalTokenSupply)}</strong> <strong>{mintFormState.symbol}</strong>.
+                </>
+              }
+              hint={
+                <>
+                  An example is if you have added 3 users in the previous step and the total amount to be vested is
+                  600,000 <strong>{mintFormState.symbol}</strong>, then each user will be allocated 200,000{' '}
+                  <strong>{mintFormState.symbol}</strong>.
+                </>
+              }
+              onFocus={() => setActiveStep(4)}>
+              <div className="relative">
+                {/* Step 5 Input field for the amount to be vested */}
+                <Controller
+                  name="amountToBeVestedText"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <>
+                      <Input
+                        placeholder="Enter amount"
+                        type="number"
+                        max={totalTokenSupply}
+                        error={Boolean(errors.amountToBeVestedText) || amountToBeVested.value > totalTokenSupply}
+                        message={errors.amountToBeVestedText ? 'Please enter amount to be vested' : ''}
+                        onFocus={() => setActiveStep(4)}
+                        {...field}
+                        onBlur={() => setActiveStep(5)}
+                      />
+                    </>
+                  )}
+                />
+                <Chip
+                  label="MAX"
+                  color={amountToBeVested.value < totalTokenSupply ? 'secondary' : 'default'}
+                  onClick={handleMaxAmount}
+                  onBlur={() => setActiveStep(5)}
+                  className={`absolute right-6 cursor-pointer ${
+                    amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-2'
+                  }`}
+                />
+              </div>
+              {/* Step 5 Slider section */}
+              <div className="mt-6">
+                <RangeSlider
+                  max={totalTokenSupply || 0}
+                  value={amountToBeVested.value ? amountToBeVested.value : 0}
+                  className="mt-5"
+                  onChange={handleAmountToBeVestedChange}
+                  onBlur={() => setActiveStep(5)}
+                />
+              </div>
+            </StepLabel>
+
+            <hr className="mx-6" />
+            <div className="px-6 pt-6">
+              {/* Convert to component later */}
+              <Checkbox
+                label="Save as template"
+                checked={saveAsTemplate.value}
+                name="save-as-template"
+                onChange={() => fuSetValue('saveAsTemplate', !saveAsTemplate.value)}
+              />
+              {saveAsTemplate.value ? (
+                <Controller
+                  name="templateName"
+                  control={fuControl}
+                  rules={{ required: true }}
+                  render={({ field, fieldState }) => (
+                    <Input
+                      label="Template name"
+                      placeholder="Enter template name"
+                      className="mt-3"
+                      error={Boolean(fieldState.error)}
+                      message={fieldState.error ? 'Please enter template name' : ''}
+                      {...field}
+                    />
+                  )}
+                />
+              ) : null}
+            </div>
+
+            <div className="flex flex-row justify-between items-center p-6">
+              <BackButton
+                label="Return to add recipients"
+                onClick={() => Router.push('/vesting-schedule/add-recipients')}
+              />
+              <Button className="primary" type="submit" loading={isSubmitting} disabled={formError}>
+                Continue
+              </Button>
+            </div>
+          </Form>
+        </div>
+        <div className="md:col-span-5">
+          <div className="panel">
+            <label className="font-medium text-base text-neutral-900 mb-3">Schedule details</label>
             <ScheduleDetails {...getValues()} token={mintFormState.symbol || 'Token'} layout="small" />
           </div>
         </div>
@@ -865,17 +1492,17 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },
-    { title: 'Configure schedule', route: '/vesting-schedule/configure' }
+    { title: 'Configure schedule', route: '/vesting-schedule/add-recipients' }
   ];
 
   // Update these into a state coming from the context
   const wizardSteps = [
     {
-      title: 'Setup schedule',
+      title: 'Add recipient(s)',
       desc: ''
     },
     {
-      title: 'Add recipient(s)',
+      title: 'Setup schedule',
       desc: ''
     },
     {
@@ -884,7 +1511,7 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
     }
   ];
   return (
-    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={0}>
+    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={1}>
       {page}
     </SteppedLayout>
   );

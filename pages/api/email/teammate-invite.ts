@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const { email, type, orgId, orgName, name } = req.body;
   const baseUrl = req.headers.host ? `http://${req.headers.host}` : process.env.NEXT_PUBLIC_DOMAIN_NAME;
   const actionCodeSettings = {
-    url: `${baseUrl}/member?email=${email}&type=${type}&orgId=${orgId}&name=${name}`,
+    url: encodeURI(`${baseUrl}/member?email=${email}&type=${type}&orgId=${orgId}&name=${name}`),
     handleCodeInApp: true
   };
 

@@ -39,7 +39,7 @@ const Complete: NextPageWithLayout = () => {
           <p className="text-sm text-neutral-500 mb-6">{mintFormState?.address}</p>
         </Copy>
         <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-          <button className="primary" type="button" onClick={() => Router.push('/vesting-schedule/configure')}>
+          <button className="primary" type="button" onClick={() => Router.push('/vesting-schedule/add-recipients')}>
             Create schedule
           </button>
           <Link href="/dashboard">

@@ -15,6 +15,7 @@ import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
@@ -35,13 +36,19 @@ import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingSchedules, fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
-import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IToken, ITransaction, IVesting } from 'types/models';
 import { IRecipient } from 'types/vesting';
 import { convertAllToOptions, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
-import { getChartData, getCliffAmount, getCliffDateTime, getDuration, getNumberOfReleases } from 'utils/vesting';
+import {
+  getChartData,
+  getCliffAmount,
+  getCliffDateTime,
+  getDuration,
+  getNumberOfReleases,
+  getReleaseFrequencyTimestamp
+} from 'utils/vesting';
 
 interface IVestingSchedules {
   id: string;
@@ -57,6 +64,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
+  const { vestingContract } = useDashboardContext();
 
   const [selected, setSelected] = useState('manual');
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
@@ -151,7 +159,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const selections: Record<string, Record<string, string>> = {
     manual: {
       label: 'Create Schedule',
-      url: '/vesting-schedule/configure'
+      url: '/vesting-schedule/add-recipients'
     },
     import: {
       label: 'Upload CSV File',
@@ -230,20 +238,47 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // Renderer for more action items
   const CellActions = (props: any) => {
     const { data, id } = props.row.original;
-    const menuItems = [
-      {
-        label: `${data.archive ? 'Unarchive' : 'Archive'}`,
-        onClick: () => handleArchiving(id, data)
-      },
-      { label: 'Revoke', onClick: () => alert('Revoke clicked') }
-    ];
+    // const menuItems =
+    //   (data as IVesting).status === 'COMPLETED' || (data as IVesting).status === 'LIVE'
+    //     ? [{ label: 'Revoke', onClick: () => handleRevoke(id, data) }]
+    //     : [
+    //         {
+    //           label: `${data.archive ? 'Unarchive' : 'Archive'}`,
+    //           onClick: () => handleArchiving(id, data)
+    //         }
+    //       ];
     return (
-      <div className="row-center">
-        <button className="line small" onClick={() => Router.push(`/vesting-schedule/${props.row.original.id}`)}>
-          Details
-        </button>
-        <DropdownMenu items={menuItems} />
-      </div>
+      <table className="-my-3.5 -mx-6">
+        <tbody>
+          {data.recipients.map((recipient: IRecipient, rIndex: number) => {
+            return (
+              <tr key={`recipient-${rIndex}`} className="group">
+                <td className="group-last:border-b-0">
+                  <div className="py-2 flex items-center flex-nowrap">
+                    <button
+                      className="line small"
+                      onClick={() => Router.push(`/vesting-schedule/${props.row.original.id}`)}>
+                      Details
+                    </button>
+                    <DropdownMenu
+                      items={
+                        (data as IVesting).status === 'COMPLETED' || (data as IVesting).status === 'LIVE'
+                          ? [{ label: 'Revoke', onClick: () => handleRevoke(id, data, rIndex) }]
+                          : [
+                              {
+                                label: `${data.archive ? 'Unarchive' : 'Archive'}`,
+                                onClick: () => handleArchiving(id, data)
+                              }
+                            ]
+                      }
+                    />
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     );
   };
 
@@ -295,6 +330,36 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     );
     toast.success(`Schedule: ${data.name} ${!data.archive ? '' : 'un'}archived!`);
     getVestings(false);
+  };
+
+  // Handles revoking process
+  const handleRevoke = async (id: string, data: IVesting, rIndex: number) => {
+    if (data.status === 'COMPLETED' || data.status === 'LIVE') {
+      try {
+        setTransactionStatus('PENDING');
+        const vestingContractInstance = new ethers.Contract(
+          vestingContract?.data?.address ?? '',
+          VTVL_VESTING_ABI.abi,
+          library.getSigner()
+        );
+        const revokeTransaction = await vestingContractInstance.revokeClaim(data.recipients[rIndex].walletAddress);
+        setTransactionStatus('IN_PROGRESS');
+        await revokeTransaction.wait();
+        await updateVesting(
+          {
+            ...data,
+            status: 'REVOKED'
+          },
+          id
+        );
+        toast.success('Revoking is done successfully.');
+        setTransactionStatus('SUCCESS');
+      } catch (err) {
+        console.log('handleRevoke - ', err);
+        toast.success('Something went wrong. Try agaiin later.');
+        setTransactionStatus('ERROR');
+      }
+    }
   };
 
   // Defines the columns used and their functions in the table
@@ -396,6 +461,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       let vestingReleaseIntervals: any = [];
       let vestingLinearVestAmounts: any = [];
       let vestingCliffAmounts: any = [];
+      const vestingIds = selectedRows.map((row: any) => row.id);
       selectedRows.forEach((row: any) => {
         const vesting = row.data;
         const vestingId = row.id;
@@ -451,9 +517,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           Math.floor(vestingEndTimestamp!.getTime() / 1000)
         );
         const vestingCliffTimestamps1 = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
-        const vestingReleaseIntervals1 = new Array(vesting.recipients.length).fill(
-          (DATE_FREQ_TO_TIMESTAMP as any)[vesting.details.releaseFrequency]
+        const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
+          vesting.details.startDateTime as Date,
+          vesting.details.releaseFrequency
         );
+        const vestingReleaseIntervals1 = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
         const vestingLinearVestAmounts1 = new Array(vesting.recipients.length).fill(
           parseTokenAmount(vestingAmountPerUser, 18)
         );
@@ -529,7 +597,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
-            chainId
+            chainId,
+            vestingIds
           });
           await Promise.all(
             selectedRows.map(async (row: any) => {
@@ -578,7 +647,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           organizationId: organizationId,
-          chainId
+          chainId,
+          vestingIds
         };
         const transactionId = await createTransaction(transactionData);
         await Promise.all(
@@ -648,7 +718,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                 </Copy>
               </div>
               <div className="flex flex-row items-center justify-start gap-2">
-                <button className="secondary row-center" onClick={() => Router.push('/vesting-schedule/configure')}>
+                <button
+                  className="secondary row-center"
+                  onClick={() => Router.push('/vesting-schedule/add-recipients')}>
                   <PlusIcon className="w-5 h-5" />
                   <span className="whitespace-nowrap">Create Schedule</span>
                 </button>

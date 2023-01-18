@@ -22,10 +22,9 @@ import { ReactElement, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { fetchVesting } from 'services/db/vesting';
-import { DATE_FREQ_TO_LABEL } from 'types/constants/schedule-configuration';
 import { formatDate, formatTime, getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
-import { getChartData, getCliffAmount, getCliffDateTime, getNextUnlock } from 'utils/vesting';
+import { getChartData, getCliffAmount, getCliffDateTime, getNextUnlock, getReleaseFrequencyLabel } from 'utils/vesting';
 
 const MyTokenSchedule: NextPageWithLayout = () => {
   const { library, chainId, account, activate } = useWeb3React();
@@ -485,7 +484,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                   </div>
                   <div className="text-lg text-neutral-900">
                     {formatNumber(userTokenDetails.releaseAmount, 6)}/
-                    {DATE_FREQ_TO_LABEL[selectedSchedule.data.details.releaseFrequency]}
+                    {getReleaseFrequencyLabel(selectedSchedule.data.details.releaseFrequency)}
                   </div>
                 </div>
                 <div className="p-6 border-t border-gray-200 text-center  sm:col-span-2 md:col-span-1 lg:col-span-2">

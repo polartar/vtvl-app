@@ -21,7 +21,6 @@ import Modal from 'react-modal';
 import { ToastContainer } from 'react-toastify';
 // Toast initial styling.
 import 'react-toastify/dist/ReactToastify.css';
-import ReactTooltip from 'react-tooltip';
 import 'styles/globals.css';
 
 // Exporting a layout type for nested layouts
@@ -61,14 +60,6 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                       <ClaimTokensContextProvider>
                         <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
                         <ToastContainer />
-                        {/* <ReactTooltip
-                          effect="solid"
-                          type="dark"
-                          place="top"
-                          multiline
-                          delayShow={300}
-                          backgroundColor="var(--neutral-700)"
-                        /> */}
                       </ClaimTokensContextProvider>
                     </TransactionLoaderContextProvider>
                   </DashboardContextProvider>

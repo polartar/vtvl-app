@@ -21,6 +21,7 @@ import { useTokenContext } from './token.context';
 
 interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
+  recipients: MultiValue<IRecipient>;
   vestingContract: { id: string; data: IVestingContract | undefined } | undefined;
   transactions: { id: string; data: ITransaction }[];
   ownershipTransfered: boolean;
@@ -60,6 +61,7 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingsLoading, setVestingsLoading] = useState(false);
   const [vestingContractLoading, setVestingContractLoading] = useState(false);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
+  const [recipients, setRecipients] = useState<MultiValue<IRecipient>>([]);
 
   const fetchDashboardVestingContract = async () => {
     try {
@@ -86,9 +88,10 @@ export function DashboardContextProvider({ children }: any) {
     setVestingsLoading(true);
     try {
       const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId!, chainId!]);
-      console.log({ res });
       // Filter out without the archived records
-      const filteredVestingSchedules = res.filter((v) => !v.data.archive && v.data.chainId === chainId);
+      const filteredVestingSchedules = res.filter(
+        (v) => !v.data.archive && v.data.status !== 'REVOKED' && v.data.chainId === chainId
+      );
       setVestings(filteredVestingSchedules);
     } catch (err) {
       console.log('fetchDashboardVestings - ', err);
@@ -200,6 +203,7 @@ export function DashboardContextProvider({ children }: any) {
   const value = useMemo(
     () => ({
       vestings,
+      recipients,
       vestingContract,
       transactions,
       ownershipTransfered,
@@ -219,6 +223,7 @@ export function DashboardContextProvider({ children }: any) {
     }),
     [
       vestings,
+      recipients,
       vestingContract,
       transactions,
       ownershipTransfered,
@@ -238,6 +243,22 @@ export function DashboardContextProvider({ children }: any) {
   useEffect(() => {
     fetchVestingContractBalance();
   }, [vestingContract, vestings, mintFormState, chainId]);
+
+  useEffect(() => {
+    if (vestings) {
+      let allRecipients: MultiValue<IRecipient> = [];
+      vestings.forEach((vesting) => {
+        allRecipients = [...allRecipients, ...vesting.data.recipients];
+      });
+      setRecipients(
+        allRecipients.filter(
+          (recipient, i) =>
+            i ===
+            allRecipients.findIndex((r) => r.walletAddress.toLowerCase() === recipient.walletAddress.toLowerCase())
+        )
+      );
+    }
+  }, [vestings]);
 
   useEffect(() => {
     if (vestingContract?.data && safe?.address && chainId) {

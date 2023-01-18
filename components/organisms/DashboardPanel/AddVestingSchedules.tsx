@@ -12,7 +12,7 @@ import ScheduleOverview from 'components/molecules/ScheduleOverview/ScheduleOver
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, doc, onSnapshot } from 'firebase/firestore';
 import Router from 'next/router';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
@@ -21,17 +21,23 @@ import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { transactionCollection, vestingCollection } from 'services/db/firestore';
 import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
-import { DATE_FREQ_TO_TIMESTAMP } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
 import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
 import { IFundContractProps } from 'types/models/vestingContract';
 import { parseTokenAmount } from 'utils/token';
-import { getChartData, getCliffAmount, getCliffDateTime, getNumberOfReleases } from 'utils/vesting';
+import {
+  getChartData,
+  getCliffAmount,
+  getCliffDateTime,
+  getNumberOfReleases,
+  getReleaseFrequencyTimestamp
+} from 'utils/vesting';
 
 import FundingContractModal from '../FundingContractModal/FundingContractModal';
 
@@ -220,26 +226,23 @@ AddVestingSchedulesProps) => {
         ) / vesting.recipients.length;
       const vestingAmountPerUser = +vesting.details.amountToBeVested / vesting.recipients.length - cliffAmountPerUser;
       const addresses = vesting.recipients.map((recipient) => recipient.walletAddress);
+
+      const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+
       const cliffReleaseDate =
         vesting.details.startDateTime && vesting.details.cliffDuration !== 'no-cliff'
-          ? getCliffDateTime(
-              new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-              vesting.details.cliffDuration
-            )
+          ? getCliffDateTime(vestingStartTime, vesting.details.cliffDuration)
           : '';
       const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
       const numberOfReleases =
         vesting.details.startDateTime && vesting.details.endDateTime
           ? getNumberOfReleases(
               vesting.details.releaseFrequency,
-              cliffReleaseDate || new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
+              cliffReleaseDate || vestingStartTime,
               new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
             )
           : 0;
-      const actualStartDateTime =
-        vesting.details.cliffDuration !== 'no-cliff'
-          ? cliffReleaseDate
-          : new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+      const actualStartDateTime = vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vestingStartTime;
       const vestingEndTimestamp =
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
@@ -266,9 +269,11 @@ AddVestingSchedulesProps) => {
         Math.floor(vestingEndTimestamp!.getTime() / 1000)
       );
       const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
-      const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(
-        DATE_FREQ_TO_TIMESTAMP[vesting.details.releaseFrequency]
+      const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
+        vestingStartTime,
+        vesting.details.releaseFrequency
       );
+      const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
       const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
         parseTokenAmount(vestingAmountPerUser, 18)
       );
@@ -334,7 +339,8 @@ AddVestingSchedulesProps) => {
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
-            chainId
+            chainId,
+            vestingIds: [vestingId]
           });
           setTransaction({
             id: transactionId,
@@ -347,7 +353,8 @@ AddVestingSchedulesProps) => {
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
-              chainId
+              chainId,
+              vestingIds: [vestingId]
             }
           });
           updateVesting(
@@ -396,29 +403,30 @@ AddVestingSchedulesProps) => {
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           organizationId: organizationId,
-          chainId
+          chainId,
+          vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
-        updateVesting(
-          {
-            ...vesting,
-            transactionId,
-            // Because the schedule is now confirmed and ready for the vesting
-            status: 'LIVE'
-          },
-          vestingId
-        );
+        // updateVesting(
+        //   {
+        //     ...vesting,
+        //     transactionId,
+        //     // Because the schedule is now confirmed and ready for the vesting
+        //     status: 'LIVE'
+        //   },
+        //   vestingId
+        // );
         await addingClaimsTransaction.wait();
-        updateTransaction(
-          {
-            ...transactionData,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          transactionId
-        );
+        // updateTransaction(
+        //   {
+        //     ...transactionData,
+        //     status: 'SUCCESS',
+        //     updatedAt: Math.floor(new Date().getTime() / 1000)
+        //   },
+        //   transactionId
+        // );
         setStatus('success');
-        toast.success('Added schedules successfully.');
+        // toast.success('Added schedules successfully.');
         setTransactionStatus('SUCCESS');
       }
     } catch (err) {
@@ -703,6 +711,18 @@ AddVestingSchedulesProps) => {
       setStatus('transferToMultisigSafe');
     }
   }, [type, vestingContract, ownershipTransfered]);
+
+  // useEffect(() => {
+  //   if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
+  //     setStatus('success');
+  //   }
+  // }, [activeVestingIndex, vestings]);
+
+  useEffect(() => {
+    if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
+      setStatus('success');
+    }
+  }, [activeVestingIndex, vestings]);
 
   useEffect(() => {
     if (type === 'schedule' && !transaction) {

@@ -1,7 +1,9 @@
 import { useWeb3React } from '@web3-react/core';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, onSnapshot } from 'firebase/firestore';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
+import { toast } from 'react-toastify';
+import { vestingCollection } from 'services/db/firestore';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVesting } from 'types/models';
@@ -25,9 +27,9 @@ export interface IScheduleFormState {
 }
 
 export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
-  startDateTime: new Date(),
-  endDateTime: new Date(),
-  originalEndDateTime: new Date(),
+  startDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
+  endDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
+  originalEndDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
   cliffDuration: 'no-cliff',
   lumpSumReleaseAfterCliff: 25,
   releaseFrequency: 'continuous',
@@ -103,6 +105,34 @@ export function VestingContextProvider({ children }: any) {
       });
     }
   }, [organizationId, chainId]);
+
+  useEffect(() => {
+    const subscribe = onSnapshot(vestingCollection, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'modified') {
+          const vestingInfo = change.doc.data();
+          if (vestingInfo.status === 'LIVE') {
+            const newVestings = vestings.map((vesting) => {
+              if (vesting.id === change.doc.id) {
+                toast.success('Added schedules successfully.');
+
+                return {
+                  id: vesting.id,
+                  data: vestingInfo
+                };
+              }
+              return vesting;
+            });
+            setVestings(newVestings);
+          }
+        }
+      });
+    });
+
+    return () => {
+      subscribe();
+    };
+  }, [vestings]);
 
   return <VestingContext.Provider value={value}>{children}</VestingContext.Provider>;
 }

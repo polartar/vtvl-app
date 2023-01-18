@@ -1,5 +1,8 @@
 import TransactionModal, { TransactionStatuses } from '@components/molecules/TransactionModal/TransactionModal';
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import { onSnapshot } from 'firebase/firestore';
+import { useAuthContext } from 'providers/auth.context';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { transactionCollection } from 'services/db/firestore';
 
 interface ITransactionLoadeerData {
   transactionStatus: TransactionStatuses;
@@ -12,7 +15,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatuses>('');
 
   console.log('Tx Loader Context', transactionStatus);
-
+  const { safe, organizationId } = useAuthContext();
   const value = useMemo(
     () => ({
       transactionStatus,
@@ -20,6 +23,28 @@ export function TransactionLoaderContextProvider({ children }: any) {
     }),
     [transactionStatus, setTransactionStatus]
   );
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(transactionCollection, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'modified') {
+          const transactionInfo = change.doc.data();
+          if (transactionInfo.organizationId === organizationId) {
+            if (transactionInfo.status === 'SUCCESS') {
+              setTransactionStatus('SUCCESS');
+            }
+            if (transactionInfo.status === 'FAILED') {
+              setTransactionStatus('ERROR');
+            }
+          }
+        }
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   return (
     <TransactionLoader.Provider value={value}>

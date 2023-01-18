@@ -24,7 +24,7 @@ const Dashboard: NextPageWithLayout = () => {
   const { library, account, activate } = useWeb3React();
   const { organizationId, safe, emailSignUp, user } = useAuthContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
-  const { recipients, scheduleFormState } = useVestingContext();
+  const { scheduleFormState } = useVestingContext();
   const {
     vestings,
     vestingContract,
@@ -36,7 +36,8 @@ const Dashboard: NextPageWithLayout = () => {
     vestingContractLoading,
     vestingsLoading,
     transactionsLoading,
-    fetchDashboardData
+    fetchDashboardData,
+    recipients
   } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
 
@@ -146,15 +147,17 @@ const Dashboard: NextPageWithLayout = () => {
               <button
                 className="primary row-center"
                 onClick={() => {
-                  router.push('/vesting-schedule/configure');
+                  router.push('/vesting-schedule/add-recipients');
                 }}>
                 <PlusIcon className="w-5 h-5" />
                 <span className="whitespace-nowrap">Create Schedule</span>
               </button>
-              <button className="secondary row-center" onClick={() => router.push('/dashboard/mint-supply')}>
-                <PlusIcon className="w-5 h-5" />
-                <span className="whitespace-nowrap">Mint Supply</span>
-              </button>
+              {mintFormState.address && !mintFormState.imported && mintFormState.supplyCap === 'UNLIMITED' && (
+                <button className="secondary row-center" onClick={() => router.push('/dashboard/mint-supply')}>
+                  <PlusIcon className="w-5 h-5" />
+                  <span className="whitespace-nowrap">Mint Supply</span>
+                </button>
+              )}
             </div>
           </div>
 

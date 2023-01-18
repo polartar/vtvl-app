@@ -44,7 +44,10 @@ module.exports = {
   plugins: [],
   variants: {
     extend: {
-      translate: ['group-hover'],
+      textColor: ['group-hover', 'group-focus'],
+      backgroundColor: ['group-hover', 'group-focus'],
+      borderColor: ['group-hover', 'group-focus'],
+      translate: ['group-hover', 'group-focus'],
       border: ['group-last']
     }
   }

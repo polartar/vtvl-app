@@ -163,13 +163,22 @@ const devSupportedChains: SupportedChainsType = {
     explorer: 'https://testnet.bscscan.com',
     multisigTxUrl: ''
   },
-  [SupportedChainId.POLYGON]: {
+  [SupportedChainId.MUMBAI]: {
     id: 80001,
     icon: '/icons/chains/polygon.svg',
     title: 'Polygon Mumbai Testnet',
     code: 'MATIC',
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
+    multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
+  },
+  [SupportedChainId.POLYGON]: {
+    id: 137,
+    icon: '/icons/chains/polygon.svg',
+    title: 'Polygon',
+    code: 'MATIC',
+    rpc: 'https://polygon-rpc.com',
+    explorer: 'https://polygonscan.com/',
     multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
   },
   [SupportedChainId.AVALANCHE]: {
