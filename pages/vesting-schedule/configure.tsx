@@ -137,7 +137,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     const { releaseFrequency, startDateTime, endDateTime, cliffDuration, amountToBeVested, lumpSumReleaseAfterCliff } =
       data;
     if (startDateTime && endDateTime) {
-      const numberOfReleases = getNumberOfReleases(releaseFrequency, startDateTime, endDateTime);
+      // const numberOfReleases = getNumberOfReleases(releaseFrequency, startDateTime, endDateTime);
       const cliffAmount = getCliffAmount(cliffDuration, +lumpSumReleaseAfterCliff, amountToBeVested);
       const projectedEndDateTime = getChartData({
         start: startDateTime,
@@ -762,7 +762,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   // Should also update the text value -- for display -- of the number input
   const handleAmountToBeVestedChange = (e: any) => {
     const newValue = parseFloat(e.target.value);
-    setValue('amountToBeVested', newValue);
+    // setValue('amountToBeVested', newValue);
     setValue('amountToBeVestedText', formatNumber(newValue).toString());
     clearErrors('amountToBeVestedText');
 
@@ -772,11 +772,11 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Add additional fields to contain the text value of the inputted numbers -- AMOUNT TO BE VESTED.
   // Then updating the numeric value based on the current value of the text
-  // useEffect(() => {
-  //   // Parse the text into floats to cater the decimals if any
-  //   const amountToBeVestedToFloat = parseFloat(amountToBeVestedText.value.replaceAll(',', ''));
-  //   setValue('amountToBeVested', !isNaN(amountToBeVestedToFloat) ? amountToBeVestedToFloat : 0);
-  // }, [amountToBeVestedText.value]);
+  useEffect(() => {
+    // Parse the text into floats to cater the decimals if any
+    const amountToBeVestedToFloat = parseFloat(amountToBeVestedText.value.replaceAll(',', ''));
+    setValue('amountToBeVested', !isNaN(amountToBeVestedToFloat) ? amountToBeVestedToFloat : 0);
+  }, [amountToBeVestedText.value]);
 
   /**
    * This section is used for anything that regards the Vesting Schedule templates
