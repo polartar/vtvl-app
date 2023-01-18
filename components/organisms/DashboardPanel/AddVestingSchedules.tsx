@@ -407,26 +407,26 @@ AddVestingSchedulesProps) => {
           vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
-        // updateVesting(
-        //   {
-        //     ...vesting,
-        //     transactionId,
-        //     // Because the schedule is now confirmed and ready for the vesting
-        //     status: 'LIVE'
-        //   },
-        //   vestingId
-        // );
+        updateVesting(
+          {
+            ...vesting,
+            transactionId,
+            // Because the schedule is now confirmed and ready for the vesting
+            status: 'LIVE'
+          },
+          vestingId
+        );
         await addingClaimsTransaction.wait();
-        // updateTransaction(
-        //   {
-        //     ...transactionData,
-        //     status: 'SUCCESS',
-        //     updatedAt: Math.floor(new Date().getTime() / 1000)
-        //   },
-        //   transactionId
-        // );
+        updateTransaction(
+          {
+            ...transactionData,
+            status: 'SUCCESS',
+            updatedAt: Math.floor(new Date().getTime() / 1000)
+          },
+          transactionId
+        );
         setStatus('success');
-        // toast.success('Added schedules successfully.');
+        toast.success('Added schedules successfully.');
         setTransactionStatus('SUCCESS');
       }
     } catch (err) {
@@ -712,11 +712,11 @@ AddVestingSchedulesProps) => {
     }
   }, [type, vestingContract, ownershipTransfered]);
 
-  useEffect(() => {
-    if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
-      setStatus('success');
-    }
-  }, [activeVestingIndex, vestings]);
+  // useEffect(() => {
+  //   if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
+  //     setStatus('success');
+  //   }
+  // }, [activeVestingIndex, vestings]);
 
   useEffect(() => {
     if (type === 'schedule' && !transaction) {
