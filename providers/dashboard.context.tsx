@@ -84,6 +84,7 @@ export function DashboardContextProvider({ children }: any) {
   };
 
   const fetchDashboardVestings = async () => {
+    console.log({ chainId });
     setVestingsLoading(true);
     try {
       const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId!, chainId!]);

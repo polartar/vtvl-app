@@ -132,7 +132,7 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
           {txTypes[status].image}
           <h2 className="sora font-semibold text-3xl text-neutral-900 mt-12">{txTypes[status].title}</h2>
           <p className="mt-4 font-medium text-sm text-neutral-500 text-center">{txTypes[status].description}</p>
-          {/* {status !== 'SUCCESS' && status !== 'ERROR' && (
+          {status !== 'SUCCESS' && status !== 'ERROR' && (
             <Chip
               label={
                 <div className="flex flex-row items-center gap-2">
@@ -144,15 +144,15 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
               rounded
               className="mt-8"
             />
-          )} */}
-          {status === 'IN_PROGRESS' && (
+          )}
+          {/* {status === 'IN_PROGRESS' && (
             <button
               type="button"
               className="primary flex flex-row gap-2 items-center mt-4"
               onClick={() => setIsOpen(false)}>
               Close
             </button>
-          )}
+          )} */}
         </Modal>
       ) : null}
     </>
