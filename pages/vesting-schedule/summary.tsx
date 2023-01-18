@@ -21,12 +21,7 @@ import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
 import { createVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContractByQuery, updateVestingContract } from 'services/db/vestingContract';
-import {
-  CLIFFDURATION_TIMESTAMP,
-  CliffDuration,
-  DATE_FREQ_TO_TIMESTAMP,
-  ReleaseFrequency
-} from 'types/constants/schedule-configuration';
+import { CLIFFDURATION_TIMESTAMP, CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChains } from 'types/constants/supported-chains';
 import { generateRandomName } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
@@ -64,7 +59,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
     const ABI = [PERFORM_CREATE_FUNCTION];
     const vestingId = await createVesting({
       name: generateRandomName(4) || '',
-      details: scheduleFormState,
+      details: { ...scheduleFormState },
       recipients,
       organizationId: organizationId!,
       status: 'INITIALIZED',
@@ -116,7 +111,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
           <ScheduleDetails {...scheduleFormState} token={mintFormState.symbol || 'Token'} />
         </div>
         <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-          <BackButton label="Return to add recipient" href="/vesting-schedule/add-beneficiary" />
+          <BackButton label="Return to configuration" href="/vesting-schedule/configure" />
           <button
             className="primary"
             type="button"
@@ -137,17 +132,17 @@ ScheduleSummary.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },
-    { title: 'Configure schedule', route: '/vesting-schedule/configure' }
+    { title: 'Configure schedule', route: '/vesting-schedule/add-recipients' }
   ];
 
   // Update these into a state coming from the context
   const wizardSteps = [
     {
-      title: 'Setup schedule',
+      title: 'Add recipient(s)',
       desc: ''
     },
     {
-      title: 'Add recipient(s)',
+      title: 'Setup schedule',
       desc: ''
     },
     {

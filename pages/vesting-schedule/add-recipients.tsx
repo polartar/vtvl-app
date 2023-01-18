@@ -13,7 +13,7 @@ import { useDashboardContext } from 'providers/dashboard.context';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Modal, { Styles } from 'react-modal';
-import Select, { ActionMeta, OnChangeValue } from 'react-select';
+import Select, { ActionMeta, MultiValue, OnChangeValue } from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { IRecipient, IRecipientFormState, IRecipientType } from 'types/vesting';
 import { convertLabelToOption } from 'utils/shared';
@@ -30,7 +30,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
     recipientType: []
   };
   const { recipients: recipientsData, updateRecipients, scheduleFormState } = useVestingContext();
-  const { vestings } = useDashboardContext();
+  const { vestings, recipients: organizationRecipients } = useDashboardContext();
 
   const {
     control,
@@ -115,7 +115,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
 
   // Higher level recipient dropdown
   const recipients = { value: recipientsWatch('recipients'), state: recipientsGetFieldState('recipients') };
-  const [recipientOptions, setRecipientOptions] = useState<IRecipient[]>([]);
+  const [recipientOptions, setRecipientOptions] = useState<MultiValue<IRecipient>>([]);
 
   const onChangeRecipient = (newValue: OnChangeValue<IRecipient, true>, actionMeta: ActionMeta<IRecipient>) => {
     console.group('Recipient Value Changed');
@@ -172,7 +172,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
   const onRecipientsSubmit: SubmitHandler<IRecipientFormState> = (data) => {
     console.log('Recipient is now submitted', data);
     updateRecipients([...data.recipients]);
-    Router.push('/vesting-schedule/summary');
+    Router.push('/vesting-schedule/configure');
   };
 
   /**
@@ -270,6 +270,13 @@ const AddBeneficiary: NextPageWithLayout = () => {
   useEffect(() => {
     setRecipientDuplicated(false);
   }, [walletAddress.value]);
+
+  useEffect(() => {
+    if (organizationRecipients) {
+      setRecipientOptions(organizationRecipients);
+      // recipientsSetValue('recipients', organizationRecipients);
+    }
+  }, [organizationRecipients]);
 
   return (
     <>
@@ -410,7 +417,7 @@ const AddBeneficiary: NextPageWithLayout = () => {
         <form
           className="flex flex-row justify-between items-center pt-5"
           onSubmit={beneficiariesSubmit(onRecipientsSubmit)}>
-          <BackButton label="Back to details" onClick={() => Router.push('/vesting-schedule/configure')} />
+          <BackButton label="Back" onClick={() => Router.push('/vesting-schedule')} />
           <button className="primary" type="submit">
             Continue
           </button>
@@ -434,17 +441,17 @@ AddBeneficiary.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },
-    { title: 'Configure schedule', route: '/vesting-schedule/configure' }
+    { title: 'Configure schedule', route: '/vesting-schedule/add-recipients' }
   ];
 
   // Update these into a state coming from the context
   const wizardSteps = [
     {
-      title: 'Setup schedule',
+      title: 'Add recipient(s)',
       desc: ''
     },
     {
-      title: 'Add recipient(s)',
+      title: 'Setup schedule',
       desc: ''
     },
     {
@@ -453,7 +460,7 @@ AddBeneficiary.getLayout = function getLayout(page: ReactElement) {
     }
   ];
   return (
-    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={1}>
+    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={0}>
       {page}
     </SteppedLayout>
   );

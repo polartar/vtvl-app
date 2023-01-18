@@ -237,3 +237,8 @@ export const getUserTokenDetails = async (
   console.log('userTokenDetails ' + userWalletAddress, userTokenDetails);
   return userTokenDetails;
 };
+
+// This function lets the user scroll into view on the element's position
+export const scrollIntoView = (element: any) => {
+  window.scrollTo({ top: element.offsetTop, behavior: 'smooth' });
+};

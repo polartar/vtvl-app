@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface Option {
   label: string | number;
@@ -14,24 +14,36 @@ interface BarRadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   message?: string | JSX.Element | JSX.Element[];
   error?: boolean;
   success?: boolean;
-  variant?: 'tab' | 'input';
+  variant?: 'tab' | 'input' | 'pill';
 }
 
 const BarRadio = ({ label = '', options, required, className, variant = 'input', ...props }: BarRadioProps) => {
+  // Stores the container's class name and sets the default value
+  const defaultContainerClass =
+    'barRadio flex flex-row item-center justify-stretch border border-neutral-300 overflow-hidden h-10';
+
+  // Used for shorthand casing of variant conditions
   const variants = {
     tab: {
-      container: 'rounded-lg w-max',
+      container: `${defaultContainerClass} rounded-lg w-max`,
       item: 'text-sm text-neutral-800 hover:bg-neutral-100 w-32',
       active: 'bg-neutral-100',
       inactive: 'bg-white'
     },
     input: {
-      container: 'rounded-full',
+      container: `${defaultContainerClass} rounded-full`,
       item: 'shrink-0 grow text-xs hover:bg-primary-900 hover:text-neutral-50',
       active: 'bg-primary-900 text-neutral-50',
       inactive: 'bg-neutral-50 text-neutral-800'
+    },
+    pill: {
+      container: 'flex flex-row items-center flex-wrap justify-start gap-2',
+      item: 'inline-flex flex-row items-center w-auto border h-8 font-medium whitespace-nowrap py-0.5 px-2 text-sm rounded-full cursor-pointer transform transition-all hover:-translate-y-px hover:bg-primary-900 hover:text-neutral-50 hover:border-primary-900',
+      active: 'bg-primary-900 text-neutral-50 border-primary-900',
+      inactive: 'bg-neutral-50 text-neutral-800 border-neutral-300'
     }
   };
+
   return (
     <div>
       {label ? (
@@ -40,14 +52,13 @@ const BarRadio = ({ label = '', options, required, className, variant = 'input',
         </label>
       ) : null}
 
-      <div
-        className={`barRadio flex flex-row item-center justify-stretch border border-neutral-300 overflow-hidden h-10 ${variants[variant].container}`}>
+      <div className={variants[variant].container}>
         {options.map((option, optionIndex) => (
           <label
             key={`bar-radio-option-${option.value}-${optionIndex}`}
-            className={`flex-row items-center justify-center cursor-pointer text-center font-medium border-netural-300 transition-all ${
+            className={`cursor-pointer ${
               option.value == props.value ? variants[variant].active : variants[variant].inactive
-            } ${optionIndex ? 'border-l' : ''} ${variants[variant].item}`}>
+            } ${optionIndex && variant !== 'pill' ? 'border-l' : ''} ${variants[variant].item}`}>
             {option.label}
             <input
               type="radio"

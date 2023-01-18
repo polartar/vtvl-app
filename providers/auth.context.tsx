@@ -28,10 +28,13 @@ export type NewLogin = {
   uuid: string;
 };
 
+export type TConnections = 'metamask' | 'walletconnect';
+
 export type AuthContextData = {
   user: IUser | undefined;
   safe: ISafe | undefined;
   organizationId: string | undefined;
+  connection?: TConnections;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   emailSignUp: (newSignUp: IMember, url: string) => Promise<void>;
@@ -62,7 +65,7 @@ export type AuthContextData = {
 const AuthContext = createContext({} as AuthContextData);
 
 export function AuthContextProvider({ children }: any) {
-  const { chainId, account } = useWeb3React();
+  const { chainId, account, connector } = useWeb3React();
   const [user, setUser] = useState<IUser | undefined>();
   // Remove default value when merging to develop, staging or main
   // Mock organizationId 'v2S4z6kgjac61iDsQqr7'
@@ -76,7 +79,12 @@ export function AuthContextProvider({ children }: any) {
   // Remove after implementing context to show/hide the sidebar
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
   const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(true);
+
+  // Stores the connection status whether the user is connected via metamask or other wallets
+  const [connection, setConnection] = useState<TConnections | undefined>();
+
   console.log({ user });
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -88,6 +96,24 @@ export function AuthContextProvider({ children }: any) {
 
     return unsubscribe;
   }, []);
+
+  // This is used to determine which icons or assets to use across the app,
+  // especially on Funding Contract and Transaction Modals.
+  // Will surely update and refactor this function later as we add in
+  // more wallet options like coinbase and ledger.
+  useEffect(() => {
+    if (connector) {
+      connector?.getProvider().then((res) => {
+        //   // Assumes that this is coming from a WalletConnect
+        //   // Normally the value of this is "wc" for WalletConnect
+        //   // If so, we set the connection to "walletconnect"
+        //   // Else, we set it to the default "metamask"
+        setConnection(
+          res && res.signer && res.signer.connection && res.signer.connection.wc ? 'walletconnect' : 'metamask'
+        );
+      });
+    }
+  }, [connector]);
 
   const signInWithGoogle = async (): Promise<NewLogin | undefined> => {
     setLoading(true);
@@ -319,6 +345,7 @@ export function AuthContextProvider({ children }: any) {
       user,
       safe,
       organizationId,
+      connection,
       signUpWithEmail,
       signInWithEmail,
       emailSignUp,
@@ -343,7 +370,7 @@ export function AuthContextProvider({ children }: any) {
       agreedOnConsent,
       setAgreedOnConsent
     }),
-    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent]
+    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent, connection]
   );
   console.log('organzationId - ', organizationId);
 

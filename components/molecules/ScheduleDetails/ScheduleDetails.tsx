@@ -4,12 +4,7 @@ import Hint from '@components/atoms/Hint/Hint';
 import format from 'date-fns/format';
 import { Timestamp } from 'firebase/firestore';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import {
-  CliffDuration,
-  DATE_FREQ_TO_LABEL,
-  DATE_FREQ_TO_TIMESTAMP,
-  ReleaseFrequency
-} from 'types/constants/schedule-configuration';
+import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { formatDate, formatTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import {
@@ -18,7 +13,8 @@ import {
   getCliffDateTime,
   getDuration,
   getNumberOfReleases,
-  getReleaseAmount
+  getReleaseAmount,
+  getReleaseFrequencyLabel
 } from 'utils/vesting';
 
 type DateTimeType = Date | null | undefined;
@@ -58,13 +54,6 @@ const ScheduleDetails = ({
   /**
    * Add in computed values bases on the props that are passed from the vesting schedule configuration.
    */
-
-  /**
-   * Date / Time - Scheduled day and time.
-   * Formats into "Fri, Oct 14, 2022 4:00 PM (GMT+8)"
-   */
-  const formatDate = (date: Date) => format(date, 'E, LLL d, yyyy');
-  const formatTime = (date: Date) => format(date, 'h:mm a (O)');
 
   const duration = startDateTime && endDateTime ? getDuration(startDateTime as Date, endDateTime) : '';
   const cliffDate = startDateTime ? getCliffDateTime(startDateTime, cliffDuration) : '';
@@ -118,6 +107,22 @@ const ScheduleDetails = ({
         break;
       case 'yearly':
         dateFormat = 'yyyy';
+        break;
+      default:
+        {
+          // every-1-days, every-2-days & every-4-weeks
+          const splitFrequencyValue = releaseFrequency.split('-')[2];
+          const formats: Record<string, string> = {
+            continuous: 'M/d/yy h:mm aaa',
+            minutes: 'M/d/yy h:mm aaa',
+            hours: 'M/d/yy h:mm aaa',
+            days: 'MMM d yyyy',
+            weeks: 'MMM d yyyy',
+            months: 'MMM yyyy',
+            years: 'yyyy'
+          };
+          dateFormat = formats[splitFrequencyValue];
+        }
         break;
     }
     return format(new Date(value), dateFormat);
@@ -197,7 +202,7 @@ const ScheduleDetails = ({
           <span>Linear Release</span>
           <p className="flex flex-row items-start gap-2 text-xs">
             <img src="/icons/graph-line.svg" className="w-6 h-6" alt="Cliff" />
-            {formatNumber(releaseAmount)} {token} /{DATE_FREQ_TO_LABEL[releaseFrequency]}
+            {formatNumber(releaseAmount)} {token} /{getReleaseFrequencyLabel(releaseFrequency)}
           </p>
         </label>
         <label>

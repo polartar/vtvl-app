@@ -32,7 +32,7 @@ ConfirmationSuccess.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },
-    { title: 'Configure schedule', route: '/vesting-schedule/configure' }
+    { title: 'Configure schedule', route: '/vesting-schedule/add-recipients' }
   ];
 
   return (

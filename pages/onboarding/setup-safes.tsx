@@ -66,7 +66,8 @@ const YourSafesPage: NextPage = () => {
                 <EmptyState title={importSafeError ? importSafeError : 'No safes found'} />
               </div>
             )}
-            <div className="border-b border-neutral-200 pb-5 flex items-center justify-center">
+            <div className="border-b border-neutral-200 pb-5 flex flex-col items-center">
+              {safes && safes.length ? <div className="text-sm my-3">Or</div> : null}
               <button
                 className="primary"
                 type="button"
