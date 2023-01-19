@@ -25,7 +25,14 @@ module.exports = {
   content: ['./{pages,components}/**/*.{js,jsx,ts,tsx}', './stories/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      colors,
+      colors: {
+        ...colors,
+        label: '#667085',
+        info: '#101828'
+      },
+      borderColor: {
+        info: '#e8ebf5'
+      },
       fontSize: {
         h1: '2rem',
         h2: '1.75rem',

@@ -28,7 +28,7 @@ const Layout = styled.div`
  */
 const Main = styled.main<{ sidebarIsExpanded: boolean; sidebarIsShown: boolean }>`
   width: ${({ sidebarIsShown, sidebarIsExpanded }) =>
-    sidebarIsShown ? 'calc(100vw - ' + (sidebarIsExpanded ? '279px' : '80px') + ');' : '100vw;'};
+    sidebarIsShown ? 'calc(100vw - ' + (sidebarIsExpanded ? '294px' : '80px') + ');' : '100vw;'};
 `;
 
 /**
@@ -312,7 +312,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
             <Main
               sidebarIsExpanded={sidebarIsExpanded}
               sidebarIsShown={displaySideBar}
-              className="flex flex-col items-center p-8 pt-7">
+              className="flex flex-col items-center pt-7">
               {props.children}
             </Main>
           </div>

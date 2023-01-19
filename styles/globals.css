@@ -385,10 +385,10 @@
     @apply opacity-80;
   }
 
-  :disabled input[type="radio"],
-  :disabled input[type="checkbox"],
-  [disabled] input[type="radio"],
-  [disabled] input[type="checkbox"] {
+  :disabled input[type='radio'],
+  :disabled input[type='checkbox'],
+  [disabled] input[type='radio'],
+  [disabled] input[type='checkbox'] {
     @apply opacity-0;
   }
 
@@ -771,9 +771,15 @@ html,
 }
 
 /* Show the hint content when hovered */
-.hint-content { display: none; }
+.hint-content {
+  display: none;
+}
 .hint:hover .hint-content,
 .hint:focus .hint-content,
 .hint:focus-visible .hint-content {
   display: block;
+}
+
+body {
+  overflow-x: hidden;
 }

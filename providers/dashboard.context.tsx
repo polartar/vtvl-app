@@ -23,6 +23,7 @@ interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
   recipients: MultiValue<IRecipient>;
   vestingContract: { id: string; data: IVestingContract | undefined } | undefined;
+  vestingContracts: { id: string; data: IVestingContract }[];
   transactions: { id: string; data: ITransaction }[];
   ownershipTransfered: boolean;
   insufficientBalance: boolean;
@@ -53,6 +54,7 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingContract, setVestingContract] = useState<
     { id: string; data: IVestingContract | undefined } | undefined
   >();
+  const [vestingContracts, setVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
   const [transactions, setTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
   const [removeOwnership, setRemoveOwnership] = useState(false);
@@ -73,8 +75,10 @@ export function DashboardContextProvider({ children }: any) {
       );
       if (res && res.length > 0) {
         setVestingContract(res[0]);
+        setVestingContracts(res);
       } else {
         setVestingContract(undefined);
+        setVestingContracts([]);
       }
     } catch (err) {
       console.log('fetchDashboardVestingContract - ', err);
@@ -205,6 +209,7 @@ export function DashboardContextProvider({ children }: any) {
       vestings,
       recipients,
       vestingContract,
+      vestingContracts,
       transactions,
       ownershipTransfered,
       insufficientBalance,
@@ -232,7 +237,8 @@ export function DashboardContextProvider({ children }: any) {
       vestingsLoading,
       vestingContractLoading,
       transactionsLoading,
-      removeOwnership
+      removeOwnership,
+      vestingContracts
     ]
   );
 

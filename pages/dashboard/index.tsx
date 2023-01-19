@@ -5,6 +5,7 @@ import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
 import AddVestingSchedules from '@components/organisms/DashboardPanel/AddVestingSchedules';
+import DashboardVestingSummary from '@components/organisms/DashboardVestingSummary';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
@@ -116,32 +117,25 @@ const Dashboard: NextPageWithLayout = () => {
         </>
       ) : (
         <div className="w-full">
-          <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
+          <p className="text-neutral-500 text-sm font-medium mb-2 ml-8">Overview</p>
           {/* Token details section and CTAs */}
-          <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
+          <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8 ml-8">
             <div>
               <TokenProfile
                 name={mintFormState.name}
                 symbol={mintFormState.symbol}
                 logo={mintFormState.logo}
-                className="mb-2"
+                address={mintFormState.address}
               />
 
-              <div className="text-sm font-medium text-netural-900 mb-1.5">
-                Token Address:{' '}
-                <span className="text-neutral-500">
-                  <Copy text={mintFormState.address}>{mintFormState.address}</Copy>
-                </span>
-              </div>
-
-              {vestingContract && vestingContract.data?.address && (
+              {/* {vestingContract && vestingContract.data?.address && (
                 <div className="text-sm font-medium text-netural-900">
                   Vesting Contract Address:{' '}
                   <span className="text-neutral-500">
                     <Copy text={vestingContract.data?.address}>{vestingContract.data?.address}</Copy>
                   </span>
                 </div>
-              )}
+              )} */}
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
               <button
@@ -160,6 +154,7 @@ const Dashboard: NextPageWithLayout = () => {
               )}
             </div>
           </div>
+          <DashboardVestingSummary />
 
           {/* {vestings
             ? vestings.map((vesting) => (
@@ -168,12 +163,13 @@ const Dashboard: NextPageWithLayout = () => {
                 </div>
               ))
             : !hasVestingContract && <DashboardPanel type="contract" />} */}
-
-          {(!vestingContract?.id || !ownershipTransfered || removeOwnership) && (
-            <CreateVestingContract type="contract" />
-          )}
-          <FundContract />
-          {vestings && vestings.length > 0 && <AddVestingSchedules type="schedule" />}
+          <div className="px-8 mt-8">
+            {(!vestingContract?.id || !ownershipTransfered || removeOwnership) && (
+              <CreateVestingContract type="contract" />
+            )}
+            <FundContract />
+            {vestings && vestings.length > 0 && <AddVestingSchedules type="schedule" />}
+          </div>
 
           {/* <DashboardPanel
             type="schedule"
@@ -203,7 +199,7 @@ const Dashboard: NextPageWithLayout = () => {
             step={2}
             className="mb-6"
           /> */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
             <DashboardInfoCard
               icon="/icons/calendar.svg"
               title="Vesting overview"

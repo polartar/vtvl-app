@@ -712,11 +712,14 @@ AddVestingSchedulesProps) => {
     }
   }, [type, vestingContract, ownershipTransfered]);
 
-  // useEffect(() => {
-  //   if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
-  //     setStatus('success');
-  //   }
-  // }, [activeVestingIndex, vestings]);
+  useEffect(() => {
+    if (
+      vestings[activeVestingIndex].data.status === 'LIVE' ||
+      vestings[activeVestingIndex].data.status === 'COMPLETED'
+    ) {
+      setStatus('success');
+    }
+  }, [activeVestingIndex, vestings]);
 
   useEffect(() => {
     if (type === 'schedule' && !transaction) {
