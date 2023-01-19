@@ -57,5 +57,7 @@ module.exports = {
       translate: ['group-hover', 'group-focus'],
       border: ['group-last']
     }
-  }
+  },
+  mode: 'jit',
+  purge: ['./{pages,components}/**/*.{js,jsx,ts,tsx}', './stories/**/*.{ts,tsx}']
 };

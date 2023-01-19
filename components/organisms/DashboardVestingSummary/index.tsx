@@ -93,19 +93,28 @@ const DashboardVestingSummary = () => {
           </div>
         </div>
         <div>
-          <div className="text-label text-sm font-medium">Withdrawn</div>
+          <div className="text-label text-sm font-medium flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#f9e597]" />
+            Withdrawn
+          </div>
           <div className="mt-1.5 text-info text-base font-medium text-right">
             {formatNumber(parseFloat(BNToAmountString(totalWithdrawn)))}
           </div>
         </div>
         <div>
-          <div className="text-label text-sm font-medium">Unclaimed</div>
+          <div className="text-label text-sm font-medium flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00e396]" />
+            Unclaimed
+          </div>
           <div className="mt-1.5 text-info text-base font-medium text-right">
             {formatNumber(parseFloat(BNToAmountString(totalClaimable)))}
           </div>
         </div>
         <div>
-          <div className="text-label text-sm font-medium">Total locked</div>
+          <div className="text-label text-sm font-medium flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#008ffb]" />
+            Total locked
+          </div>
           <div className="mt-1.5 text-info text-base font-medium text-right">
             {formatNumber(parseFloat(BNToAmountString(totalAllocation.sub(totalWithdrawn).sub(totalClaimable))))}
           </div>
