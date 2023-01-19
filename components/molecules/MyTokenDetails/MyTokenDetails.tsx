@@ -125,7 +125,13 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
     <div className="panel p-0">
       <div className="p-6">
         <div className="row-center justify-between gap-3 mb-4">
-          <TokenProfile logo={token?.logo} name={token?.name} symbol={token?.symbol} size="small" />
+          <TokenProfile
+            address={token?.address}
+            logo={token?.logo}
+            name={token?.name}
+            symbol={token?.symbol}
+            size="small"
+          />
           <Chip label={vesting.name || ''} color="gray" rounded />
         </div>
         <div className="row-center gap-2 text-xxs text-neutral-500 mb-3">
