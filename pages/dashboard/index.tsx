@@ -99,7 +99,7 @@ const Dashboard: NextPageWithLayout = () => {
       hideLoading();
     }
   }, [organizationId]);
-  console.log('IS Mint', isMintAvailabe());
+
   return (
     <>
       {!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED' ? (

@@ -277,7 +277,7 @@ export function DashboardContextProvider({ children }: any) {
               }
               return vesting;
             });
-            console.log({ newVestings });
+
             setVestings(newVestings);
           }
         }
