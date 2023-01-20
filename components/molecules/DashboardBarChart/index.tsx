@@ -13,7 +13,6 @@ interface IDashboardBarChart {
 }
 
 const DashboardBarChart: React.FC<IDashboardBarChart> = ({ totalAllocation, totalLocked, unlocked, withdrawn }) => {
-  const { vestingContracts, vestings, recipients } = useDashboardContext();
   const { mintFormState } = useTokenContext();
 
   const withdrawnPercentage =
@@ -25,7 +24,7 @@ const DashboardBarChart: React.FC<IDashboardBarChart> = ({ totalAllocation, tota
   const totalLockedPercentage = 100 - withdrawnPercentage - claimablePercecntage;
 
   return (
-    <div className="w-full px-8 py-4 pb-8 mt-10 border-b border-info">
+    <div className="w-full px-8 py-4 pb-8 mt-10">
       <div className="flex rounded-xl relative">
         <div
           style={{ width: `${withdrawnPercentage}%`, backgroundColor: '#f9e597' }}
@@ -112,36 +111,6 @@ const DashboardBarChart: React.FC<IDashboardBarChart> = ({ totalAllocation, tota
               backgroundColor: '#d0d5dd'
             }}
           />
-        </div>
-      </div>
-      <div className="mt-12 grid grid-cols-4 gap-6">
-        <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
-          <div>
-            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Contracts</div>
-            <div className="text-[32px] font-medium text-black group-hover:text-white">{vestingContracts.length}</div>
-          </div>
-          <img src="/icons/caret-right-border.svg" alt="VTVL" />
-        </div>
-        <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
-          <div>
-            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Schedules</div>
-            <div className="text-[32px] font-medium text-black group-hover:text-white">{vestings.length}</div>
-          </div>
-          <img src="/icons/caret-right-border.svg" alt="VTVL" />
-        </div>
-        <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
-          <div>
-            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Recipients</div>
-            <div className="text-[32px] font-medium text-black group-hover:text-white">{recipients.length}</div>
-          </div>
-          <img src="/icons/caret-right-border.svg" alt="VTVL" />
-        </div>
-        <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
-          <div>
-            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Claimed</div>
-            <div className="text-[32px] font-medium text-black group-hover:text-white">N/A</div>
-          </div>
-          <img src="/icons/caret-right-border.svg" alt="VTVL" />
         </div>
       </div>
     </div>

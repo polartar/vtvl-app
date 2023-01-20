@@ -12,12 +12,13 @@ import { BNToAmountString } from 'utils/web3';
 
 const DashboardVestingSummary = () => {
   const { chainId } = useWeb3React();
-  const { vestingContracts, vestings } = useDashboardContext();
+  const { vestingContracts, vestings, recipients } = useDashboardContext();
   const { mintFormState } = useTokenContext();
 
   const [totalAllocation, setTotalAllocation] = useState<ethers.BigNumber>(ethers.BigNumber.from(0));
   const [totalWithdrawn, setTotalWithdrawn] = useState(ethers.BigNumber.from(0));
   const [totalClaimable, setTotalClaimable] = useState(ethers.BigNumber.from(0));
+  const [claims, setClaims] = useState(0);
 
   useEffect(() => {
     if (vestingContracts.length > 0 && chainId && mintFormState && mintFormState.address && vestings.length > 0) {
@@ -58,6 +59,7 @@ const DashboardVestingSummary = () => {
           const VEST_AMOUNT_COLUMN = 4;
           const WITHDRAWN_AMOUNT_COLUMN = 6;
 
+          let claimedCount = 0;
           let totalAllocationAmount = ethers.BigNumber.from(0);
           let totalWithdrawnAmount = ethers.BigNumber.from(0);
           let totalClaimableAmount = ethers.BigNumber.from(0);
@@ -72,9 +74,17 @@ const DashboardVestingSummary = () => {
               totalWithdrawnAmount = totalWithdrawnAmount.add(
                 res.results[key].callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_COLUMN]
               );
+
+              if (
+                ethers.BigNumber.from(res.results[key].callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_COLUMN]).gt(
+                  ethers.BigNumber.from(0)
+                )
+              )
+                claimedCount++;
             }
           });
 
+          setClaims(claimedCount);
           setTotalAllocation(totalAllocationAmount);
           setTotalWithdrawn(totalWithdrawnAmount);
           setTotalClaimable(totalClaimableAmount);
@@ -84,7 +94,7 @@ const DashboardVestingSummary = () => {
   }, [chainId, vestingContracts, mintFormState, vestings]);
 
   return (
-    <div>
+    <div className="border-b border-info pb-8">
       <div className="px-8 py-6 flex justify-between border-t border-b border-info">
         <div>
           <div className="text-label text-sm font-medium">Total allocation</div>
@@ -134,6 +144,36 @@ const DashboardVestingSummary = () => {
           withdrawn={totalWithdrawn}
         />
       )}
+      <div className="mt-4 grid grid-cols-4 gap-6 px-8">
+        <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
+          <div>
+            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Contracts</div>
+            <div className="text-[32px] font-medium text-black group-hover:text-white">{vestingContracts.length}</div>
+          </div>
+          <img src="/icons/caret-right-border.svg" alt="VTVL" />
+        </div>
+        <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
+          <div>
+            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Schedules</div>
+            <div className="text-[32px] font-medium text-black group-hover:text-white">{vestings.length}</div>
+          </div>
+          <img src="/icons/caret-right-border.svg" alt="VTVL" />
+        </div>
+        <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
+          <div>
+            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Recipients</div>
+            <div className="text-[32px] font-medium text-black group-hover:text-white">{recipients.length}</div>
+          </div>
+          <img src="/icons/caret-right-border.svg" alt="VTVL" />
+        </div>
+        <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
+          <div>
+            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Claimed</div>
+            <div className="text-[32px] font-medium text-black group-hover:text-white">{claims}</div>
+          </div>
+          <img src="/icons/caret-right-border.svg" alt="VTVL" />
+        </div>
+      </div>
     </div>
   );
 };
