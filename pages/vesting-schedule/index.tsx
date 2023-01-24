@@ -1,10 +1,6 @@
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
-import Input from '@components/atoms/FormControls/Input/Input';
-import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
-import Loader from '@components/atoms/Loader/Loader';
-import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ProgressCircle from '@components/atoms/ProgressCircle/ProgressCircle';
 import StatusIndicator from '@components/atoms/StatusIndicator/StatusIndicator';
 import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
@@ -32,12 +28,11 @@ import { useTransactionLoaderContext } from 'providers/transaction-loader.contex
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
-import { fetchVestingSchedules, fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
+import { updateVesting } from 'services/db/vesting';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IToken, ITransaction, IVesting } from 'types/models';
+import { ITransaction, IVesting } from 'types/models';
 import { IRecipient } from 'types/vesting';
 import { convertAllToOptions, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
@@ -50,11 +45,6 @@ import {
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
 
-interface IVestingSchedules {
-  id: string;
-  data: IVesting;
-}
-
 /**
  * This page should have an async fetch feature that gets the vesting schedule details from the database.
  */
@@ -64,10 +54,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
-  const { vestingContract } = useDashboardContext();
+  const { vestings: vestingSchedules, vestingContract } = useDashboardContext();
 
   const [selected, setSelected] = useState('manual');
-  const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
   const [vestingScheduleDataCounts, setVestingScheduleDataCounts] = useState({
     totalSchedules: 0,
     pendingSchedules: 0,
@@ -77,62 +66,40 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     progress: { current: 0, total: 0 }
   });
 
-  // We get the schedules
-  const [vestingSchedules, setVestingSchedules] = useState<IVestingSchedules[]>();
+  useEffect(() => {
+    // Manually count all necessary data since we're fetching all of the schedules for this particular organization
+    if (vestingSchedules.length > 0) {
+      let inProgress = 0;
+      let pendingSchedules = 0;
+      let pendingDeployments = 0;
+      let pendingApprovals = 0;
+      let totalRecipients = 0;
+      vestingSchedules.map((sched) => {
+        inProgress += sched.data.status === 'LIVE' ? 1 : 0;
+        pendingSchedules += sched.data.status === 'WAITING_FUNDS' || sched.data.status === 'INITIALIZED' ? 1 : 0;
+        pendingDeployments += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
+        pendingApprovals += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
+        totalRecipients += sched.data.recipients.length;
+      });
 
-  const getVestings = async (loader = true) => {
-    if (loader) setIsFetchingSchedules(true);
-    try {
-      if (organizationId && chainId) {
-        const schedules = await fetchVestingsByQuery(
-          ['organizationId', 'chainId'],
-          ['==', '=='],
-          [organizationId, chainId]
-        );
-        setVestingSchedules(schedules);
-        // Manually count all necessary data since we're fetching all of the schedules for this particular organization
-        let inProgress = 0;
-        let pendingSchedules = 0;
-        let pendingDeployments = 0;
-        let pendingApprovals = 0;
-        let totalRecipients = 0;
-        schedules.map((sched) => {
-          inProgress += sched.data.status === 'LIVE' ? 1 : 0;
-          pendingSchedules += sched.data.status === 'WAITING_FUNDS' || sched.data.status === 'INITIALIZED' ? 1 : 0;
-          pendingDeployments += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
-          pendingApprovals += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
-          totalRecipients += sched.data.recipients.length;
-        });
-
-        setVestingScheduleDataCounts({
-          totalSchedules: schedules?.length || 0,
-          pendingSchedules,
-          pendingDeployments,
-          pendingApprovals,
-          totalRecipients,
-          progress: { current: inProgress, total: schedules?.length || 0 }
-        });
-        if (loader) setIsFetchingSchedules(false);
-      } else {
-        if (loader) setIsFetchingSchedules(true);
-      }
-    } catch (err) {
-      console.log('error', err);
-      if (loader) setIsFetchingSchedules(false);
+      setVestingScheduleDataCounts({
+        totalSchedules: vestingSchedules?.length || 0,
+        pendingSchedules,
+        pendingDeployments,
+        pendingApprovals,
+        totalRecipients,
+        progress: { current: inProgress, total: vestingSchedules?.length || 0 }
+      });
     }
-  };
+  }, [vestingSchedules]);
 
   useEffect(() => {
-    getVestings();
-  }, [chainId]);
-
-  useEffect(() => {
-    if (isFetchingSchedules || isTokenLoading) {
+    if (isTokenLoading) {
       showLoading();
     } else {
       hideLoading();
     }
-  }, [isFetchingSchedules, isTokenLoading]);
+  }, [isTokenLoading]);
 
   const userAction = {
     options: [
@@ -167,7 +134,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     }
   };
 
-  const recipientTypes = convertAllToOptions(['All', 'Employee', 'Investor']);
+  // const recipientTypes = convertAllToOptions(['All', 'Employee', 'Investor']);
 
   // Renderer for schedule name -- with scenario for COMPLETED status
   const CellScheduleName = ({ value, row, ...props }: any) => {
@@ -329,7 +296,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       id
     );
     toast.success(`Schedule: ${data.name} ${!data.archive ? '' : 'un'}archived!`);
-    getVestings(false);
+    // getVestings(false);
   };
 
   // Handles revoking process
