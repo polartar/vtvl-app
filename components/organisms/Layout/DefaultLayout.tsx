@@ -107,7 +107,8 @@ const FounderRoutes = {
   submenuList: [
     { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
     { title: 'Support', icon: '/icons/support.svg', route: '/support' },
-    { title: 'Switch to investor', icon: '/icons/switchUser.svg', route: '/switch-account' }
+    { title: 'Switch to investor', icon: '/icons/switchUser.svg', route: '/switch-account' },
+    { title: 'Settings', icon: '/icons/settings.svg', route: '/settings', available: true }
   ],
   userName: 'John Doe',
   role: 'Founder'
