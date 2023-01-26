@@ -8,6 +8,7 @@ import { OnboardingContextProvider } from '@providers/onboarding.context';
 import { TokenContextProvider } from '@providers/token.context';
 import { VestingContextProvider } from '@providers/vesting.context';
 import { Web3ReactProvider } from '@web3-react/core';
+
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import { TransactionLoaderContextProvider } from 'providers/transaction-loader.context';

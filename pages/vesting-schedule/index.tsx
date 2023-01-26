@@ -39,6 +39,8 @@ import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IToken, ITransaction, IVesting } from 'types/models';
 import { IRecipient } from 'types/vesting';
+import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
+import { createSafeTransaction } from 'utils/safe';
 import { convertAllToOptions, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -334,29 +336,70 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Handles revoking process
   const handleRevoke = async (id: string, data: IVesting, rIndex: number) => {
+    const signer = library?.getSigner(0)
+    const vestingAddress = vestingContract?.data?.address
+    if (!signer || !account || !chainId || !vestingAddress) return
+
+    const recipient = data.recipients[rIndex].walletAddress
     if (data.status === 'COMPLETED' || data.status === 'LIVE') {
       try {
         setTransactionStatus('PENDING');
-        const vestingContractInstance = new ethers.Contract(
-          vestingContract?.data?.address ?? '',
-          VTVL_VESTING_ABI.abi,
-          library.getSigner()
-        );
-        const revokeTransaction = await vestingContractInstance.revokeClaim(data.recipients[rIndex].walletAddress);
-        setTransactionStatus('IN_PROGRESS');
-        await revokeTransaction.wait();
-        await updateVesting(
-          {
-            ...data,
-            status: 'REVOKED'
-          },
-          id
-        );
+        if (safe?.address) {
+          const vestingContractInterface = new ethers.utils.Interface([
+            REVOKE_CLAIM_FUNCTION_ABI
+          ])
+
+          setTransactionStatus('IN_PROGRESS');
+          const { hash: safeHash} = await createSafeTransaction(
+            signer,
+            chainId as SupportedChainId,
+            account,
+            safe.address,
+            safe?.owners?.map(owner => owner.address) ?? [],
+            {
+              to: vestingAddress,
+              data: vestingContractInterface.encodeFunctionData("revokeClaim", [recipient]),
+              value: '0',
+            }
+          )
+
+          await createTransaction({
+            hash: '',
+            safeHash,
+            chainId: data.chainId,
+            organizationId: data.organizationId,
+            vestingIds: [id],
+            to: vestingAddress,
+            status: 'PENDING',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            type: 'REVOKE_CLAIM'
+          })
+
+          console.info("Safe Transaction: ", safeHash)
+        }
+        else {
+          const vestingContractInstance = new ethers.Contract(
+            vestingAddress,
+            VTVL_VESTING_ABI.abi,
+            library.getSigner()
+          );
+          const revokeTransaction = await vestingContractInstance.revokeClaim(recipient);
+          setTransactionStatus('IN_PROGRESS');
+          await revokeTransaction.wait();
+          await updateVesting(
+            {
+              ...data,
+              status: 'REVOKED'
+            },
+            id
+          );
+        }
         toast.success('Revoking is done successfully.');
         setTransactionStatus('SUCCESS');
       } catch (err) {
         console.log('handleRevoke - ', err);
-        toast.success('Something went wrong. Try agaiin later.');
+        toast.error('Something went wrong. Try agaiin later.');
         setTransactionStatus('ERROR');
       }
     }
