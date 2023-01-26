@@ -1,33 +1,64 @@
-import CreateLabel from '@components/atoms/CreateLabel/CreateLabel';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useAuthContext } from '@providers/auth.context';
 import { useState } from 'react';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import CreatableSelect from 'react-select/creatable';
-import Select from 'react-select/dist/declarations/src/Select';
-import { ITeamManagement, ITeamRole } from 'types/models/settings';
+import { Controller, useForm } from 'react-hook-form';
+import { ITeamManagement, ITeamRole, ITeamTableData } from 'types/models/settings';
 import { convertLabelToOption } from 'utils/shared';
+import * as Yup from 'yup';
 
 import TeamTable from './TeamTable';
 
 const defaultRecipientValues: ITeamManagement = {
   name: '',
-  company: '',
+  email: '',
   role: ITeamRole.Founder
 };
 
+const mockTableData: ITeamTableData[] = [
+  {
+    name: 'Vie Dee',
+    email: 'test@gmail.com',
+    joinedAt: new Date('2022/01/1'),
+    role: ITeamRole.Founder
+  },
+  {
+    name: 'Vie Dee',
+    email: 'test@gmail.com',
+    joinedAt: new Date('2022/01/1'),
+    role: ITeamRole.Manager
+  }
+];
+const VALID_EMAIL_REG =
+  // eslint-disable-next-line no-useless-escape
+  /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
 const Team = () => {
-  const {
-    register,
-    control,
-    handleSubmit,
-    watch,
-    formState: { errors }
-  } = useForm({ defaultValues: defaultRecipientValues });
+  const { user } = useAuthContext();
+  console.log({ user });
   const [isTeamMember, setIsTeamMember] = useState(true);
   const inviteMember = (data: ITeamManagement) => console.log(data);
   const addMember = (data: ITeamManagement) => console.log(data);
   const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
+  const validationSchema = Yup.object()
+    .strict(false)
+    .shape({
+      name: Yup.string()
+        .required('Name is required')
+        .min(2, 'Must be at least 2 characters')
+        .max(100, 'Cannot be more than 100 characters'),
+      email: Yup.string()
+        .required('Email is required')
+        .min(2, 'Must be at least 2 characters')
+        .max(100, 'Cannot be more than 100 characters')
+        .matches(VALID_EMAIL_REG, 'Invalid Eamil')
+    });
+  const {
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({ defaultValues: defaultRecipientValues, resolver: yupResolver(validationSchema) });
 
   return (
     <div className="flex w-full">
@@ -43,28 +74,28 @@ const Team = () => {
           <Controller
             name="name"
             control={control}
+            // rules={{ required: true, min: 2, max: 100 }}
             render={({ field }) => (
               <Input
                 label="Name"
                 placeholder="Enter name (optional)"
                 error={Boolean(errors.name)}
-                message={errors.name ? 'Please enter name' : ''}
+                message={errors.name ? errors.name.message : ''}
                 {...field}
               />
             )}
           />
 
           <Controller
-            name="company"
+            name="email"
             control={control}
-            rules={{ required: true }}
             render={({ field }) => (
               <Input
-                label="Company name"
-                placeholder="Enter company name"
+                label="Email"
+                placeholder="Enter email"
                 required
-                error={Boolean(errors.company)}
-                message={errors.company ? 'Please enter your company name' : ''}
+                error={Boolean(errors.email)}
+                message={errors.email ? errors.email.message : ''}
                 {...field}
               />
             )}
@@ -76,7 +107,7 @@ const Team = () => {
             rules={{ required: true }}
             render={({ field }) => (
               <label className="required ">
-                <span>Recipient type</span>
+                <span>Role</span>
                 <SelectInput options={roles} {...field} />
               </label>
             )}
@@ -94,23 +125,23 @@ const Team = () => {
 
         <div className=" flex items-center font-medium  ">
           <div
-            className={`flex items-center w-[252px] h-14 pl-6 tx-sm font-medium  ${
-              isTeamMember ? 'text-primary-900 border-primary-900 border-2' : 'text-gray-400 border-primary-200 border'
+            className={`flex items-center w-[252px] h-14 pl-6 tx-sm font-medium border-primary-200 border-r-primary-900 ${
+              isTeamMember ? ' bg-primary-50 text-primary-900  border-2' : 'text-gray-400   border'
             } cursor-pointer rounded-tl-xl border-b-0`}
             onClick={() => setIsTeamMember(true)}>
             Team
           </div>
 
           <div
-            className={`flex items-center w-[252px] h-14 pl-6 tx-sm font-medium ${
-              isTeamMember ? 'text-gray-400 border-primary-200 border' : 'text-primary-900 border-primary-900 border-2'
+            className={`flex items-center w-[252px] h-14 pl-6 tx-sm font-medium border-l-primary-900 ${
+              isTeamMember ? 'text-gray-400   border' : 'bg-primary-50 text-primary-900  border-2'
             } cursor-pointer  rounded-tr-xl border-b-0`}
             onClick={() => setIsTeamMember(false)}>
             Gnosis Safe
           </div>
         </div>
 
-        <TeamTable />
+        <TeamTable data={mockTableData} />
       </div>
     </div>
   );

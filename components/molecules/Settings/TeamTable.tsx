@@ -1,7 +1,8 @@
+import Avatar from '@components/atoms/Avatar/Avatar';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import toDate from 'date-fns/toDate';
 import { useMemo } from 'react';
-import { ITeamRole } from 'types/models/settings';
+import { ITeamRole, ITeamTableData } from 'types/models/settings';
 import { convertLabelToOption, formatDate, formatTime } from 'utils/shared';
 
 import Table from '../Table/Table';
@@ -77,9 +78,10 @@ const CellActions = ({ value }: any) => {
 //   ],
 //   []
 // );
-const TeamTable = () => {
+const TeamTable = ({ data }: { data: ITeamTableData[] }) => {
+  const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
   return (
-    <table className="border-primary-900 border-2 w-full">
+    <table className="border-primary-200 border-2 w-full">
       <thead>
         <th>Team members</th>
         <th>Date joined</th>
@@ -89,18 +91,33 @@ const TeamTable = () => {
           <img src={'/icons/help.svg'} alt="help" />
         </th>
       </thead>
+
+      <tbody>
+        {data.map((row: ITeamTableData) => {
+          return (
+            <tr>
+              <td className="flex items-center">
+                <Avatar name={row.name} />
+                <div className="flex flex-col ml-2 h-[40px]">
+                  <span className=" font-medium">{row.name}</span>
+                  <span className="  text-gray-400">{row.email}</span>
+                </div>
+              </td>
+
+              <td>{row.joinedAt.toString()}</td>
+              <td>
+                <SelectInput options={roles} defaultValue={row.role} color="text-primary-800" />
+              </td>
+
+              <td>
+                <button className="primary mr-1">Resend</button>
+                <button className="border-[#ef4444] text-[#ef4444] border-2 font-medium">Disable</button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
     </table>
-    // <Table
-    //   columns={columns}
-    //   data={mockData}
-    //   // getTrProps={getTrProps}
-    //   selectable
-    //   pagination
-    //   // batchOptions={{
-    //   //   label: 'Batch transactions',
-    //   //   onBatchProcessClick: handleBatchProcess
-    //   // }}
-    // />
   );
 };
 

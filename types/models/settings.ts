@@ -1,6 +1,6 @@
 export interface ITeamManagement {
   name: string;
-  company: string;
+  email: string;
   role: string;
 }
 
@@ -12,4 +12,11 @@ export enum ITeamRole {
 export interface ITeamRoleType {
   label: string | number;
   value: ITeamRole;
+}
+
+export interface ITeamTableData {
+  name: string;
+  email: string;
+  role: ITeamRole;
+  joinedAt: Date;
 }
