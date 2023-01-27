@@ -7,7 +7,7 @@ import { IMember } from 'types/models';
 import { ITeamRole } from 'types/models/settings';
 import { convertLabelToOption } from 'utils/shared';
 
-const TeamTable = ({ data }: { data: IMember[] }) => {
+const TeamTable = ({ data, companyName }: { data: IMember[]; companyName: string }) => {
   const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
   const { user, sendTeammateInvite } = useAuthContext();
   console.log({ user });
@@ -18,7 +18,7 @@ const TeamTable = ({ data }: { data: IMember[] }) => {
         member.email,
         member.type || 'anonymous',
         'member.name',
-        'company',
+        companyName,
         user.memberInfo?.org_id
       );
       toast.success('Resent email successfully');

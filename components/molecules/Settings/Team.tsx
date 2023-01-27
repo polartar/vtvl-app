@@ -4,11 +4,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuthContext } from '@providers/auth.context';
 import { useTeammateContext } from '@providers/teammate.context';
 import { onSnapshot } from 'firebase/firestore';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { addInvitee } from 'services/db/member';
+import { fetchOrg, fetchOrgByQuery } from 'services/db/organization';
 import { IInvitee, IMember } from 'types/models';
 import { ITeamManagement, ITeamRole } from 'types/models/settings';
 import { convertLabelToOption } from 'utils/shared';
@@ -30,8 +31,21 @@ const Team = () => {
   const { user, sendTeammateInvite } = useAuthContext();
   const [isTeamMember, setIsTeamMember] = useState(true);
   const { teammates, pendingTeammates } = useTeammateContext();
+  const [companyName, setCompanyName] = useState('');
 
-  console.log({ teammates });
+  useEffect(() => {
+    const getCompanyName = async () => {
+      if (user?.memberInfo?.org_id) {
+        const org = await fetchOrg(user.memberInfo.org_id);
+        if (org?.name) {
+          setCompanyName(org?.name);
+        }
+      }
+    };
+
+    getCompanyName();
+  }, [user]);
+
   const inviteMember = async (data: ITeamManagement) => {
     if (user?.memberInfo?.org_id) {
       try {
@@ -41,7 +55,7 @@ const Team = () => {
           email: data.email
         };
         await addInvitee(invitee);
-        await sendTeammateInvite(data.email, data.role, data.name, 'company', user.memberInfo?.org_id);
+        await sendTeammateInvite(data.email, data.role, data.name, companyName, user.memberInfo?.org_id);
 
         toast.success('Invited email successfully');
       } catch (err) {
@@ -50,7 +64,7 @@ const Team = () => {
     }
   };
 
-  const addMember = (data: ITeamManagement) => console.log(data);
+  const addMoreMember = (data: ITeamManagement) => console.log(data);
   const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
   const validationSchema = Yup.object()
     .strict(false)
@@ -124,7 +138,7 @@ const Team = () => {
             )}
           />
           <div className="md:col-span-3 flex justify-between">
-            <div className="py-1 text-secondary-900 cursor-pointer" onClick={handleSubmit(addMember)}>
+            <div className="py-1 text-secondary-900 cursor-pointer" onClick={handleSubmit(addMoreMember)}>
               {' '}
               + Add more members
             </div>
@@ -152,7 +166,7 @@ const Team = () => {
           </div>
         </div>
 
-        <TeamTable data={teammates} />
+        <TeamTable data={teammates} companyName={companyName} />
       </div>
     </div>
   );
