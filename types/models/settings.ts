@@ -6,17 +6,11 @@ export interface ITeamManagement {
 
 export enum ITeamRole {
   Founder = 'founder',
-  Manager = 'manager'
-}
-
-export interface ITeamRoleType {
-  label: string | number;
-  value: ITeamRole;
-}
-
-export interface ITeamTableData {
-  name: string;
-  email: string;
-  role: ITeamRole;
-  joinedAt: Date;
+  Manager = 'manager',
+  Investor = 'investor',
+  Employee = 'employee',
+  Advisor = 'advisor',
+  Community = 'community',
+  Partner = 'partner',
+  Other = 'anonymous'
 }

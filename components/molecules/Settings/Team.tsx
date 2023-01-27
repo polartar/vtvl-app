@@ -2,9 +2,15 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuthContext } from '@providers/auth.context';
+import { useTeammateContext } from '@providers/teammate.context';
+import { onSnapshot } from 'firebase/firestore';
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ITeamManagement, ITeamRole, ITeamTableData } from 'types/models/settings';
+import { toast } from 'react-toastify';
+import { addInvitee } from 'services/db/member';
+import { IInvitee, IMember } from 'types/models';
+import { ITeamManagement, ITeamRole } from 'types/models/settings';
 import { convertLabelToOption } from 'utils/shared';
 import * as Yup from 'yup';
 
@@ -16,29 +22,34 @@ const defaultRecipientValues: ITeamManagement = {
   role: ITeamRole.Founder
 };
 
-const mockTableData: ITeamTableData[] = [
-  {
-    name: 'Vie Dee',
-    email: 'test@gmail.com',
-    joinedAt: new Date('2022/01/1'),
-    role: ITeamRole.Founder
-  },
-  {
-    name: 'Vie Dee',
-    email: 'test@gmail.com',
-    joinedAt: new Date('2022/01/1'),
-    role: ITeamRole.Manager
-  }
-];
 const VALID_EMAIL_REG =
   // eslint-disable-next-line no-useless-escape
   /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const Team = () => {
-  const { user } = useAuthContext();
-  console.log({ user });
+  const { user, sendTeammateInvite } = useAuthContext();
   const [isTeamMember, setIsTeamMember] = useState(true);
-  const inviteMember = (data: ITeamManagement) => console.log(data);
+  const { teammates, pendingTeammates } = useTeammateContext();
+
+  console.log({ teammates });
+  const inviteMember = async (data: ITeamManagement) => {
+    if (user?.memberInfo?.org_id) {
+      try {
+        const invitee: IInvitee = {
+          org_id: user?.memberInfo?.org_id,
+          name: data.name,
+          email: data.email
+        };
+        await addInvitee(invitee);
+        await sendTeammateInvite(data.email, data.role, data.name, 'company', user.memberInfo?.org_id);
+
+        toast.success('Invited email successfully');
+      } catch (err) {
+        toast.error('Something went wrong');
+      }
+    }
+  };
+
   const addMember = (data: ITeamManagement) => console.log(data);
   const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
   const validationSchema = Yup.object()
@@ -141,7 +152,7 @@ const Team = () => {
           </div>
         </div>
 
-        <TeamTable data={mockTableData} />
+        <TeamTable data={teammates} />
       </div>
     </div>
   );
