@@ -261,7 +261,7 @@
   }
 
   button.line {
-    @apply bg-white border border-neutral-300 text-neutral-600;
+    @apply bg-white border-2 border-neutral-300 text-neutral-600;
   }
   button.line.primary {
     @apply border-primary-900 text-primary-900;
@@ -376,7 +376,7 @@
   .select__control,
   /* custom input component */
   .input-component__input {
-    @apply flex items-center gap-2 relative border rounded-3xl py-2 px-6 h-10 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all;
+    @apply flex items-center gap-2 relative border rounded-3xl py-1.5 px-6 h-12 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all !important;
   }
 
   /* Other disabled styles */

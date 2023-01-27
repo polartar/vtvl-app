@@ -97,7 +97,10 @@ const DashboardVestingSummary = () => {
     <div className="border-b border-info pb-8">
       <div className="px-8 py-6 flex justify-between border-t border-b border-info">
         <div>
-          <div className="text-label text-sm font-medium">Total allocation</div>
+          <div className="text-label text-sm font-medium flex items-center gap-1.5">
+            <img src="/icons/total-allocation.svg" />
+            Total allocation
+          </div>
           <div className="mt-1.5 text-info text-base font-medium text-right">
             {formatNumber(parseFloat(BNToAmountString(totalAllocation)))}
           </div>

@@ -11,6 +11,7 @@ import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
 import Table from '@components/molecules/Table/Table';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import VestingOverview from '@components/molecules/VestingOverview/VestingOverview';
+import FundingContractModalV2 from '@components/organisms/FundingContractModal/FundingContractModalV2';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
@@ -23,7 +24,7 @@ import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import toDate from 'date-fns/toDate';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -32,12 +33,13 @@ import { useTransactionLoaderContext } from 'providers/transaction-loader.contex
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { createRevoking } from 'services/db/revoking';
 import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingSchedules, fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IToken, ITransaction, IVesting } from 'types/models';
+import { IToken, ITransaction, IVesting, IVestingContract } from 'types/models';
 import { IRecipient } from 'types/vesting';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
@@ -64,9 +66,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { account, library, activate, chainId } = useWeb3React();
   const { organizationId, safe } = useAuthContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
+  const { vestings } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
-  const { vestingContract } = useDashboardContext();
+  const { vestingContracts, fetchDashboardData } = useDashboardContext();
 
   const [selected, setSelected] = useState('manual');
   const [isFetchingSchedules, setIsFetchingSchedules] = useState(true);
@@ -79,26 +82,16 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     progress: { current: 0, total: 0 }
   });
 
-  // We get the schedules
-  const [vestingSchedules, setVestingSchedules] = useState<IVestingSchedules[]>();
-
   const getVestings = async (loader = true) => {
-    if (loader) setIsFetchingSchedules(true);
     try {
       if (organizationId && chainId) {
-        const schedules = await fetchVestingsByQuery(
-          ['organizationId', 'chainId'],
-          ['==', '=='],
-          [organizationId, chainId]
-        );
-        setVestingSchedules(schedules);
         // Manually count all necessary data since we're fetching all of the schedules for this particular organization
         let inProgress = 0;
         let pendingSchedules = 0;
         let pendingDeployments = 0;
         let pendingApprovals = 0;
         let totalRecipients = 0;
-        schedules.map((sched) => {
+        vestings.map((sched) => {
           inProgress += sched.data.status === 'LIVE' ? 1 : 0;
           pendingSchedules += sched.data.status === 'WAITING_FUNDS' || sched.data.status === 'INITIALIZED' ? 1 : 0;
           pendingDeployments += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
@@ -107,26 +100,22 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         });
 
         setVestingScheduleDataCounts({
-          totalSchedules: schedules?.length || 0,
+          totalSchedules: vestings?.length || 0,
           pendingSchedules,
           pendingDeployments,
           pendingApprovals,
           totalRecipients,
-          progress: { current: inProgress, total: schedules?.length || 0 }
+          progress: { current: inProgress, total: vestings?.length || 0 }
         });
-        if (loader) setIsFetchingSchedules(false);
-      } else {
-        if (loader) setIsFetchingSchedules(true);
       }
     } catch (err) {
       console.log('error', err);
-      if (loader) setIsFetchingSchedules(false);
     }
   };
 
   useEffect(() => {
     getVestings();
-  }, [chainId]);
+  }, [vestings, organizationId, chainId]);
 
   useEffect(() => {
     if (isFetchingSchedules || isTokenLoading) {
@@ -336,34 +325,32 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Handles revoking process
   const handleRevoke = async (id: string, data: IVesting, rIndex: number) => {
-    const signer = library?.getSigner(0)
-    const vestingAddress = vestingContract?.data?.address
-    if (!signer || !account || !chainId || !vestingAddress) return
+    const signer = library?.getSigner(0);
+    const vestingAddress = vestingContracts.find((v) => v.id === data.vestingContractId)?.data.address;
+    if (!signer || !account || !chainId || !vestingAddress) return;
 
-    const recipient = data.recipients[rIndex].walletAddress
+    const recipient = data.recipients[rIndex].walletAddress;
     if (data.status === 'COMPLETED' || data.status === 'LIVE') {
       try {
         setTransactionStatus('PENDING');
         if (safe?.address) {
-          const vestingContractInterface = new ethers.utils.Interface([
-            REVOKE_CLAIM_FUNCTION_ABI
-          ])
+          const vestingContractInterface = new ethers.utils.Interface([REVOKE_CLAIM_FUNCTION_ABI]);
 
           setTransactionStatus('IN_PROGRESS');
-          const { hash: safeHash} = await createSafeTransaction(
+          const { hash: safeHash } = await createSafeTransaction(
             signer,
             chainId as SupportedChainId,
             account,
             safe.address,
-            safe?.owners?.map(owner => owner.address) ?? [],
+            safe?.owners?.map((owner) => owner.address) ?? [],
             {
               to: vestingAddress,
-              data: vestingContractInterface.encodeFunctionData("revokeClaim", [recipient]),
-              value: '0',
+              data: vestingContractInterface.encodeFunctionData('revokeClaim', [recipient]),
+              value: '0'
             }
-          )
+          );
 
-          await createTransaction({
+          const transactionID = await createTransaction({
             hash: '',
             safeHash,
             chainId: data.chainId,
@@ -374,11 +361,21 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             type: 'REVOKE_CLAIM'
-          })
+          });
 
-          console.info("Safe Transaction: ", safeHash)
-        }
-        else {
+          await createRevoking({
+            vestingId: id,
+            recipient,
+            transactionId: transactionID ?? '',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            chainId,
+            organizationId: organizationId!,
+            status: 'PENDING'
+          });
+          toast.success('Revoking transaction is created successfully.');
+          console.info('Safe Transaction: ', safeHash);
+        } else {
           const vestingContractInstance = new ethers.Contract(
             vestingAddress,
             VTVL_VESTING_ABI.abi,
@@ -387,15 +384,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           const revokeTransaction = await vestingContractInstance.revokeClaim(recipient);
           setTransactionStatus('IN_PROGRESS');
           await revokeTransaction.wait();
-          await updateVesting(
-            {
-              ...data,
-              status: 'REVOKED'
-            },
-            id
-          );
+          toast.success('Revoking is done successfully.');
         }
-        toast.success('Revoking is done successfully.');
         setTransactionStatus('SUCCESS');
       } catch (err) {
         console.log('handleRevoke - ', err);
@@ -505,6 +495,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       let vestingLinearVestAmounts: any = [];
       let vestingCliffAmounts: any = [];
       const vestingIds = selectedRows.map((row: any) => row.id);
+      const vestingContract = vestingContracts.find((v) => v.id === (selectedRows as any)[0].data.vestingContractId);
       selectedRows.forEach((row: any) => {
         const vesting = row.data;
         const vestingId = row.id;
@@ -533,7 +524,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               )
             : 0;
         const actualStartDateTime =
-          vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vesting.details.startDateTime;
+          vesting.details.cliffDuration !== 'no-cliff'
+            ? cliffReleaseDate
+            : new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
         const vestingEndTimestamp =
           vesting.details.endDateTime && actualStartDateTime
             ? getChartData({
@@ -561,7 +554,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         );
         const vestingCliffTimestamps1 = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
         const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
-          vesting.details.startDateTime as Date,
+          new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
           vesting.details.releaseFrequency
         );
         const vestingReleaseIntervals1 = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
@@ -603,11 +596,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
-        const vestingContract = await fetchVestingContractByQuery(
-          ['organizationId', 'chainId'],
-          ['==', '=='],
-          [organizationId, chainId]
-        );
         const txData = {
           to: vestingContract?.data?.address ?? '',
           data: createClaimsBatchEncoded,
@@ -632,8 +620,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
         if (account && organizationId) {
           const transactionId = await createTransaction({
-            hash: txHash,
-            safeHash: '',
+            hash: '',
+            safeHash: txHash,
             status: 'PENDING',
             to: vestingContract?.data?.address ?? '',
             type: 'ADDING_CLAIMS',
@@ -657,16 +645,12 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               );
             })
           );
+          await fetchDashboardData();
         }
         toast.success('Transaction has been created successfully.');
         setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
         setTransactionStatus('PENDING');
-        const vestingContract = await fetchVestingContractByQuery(
-          ['organizationId', 'chainId'],
-          ['==', '=='],
-          [organizationId, chainId]
-        );
         const vestingContractInstance = new ethers.Contract(
           vestingContract?.data?.address ?? '',
           VTVL_VESTING_ABI.abi,
@@ -733,10 +717,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Get the total used supply based on all the schedules
   useEffect(() => {
-    if (vestingSchedules && vestingSchedules.length) {
-      setTotalUsedSupply(vestingSchedules.reduce((prev, curr) => prev + +curr.data.details.amountToBeVested, 0));
+    if (vestings && vestings.length) {
+      setTotalUsedSupply(vestings.reduce((prev, curr) => prev + +curr.data.details.amountToBeVested, 0));
     }
-  }, [vestingSchedules]);
+  }, [vestings]);
 
   // Sets the remaining based on the total supply
   useEffect(() => {
@@ -747,7 +731,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   return (
     <>
-      {vestingSchedules?.length && mintFormState ? (
+      {vestings?.length && mintFormState ? (
         <>
           <div className="w-full h-full">
             <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
@@ -793,7 +777,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           </div> */}
           <Table
             columns={columns}
-            data={vestingSchedules}
+            data={vestings}
             getTrProps={getTrProps}
             selectable
             pagination
