@@ -41,10 +41,26 @@ module.exports = {
         h5: '1.25rem',
         h6: '1rem',
         xxs: '0.625rem',
-        tiny: '0.5625rem'
+        tiny: '0.5625rem',
+        title: '32px',
+        subtitle: '22px',
+        paragraph: '20px',
+        base: '16px',
+        body: '14px',
+        caption: '12px',
+        small: '10px'
       },
       spacing: {
         13: '3.25rem'
+      },
+      lineHeight: {
+        title: '1.68',
+        subtitle: '1.73',
+        paragraph: '1.5',
+        base: '1.5',
+        body: '1.43',
+        caption: '1.67',
+        small: '2.4'
       }
     }
   },

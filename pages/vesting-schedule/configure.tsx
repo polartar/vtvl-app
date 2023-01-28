@@ -1498,6 +1498,10 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const wizardSteps = [
     {
+      title: 'Schedule & contract',
+      desc: 'Setup schedule and contract'
+    },
+    {
       title: 'Add recipient(s)',
       desc: ''
     },
@@ -1511,7 +1515,7 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
     }
   ];
   return (
-    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={1}>
+    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={2}>
       {page}
     </SteppedLayout>
   );
