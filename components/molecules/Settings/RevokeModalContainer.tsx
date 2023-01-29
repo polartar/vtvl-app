@@ -25,15 +25,10 @@ const RevokeModalContainer: React.FC<IRevokeModalContainer> = ({ hideModal, memb
       <div className="w-full h-[1px] mt-5 bg-neutral-200" />
       <div className="mt-8 w-full flex justify-between">
         <BackButton label="Back" onClick={hideModal} />
-        {/* <button className="line primary row-center" onClick={hideModal}>
-          <span className="whitespace-nowrap font-medium">Back</span>
-        </button> */}
+
         <Button type="submit" className="danger" onClick={() => disableMember()}>
           Next
         </Button>
-        {/* <button className="secondary row-center" onClick={handleCreateVestingContract}>
-          <span className={`whitespace-nowrap ${loading && 'loading'}`}>Create Contract</span>
-        </button> */}
       </div>
     </div>
   );

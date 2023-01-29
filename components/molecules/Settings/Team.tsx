@@ -47,6 +47,14 @@ const Team = () => {
     getCompanyName();
   }, [user]);
 
+  const founderCount = useMemo(() => {
+    if (teammates && teammates.length > 0) {
+      return teammates.filter((member: IMember) => member.type === ITeamRole.Founder).length;
+    } else {
+      return 0;
+    }
+  }, [teammates]);
+
   const inviteMember = async (data: ITeamManagement) => {
     if (user?.memberInfo?.org_id) {
       try {
@@ -167,7 +175,7 @@ const Team = () => {
           </div>
         </div>
 
-        <TeamTable data={teammates} companyName={companyName} />
+        <TeamTable data={teammates} companyName={companyName} isDisableAvailable={founderCount > 1 ? true : false} />
       </div>
     </div>
   );

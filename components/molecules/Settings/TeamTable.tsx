@@ -11,7 +11,15 @@ import { convertLabelToOption } from 'utils/shared';
 
 import RevokeModalContainer from './RevokeModalContainer';
 
-const TeamTable = ({ data, companyName }: { data: IMember[]; companyName: string }) => {
+const TeamTable = ({
+  data,
+  companyName,
+  isDisableAvailable
+}: {
+  data: IMember[];
+  companyName: string;
+  isDisableAvailable: boolean;
+}) => {
   const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
   const { user, sendTeammateInvite } = useAuthContext();
   const { ModalWrapper, open, showModal, hideModal } = useModal({});
@@ -73,6 +81,7 @@ const TeamTable = ({ data, companyName }: { data: IMember[]; companyName: string
                     </button>
                     <button
                       className="border-[#ef4444] text-[#ef4444] border-2 font-medium"
+                      disabled={!isDisableAvailable}
                       onClick={() => onDisableClick(row)}>
                       Disable
                     </button>
