@@ -53,3 +53,7 @@ export const addInvitee = async (invitee: IInvitee): Promise<void> => {
     updatedAt: Math.floor(new Date().getTime() / 1000)
   });
 };
+
+export const removeMember = async (id: string): Promise<void> => {
+  await deleteDoc(doc(memberCollection, id));
+};

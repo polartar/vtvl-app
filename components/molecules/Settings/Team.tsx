@@ -4,6 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuthContext } from '@providers/auth.context';
 import { useTeammateContext } from '@providers/teammate.context';
 import { onSnapshot } from 'firebase/firestore';
+import { useModal } from 'hooks/useModal';
 import { useMemo, useState } from 'react';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
