@@ -35,6 +35,7 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
   const memberInfo: IMember = {
     ...invitee?.data(),
     email: member.email || '',
+    name: member.name,
     companyEmail: invitee?.data().email || member.companyEmail || '',
     type: invitee?.data().email ? 'manager' : member.type || 'anonymous',
     org_id: invitee?.data().org_id || member.org_id || '',
