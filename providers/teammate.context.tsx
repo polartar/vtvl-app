@@ -49,7 +49,7 @@ export function TeammateContextProvider({ children }: any) {
               return member;
             });
           } else if (change.type === 'removed') {
-            members = members.filter((member) => member.id === id);
+            members = members.filter((member) => member.id !== id);
           }
         });
         setTeammates(arraySort(members, 'name'));
@@ -81,11 +81,11 @@ export function TeammateContextProvider({ children }: any) {
               return member;
             });
           } else if (change.type === 'removed') {
-            pendingMembers = pendingMembers.filter((member) => member.id === id);
+            pendingMembers = pendingMembers.filter((member) => member.id !== id);
           }
         });
 
-        setPendingTeammates(pendingMembers);
+        setPendingTeammates(arraySort(pendingMembers, 'name'));
       });
     };
 

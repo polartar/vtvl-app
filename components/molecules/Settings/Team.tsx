@@ -31,6 +31,7 @@ const Team = () => {
   const [isTeamMemberClicked, setIsTeamMemberClicked] = useState(true);
   const { teammates, pendingTeammates } = useTeammateContext();
   const [companyName, setCompanyName] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
 
   useEffect(() => {
     const getCompanyName = async () => {
@@ -65,6 +66,7 @@ const Team = () => {
   };
 
   const inviteMember = async (data: ITeamManagement) => {
+    if (isInviting) return;
     if (user?.memberInfo?.org_id) {
       try {
         if (isMemberExist(data.email)) {
@@ -75,12 +77,15 @@ const Team = () => {
           name: data.name,
           email: data.email
         };
-        await sendTeammateInvite(data.email, data.role, data.name, companyName, user.memberInfo?.org_id);
+        setIsInviting(true);
+        // await sendTeammateInvite(data.email, data.role, data.name, companyName, user.memberInfo?.org_id);
         await addInvitee(invitee);
 
         toast.success('Invited email successfully');
       } catch (err: any) {
         toast.error('Something went wrong. ' + err.message);
+      } finally {
+        setIsInviting(false);
       }
     }
   };
@@ -163,7 +168,7 @@ const Team = () => {
               + Add more members
             </div>
             <button type="submit" className="secondary py-1">
-              + Send invite
+              {isInviting ? 'Inviting ... ' : '+ Send invite'}
             </button>
           </div>
         </form>

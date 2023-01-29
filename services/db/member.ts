@@ -57,3 +57,7 @@ export const addInvitee = async (invitee: IInvitee): Promise<void> => {
 export const removeMember = async (id: string): Promise<void> => {
   await deleteDoc(doc(memberCollection, id));
 };
+
+export const removeInvite = async (id: string): Promise<void> => {
+  await deleteDoc(doc(inviteeCollection, id));
+};

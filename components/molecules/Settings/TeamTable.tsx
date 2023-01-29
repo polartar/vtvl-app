@@ -6,7 +6,7 @@ import format from 'date-fns/format';
 import { useModal } from 'hooks/useModal';
 import { useCallback, useState } from 'react';
 import { toast } from 'react-toastify';
-import { removeMember } from 'services/db/member';
+import { removeInvite, removeMember } from 'services/db/member';
 import { IMember } from 'types/models';
 import { ITeamRole } from 'types/models/settings';
 import { INVITEE_EXPIRED_TIME } from 'utils/constants';
@@ -35,17 +35,25 @@ const TeamTable = ({
 
   const disableMember = useCallback(async () => {
     if (selectedMember.id) {
-      await removeMember(selectedMember.id);
+      hideModal();
+
+      if (isTeamMember) {
+        await removeMember(selectedMember.id);
+      } else {
+        await removeInvite(selectedMember.id);
+      }
     }
   }, [selectedMember]);
 
   const resendMember = useCallback(async () => {
     if (!selectedMember.email || !user) return;
     try {
+      hideModal();
+
       await sendTeammateInvite(
         selectedMember.email,
         selectedMember.type || 'anonymous',
-        'member.name',
+        selectedMember.name || 'anonymous',
         companyName,
         user.memberInfo?.org_id
       );
