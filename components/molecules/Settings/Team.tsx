@@ -79,14 +79,13 @@ const Team = () => {
     .strict(false)
     .shape({
       name: Yup.string()
-        .required('Name is required')
-        .min(2, 'Must be at least 2 characters')
-        .max(100, 'Cannot be more than 100 characters'),
+        .required('Team member name is required')
+        .min(2, 'Team member name must contain at least two characters')
+        .max(100, 'Team member name must contain less than 100 characters'),
       email: Yup.string()
         .required('Email is required')
-        .min(2, 'Must be at least 2 characters')
-        .max(100, 'Cannot be more than 100 characters')
-        .matches(VALID_EMAIL_REG, 'Invalid Eamil')
+        .max(100, 'Email must contain less than 100 characters')
+        .matches(VALID_EMAIL_REG, 'Enter a valid email')
     });
   const {
     control,

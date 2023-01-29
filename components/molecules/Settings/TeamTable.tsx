@@ -24,6 +24,7 @@ const TeamTable = ({
   const { user, sendTeammateInvite } = useAuthContext();
   const { ModalWrapper, open, showModal, hideModal } = useModal({});
   const [selectedMember, setSelectedMember] = useState<IMember>({});
+
   const resend = async (member: IMember) => {
     if (!member.email || !user) return;
     try {

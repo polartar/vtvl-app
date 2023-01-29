@@ -3,6 +3,7 @@ import { useAuthContext } from 'providers/auth.context';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { inviteeCollection, memberCollection } from 'services/db/firestore';
 import { IInvitee, IMember } from 'types/models';
+import { arraySort } from 'utils';
 
 interface ITeammateData {
   pendingTeammates: IInvitee[];
@@ -17,7 +18,6 @@ export function TeammateContextProvider({ children }: any) {
   console.log('teammate context', organizationId);
 
   useEffect(() => {
-    console.log('Teammate use effect');
     if (!organizationId) return;
 
     let members: IMember[] = [];
@@ -25,7 +25,6 @@ export function TeammateContextProvider({ children }: any) {
     let memberSub: Unsubscribe, inviteeSub: Unsubscribe;
 
     const getTeammates = () => {
-      console.log('getting teammates');
       const q = query(memberCollection, where('org_id', '==', organizationId));
       memberSub = onSnapshot(q, (snapshot) => {
         const ids = members.map((member) => member.id);
@@ -53,8 +52,7 @@ export function TeammateContextProvider({ children }: any) {
             members = members.filter((member) => member.id === id);
           }
         });
-        console.log({ members });
-        setTeammates(members);
+        setTeammates(arraySort(members, 'name'));
       });
     };
 
