@@ -3,14 +3,12 @@ import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput'
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuthContext } from '@providers/auth.context';
 import { useTeammateContext } from '@providers/teammate.context';
-import { onSnapshot } from 'firebase/firestore';
-import { useModal } from 'hooks/useModal';
 import { useMemo, useState } from 'react';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { addInvitee } from 'services/db/member';
-import { fetchOrg, fetchOrgByQuery } from 'services/db/organization';
+import { fetchOrg } from 'services/db/organization';
 import { IInvitee, IMember } from 'types/models';
 import { ITeamManagement, ITeamRole } from 'types/models/settings';
 import { convertLabelToOption } from 'utils/shared';
@@ -59,12 +57,12 @@ const Team = () => {
           name: data.name,
           email: data.email
         };
-        await addInvitee(invitee);
         await sendTeammateInvite(data.email, data.role, data.name, companyName, user.memberInfo?.org_id);
+        await addInvitee(invitee);
 
         toast.success('Invited email successfully');
-      } catch (err) {
-        toast.error('Something went wrong');
+      } catch (err: any) {
+        toast.error('Something went wrong. ' + err.message);
       }
     }
   };
@@ -172,8 +170,9 @@ const Team = () => {
 
         <TeamTable
           data={isTeamMemberClicked ? teammates : pendingTeammates}
+          isTeamMember={isTeamMemberClicked}
           companyName={companyName}
-          isDisableAvailable={isTeamMemberClicked ? isMemberDisableAvailable : true}
+          isDisableAvailable={isMemberDisableAvailable}
         />
       </div>
     </div>
