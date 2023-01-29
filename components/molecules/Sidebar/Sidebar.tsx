@@ -116,13 +116,13 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
         {submenuList && submenuList.length
           ? submenuList.map((submenu, index) => (
               <Link href={submenu.route}>
-                <div className={submenu.available ? '' : 'pointer-events-none'}>
+                <div className={submenu.available ? ' hover:bg-blue-900  rounded-3xl' : 'pointer-events-none'}>
                   <IconText
                     key={`submenu-item-${index}`}
                     sideIcon={submenu.icon}
                     className={`${!submenu.available ? 'opacity-40' : ''}`}>
                     <span
-                      className={`transition-width overflow-hidden whitespace-nowrap ${
+                      className={`transition-width overflow-hidden whitespace-nowrap text-inherit	 ${
                         sidebarIsExpanded ? '' : 'opacity-0 w-0'
                       }`}>
                       <p>{submenu.title}</p>
