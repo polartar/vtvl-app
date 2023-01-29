@@ -15,7 +15,6 @@ export function TeammateContextProvider({ children }: any) {
   const [teammates, setTeammates] = useState<IMember[]>([]);
   const [pendingTeammates, setPendingTeammates] = useState<IInvitee[]>([]);
   const { organizationId } = useAuthContext();
-  console.log('teammate context', organizationId);
 
   useEffect(() => {
     if (!organizationId) return;
@@ -32,6 +31,7 @@ export function TeammateContextProvider({ children }: any) {
         snapshot.docChanges().forEach((change) => {
           const id = change.doc.id;
           const data = change.doc.data();
+
           if (change.type === 'added' && !ids.includes(id)) {
             const data = change.doc.data();
             members.push({
@@ -52,7 +52,7 @@ export function TeammateContextProvider({ children }: any) {
             members = members.filter((member) => member.id !== id);
           }
         });
-        setTeammates(arraySort(members, 'name'));
+        setTeammates(arraySort(members, 'name').slice());
       });
     };
 
@@ -85,7 +85,7 @@ export function TeammateContextProvider({ children }: any) {
           }
         });
 
-        setPendingTeammates(arraySort(pendingMembers, 'name'));
+        setPendingTeammates(arraySort(pendingMembers, 'name').slice());
       });
     };
 

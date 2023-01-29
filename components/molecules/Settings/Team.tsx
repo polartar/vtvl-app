@@ -30,6 +30,7 @@ const Team = () => {
   const { user, sendTeammateInvite } = useAuthContext();
   const [isTeamMemberClicked, setIsTeamMemberClicked] = useState(true);
   const { teammates, pendingTeammates } = useTeammateContext();
+  console.log({ teammates });
   const [companyName, setCompanyName] = useState('');
   const [isInviting, setIsInviting] = useState(false);
 
@@ -78,7 +79,7 @@ const Team = () => {
           email: data.email
         };
         setIsInviting(true);
-        // await sendTeammateInvite(data.email, data.role, data.name, companyName, user.memberInfo?.org_id);
+        await sendTeammateInvite(data.email, data.role, data.name, companyName, user.memberInfo?.org_id);
         await addInvitee(invitee);
 
         toast.success('Invited email successfully');
