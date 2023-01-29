@@ -49,9 +49,27 @@ const Team = () => {
     return teammates.filter((member: IMember) => member.type === ITeamRole.Founder).length > 1;
   }, [teammates]);
 
+  const isMemberExist = (email: string) => {
+    const existingMember = teammates.find((member) => member.email === email);
+    if (existingMember) {
+      toast.error('This member already exists');
+      return true;
+    }
+
+    const pendingMember = pendingTeammates.find((member) => member.email === email);
+    if (pendingMember) {
+      toast.error('This member is already invited');
+      return true;
+    }
+    return false;
+  };
+
   const inviteMember = async (data: ITeamManagement) => {
     if (user?.memberInfo?.org_id) {
       try {
+        if (isMemberExist(data.email)) {
+          return;
+        }
         const invitee: IInvitee = {
           org_id: user?.memberInfo?.org_id,
           name: data.name,
