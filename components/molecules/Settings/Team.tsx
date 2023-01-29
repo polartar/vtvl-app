@@ -30,7 +30,7 @@ const VALID_EMAIL_REG =
 
 const Team = () => {
   const { user, sendTeammateInvite } = useAuthContext();
-  const [isTeamMember, setIsTeamMember] = useState(true);
+  const [isTeamMemberClicked, setIsTeamMemberClicked] = useState(true);
   const { teammates, pendingTeammates } = useTeammateContext();
   const [companyName, setCompanyName] = useState('');
 
@@ -47,12 +47,8 @@ const Team = () => {
     getCompanyName();
   }, [user]);
 
-  const founderCount = useMemo(() => {
-    if (teammates && teammates.length > 0) {
-      return teammates.filter((member: IMember) => member.type === ITeamRole.Founder).length;
-    } else {
-      return 0;
-    }
+  const isMemberDisableAvailable = useMemo(() => {
+    return teammates.filter((member: IMember) => member.type === ITeamRole.Founder).length > 1;
   }, [teammates]);
 
   const inviteMember = async (data: ITeamManagement) => {
@@ -159,22 +155,26 @@ const Team = () => {
         <div className=" flex items-center font-medium  ">
           <div
             className={`flex items-center w-[252px] h-14 pl-6 tx-sm font-medium border-primary-200 border-r-primary-900 ${
-              isTeamMember ? ' bg-primary-50 text-primary-900  border-2' : 'text-gray-400   border'
+              isTeamMemberClicked ? ' bg-primary-50 text-primary-900  border-2' : 'text-gray-400   border'
             } cursor-pointer rounded-tl-xl border-b-0`}
-            onClick={() => setIsTeamMember(true)}>
+            onClick={() => setIsTeamMemberClicked(true)}>
             Team
           </div>
 
           <div
             className={`flex items-center w-[252px] h-14 pl-6 tx-sm font-medium border-l-primary-900 ${
-              isTeamMember ? 'text-gray-400   border' : 'bg-primary-50 text-primary-900  border-2'
+              isTeamMemberClicked ? 'text-gray-400   border' : 'bg-primary-50 text-primary-900  border-2'
             } cursor-pointer  rounded-tr-xl border-b-0`}
-            onClick={() => setIsTeamMember(false)}>
+            onClick={() => setIsTeamMemberClicked(false)}>
             Gnosis Safe
           </div>
         </div>
 
-        <TeamTable data={teammates} companyName={companyName} isDisableAvailable={founderCount > 1 ? true : false} />
+        <TeamTable
+          data={isTeamMemberClicked ? teammates : pendingTeammates}
+          companyName={companyName}
+          isDisableAvailable={isTeamMemberClicked ? isMemberDisableAvailable : true}
+        />
       </div>
     </div>
   );
