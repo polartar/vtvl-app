@@ -172,7 +172,7 @@ const Team = () => {
           data={isTeamMemberClicked ? teammates : pendingTeammates}
           isTeamMember={isTeamMemberClicked}
           companyName={companyName}
-          isDisableAvailable={isMemberDisableAvailable}
+          isDisableAvailable={isTeamMemberClicked ? isMemberDisableAvailable : true}
         />
       </div>
     </div>

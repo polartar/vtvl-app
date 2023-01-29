@@ -108,13 +108,15 @@ const TeamTable = ({
                     <SelectInput options={roles} defaultValue={row.type} color="text-primary-800" />
                   </td>
 
-                  <td>
-                    {isPending(row.createdAt) ? (
-                      <Button className="text-[#98a2b3] cursor-default">Pending</Button>
-                    ) : (
-                      <Button className="text-[#ff5c00] cursor-default">Expired</Button>
-                    )}
-                  </td>
+                  {!isTeamMember && (
+                    <td>
+                      {isPending(row.createdAt) ? (
+                        <Button className="text-[#98a2b3] cursor-default">Pending</Button>
+                      ) : (
+                        <Button className="text-[#ff5c00] cursor-default">Expired</Button>
+                      )}
+                    </td>
+                  )}
 
                   <td>
                     <button className="primary mr-1" onClick={() => onResendClick(row)}>
@@ -124,7 +126,7 @@ const TeamTable = ({
                       className="border-[#ef4444] text-[#ef4444] border-2 font-medium"
                       disabled={!isDisableAvailable}
                       onClick={() => onDisableClick(row)}>
-                      Disable
+                      {`${isTeamMember ? 'Disable' : 'Cancel'}`}
                     </button>
                   </td>
                 </tr>
@@ -136,7 +138,12 @@ const TeamTable = ({
         {isResend ? (
           <ResendModalContainer hideModal={hideModal} resendInvite={resendMember} />
         ) : (
-          <RevokeModalContainer hideModal={hideModal} memberName={selectedMember.name} disableMember={disableMember} />
+          <RevokeModalContainer
+            hideModal={hideModal}
+            memberName={selectedMember.name}
+            disableMember={disableMember}
+            isDisable={isTeamMember}
+          />
         )}
       </ModalWrapper>
     </>
