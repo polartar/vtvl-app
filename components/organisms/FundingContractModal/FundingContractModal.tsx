@@ -292,7 +292,12 @@ const FundingContractModal = ({
                 {fundingMethod.value === 'MANUAL' ? (
                   <Copy text={mintFormState.address} removeIcon>
                     <div className="mt-5 pt-3 px-3 flex flex-col items-center cursor-pointer relative">
-                      <TokenProfile logo={mintFormState.logo} name={mintFormState.name} symbol={mintFormState.symbol} />
+                      <TokenProfile
+                        address={mintFormState.address}
+                        logo={mintFormState.logo}
+                        name={mintFormState.name}
+                        symbol={mintFormState.symbol}
+                      />
                       <div className="row-center mt-2">
                         <CopyIcon className="fill-current h-4" />
                         <p className="paragraphy-small neutral-text">{mintFormState.address}</p>

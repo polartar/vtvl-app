@@ -1,0 +1,59 @@
+@tailwind components;
+
+@layer components {
+  .typography-title {
+    /**
+     * font-size: 32px;
+     * line-height: 1.68;
+     */
+    @apply text-title leading-title !important;
+  }
+
+  .typography-subtitle {
+    /**
+     * font-size: 22px;
+     * line-height: 1.73;
+     */
+    @apply text-subtitle leading-subtitle !important;
+  }
+
+  .typography-paragraph {
+    /**
+     * font-size: 20px;
+     * line-height: 1.5;
+     */
+    @apply text-paragraph leading-paragraph !important;
+  }
+
+  .typography-base {
+    /**
+     * font-size: 16px;
+     * line-height: 1.5;
+     */
+    @apply text-base leading-base !important;
+  }
+
+  .typography-body {
+    /**
+     * font-size: 14px;
+     * line-height: 1.43;
+     */
+    @apply text-body leading-body !important;
+  }
+
+  .typography-caption {
+    /**
+     * font-size: 12px;
+     * line-height: 1.67;
+     */
+    @apply text-caption leading-caption !important;
+  }
+
+  .typography-small {
+    /**
+     * font-size: 10px;
+     * line-height: 2.4;
+     */
+    @apply text-small leading-small !important;
+  }
+}

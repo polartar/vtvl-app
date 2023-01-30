@@ -3,8 +3,11 @@ import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
+import CreateVestingContractModal from '@components/organisms/CreateVestingContractModal';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
 import AddVestingSchedules from '@components/organisms/DashboardPanel/AddVestingSchedules';
+import DashboardPendingActions from '@components/organisms/DashboardPendingActions';
+import DashboardVestingSummary from '@components/organisms/DashboardVestingSummary';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
@@ -14,6 +17,7 @@ import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import CreateVestingContract from 'components/organisms/DashboardPanel/CreateVestingContract';
 import FundContract from 'components/organisms/DashboardPanel/FundContract';
+import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useState } from 'react';
@@ -40,6 +44,7 @@ const Dashboard: NextPageWithLayout = () => {
     recipients
   } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
+  const { ModalWrapper, open, showModal, hideModal } = useModal({});
 
   const router = useRouter();
 
@@ -116,42 +121,53 @@ const Dashboard: NextPageWithLayout = () => {
         </>
       ) : (
         <div className="w-full">
-          <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
+          <p className="text-neutral-500 text-sm font-medium mb-2 ml-8">Overview</p>
           {/* Token details section and CTAs */}
-          <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
+          <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8 px-8">
             <div>
               <TokenProfile
                 name={mintFormState.name}
                 symbol={mintFormState.symbol}
                 logo={mintFormState.logo}
-                className="mb-2"
+                address={mintFormState.address}
               />
 
-              <div className="text-sm font-medium text-netural-900 mb-1.5">
-                Token Address:{' '}
-                <span className="text-neutral-500">
-                  <Copy text={mintFormState.address}>{mintFormState.address}</Copy>
-                </span>
-              </div>
-
-              {vestingContract && vestingContract.data?.address && (
+              {/* {vestingContract && vestingContract.data?.address && (
                 <div className="text-sm font-medium text-netural-900">
                   Vesting Contract Address:{' '}
                   <span className="text-neutral-500">
                     <Copy text={vestingContract.data?.address}>{vestingContract.data?.address}</Copy>
                   </span>
                 </div>
-              )}
+              )} */}
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
-              <button
-                className="primary row-center"
-                onClick={() => {
-                  router.push('/vesting-schedule/add-recipients');
-                }}>
-                <PlusIcon className="w-5 h-5" />
-                <span className="whitespace-nowrap">Create Schedule</span>
-              </button>
+              <div className="group relative">
+                <button
+                  className="primary row-center"
+                  onClick={() => {
+                    // router.push('/vesting-schedule/add-recipients');
+                  }}>
+                  <PlusIcon className="w-5 h-5" />
+                  <span className="whitespace-nowrap">Create</span>
+                </button>
+                <div className="hidden group-hover:block pt-4 absolute bottom-0 left-0 min-w-[200px] transform translate-y-full">
+                  <div className="bg-white border border-gray-100 py-2 rounded-2xl">
+                    <div
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-primary-50"
+                      onClick={showModal}>
+                      <img src="/icons/create-vesting-contract.svg" />
+                      Create contract
+                    </div>
+                    <div
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-primary-50"
+                      onClick={() => router.push('/vesting-schedule/add-recipients')}>
+                      <img src="/icons/create-vesting-schedule.svg" />
+                      Create schedule
+                    </div>
+                  </div>
+                </div>
+              </div>
               {mintFormState.address && !mintFormState.imported && mintFormState.supplyCap === 'UNLIMITED' && (
                 <button className="secondary row-center" onClick={() => router.push('/dashboard/mint-supply')}>
                   <PlusIcon className="w-5 h-5" />
@@ -160,6 +176,7 @@ const Dashboard: NextPageWithLayout = () => {
               )}
             </div>
           </div>
+          <DashboardVestingSummary />
 
           {/* {vestings
             ? vestings.map((vesting) => (
@@ -168,12 +185,17 @@ const Dashboard: NextPageWithLayout = () => {
                 </div>
               ))
             : !hasVestingContract && <DashboardPanel type="contract" />} */}
+          <div className="px-8 mt-8">
+            {(!vestingContract?.id || !ownershipTransfered || removeOwnership) && (
+              <CreateVestingContract type="contract" />
+            )}
+            <FundContract />
+            {vestings && vestings.length > 0 && <AddVestingSchedules type="schedule" />}
+          </div>
 
-          {(!vestingContract?.id || !ownershipTransfered || removeOwnership) && (
-            <CreateVestingContract type="contract" />
-          )}
-          <FundContract />
-          {vestings && vestings.length > 0 && <AddVestingSchedules type="schedule" />}
+          <div className="px-8 py-4">
+            <DashboardPendingActions />
+          </div>
 
           {/* <DashboardPanel
             type="schedule"
@@ -203,7 +225,7 @@ const Dashboard: NextPageWithLayout = () => {
             step={2}
             className="mb-6"
           /> */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
             <DashboardInfoCard
               icon="/icons/calendar.svg"
               title="Vesting overview"
@@ -229,6 +251,9 @@ const Dashboard: NextPageWithLayout = () => {
               {/* <ActivityFeed activities={activities} /> */}
             </div>
           </div>
+          <ModalWrapper>
+            <CreateVestingContractModal hideModal={hideModal} />
+          </ModalWrapper>
         </div>
       )}
     </>

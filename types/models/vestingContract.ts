@@ -1,5 +1,6 @@
 export interface IVestingContract {
-  status: 'PENDING' | 'SUCCESS' | 'FAILED';
+  status: 'PENDING' | 'SUCCESS' | 'FAILED' | 'INITIALIZED';
+  name: string;
   tokenAddress: string;
   address: string;
   deployer: string;
@@ -7,6 +8,7 @@ export interface IVestingContract {
   createdAt: number;
   updatedAt: number;
   chainId: number;
+  transactionId: string;
 }
 
 export interface IFundContractProps {

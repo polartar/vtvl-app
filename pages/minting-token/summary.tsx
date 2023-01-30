@@ -94,7 +94,7 @@ const Summary: NextPageWithLayout = () => {
 
   return (
     <div className="panel rounded-lg mx-auto max-w-xl w-1/2 mt-14">
-      <TokenProfile name={name} symbol={symbol} logo={logo} />
+      <TokenProfile address={mintFormState.address} name={name} symbol={symbol} logo={logo} />
       <label className="mt-5">
         <span>Contract Address</span>
       </label>
