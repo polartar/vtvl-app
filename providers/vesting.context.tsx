@@ -1,5 +1,6 @@
 import { useWeb3React } from '@web3-react/core';
 import { Timestamp, onSnapshot } from 'firebase/firestore';
+import { useShallowState } from 'hooks/useShallowState';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
 import { toast } from 'react-toastify';
@@ -7,7 +8,7 @@ import { vestingCollection } from 'services/db/firestore';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVesting } from 'types/models';
-import { IRecipient } from 'types/vesting';
+import { IRecipient, IScheduleState } from 'types/vesting';
 import { generateRandomName } from 'utils/shared';
 
 import { useAuthContext } from './auth.context';
@@ -44,9 +45,11 @@ interface IVestingData {
   vestings: { id: string; data: IVesting }[];
   scheduleFormState: IScheduleFormState;
   recipients: MultiValue<IRecipient>;
+  scheduleState: IScheduleState;
   updateScheduleFormState: (v: any) => void;
   updateRecipients: (v: any) => void;
   resetVestingState: () => void;
+  setScheduleState: (v: IScheduleState) => void;
 }
 
 const VestingContext = createContext({} as IVestingData);
@@ -58,6 +61,12 @@ export function VestingContextProvider({ children }: any) {
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
   const [scheduleFormState, setScheduleFormState] = useState<IScheduleFormState>(INITIAL_VESTING_FORM_STATE);
   const [recipients, setRecipients] = useState(INITIAL_RECIPIENT_FORM_STATE);
+  const [scheduleState, setScheduleState] = useShallowState({
+    name: '',
+    contractName: '',
+    createNewContract: true,
+    vestingContractId: ''
+  });
 
   const resetVestingState = useCallback(() => {
     setScheduleFormState({ ...INITIAL_VESTING_FORM_STATE });
@@ -71,9 +80,11 @@ export function VestingContextProvider({ children }: any) {
       recipients,
       updateRecipients: setRecipients,
       updateScheduleFormState: setScheduleFormState,
-      resetVestingState
+      resetVestingState,
+      scheduleState,
+      setScheduleState
     }),
-    [scheduleFormState, recipients]
+    [scheduleFormState, recipients, scheduleState, setScheduleState]
   );
 
   useEffect(() => {

@@ -25,7 +25,14 @@ module.exports = {
   content: ['./{pages,components}/**/*.{js,jsx,ts,tsx}', './stories/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      colors,
+      colors: {
+        ...colors,
+        label: '#667085',
+        info: '#101828'
+      },
+      borderColor: {
+        info: '#e8ebf5'
+      },
       fontSize: {
         h1: '2rem',
         h2: '1.75rem',
@@ -34,10 +41,26 @@ module.exports = {
         h5: '1.25rem',
         h6: '1rem',
         xxs: '0.625rem',
-        tiny: '0.5625rem'
+        tiny: '0.5625rem',
+        title: '32px',
+        subtitle: '22px',
+        paragraph: '20px',
+        base: '16px',
+        body: '14px',
+        caption: '12px',
+        small: '10px'
       },
       spacing: {
         13: '3.25rem'
+      },
+      lineHeight: {
+        title: '1.68',
+        subtitle: '1.73',
+        paragraph: '1.5',
+        base: '1.5',
+        body: '1.43',
+        caption: '1.67',
+        small: '2.4'
       }
     }
   },
@@ -50,5 +73,7 @@ module.exports = {
       translate: ['group-hover', 'group-focus'],
       border: ['group-last']
     }
-  }
+  },
+  mode: 'jit',
+  purge: ['./{pages,components}/**/*.{js,jsx,ts,tsx}', './stories/**/*.{ts,tsx}']
 };

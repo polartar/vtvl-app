@@ -8,6 +8,7 @@ export interface IRecipient {
   name: string;
   company: string;
   recipientType: MultiValue<IRecipientType>;
+  allocations?: number;
 }
 
 export interface IRecipientType {
@@ -26,4 +27,11 @@ export interface IChartDataTypes {
   cliffAmount: number | Decimal;
   frequency: ReleaseFrequency;
   vestedAmount: number | Decimal;
+}
+
+export interface IScheduleState {
+  name: string;
+  contractName?: string;
+  createNewContract: boolean;
+  vestingContractId?: string;
 }

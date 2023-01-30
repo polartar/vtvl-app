@@ -5,12 +5,13 @@ import { Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import React, { SetStateAction, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
+import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { fetchVestingContractByQuery, fetchVestingContractsByQuery } from 'services/db/vestingContract';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
 import { IRecipient } from 'types/vesting';
 import { parseTokenAmount } from 'utils/token';
 
@@ -21,8 +22,10 @@ import { useTokenContext } from './token.context';
 
 interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
+  revokings: { id: string; data: IRevoking }[];
   recipients: MultiValue<IRecipient>;
   vestingContract: { id: string; data: IVestingContract | undefined } | undefined;
+  vestingContracts: { id: string; data: IVestingContract }[];
   transactions: { id: string; data: ITransaction }[];
   ownershipTransfered: boolean;
   insufficientBalance: boolean;
@@ -50,9 +53,11 @@ export function DashboardContextProvider({ children }: any) {
   const router = useRouter();
 
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
+  const [revokings, setRevokings] = useState<{ id: string; data: IRevoking }[]>([]);
   const [vestingContract, setVestingContract] = useState<
     { id: string; data: IVestingContract | undefined } | undefined
   >();
+  const [vestingContracts, setVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
   const [transactions, setTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
   const [removeOwnership, setRemoveOwnership] = useState(false);
@@ -72,9 +77,11 @@ export function DashboardContextProvider({ children }: any) {
         [organizationId!, chainId!]
       );
       if (res && res.length > 0) {
-        setVestingContract(res[0]);
+        setVestingContract(res.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
+        setVestingContracts(res);
       } else {
         setVestingContract(undefined);
+        setVestingContracts([]);
       }
     } catch (err) {
       console.log('fetchDashboardVestingContract - ', err);
@@ -84,7 +91,6 @@ export function DashboardContextProvider({ children }: any) {
   };
 
   const fetchDashboardVestings = async () => {
-    console.log({ chainId });
     setVestingsLoading(true);
     try {
       const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId!, chainId!]);
@@ -97,6 +103,19 @@ export function DashboardContextProvider({ children }: any) {
       console.log('fetchDashboardVestings - ', err);
     }
     setVestingsLoading(false);
+  };
+
+  const fetchDashboardRevokings = async () => {
+    try {
+      const res = await fetchRevokingsByQuery(
+        ['organizationId', 'chainId', 'status'],
+        ['==', '==', '=='],
+        [organizationId!, chainId!, 'PENDING']
+      );
+      setRevokings(res);
+    } catch (err) {
+      console.log('fetchDashboardRevokings - ', err);
+    }
   };
 
   const fetchDashboardTransactions = async () => {
@@ -121,6 +140,7 @@ export function DashboardContextProvider({ children }: any) {
         await fetchDashboardVestings();
         await fetchDashboardVestingContract();
         await fetchDashboardTransactions();
+        await fetchDashboardRevokings();
       } catch (err) {
         console.log('fetchDashboardData - ', err);
         setVestings([]);
@@ -132,6 +152,7 @@ export function DashboardContextProvider({ children }: any) {
       setVestings([]);
       setVestingContract(undefined);
       setTransactions([]);
+      setRevokings([]);
     }
   };
 
@@ -203,8 +224,10 @@ export function DashboardContextProvider({ children }: any) {
   const value = useMemo(
     () => ({
       vestings,
+      revokings,
       recipients,
       vestingContract,
+      vestingContracts,
       transactions,
       ownershipTransfered,
       insufficientBalance,
@@ -232,7 +255,9 @@ export function DashboardContextProvider({ children }: any) {
       vestingsLoading,
       vestingContractLoading,
       transactionsLoading,
-      removeOwnership
+      removeOwnership,
+      vestingContracts,
+      revokings
     ]
   );
 

@@ -1,3 +1,5 @@
+import { ethers } from 'ethers';
+
 export const truncateAddress = (address: string) => {
   if (!address) return 'No Account';
   const match = address.match(/^(0x[a-zA-Z0-9]{2})[a-zA-Z0-9]+([a-zA-Z0-9]{2})$/);
@@ -8,4 +10,8 @@ export const truncateAddress = (address: string) => {
 export const toHex = (num: any) => {
   const val = Number(num);
   return '0x' + val.toString(16);
+};
+
+export const BNToAmountString = (v: ethers.BigNumber, decimals = 2) => {
+  return parseFloat(ethers.utils.formatEther(v)).toFixed(decimals);
 };

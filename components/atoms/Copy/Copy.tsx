@@ -21,7 +21,6 @@ const Copy = ({ text, children, removeIcon = false }: CopyProps) => {
   return (
     <CopyToClipboard text={text} onCopy={() => setCopied(true)}>
       <div className="cursor-pointer relative inline-flex flex-row items-center gap-2 group">
-        {children}
         {!removeIcon ? (
           <CopyIcon className="fill-current h-4 cursor-pointer transform-gpu transition-all group-hover:-translate-y-px group-hover:text-secondary-900" />
         ) : null}
@@ -30,6 +29,7 @@ const Copy = ({ text, children, removeIcon = false }: CopyProps) => {
             <span className="inline-block bg-white rounded-full shadow-lg py-2 px-3 opacity-95 text-sm">Copied!</span>
           </div>
         ) : null}
+        {children}
       </div>
     </CopyToClipboard>
   );

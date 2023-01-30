@@ -3,6 +3,7 @@ import type {
   IInvitee,
   IMember,
   IOrganization,
+  IRevoking,
   ISafe,
   IToken,
   ITransaction,
@@ -30,3 +31,4 @@ export const vestingContractCollection = getCollection<IVestingContract>('vestin
 export const tokenCollection = getCollection<IToken>('tokens');
 export const transactionCollection = getCollection<ITransaction>('transactions');
 export const inviteeCollection = getCollection<IInvitee>('invitee');
+export const revokingCollection = getCollection<IRevoking>('revokings');

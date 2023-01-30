@@ -156,7 +156,9 @@ AddVestingSchedulesProps) => {
           organizationId,
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
-          chainId
+          chainId,
+          name: '',
+          transactionId: ''
         });
         // Ensure that the initial vesting schedule record is also updated
         if (vestings && vestings[activeVestingIndex]) {
@@ -720,6 +722,15 @@ AddVestingSchedulesProps) => {
 
   useEffect(() => {
     if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
+      setStatus('success');
+    }
+  }, [activeVestingIndex, vestings]);
+
+  useEffect(() => {
+    if (
+      vestings[activeVestingIndex].data.status === 'LIVE' ||
+      vestings[activeVestingIndex].data.status === 'COMPLETED'
+    ) {
       setStatus('success');
     }
   }, [activeVestingIndex, vestings]);
