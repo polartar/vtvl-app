@@ -177,20 +177,26 @@ const Team = () => {
                     />
                   )}
                 />
-
-                <Controller
-                  name={`members.${index}.email`}
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <label className="required ">
-                      <span>Role</span>
-                      <SelectInput options={roles} {...field} />
-                    </label>
-                  )}
-                />
-                <div className="flex items-end mb-2">
-                  <Button className="danger h-13">Remove</Button>
+                <div className="flex w-full">
+                  <Controller
+                    name={`members.${index}.email`}
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <label className="required ">
+                        <span>Role</span>
+                        <SelectInput options={roles} {...field} />
+                      </label>
+                    )}
+                  />
+                  <div className="w-32  flex items-center justify-center pt-[20px] ">
+                    <img
+                      src="/icons/trash.svg"
+                      alt={`Remove `}
+                      className="w-5 h-5 cursor-pointer"
+                      onClick={() => remove(index)}
+                    />
+                  </div>
                 </div>
               </section>
             );

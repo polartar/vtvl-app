@@ -126,16 +126,25 @@ const TeamTable = ({
                     </td>
                   )}
 
-                  <td>
+                  <td className="flex items-center justify-between">
                     <button className="primary mr-1" onClick={() => onResendClick(row)}>
                       {`${isTeamMember ? 'Resend' : 'Resend invite'}`}
                     </button>
-                    <button
-                      className="border-[#ef4444] text-[#ef4444] border-2 font-medium"
-                      disabled={!isDisableAvailable}
-                      onClick={() => onDisableClick(row)}>
-                      {`${isTeamMember ? 'Disable' : 'Cancel'}`}
-                    </button>
+                    {isTeamMember ? (
+                      <button
+                        className="border-[#ef4444] text-[#ef4444] border-2 font-medium"
+                        disabled={!isDisableAvailable}
+                        onClick={() => onDisableClick(row)}>
+                        Disable
+                      </button>
+                    ) : (
+                      <img
+                        src="/icons/trash.svg"
+                        alt={`Remove `}
+                        className="w-5 h-5 cursor-pointer"
+                        onClick={() => onDisableClick(row)}
+                      />
+                    )}
                   </td>
                 </tr>
               );
