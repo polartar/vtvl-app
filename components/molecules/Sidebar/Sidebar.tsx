@@ -116,7 +116,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
         {submenuList && submenuList.length
           ? submenuList.map((submenu, index) => (
               <Link href={submenu.route}>
-                <div className={submenu.available ? ' hover:bg-blue-900  rounded-3xl' : 'pointer-events-none'}>
+                <div className={submenu.available ? ' hover:bg-[#1b369a] rounded-3xl' : 'pointer-events-none'}>
                   <IconText
                     key={`submenu-item-${index}`}
                     sideIcon={submenu.icon}

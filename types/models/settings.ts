@@ -1,7 +1,7 @@
 export interface ITeamManagement {
   name: string;
   email: string;
-  role: string;
+  type: string;
 }
 
 export enum ITeamRole {
