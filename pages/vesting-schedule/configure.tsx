@@ -1018,7 +1018,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       ) : null}
 
       {/* CONFIGURATION FORM SECTION */}
-      <div className={`grid md:grid-cols-12 w-full gap-3.5 ${isUserTemplatePromptActive() ? 'opacity-20' : ''}`}>
+      <div className={`grid md:grid-cols-12 w-full gap-3.5 mt-5 ${isUserTemplatePromptActive() ? 'opacity-20' : ''}`}>
         <div className="md:col-span-7">
           <Form
             isSubmitting={isSubmitting}

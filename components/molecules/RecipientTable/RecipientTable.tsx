@@ -4,6 +4,7 @@ import { Typography } from '@components/atoms/Typography/Typography';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Select, { OnChangeValue } from 'react-select';
 import { validate, validateDuplication, validateEVMAddress } from 'utils/regex';
+import { formatNumber } from 'utils/token';
 
 import { EditableTypography } from './EditableTypography';
 import {
@@ -163,7 +164,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
                 </td>
                 <td colSpan={3} className={`${tdClassName} py-4`}>
                   <Typography variant="inter" size="body" className="font-bold">
-                    {totalAllocations}
+                    {formatNumber(+totalAllocations)}
                   </Typography>
                 </td>
               </tr>
