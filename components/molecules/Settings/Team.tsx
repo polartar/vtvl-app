@@ -81,6 +81,7 @@ const Team = () => {
     control,
     handleSubmit,
     reset,
+    register,
     formState: { errors }
   } = useForm({ defaultValues: defaultTeammanagement, resolver: yupResolver(validationSchema) });
 
@@ -125,10 +126,9 @@ const Team = () => {
           setIsInviting(true);
           await sendTeammateInvite(member.email, member.type, member.name, companyName, user.memberInfo?.org_id);
           await addInvitee(invitee);
-
-          toast.success('Invited email successfully');
-          reset();
         }
+        toast.success('Invited email successfully');
+        reset();
       } catch (err: any) {
         toast.error('Something went wrong. ' + err.message);
       } finally {
@@ -150,7 +150,7 @@ const Team = () => {
           onSubmit={handleSubmit(inviteMember)}>
           {fields.map((item, index) => {
             return (
-              <section className="md:grid-cols-3 flex gap-2 mb-3" key={index}>
+              <section className="md:grid-cols-3 flex gap-2 mb-3" key={item.id}>
                 <Controller
                   name={`members.${index}.name`}
                   control={control}
@@ -206,7 +206,7 @@ const Team = () => {
                       src="/icons/trash.svg"
                       alt={`Remove `}
                       className="w-5 h-5 cursor-pointer"
-                      onClick={() => remove(index)}
+                      onClick={() => (fields.length > 1 ? remove(index) : '')}
                     />
                   </div>
                 </div>
