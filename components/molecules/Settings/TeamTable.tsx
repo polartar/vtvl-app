@@ -51,7 +51,6 @@ const TeamTable = ({
   }, [selectedMember]);
 
   const resendMember = useCallback(async () => {
-    console.log({ selectedMember });
     if (!selectedMember.email || !user) return;
     try {
       hideModal();

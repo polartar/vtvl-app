@@ -786,10 +786,14 @@ body {
   overflow-x: hidden;
 }
 
-
 /* MUI Date and time picker overrides */
-.MuiFormControl-root { width: 100%; }
-.MuiOutlinedInput-root { border-radius: 9999px !important; padding-right: 1.25rem !important; }
+.MuiFormControl-root {
+  width: 100%;
+}
+.MuiOutlinedInput-root {
+  border-radius: 9999px !important;
+  padding-right: 1.25rem !important;
+}
 .MuiOutlinedInput-root input {
   padding-left: 1.25rem;
 }
