@@ -79,6 +79,7 @@ const Team = () => {
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors }
   } = useForm({ defaultValues: defaultTeammanagement, resolver: yupResolver(validationSchema) });
 
@@ -86,7 +87,6 @@ const Team = () => {
     control,
     name: `members`
   });
-  console.log({ errors });
 
   const isMemberDisableAvailable = useMemo(() => {
     return teammates.filter((member: IMember) => member.type === ITeamRole.Founder).length > 1;
@@ -126,6 +126,7 @@ const Team = () => {
           await addInvitee(invitee);
 
           toast.success('Invited email successfully');
+          reset();
         }
       } catch (err: any) {
         toast.error('Something went wrong. ' + err.message);
