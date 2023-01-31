@@ -26,7 +26,7 @@ const QuantityInput = ({
   ...props
 }: QuantityInputProps) => {
   return (
-    <label className={`input-component w-28 ${required ? 'required' : ''} ${className}`}>
+    <label className={`input-component w-36 ${required ? 'required' : ''} ${className}`}>
       {label ? <span>{label}</span> : null}
       <div className={`input-component__container ${success ? 'success' : ''} ${error ? 'error' : ''}`}>
         <div className="input-component__input justify-between gap-1 h-8 px-2 py-0">

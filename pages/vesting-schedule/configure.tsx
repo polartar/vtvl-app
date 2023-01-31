@@ -6,6 +6,10 @@ import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Checkbox from '@components/atoms/FormControls/Checkbox/Checkbox';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import { Timepicker } from '@components/atoms/FormControls/Pickers';
+// import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+// import { TimePicker } from 'antd';
+import Datepicker from '@components/atoms/FormControls/Pickers/Datepicker/Datepicker';
 import QuantityInput from '@components/atoms/FormControls/QuantityInput/QuantityInput';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
@@ -19,7 +23,6 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { PickersActionBarProps } from '@mui/x-date-pickers/PickersActionBar';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
@@ -783,10 +786,29 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   // Currently, react-number-format returns it's value as a string with % sign.
   // To do: Refactor this later and move it's responsibility to the <Input type="percent" /> component.
   useEffect(() => {
-    if (typeof lumpSumReleaseAfterCliff.value === 'string' && lumpSumReleaseAfterCliff.value !== '') {
-      setValue('lumpSumReleaseAfterCliff', +lumpSumReleaseAfterCliff.value.slice(0, -1));
-    }
+    handleLumpSumReleaseAfterCliffChanges(true);
   }, [lumpSumReleaseAfterCliff.value]);
+
+  // Handles to makes changes to the value of the lumpsumreleaseaftercliff
+  // Removes the % sign from the string
+  // If coming from an input, detects if the last character is a . with missing number in the decimal place
+  // else, just update the value into a number
+  const handleLumpSumReleaseAfterCliffChanges = (onInput = false) => {
+    if (
+      typeof lumpSumReleaseAfterCliff.value === 'string' &&
+      lumpSumReleaseAfterCliff.value !== '' &&
+      lumpSumReleaseAfterCliff.value.includes('%')
+    ) {
+      const removedPercentSign = lumpSumReleaseAfterCliff.value.slice(0, -1);
+      if (onInput) {
+        if (removedPercentSign.charAt(removedPercentSign.length - 1) !== '.') {
+          setValue('lumpSumReleaseAfterCliff', +removedPercentSign);
+        }
+      } else {
+        setValue('lumpSumReleaseAfterCliff', +removedPercentSign);
+      }
+    }
+  };
 
   const totalTokenSupply = parseFloat(mintFormState.initialSupply.toString());
 
@@ -1156,30 +1178,30 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               <div className="flex flex-row gap-3">
                 {/* Step 2 start time section */}
                 <div className="flex-grow">
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <TimePicker
-                      value={startDateTime.value}
-                      onChange={(newValue) => {
-                        handleDateTimeChange(newValue, 'startTime');
-                      }}
-                      renderInput={(params) => <TextField {...params} />}
-                    />
-                  </LocalizationProvider>
+                  {/* <LocalizationProvider dateAdapter={AdapterDateFns}> */}
+                  <Timepicker
+                    format="HH:mm"
+                    value={startDateTime.value}
+                    onChange={(newValue) => {
+                      handleDateTimeChange(newValue, 'startTime');
+                    }}
+                  />
+                  {/* </LocalizationProvider> */}
                 </div>
                 <span className="flex-shrink-0 text-xs font-medium text-neutral-500 flex flex-row items-center justify-center h-10">
                   to
                 </span>
                 {/* Step 2 end time section */}
                 <div className="flex-grow">
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <TimePicker
-                      value={endDateTime.value}
-                      onChange={(newValue) => {
-                        handleDateTimeChange(newValue, 'endTime');
-                      }}
-                      renderInput={(params) => <TextField {...params} />}
-                    />
-                  </LocalizationProvider>
+                  {/* <LocalizationProvider dateAdapter={AdapterDateFns}> */}
+                  <Timepicker
+                    format="HH:mm"
+                    value={endDateTime.value}
+                    onChange={(newValue) => {
+                      handleDateTimeChange(newValue, 'endTime');
+                    }}
+                  />
+                  {/* </LocalizationProvider> */}
                 </div>
               </div>
             </StepLabel>
@@ -1248,7 +1270,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         />
                         <span
                           className={`absolute top-0 right-0 transform transition-all text-sm text-neutral-700 ${
-                            fieldState.error ? 'translate-y-3.5 -translate-x-4' : 'translate-y-2.5 -translate-x-3.5'
+                            fieldState.error ? 'translate-y-5 -translate-x-6' : 'translate-y-4 -translate-x-5'
                           }`}>
                           {formatCliffDurationOption(+cliffDurationNumber.value, cliffDurationOption.value)}
                         </span>
@@ -1264,14 +1286,17 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     render={({ field, fieldState, formState }) => (
                       <Input
                         label="Tokens unlocked after cliff (0-99%)"
-                        placeholder="Enter whole percentage amount"
+                        placeholder="Enter percentage amount"
                         className="mt-4"
                         required
                         error={Boolean(fieldState.error)}
                         message={fieldState.error ? 'Please enter lump sum amount' : ''}
                         onFocus={() => setActiveStep(2)}
                         {...field}
-                        onBlur={() => setActiveStep(5)}
+                        onBlur={() => {
+                          setActiveStep(5);
+                          handleLumpSumReleaseAfterCliffChanges();
+                        }}
                         type="percent"
                       />
                     )}
@@ -1412,7 +1437,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   onClick={handleMaxAmount}
                   onBlur={() => setActiveStep(5)}
                   className={`absolute right-6 cursor-pointer ${
-                    amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-2'
+                    amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-3'
                   }`}
                 /> */}
               </div>

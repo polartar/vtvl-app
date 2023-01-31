@@ -72,14 +72,14 @@ const Input = ({
               defaultValue={props.defaultValue as string | number}
               value={props.value as string | number}
               type="text"
+              decimalScale={2}
+              thousandSeparator=","
               suffix="%"
               className="grow w-full outline-0 border-0 bg-transparent"
               isAllowed={(values) => {
                 const { formattedValue, floatValue } = values;
-                return (
-                  formattedValue === '' ||
-                  (typeof floatValue === 'number' ? floatValue >= 0 && floatValue <= 99 : false)
-                );
+                console.log('IS ALLOWED', formattedValue, floatValue);
+                return formattedValue === '' || (floatValue ? floatValue >= 0 && floatValue <= 99 : false);
               }}
             />
           ) : (
