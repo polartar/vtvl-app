@@ -158,6 +158,7 @@ const Team = () => {
                     <Input
                       label="Name"
                       placeholder="Enter name"
+                      required
                       error={Boolean(errors && errors['members'] && errors[`members`][index]?.name)}
                       message={
                         errors &&
