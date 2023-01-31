@@ -135,7 +135,7 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ onReturn, 
             />
             <VestingSetupOption
               shortTitle="No"
-              longTitle="Select a preview contract"
+              longTitle="Select an existing contract"
               selected={!form.createNewContract}
               onClick={handleToggle}
             />
