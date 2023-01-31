@@ -30,7 +30,7 @@ import format from 'date-fns/format';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
-import { ElementType, ForwardedRef, ReactElement, useEffect, useRef, useState } from 'react';
+import { ElementType, ForwardedRef, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import Select from 'react-select';
@@ -74,11 +74,17 @@ const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
   const { account } = useWeb3React();
-  const { scheduleFormState, updateScheduleFormState } = useVestingContext();
+  const { recipients, scheduleFormState, updateScheduleFormState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formMessage, setFormMessage] = useState('');
+
+  const totalAllocations = useMemo(
+    () => recipients?.reduce((val, recipient) => val + Number(recipient?.allocations ?? 0), 0),
+    [recipients]
+  );
+
   // Use form to initially assign default values
   const {
     control,
@@ -94,8 +100,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     defaultValues: {
       ...scheduleFormState,
       // Set default amount to be vested to be the total token supply
-      amountToBeVested: parseFloat(mintFormState.initialSupply.toString()),
-      amountToBeVestedText: formatNumber(parseFloat(mintFormState.initialSupply.toString())).toString(),
+      // amountToBeVested: parseFloat(mintFormState.initialSupply.toString()),
+      // amountToBeVestedText: formatNumber(parseFloat(mintFormState.initialSupply.toString())).toString(),
+      amountToBeVested: parseFloat(totalAllocations?.toString() ?? '0'),
+      amountToBeVestedText: formatNumber(parseFloat(totalAllocations?.toString() ?? '0')).toString(),
       cliffDurationNumber: 1,
       cliffDurationOption: defaultCliffDurationOption as CliffDuration | DateDurationOptionValues,
       releaseFrequencySelectedOption: 'continuous',
@@ -936,6 +944,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   console.log('TOUCHED AND DIRTY', releaseFrequency.state.isTouched, releaseFrequency.state.isDirty);
 
+  useEffect(() => {
+    if (totalAllocations <= 0) Router.push('/vesting-schedule/add-recipients');
+  }, [totalAllocations]);
+
   return (
     <div className="px-8">
       {/* TEMPLATE PROMPT AND SELECTION SECTION */}
@@ -1389,11 +1401,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         onFocus={() => setActiveStep(4)}
                         {...field}
                         onBlur={() => setActiveStep(5)}
+                        readOnly
                       />
                     </>
                   )}
                 />
-                <Chip
+                {/* <Chip
                   label="MAX"
                   color={amountToBeVested.value < totalTokenSupply ? 'secondary' : 'default'}
                   onClick={handleMaxAmount}
@@ -1401,7 +1414,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   className={`absolute right-6 cursor-pointer ${
                     amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-2'
                   }`}
-                />
+                /> */}
               </div>
               {/* Step 5 Slider section */}
               <div className="mt-6">
@@ -1409,7 +1422,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   max={totalTokenSupply || 0}
                   value={amountToBeVested.value ? amountToBeVested.value : 0}
                   className="mt-5"
-                  onChange={handleAmountToBeVestedChange}
+                  // onChange={handleAmountToBeVestedChange}
                   onBlur={() => setActiveStep(5)}
                 />
               </div>

@@ -431,8 +431,8 @@ AddVestingSchedulesProps) => {
           <Chip
             label={
               <p className="row-center">
-                {statuses[status].icon}
-                {statuses[status].label}
+                {statuses[status]?.icon}
+                {statuses[status]?.label}
               </p>
             }
             color={status === 'approved' ? 'success' : status === 'declined' ? 'danger' : 'warning'}
