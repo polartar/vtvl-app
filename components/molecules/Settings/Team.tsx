@@ -124,7 +124,7 @@ const Team = () => {
             type: member.type
           };
           setIsInviting(true);
-          console.log({ invitee });
+
           await sendTeammateInvite(member.email, member.type, member.name, companyName, user.memberInfo?.org_id);
           await addInvitee(invitee);
         }
@@ -193,13 +193,13 @@ const Team = () => {
                 />
                 <div className="flex w-full">
                   <Controller
-                    name={`members.${index}.email`}
+                    name={`members.${index}.type`}
                     control={control}
                     rules={{ required: true }}
                     render={({ field }) => (
                       <label className="required ">
                         <span>Role</span>
-                        <SelectInput options={roles} {...field} />
+                        <SelectInput defaultValue={item.type} options={roles} {...field} />
                       </label>
                     )}
                   />
