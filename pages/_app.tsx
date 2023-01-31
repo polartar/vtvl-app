@@ -5,6 +5,7 @@ import { ClaimTokensContextProvider } from '@providers/claim-tokens.context';
 import { DashboardContextProvider } from '@providers/dashboard.context';
 import { LoaderContextProvider } from '@providers/loader.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
+import { TeammateContextProvider } from '@providers/teammate.context';
 import { TokenContextProvider } from '@providers/token.context';
 import { VestingContextProvider } from '@providers/vesting.context';
 import { Web3ReactProvider } from '@web3-react/core';
@@ -57,10 +58,12 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                 <VestingContextProvider>
                   <DashboardContextProvider>
                     <TransactionLoaderContextProvider>
-                      <ClaimTokensContextProvider>
-                        <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                        <ToastContainer />
-                      </ClaimTokensContextProvider>
+                      <TeammateContextProvider>
+                        <ClaimTokensContextProvider>
+                          <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                          <ToastContainer />
+                        </ClaimTokensContextProvider>
+                      </TeammateContextProvider>
                     </TransactionLoaderContextProvider>
                   </DashboardContextProvider>
                 </VestingContextProvider>

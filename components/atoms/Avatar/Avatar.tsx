@@ -20,7 +20,7 @@ const Avatar = ({ src = '', name = '', placeholder = 'initials', size = 'default
     .map((n) => n.charAt(0))
     .join('');
   return (
-    <div className={`avatar ${placeholder} ${size}`}>
+    <div className={`avatar ${placeholder} ${size} `}>
       {loaded && src ? (
         <img src={src} alt={name} onError={() => setLoaded(false)} />
       ) : (

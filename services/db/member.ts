@@ -35,6 +35,7 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
   const memberInfo: IMember = {
     ...invitee?.data(),
     email: member.email || '',
+    name: member.name,
     companyEmail: invitee?.data().email || member.companyEmail || '',
     type: invitee?.data().email ? 'manager' : member.type || 'anonymous',
     org_id: invitee?.data().org_id || member.org_id || '',
@@ -52,4 +53,12 @@ export const addInvitee = async (invitee: IInvitee): Promise<void> => {
     createdAt: Math.floor(new Date().getTime() / 1000),
     updatedAt: Math.floor(new Date().getTime() / 1000)
   });
+};
+
+export const removeMember = async (id: string): Promise<void> => {
+  await deleteDoc(doc(memberCollection, id));
+};
+
+export const removeInvite = async (id: string): Promise<void> => {
+  await deleteDoc(doc(inviteeCollection, id));
 };
