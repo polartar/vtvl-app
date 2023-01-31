@@ -111,7 +111,7 @@ const FounderRoutes = {
     { title: 'Settings', icon: '/icons/settings.svg', route: '/settings', available: true }
   ],
   userName: 'John Doe',
-  role: 'Founder'
+  role: 'founder'
 };
 
 // Menulist for both Employee and Investors
@@ -146,7 +146,7 @@ const EmployeeRoutes = {
   menuList: [...employeeInvestorMenuItems.menuList],
   submenuList: [...employeeInvestorMenuItems.submenuList],
   userName: 'John Doe',
-  role: 'Employee'
+  role: 'employee'
 };
 // Routes available for Investors -- same as the employees
 const InvestorRoutes = {
@@ -155,7 +155,7 @@ const InvestorRoutes = {
   menuList: [...employeeInvestorMenuItems.menuList],
   submenuList: [...employeeInvestorMenuItems.submenuList],
   userName: 'John Doe',
-  role: 'Investor'
+  role: 'investor'
 };
 // Routes available for Managers -- temporary
 const ManagerRoutes = {
@@ -176,14 +176,48 @@ const ManagerRoutes = {
       available: true
     },
     ...EmployeeRoutes.menuList
-  ]
+  ],
+  roleTitle: 'Manager',
+  role: 'manager'
+};
+
+// Routes available for Manager level 2 -- Manager that is extended with Cap Table view
+const Manager2Routes = {
+  ...EmployeeRoutes,
+  menuList: [
+    {
+      title: 'Dashboard',
+      icon: '/icons/s_dashboard.svg',
+      hoverIcon: '/icons/s_dashboard2.svg',
+      route: '/dashboard',
+      available: true
+    },
+    {
+      title: 'Vesting schedule',
+      icon: '/icons/s_vestingSchedule.svg',
+      hoverIcon: '/icons/s_vestingSchedule2.svg',
+      route: '/vesting-schedule',
+      available: true
+    },
+    {
+      title: 'Cap table',
+      icon: '/icons/s_capTable.svg',
+      hoverIcon: '/icons/s_capTable2.svg',
+      route: '/cap-table',
+      available: true
+    },
+    ...EmployeeRoutes.menuList
+  ],
+  roleTitle: 'Manager',
+  role: 'manager2'
 };
 
 const SidebarProps: Record<string, any> = {
   founder: { ...FounderRoutes },
   employee: { ...EmployeeRoutes },
   investor: { ...InvestorRoutes },
-  manager: { ...ManagerRoutes }
+  manager: { ...ManagerRoutes },
+  manager2: { ...Manager2Routes }
 };
 
 interface DefaultLayoutProps {
@@ -307,7 +341,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
           // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
         />
         <Layout className="flex flex-row w-full">
-          {displaySideBar ? <Sidebar {...sidebarProperties} roleTitle={user?.memberInfo?.type || 'founder'} /> : null}
+          {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
           <div className="relative">
             {loading && <PageLoader />}
             <Main
