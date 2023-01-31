@@ -1,3 +1,4 @@
+import Avatar from '@components/atoms/Avatar/Avatar';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -226,19 +227,35 @@ const Team = () => {
 
         <div className=" flex items-center font-medium  ">
           <div
-            className={`flex items-center w-[252px] h-14 pl-6 tx-sm font-medium border-primary-200 border-r-primary-900 ${
+            className={`flex items-center justify-between w-[252px] h-14 px-6 tx-sm font-medium border-primary-200 border-r-primary-900 ${
               isTeamMemberClicked ? ' bg-primary-50 text-primary-900  border-2' : 'text-gray-400   border'
             } cursor-pointer rounded-tl-xl border-b-0`}
             onClick={() => setIsTeamMemberClicked(true)}>
-            Team
+            <span>Team members</span>
+            {teammates.length > 0 && (
+              <div
+                className={`avatar ${
+                  isTeamMemberClicked ? 'bg-primary-900 text-white' : 'bg-primary-50 text-primary-500'
+                } w-6 h-6`}>
+                {teammates.length}
+              </div>
+            )}
           </div>
 
           <div
-            className={`flex items-center w-[252px] h-14 pl-6 tx-sm font-medium border-l-primary-900 ${
+            className={`flex items-center justify-between w-[252px] h-14 px-6 tx-sm font-medium border-l-primary-900 ${
               isTeamMemberClicked ? 'text-gray-400   border' : 'bg-primary-50 text-primary-900  border-2'
             } cursor-pointer  rounded-tr-xl border-b-0`}
             onClick={() => setIsTeamMemberClicked(false)}>
-            Gnosis Safe
+            <span>Pending members</span>
+            {pendingTeammates.length > 0 && (
+              <div
+                className={`avatar ${
+                  !isTeamMemberClicked ? 'bg-primary-900 text-white' : 'bg-primary-50 text-primary-500'
+                } w-6 h-6`}>
+                {pendingTeammates.length}
+              </div>
+            )}
           </div>
         </div>
 
