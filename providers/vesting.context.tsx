@@ -1,10 +1,12 @@
 import { useWeb3React } from '@web3-react/core';
+import { Timestamp, onSnapshot } from 'firebase/firestore';
+import { useShallowState } from 'hooks/useShallowState';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVesting } from 'types/models';
-import { IRecipient } from 'types/vesting';
+import { IRecipient, IScheduleState } from 'types/vesting';
 import { generateRandomName } from 'utils/shared';
 
 import { useAuthContext } from './auth.context';
@@ -25,8 +27,8 @@ export interface IScheduleFormState {
 
 export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
   startDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
-  endDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
-  originalEndDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
+  endDateTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(0, 0, 0, 0)),
+  originalEndDateTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(0, 0, 0, 0)),
   cliffDuration: 'no-cliff',
   lumpSumReleaseAfterCliff: 25,
   releaseFrequency: 'continuous',
@@ -41,9 +43,11 @@ interface IVestingData {
   vestings: { id: string; data: IVesting }[];
   scheduleFormState: IScheduleFormState;
   recipients: MultiValue<IRecipient>;
+  scheduleState: IScheduleState;
   updateScheduleFormState: (v: any) => void;
   updateRecipients: (v: any) => void;
   resetVestingState: () => void;
+  setScheduleState: (v: IScheduleState) => void;
 }
 
 const VestingContext = createContext({} as IVestingData);
@@ -55,6 +59,12 @@ export function VestingContextProvider({ children }: any) {
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
   const [scheduleFormState, setScheduleFormState] = useState<IScheduleFormState>(INITIAL_VESTING_FORM_STATE);
   const [recipients, setRecipients] = useState(INITIAL_RECIPIENT_FORM_STATE);
+  const [scheduleState, setScheduleState] = useShallowState({
+    name: '',
+    contractName: '',
+    createNewContract: true,
+    vestingContractId: ''
+  });
 
   const resetVestingState = useCallback(() => {
     setScheduleFormState({ ...INITIAL_VESTING_FORM_STATE });
@@ -68,9 +78,11 @@ export function VestingContextProvider({ children }: any) {
       recipients,
       updateRecipients: setRecipients,
       updateScheduleFormState: setScheduleFormState,
-      resetVestingState
+      resetVestingState,
+      scheduleState,
+      setScheduleState
     }),
-    [scheduleFormState, recipients]
+    [scheduleFormState, recipients, scheduleState, setScheduleState]
   );
 
   useEffect(() => {

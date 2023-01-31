@@ -1,3 +1,5 @@
+@import './typography.css';
+
 /* Setup global variables */
 :root {
   /* Color Scheme */
@@ -261,7 +263,7 @@
   }
 
   button.line {
-    @apply bg-white border border-neutral-300 text-neutral-600;
+    @apply bg-white border-2 border-neutral-300 text-neutral-600;
   }
   button.line.primary {
     @apply border-primary-900 text-primary-900;
@@ -376,7 +378,7 @@
   .select__control,
   /* custom input component */
   .input-component__input {
-    @apply flex items-center gap-2 relative border rounded-3xl py-2 px-6 h-10 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all;
+    @apply flex items-center gap-2 relative border rounded-3xl py-1.5 px-6 h-12 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all !important;
   }
 
   /* Other disabled styles */
@@ -385,10 +387,10 @@
     @apply opacity-80;
   }
 
-  :disabled input[type="radio"],
-  :disabled input[type="checkbox"],
-  [disabled] input[type="radio"],
-  [disabled] input[type="checkbox"] {
+  :disabled input[type='radio'],
+  :disabled input[type='checkbox'],
+  [disabled] input[type='radio'],
+  [disabled] input[type='checkbox'] {
     @apply opacity-0;
   }
 
@@ -771,9 +773,27 @@ html,
 }
 
 /* Show the hint content when hovered */
-.hint-content { display: none; }
+.hint-content {
+  display: none;
+}
 .hint:hover .hint-content,
 .hint:focus .hint-content,
 .hint:focus-visible .hint-content {
   display: block;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* MUI Date and time picker overrides */
+.MuiFormControl-root {
+  width: 100%;
+}
+.MuiOutlinedInput-root {
+  border-radius: 9999px !important;
+  padding-right: 1.25rem !important;
+}
+.MuiOutlinedInput-root input {
+  padding-left: 1.25rem;
 }

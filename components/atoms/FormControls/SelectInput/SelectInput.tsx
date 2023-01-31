@@ -46,13 +46,14 @@ const SelectInput = ({
   error = false,
   success = false,
   options,
+  color = '',
   ...props
 }: SelectProps) => {
   return (
     <label className={`${required ? 'required' : ''} ${className}`}>
       {label ? <span>{label}</span> : null}
       <div className={`${success && 'success'} ${error && 'error'}`}>
-        <SelectInputStyled {...props} className="appearance-none">
+        <SelectInputStyled {...props} className={`appearance-none ${color}`}>
           {options.map((option, idx) => (
             <option value={option.value} key={idx}>
               {option.label}

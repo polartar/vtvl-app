@@ -370,7 +370,7 @@ export function AuthContextProvider({ children }: any) {
       agreedOnConsent,
       setAgreedOnConsent
     }),
-    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent]
+    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent, connection]
   );
   console.log('organzationId - ', organizationId);
 
@@ -380,7 +380,8 @@ export function AuthContextProvider({ children }: any) {
       user.memberInfo &&
       user.memberInfo.type &&
       user.memberInfo.type !== 'founder' &&
-      user.memberInfo.type !== 'manager'
+      user.memberInfo.type !== 'manager' &&
+      user.memberInfo.type !== 'manager2'
     ) {
       Router.push('/tokens');
       return;

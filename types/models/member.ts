@@ -6,6 +6,7 @@ export interface IAddress {
 }
 
 export interface IInvitee {
+  id?: string;
   org_id: string;
   name: string;
   email: string;

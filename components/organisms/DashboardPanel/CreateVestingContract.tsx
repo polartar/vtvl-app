@@ -177,7 +177,9 @@ AddVestingSchedulesProps) => {
           organizationId,
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
-          chainId
+          chainId,
+          name: '',
+          transactionId: ''
         });
         // Ensure that the initial vesting schedule record is also updated
         // Since vesting contract is being created, status should be CREATED

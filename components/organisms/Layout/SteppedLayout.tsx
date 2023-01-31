@@ -21,7 +21,7 @@ interface SteppedLayoutProps extends React.AllHTMLAttributes<HTMLAllCollection> 
 const SteppedLayout = ({ steps = [], currentStep = -1, ...props }: SteppedLayoutProps) => {
   return (
     <div className="w-full h-full">
-      <div className="text-left mb-5">
+      <div className="text-left mb-5 px-8">
         <Breadcrumb steps={props.crumbs} />
       </div>
       <div className="flex flex-col items-center justify-center gap-4 mx-auto w-full h-full">

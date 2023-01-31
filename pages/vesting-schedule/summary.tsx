@@ -46,7 +46,7 @@ interface ScheduleFormTypes {
 const ScheduleSummary: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { organizationId, safe, user } = useAuthContext();
-  const { recipients, scheduleFormState, resetVestingState } = useVestingContext();
+  const { recipients, scheduleFormState, scheduleState, resetVestingState, setScheduleState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
 
   const handleCreateSchedule = async () => {
@@ -57,8 +57,25 @@ const ScheduleSummary: NextPageWithLayout = () => {
     const PERFORM_CREATE_FUNCTION = 'function performCreate(uint256 value, bytes memory deploymentData)';
     const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
     const ABI = [PERFORM_CREATE_FUNCTION];
+
+    let vestingContractId = scheduleState.vestingContractId;
+    if (scheduleState.createNewContract) {
+      vestingContractId = await createVestingContract({
+        status: 'INITIALIZED',
+        name: scheduleState.contractName!,
+        tokenAddress: mintFormState.address,
+        address: '',
+        deployer: '',
+        organizationId: organizationId!,
+        chainId,
+        transactionId: '',
+        createdAt: Math.floor(new Date().getTime() / 1000),
+        updatedAt: Math.floor(new Date().getTime() / 1000)
+      });
+    }
+
     const vestingId = await createVesting({
-      name: generateRandomName(4) || '',
+      name: scheduleState.name,
       details: { ...scheduleFormState },
       recipients,
       organizationId: organizationId!,
@@ -66,7 +83,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
       createdAt: Math.floor(new Date().getTime() / 1000),
       updatedAt: Math.floor(new Date().getTime() / 1000),
       transactionId: '',
-      vestingContractId: '',
+      vestingContractId,
       tokenAddress: mintFormState.address,
       tokenId,
       chainId
@@ -74,6 +91,12 @@ const ScheduleSummary: NextPageWithLayout = () => {
     console.log('creating vesting schedule', vestingId);
     await Router.push('/vesting-schedule/success');
     resetVestingState();
+    setScheduleState({
+      name: '',
+      contractName: '',
+      createNewContract: false,
+      vestingContractId: ''
+    });
   };
 
   return (
@@ -138,6 +161,10 @@ ScheduleSummary.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const wizardSteps = [
     {
+      title: 'Schedule & contract',
+      desc: 'Setup schedule and contract'
+    },
+    {
       title: 'Add recipient(s)',
       desc: ''
     },
@@ -151,7 +178,7 @@ ScheduleSummary.getLayout = function getLayout(page: ReactElement) {
     }
   ];
   return (
-    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={2}>
+    <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={3}>
       {page}
     </SteppedLayout>
   );
