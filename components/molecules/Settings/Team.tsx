@@ -86,6 +86,7 @@ const Team = () => {
     control,
     name: `members`
   });
+  console.log({ errors });
 
   const isMemberDisableAvailable = useMemo(() => {
     return teammates.filter((member: IMember) => member.type === ITeamRole.Founder).length > 1;
@@ -156,6 +157,12 @@ const Team = () => {
                       label="Name"
                       placeholder="Enter name"
                       error={Boolean(errors && errors['members'] && errors[`members`][index]?.name)}
+                      message={
+                        errors &&
+                        errors['members'] &&
+                        errors[`members`][index]?.name &&
+                        errors[`members`][index]?.name?.message
+                      }
                       {...field}
                     />
                   )}
@@ -170,6 +177,12 @@ const Team = () => {
                       placeholder="Enter email"
                       required
                       error={Boolean(errors && errors['members'] && errors[`members`][index]?.email)}
+                      message={
+                        errors &&
+                        errors['members'] &&
+                        errors[`members`][index]?.email &&
+                        errors[`members`][index]?.email?.message
+                      }
                       {...field}
                     />
                   )}
