@@ -83,8 +83,6 @@ export function AuthContextProvider({ children }: any) {
   // Stores the connection status whether the user is connected via metamask or other wallets
   const [connection, setConnection] = useState<TConnections | undefined>();
 
-  console.log({ user });
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -218,7 +216,10 @@ export function AuthContextProvider({ children }: any) {
 
     const member = await fetchMember(credential.user.uid);
     const memberInfo = member
-      ? member
+      ? {
+          ...member,
+          type: newSignUp.type
+        }
       : {
           email: newSignUp.email || credential.user.email || '',
           companyEmail: newSignUp.email || credential.user.email || '',
