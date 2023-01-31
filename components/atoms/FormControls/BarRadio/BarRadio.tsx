@@ -26,7 +26,7 @@ const BarRadio = ({ label = '', options, required, className, variant = 'input',
   const variants = {
     tab: {
       container: `${defaultContainerClass} rounded-lg w-max`,
-      item: 'text-sm text-neutral-800 hover:bg-neutral-100 w-32',
+      item: 'flex flex-row items-center justify-center text-sm text-neutral-800 hover:bg-neutral-100 w-32',
       active: 'bg-neutral-100',
       inactive: 'bg-white'
     },

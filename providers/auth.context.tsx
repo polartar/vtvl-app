@@ -380,7 +380,8 @@ export function AuthContextProvider({ children }: any) {
       user.memberInfo &&
       user.memberInfo.type &&
       user.memberInfo.type !== 'founder' &&
-      user.memberInfo.type !== 'manager'
+      user.memberInfo.type !== 'manager' &&
+      user.memberInfo.type !== 'manager2'
     ) {
       Router.push('/tokens');
       return;

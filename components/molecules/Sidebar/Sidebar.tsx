@@ -132,7 +132,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
           <User
             userName={user?.memberInfo?.name || user?.displayName || 'John Doe'}
             profilePhoto={user?.photoURL || ''}
-            role={user?.memberInfo?.type || 'founder'}
+            role={roleTitle}
             compact={!sidebarIsExpanded}
           />
           {sidebarIsExpanded ? <LogoutImg src="/icons/logout.svg" alt="logoutImg" onClick={() => logOut()} /> : null}
