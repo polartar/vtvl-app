@@ -154,7 +154,7 @@ const Team = () => {
                   render={({ field }) => (
                     <Input
                       label="Name"
-                      placeholder="Enter name (optional)"
+                      placeholder="Enter name"
                       error={Boolean(errors && errors['members'] && errors[`members`][index]?.name)}
                       {...field}
                     />

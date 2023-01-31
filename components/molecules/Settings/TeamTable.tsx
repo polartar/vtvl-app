@@ -135,7 +135,6 @@ const TeamTable = ({
                   <td>
                     <SelectInput
                       options={roles}
-                      defaultValue={row.type}
                       value={row.type}
                       color="text-primary-800"
                       onChange={(e) => onChangeType(row.id, e.target.value as ITeamRole)}
