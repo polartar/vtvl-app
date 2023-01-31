@@ -29,8 +29,8 @@ export interface IScheduleFormState {
 
 export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
   startDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
-  endDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
-  originalEndDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
+  endDateTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(0, 0, 0, 0)),
+  originalEndDateTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(0, 0, 0, 0)),
   cliffDuration: 'no-cliff',
   lumpSumReleaseAfterCliff: 25,
   releaseFrequency: 'continuous',

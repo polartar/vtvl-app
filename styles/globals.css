@@ -785,3 +785,11 @@ html,
 body {
   overflow-x: hidden;
 }
+
+
+/* MUI Date and time picker overrides */
+.MuiFormControl-root { width: 100%; }
+.MuiOutlinedInput-root { border-radius: 9999px; padding-right: 1.25rem; }
+.MuiOutlinedInput-root input {
+  padding-left: 1.25rem;
+}
