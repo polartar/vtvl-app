@@ -4,7 +4,7 @@ import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput'
 import { useAuthContext } from '@providers/auth.context';
 import format from 'date-fns/format';
 import { useModal } from 'hooks/useModal';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { removeInvite, removeMember } from 'services/db/member';
 import { IMember } from 'types/models';
@@ -28,10 +28,15 @@ const TeamTable = ({
 }) => {
   const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
   const { user, sendTeammateInvite } = useAuthContext();
-  const { ModalWrapper, open, showModal, hideModal } = useModal({});
+  const { ModalWrapper, showModal, hideModal } = useModal({});
   const [isResend, setIsResend] = useState(true);
+  const [tableData, setTableData] = useState<IMember[]>([]);
 
   const [selectedMember, setSelectedMember] = useState<IMember>({});
+
+  useEffect(() => {
+    setTableData(data.slice());
+  }, [isTeamMember, data]);
 
   const disableMember = useCallback(async () => {
     if (selectedMember.id) {
@@ -46,6 +51,7 @@ const TeamTable = ({
   }, [selectedMember]);
 
   const resendMember = useCallback(async () => {
+    console.log({ selectedMember });
     if (!selectedMember.email || !user) return;
     try {
       hideModal();
@@ -82,6 +88,20 @@ const TeamTable = ({
     return currentTime < INVITEE_EXPIRED_TIME + inviteDate;
   };
 
+  const onChangeType = (id: string | undefined, value: ITeamRole) => {
+    const tmpData = tableData.map((row) => {
+      if (row.id === id) {
+        return {
+          ...row,
+          type: value
+        };
+      }
+      return row;
+    });
+
+    setTableData(tmpData.slice());
+  };
+
   return (
     <>
       <table className="border-primary-200 border-2 w-full">
@@ -99,8 +119,8 @@ const TeamTable = ({
         </thead>
 
         <tbody>
-          {data &&
-            data.map((row: IMember) => {
+          {tableData &&
+            tableData.map((row: IMember) => {
               return (
                 <tr key={row.id}>
                   <td className="flex items-center">
@@ -113,7 +133,13 @@ const TeamTable = ({
 
                   <td>{row.createdAt ? format(new Date(row.createdAt * 1000), 'MMMM d, yyyy') : ''}</td>
                   <td>
-                    <SelectInput options={roles} defaultValue={row.type} color="text-primary-800" />
+                    <SelectInput
+                      options={roles}
+                      defaultValue={row.type}
+                      value={row.type}
+                      color="text-primary-800"
+                      onChange={(e) => onChangeType(row.id, e.target.value as ITeamRole)}
+                    />
                   </td>
 
                   {!isTeamMember && (
@@ -126,7 +152,7 @@ const TeamTable = ({
                     </td>
                   )}
 
-                  <td className="flex items-center justify-between">
+                  <td className="flex items-center justify-around">
                     <button className="primary mr-1" onClick={() => onResendClick(row)}>
                       {`${isTeamMember ? 'Resend' : 'Resend invite'}`}
                     </button>

@@ -1,9 +1,3 @@
-export interface ITeamManagement {
-  name: string;
-  email: string;
-  type: string;
-}
-
 export enum ITeamRole {
   Founder = 'founder',
   Manager = 'manager',

@@ -1,4 +1,3 @@
-import Button from '@components/atoms/Button/Button';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,7 +10,7 @@ import { toast } from 'react-toastify';
 import { addInvitee } from 'services/db/member';
 import { fetchOrg } from 'services/db/organization';
 import { IInvitee, IMember } from 'types/models';
-import { ITeamManagement, ITeamRole } from 'types/models/settings';
+import { ITeamRole } from 'types/models/settings';
 import { convertLabelToOption } from 'utils/shared';
 import * as Yup from 'yup';
 
@@ -57,6 +56,36 @@ const Team = () => {
 
     getCompanyName();
   }, [user]);
+
+  const addMoreMember = () => append(defaultMember);
+  const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
+  const validationSchema = Yup.object()
+    .strict(false)
+    .shape({
+      members: Yup.array(
+        Yup.object().shape({
+          name: Yup.string()
+            .required('Team member name is required')
+            .min(2, 'Team member name must contain at least two characters')
+            .max(100, 'Team member name must contain less than 100 characters'),
+          email: Yup.string()
+            .required('Email is required')
+            .max(100, 'Email must contain less than 100 characters')
+            .matches(VALID_EMAIL_REG, 'Enter a valid email')
+        })
+      )
+    });
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({ defaultValues: defaultTeammanagement, resolver: yupResolver(validationSchema) });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `members`
+  });
 
   const isMemberDisableAvailable = useMemo(() => {
     return teammates.filter((member: IMember) => member.type === ITeamRole.Founder).length > 1;
@@ -105,34 +134,6 @@ const Team = () => {
     }
   };
 
-  const addMoreMember = () => append(defaultMember);
-  const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
-  const validationSchema = Yup.object()
-    .strict(false)
-    .shape({
-      members: Yup.array(
-        Yup.object().shape({
-          name: Yup.string()
-            .required('Team member name is required')
-            .min(2, 'Team member name must contain at least two characters')
-            .max(100, 'Team member name must contain less than 100 characters'),
-          email: Yup.string()
-            .required('Email is required')
-            .max(100, 'Email must contain less than 100 characters')
-            .matches(VALID_EMAIL_REG, 'Enter a valid email')
-        })
-      )
-    });
-  const {
-    control,
-    handleSubmit,
-    register,
-    formState: { errors }
-  } = useForm({ defaultValues: defaultTeammanagement, resolver: yupResolver(validationSchema) });
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: `members`
-  });
   return (
     <div className="flex w-full">
       <div className="w-[400px] ml-6">
@@ -150,14 +151,11 @@ const Team = () => {
                 <Controller
                   name={`members.${index}.name`}
                   control={control}
-                  // rules={{ required: true, min: 2, max: 100 }}
                   render={({ field }) => (
                     <Input
                       label="Name"
                       placeholder="Enter name (optional)"
                       error={Boolean(errors && errors['members'] && errors[`members`][index]?.name)}
-                      // {...register(`test.${index}.firstName`)}
-                      // message={errors.name ? errors.name.message : ''}
                       {...field}
                     />
                   )}
@@ -172,7 +170,6 @@ const Team = () => {
                       placeholder="Enter email"
                       required
                       error={Boolean(errors && errors['members'] && errors[`members`][index]?.email)}
-                      // message={errors.email ? errors.email.message : ''}
                       {...field}
                     />
                   )}
@@ -212,28 +209,6 @@ const Team = () => {
             </button>
           </div>
         </form>
-        {/* <form onSubmit={handleSubmit(data => console.log(data))}>
-      <ul>
-        {fields.map((item, index) => (
-          <li key={item.id}>
-            <input {...register(`test.${index}.firstName`)} />
-            <Controller
-              render={({ field }) => <input {...field} />}
-              name={`test.${index}.lastName`}
-              control={control}
-            />
-            <button type="button" onClick={() => remove(index)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-      <button
-        type="button"
-        onClick={() => append({ firstName: "bill", lastName: "luo" })}
-      >
-        append
-      </button>
-      <input type="submit" />
-    </form> */}
 
         <div className=" flex items-center font-medium  ">
           <div
