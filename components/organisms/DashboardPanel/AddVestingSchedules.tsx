@@ -19,7 +19,7 @@ import { useTokenContext } from 'providers/token.context';
 import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
 import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { transactionCollection, vestingCollection } from 'services/db/firestore';
 import { fetchOrgByQuery } from 'services/db/organization';
@@ -131,6 +131,17 @@ AddVestingSchedulesProps) => {
   const [transaction, setTransaction] = useState<{ id: string; data: ITransaction | undefined }>();
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
+
+  const { pendingTransactions } = useTransactionLoaderContext();
+
+  const isAddAvailable = useCallback(() => {
+    const vestingTransaction = pendingTransactions.find(
+      (transaction) =>
+        transaction.data.type === 'ADDING_CLAIMS' &&
+        transaction.data.vestingIds?.includes(vestings[activeVestingIndex].id)
+    );
+    return !vestingTransaction;
+  }, [pendingTransactions, vestings, activeVestingIndex]);
 
   const handleDeployVestingContract = async () => {
     if (!account || !chainId) {
@@ -560,7 +571,9 @@ AddVestingSchedulesProps) => {
       actions: (
         <>
           <button
-            disabled={approved || !vestingContract?.id || !ownershipTransfered || insufficientBalance}
+            disabled={
+              approved || !vestingContract?.id || !ownershipTransfered || insufficientBalance || !isAddAvailable()
+            }
             className="secondary"
             onClick={handleCreateSignTransaction}>
             {approved ? 'Approved' : safe?.address ? 'Create and Sign the transaction' : 'Add Schedule'}
@@ -714,11 +727,11 @@ AddVestingSchedulesProps) => {
     }
   }, [type, vestingContract, ownershipTransfered]);
 
-  // useEffect(() => {
-  //   if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
-  //     setStatus('success');
-  //   }
-  // }, [activeVestingIndex, vestings]);
+  useEffect(() => {
+    if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
+      setStatus('success');
+    }
+  }, [activeVestingIndex, vestings]);
 
   useEffect(() => {
     if (vestings[activeVestingIndex].data.status === 'SUCCESS') {

@@ -18,7 +18,7 @@ import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
 import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
@@ -128,6 +128,15 @@ AddVestingSchedulesProps) => {
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
 
+  const { pendingTransactions } = useTransactionLoaderContext();
+
+  const isCreateAvailable = useCallback(() => {
+    const vestingTransaction = pendingTransactions.find(
+      (transaction) => transaction.data.type === 'VESTING_DEPLOYMENT'
+    );
+    return !vestingTransaction;
+  }, [pendingTransactions]);
+
   const handleDeployVestingContract = async () => {
     try {
       if (!account || !chainId) {
@@ -143,6 +152,21 @@ AddVestingSchedulesProps) => {
           library.getSigner()
         );
         const vestingContract = await VestingFactory.deploy(mintFormState.address);
+
+        const transactionData: ITransaction = {
+          hash: vestingContract.deployTransaction.hash,
+          safeHash: '',
+          status: 'PENDING',
+          to: '',
+          type: 'VESTING_DEPLOYMENT',
+          createdAt: Math.floor(new Date().getTime() / 1000),
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          organizationId: organizationId,
+          chainId,
+          vestingIds: []
+        };
+        const transactionId = await createTransaction(transactionData);
+
         setTransactionStatus('IN_PROGRESS');
         await vestingContract.deployed();
         const vestingContractId = await createVestingContract({
@@ -170,6 +194,8 @@ AddVestingSchedulesProps) => {
             vestings[activeVestingIndex].id
           );
         }
+        transactionData.status = 'SUCCESS';
+        updateTransaction(transactionData, transactionId);
         setTransactionStatus('SUCCESS');
         fetchDashboardVestingContract();
         if (!safe?.address) {
@@ -251,7 +277,7 @@ AddVestingSchedulesProps) => {
       label: 'Vesting contract required',
       actions: (
         <>
-          <button className="secondary" onClick={handleDeployVestingContract}>
+          <button className="secondary" onClick={handleDeployVestingContract} disabled={!isCreateAvailable()}>
             Create vesting contract
           </button>
         </>
