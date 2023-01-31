@@ -21,7 +21,7 @@ const defaultTeammanagement = {
     {
       name: '',
       email: '',
-      type: ITeamRole.Founder
+      type: ITeamRole.Manager
     }
   ]
 };
@@ -29,7 +29,7 @@ const defaultTeammanagement = {
 const defaultMember = {
   name: '',
   email: '',
-  type: ITeamRole.Founder
+  type: ITeamRole.Manager
 };
 
 const VALID_EMAIL_REG =
