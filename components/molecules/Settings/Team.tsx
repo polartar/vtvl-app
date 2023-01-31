@@ -1,4 +1,3 @@
-import Avatar from '@components/atoms/Avatar/Avatar';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -121,9 +120,11 @@ const Team = () => {
           const invitee: IInvitee = {
             org_id: user?.memberInfo?.org_id,
             name: member.name,
-            email: member.email
+            email: member.email,
+            type: member.type
           };
           setIsInviting(true);
+          console.log({ invitee });
           await sendTeammateInvite(member.email, member.type, member.name, companyName, user.memberInfo?.org_id);
           await addInvitee(invitee);
         }

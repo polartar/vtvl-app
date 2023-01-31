@@ -1,5 +1,7 @@
 import { User as FirebaseUser } from 'firebase/auth';
 
+import { ITeamRole } from './settings';
+
 export interface IAddress {
   walletAddress: string;
   chainId: number;
@@ -12,6 +14,7 @@ export interface IInvitee {
   email: string;
   createdAt?: number;
   updatedAt?: number;
+  type: ITeamRole;
 }
 
 export interface IMember {
