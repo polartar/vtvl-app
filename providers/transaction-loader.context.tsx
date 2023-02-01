@@ -1,50 +1,71 @@
 import TransactionModal, { TransactionStatuses } from '@components/molecules/TransactionModal/TransactionModal';
-import { onSnapshot } from 'firebase/firestore';
+import { onSnapshot, query, where } from 'firebase/firestore';
 import { useAuthContext } from 'providers/auth.context';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { transactionCollection } from 'services/db/firestore';
+import { ITransaction } from 'types/models';
 
+interface ITransactionData {
+  id: string;
+  data: ITransaction;
+}
 interface ITransactionLoadeerData {
   transactionStatus: TransactionStatuses;
   setTransactionStatus: (v: TransactionStatuses) => void;
+  pendingTransactions: ITransactionData[];
 }
 
 const TransactionLoader = createContext({} as ITransactionLoadeerData);
 
 export function TransactionLoaderContextProvider({ children }: any) {
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatuses>('');
-
-  console.log('Tx Loader Context', transactionStatus);
+  const [pendingTransactions, setPendingTransactions] = useState<ITransactionData[]>([]);
   const { safe, organizationId } = useAuthContext();
   const value = useMemo(
     () => ({
       transactionStatus,
-      setTransactionStatus
+      setTransactionStatus,
+      pendingTransactions
     }),
-    [transactionStatus, setTransactionStatus]
+    [transactionStatus, pendingTransactions, setTransactionStatus]
   );
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(transactionCollection, (snapshot) => {
+    let transactions: ITransactionData[] = [];
+    if (!organizationId) return;
+
+    const q = query(transactionCollection, where('organizationId', '==', organizationId));
+    const subscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
-        if (change.type === 'modified') {
-          const transactionInfo = change.doc.data();
-          if (transactionInfo.organizationId === organizationId) {
-            if (transactionInfo.status === 'SUCCESS') {
+        if (change.type === 'added') {
+          const data = change.doc.data();
+          if (data.status === 'PENDING') {
+            transactions.push({
+              id: change.doc.id,
+              data
+            });
+          }
+        } else if (change.type === 'modified') {
+          const data = change.doc.data();
+          if (data.status !== 'PENDING') {
+            transactions = transactions.filter((transaction) => transaction.id !== change.doc.id);
+            if (data.status === 'SUCCESS') {
               setTransactionStatus('SUCCESS');
             }
-            if (transactionInfo.status === 'FAILED') {
+            if (data.status === 'FAILED') {
               setTransactionStatus('ERROR');
             }
           }
         }
       });
+
+      setPendingTransactions(transactions.slice());
     });
 
     return () => {
-      unsubscribe();
+      subscribe();
     };
-  }, []);
+  }, [organizationId]);
 
   return (
     <TransactionLoader.Provider value={value}>

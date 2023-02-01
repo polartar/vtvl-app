@@ -13,6 +13,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
+import { ITeamRole } from 'types/models/settings';
 
 interface Contributor {
   name: string;
@@ -141,7 +142,8 @@ const AccountSetupPage: NextPage = () => {
           await addInvitee({
             name: contributor.name,
             email: contributor.email,
-            org_id: user.memberInfo?.org_id || org_id || ''
+            org_id: user.memberInfo?.org_id || org_id || '',
+            type: ITeamRole.Manager
           });
           await sendTeammateInvite(
             contributor.email,

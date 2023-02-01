@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
 import { useClaimTokensContext } from '@providers/claim-tokens.context';
+import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect } from 'react';
 
@@ -114,18 +115,22 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
       <div>
         {submenuList && submenuList.length
           ? submenuList.map((submenu, index) => (
-              <IconText
-                key={`submenu-item-${index}`}
-                sideIcon={submenu.icon}
-                className={`${!submenu.available ? 'opacity-40' : ''}`}>
-                <span
-                  className={`transition-width overflow-hidden whitespace-nowrap ${
-                    sidebarIsExpanded ? '' : 'opacity-0 w-0'
-                  }`}>
-                  <p>{submenu.title}</p>
-                  {!submenu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
-                </span>
-              </IconText>
+              <Link href={submenu.route}>
+                <div className={submenu.available ? ' hover:bg-[#1b369a] rounded-3xl' : 'pointer-events-none'}>
+                  <IconText
+                    key={`submenu-item-${index}`}
+                    sideIcon={submenu.icon}
+                    className={`${!submenu.available ? 'opacity-40' : ''}`}>
+                    <span
+                      className={`transition-width overflow-hidden whitespace-nowrap text-inherit	 ${
+                        sidebarIsExpanded ? '' : 'opacity-0 w-0'
+                      }`}>
+                      <p>{submenu.title}</p>
+                      {!submenu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
+                    </span>
+                  </IconText>
+                </div>
+              </Link>
             ))
           : null}
         <UserContainer>

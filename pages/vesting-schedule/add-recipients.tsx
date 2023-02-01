@@ -191,7 +191,13 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
   return (
     <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={state.step}>
-      {state.step === 0 && <VestingSetupPanel onReturn={handleReturn} onContinue={handleMoveToAddRecipientSection} />}
+      {state.step === 0 && (
+        <VestingSetupPanel
+          initialState={scheduleState}
+          onReturn={handleReturn}
+          onContinue={handleMoveToAddRecipientSection}
+        />
+      )}
       {state.step === 1 && (
         <div className="w-full mb-6 panel max-w-2xl">
           <div className="mb-4 flex flex-col gap-7">

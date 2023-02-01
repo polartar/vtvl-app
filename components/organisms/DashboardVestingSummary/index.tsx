@@ -135,7 +135,7 @@ const DashboardVestingSummary = () => {
         <div>
           <div className="text-label text-sm font-medium">Maximum Supply</div>
           <div className="mt-1.5 text-info text-base font-medium text-right">
-            {mintFormState.supplyCap === 'UNLIMITED' ? 'Unlimited' : mintFormState.maxSupply}
+            {mintFormState.supplyCap === 'UNLIMITED' ? 'Unlimited' : formatNumber(+mintFormState.maxSupply)}
           </div>
         </div>
       </div>

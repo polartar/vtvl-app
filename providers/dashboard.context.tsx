@@ -1,10 +1,12 @@
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, onSnapshot } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import React, { SetStateAction, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
+import { toast } from 'react-toastify';
+import { vestingCollection } from 'services/db/firestore';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
@@ -270,19 +272,47 @@ export function DashboardContextProvider({ children }: any) {
   }, [vestingContract, vestings, mintFormState, chainId]);
 
   useEffect(() => {
-    if (vestings) {
-      let allRecipients: MultiValue<IRecipient> = [];
-      vestings.forEach((vesting) => {
-        allRecipients = [...allRecipients, ...vesting.data.recipients];
-      });
-      setRecipients(
-        allRecipients.filter(
-          (recipient, i) =>
-            i ===
-            allRecipients.findIndex((r) => r.walletAddress.toLowerCase() === recipient.walletAddress.toLowerCase())
-        )
-      );
+    if (!vestings) {
+      return;
     }
+
+    let allRecipients: MultiValue<IRecipient> = [];
+    vestings.forEach((vesting) => {
+      allRecipients = [...allRecipients, ...vesting.data.recipients];
+    });
+    setRecipients(
+      allRecipients.filter(
+        (recipient, i) =>
+          i === allRecipients.findIndex((r) => r.walletAddress.toLowerCase() === recipient.walletAddress.toLowerCase())
+      )
+    );
+
+    const subscribe = onSnapshot(vestingCollection, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'modified') {
+          const vestingInfo = change.doc.data();
+          if (vestingInfo.status === 'LIVE') {
+            const newVestings = vestings.map((vesting) => {
+              if (vesting.id === change.doc.id) {
+                toast.success('Added schedules successfully.');
+
+                return {
+                  id: vesting.id,
+                  data: vestingInfo
+                };
+              }
+              return vesting;
+            });
+
+            setVestings(newVestings);
+          }
+        }
+      });
+    });
+
+    return () => {
+      subscribe();
+    };
   }, [vestings]);
 
   useEffect(() => {
