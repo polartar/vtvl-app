@@ -7,12 +7,14 @@ import { truncateAddress } from 'utils/web3';
 
 import { EditableTypographyProps, EditableTypographyType, tdTypographyProps } from './utils';
 
+const truncateComma = (value: string) => value?.split(',')?.join('') ?? '';
+
 const formatOutput = (value: string | number, type: EditableTypographyType) => {
   switch (type) {
     case 'address':
       return truncateAddress(String(value));
     case 'number':
-      return formatNumber(Number(value));
+      return formatNumber(Number(truncateComma(String(value))));
     default:
       return value;
   }
@@ -28,28 +30,15 @@ export const EditableTypography = ({
 }: EditableTypographyProps) => {
   const [value, setValue] = useState<string>(initialValue);
   const [editable, , setEditable] = useToggle(false);
-  const [error, , setError] = useToggle(false);
 
   const inputClassName = useMemo(
-    () =>
-      [
-        'w-full rounded-none .inter text-caption leading-caption p-2 outline-none'
-        // error && 'border border-danger-400'
-      ].join(' '),
-    [error]
+    () => ['w-full rounded-none .inter text-caption leading-caption p-2 outline-none'].join(' '),
+    []
   );
 
   const handleUpdate = useCallback(() => {
-    // Validation
-    if (!value || (type === 'address' && !validateEVMAddress(value)) || (type === 'number' && Number(value) <= 0)) {
-      setError(true);
-      // setEditable(true);
-    } else {
-      setError(false);
-      // setEditable(false);
-    }
     setEditable(false);
-    onChange?.(value);
+    onChange?.(type === 'number' ? truncateComma(value) : value);
   }, [type, value, setEditable, onChange]);
 
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,6 +48,7 @@ export const EditableTypography = ({
   return editable ? (
     <input
       id={`recipient-col-${id}`}
+      type="text"
       className={inputClassName}
       value={value}
       placeholder={placeholder}

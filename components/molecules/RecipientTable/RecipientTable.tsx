@@ -32,9 +32,11 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
   const totalAllocations = useMemo(() => rows?.reduce((val, row) => val + Number(row.allocations), 0) ?? 0, [rows]);
 
   const handleContinue = useCallback(() => {
-    if (!rows?.length) return;
-
     const newErrors = [];
+
+    if (!rows?.length) {
+      newErrors.push('At least one recipient must be added to proceed.');
+    }
 
     const hasDuplicatedAddress = validateDuplication(rows, 'address');
     if (hasDuplicatedAddress) {

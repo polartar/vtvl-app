@@ -855,5 +855,5 @@ body {
   transform: translateY(-50%);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.2s,color 0.2s;
+  transition: opacity 0.2s, color 0.2s;
 }
