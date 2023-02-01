@@ -2,11 +2,13 @@ import Chip from '@components/atoms/Chip/Chip';
 import Loader from '@components/atoms/Loader/Loader';
 import { useAuthContext } from '@providers/auth.context';
 import Lottie from 'lottie-react';
+import { useRouter } from 'next/router';
 import ErrorAnimation from 'public/error-state.json';
 import WarningIcon from 'public/icons/warning.svg';
 import MetaMaskWalletAnimation from 'public/metamask_wallet_loader.json';
 import SuccessAnimation from 'public/successfully-done.json';
 import WalletConnectAnimation from 'public/walletconnect_loader.json';
+import { useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 
@@ -16,6 +18,12 @@ export interface TransactionModalProps {
 }
 
 const TransactionModal = ({ status }: TransactionModalProps) => {
+  const router = useRouter();
+
+  const isCloseAvailable = useMemo(() => {
+    return router.pathname !== '/minting-token/summary';
+  }, [router]);
+
   const { connection } = useAuthContext();
   // Make Modal styles scrollable when exceeding the device view height
   const modalStyles: Styles = {
@@ -132,26 +140,34 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
           {txTypes[status].image}
           <h2 className="sora font-semibold text-3xl text-neutral-900 mt-12">{txTypes[status].title}</h2>
           <p className="mt-4 font-medium text-sm text-neutral-500 text-center">{txTypes[status].description}</p>
-          {/* {status !== 'SUCCESS' && status !== 'ERROR' && (
-            <Chip
-              label={
-                <div className="flex flex-row items-center gap-2">
-                  <WarningIcon className="w-4 h-4" />
-                  Please do not refresh the page
-                </div>
-              }
-              color="warningAlt"
-              rounded
-              className="mt-8"
-            />
-          )} */}
-          {status === 'IN_PROGRESS' && (
-            <button
-              type="button"
-              className="primary flex flex-row gap-2 items-center mt-4"
-              onClick={() => setIsOpen(false)}>
-              Close
-            </button>
+          {isCloseAvailable ? (
+            <>
+              {status === 'IN_PROGRESS' && (
+                <button
+                  type="button"
+                  className="primary flex flex-row gap-2 items-center mt-4"
+                  onClick={() => setIsOpen(false)}>
+                  Close
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              {' '}
+              {status !== 'SUCCESS' && status !== 'ERROR' && (
+                <Chip
+                  label={
+                    <div className="flex flex-row items-center gap-2">
+                      <WarningIcon className="w-4 h-4" />
+                      Please do not refresh the page
+                    </div>
+                  }
+                  color="warningAlt"
+                  rounded
+                  className="mt-8"
+                />
+              )}
+            </>
           )}
         </Modal>
       ) : null}

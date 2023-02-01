@@ -1,12 +1,12 @@
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
-import { Timestamp, onSnapshot } from 'firebase/firestore';
+import { Timestamp, onSnapshot, query, where } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import React, { SetStateAction, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
 import { toast } from 'react-toastify';
-import { vestingCollection } from 'services/db/firestore';
+import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
@@ -70,21 +70,74 @@ export function DashboardContextProvider({ children }: any) {
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [recipients, setRecipients] = useState<MultiValue<IRecipient>>([]);
 
+  useEffect(() => {
+    if (!organizationId) return;
+    let tmpVestingContracts: { id: string; data: IVestingContract }[] = [];
+    const q = query(vestingContractCollection, where('organizationId', '==', organizationId));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        const vestingContractInfo = change.doc.data();
+
+        if (change.type === 'added') {
+          tmpVestingContracts.push({
+            id: change.doc.id,
+            data: vestingContractInfo
+          });
+        } else if (change.type === 'modified') {
+          tmpVestingContracts = tmpVestingContracts.map((vesting) => {
+            if (vesting.id === change.doc.id) {
+              return {
+                id: vesting.id,
+                data: vestingContractInfo
+              };
+            }
+            return vesting;
+          });
+
+          setVestingContracts(tmpVestingContracts.slice());
+        }
+      });
+      setVestingContracts(tmpVestingContracts);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [organizationId]);
+
   const fetchDashboardVestingContract = async () => {
     try {
       setVestingContractLoading(true);
-      const res = await fetchVestingContractsByQuery(
-        ['organizationId', 'chainId'],
-        ['==', '=='],
-        [organizationId!, chainId!]
-      );
-      if (res && res.length > 0) {
-        setVestingContract(res.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
-        setVestingContracts(res);
-      } else {
-        setVestingContract(undefined);
-        setVestingContracts([]);
-      }
+      const subscribe = onSnapshot(vestingContractCollection, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'modified') {
+            const vestingContractInfo = change.doc.data();
+            const newVestingContracts = vestingContracts.map((vesting) => {
+              if (vesting.id === change.doc.id) {
+                return {
+                  id: vesting.id,
+                  data: vestingContractInfo
+                };
+              }
+              return vesting;
+            });
+
+            setVestingContracts(newVestingContracts);
+          }
+        });
+      });
+      // const res = await fetchVestingContractsByQuery(
+      //   ['organizationId', 'chainId'],
+      //   ['==', '=='],
+      //   [organizationId!, chainId!]
+      // );
+      // if (res && res.length > 0) {
+      //   setVestingContract(res.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
+      //   setVestingContracts(res);
+      // } else {
+      //   setVestingContract(undefined);
+      //   setVestingContracts([]);
+      // }
     } catch (err) {
       console.log('fetchDashboardVestingContract - ', err);
       setVestingContract(undefined);

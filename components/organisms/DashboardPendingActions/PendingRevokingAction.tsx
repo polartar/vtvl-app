@@ -40,7 +40,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
   const { account, chainId, activate, library } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   const {
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     vestingContracts,
     transactions,
     fetchDashboardTransactions,

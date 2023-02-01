@@ -35,7 +35,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
     if (!organizationId) return;
 
     const q = query(transactionCollection, where('organizationId', '==', organizationId));
-    const subscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
           const data = change.doc.data();
@@ -63,7 +63,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
     });
 
     return () => {
-      subscribe();
+      unsubscribe();
     };
   }, [organizationId]);
 

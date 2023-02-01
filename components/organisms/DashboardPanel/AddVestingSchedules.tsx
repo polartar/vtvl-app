@@ -115,7 +115,7 @@ AddVestingSchedulesProps) => {
     transactions,
     vestingContract,
     ownershipTransfered,
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     fetchDashboardVestings,
     fetchDashboardTransactions,
     setOwnershipTransfered,
@@ -184,7 +184,7 @@ AddVestingSchedulesProps) => {
           );
         }
 
-        fetchDashboardVestingContract();
+        // fetchDashboardVestingContract();
         setStatus('transferToMultisigSafe');
         setTransactionStatus('SUCCESS');
       } catch (err) {
