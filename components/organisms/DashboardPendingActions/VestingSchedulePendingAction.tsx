@@ -139,7 +139,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
 
       // const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
       const tokenBalance = vestingContract.data.balance || 0;
-      console.log({ tokenBalance });
+
       const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
 
       if (
