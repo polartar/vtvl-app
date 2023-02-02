@@ -122,7 +122,7 @@ AddVestingSchedulesProps) => {
     depositAmount,
     insufficientBalance: insufficientBalanceForAllVestings
   } = useDashboardContext();
-  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const { pendingTransactions, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
   const [status, setStatus] = useState('');
@@ -131,8 +131,6 @@ AddVestingSchedulesProps) => {
   const [transaction, setTransaction] = useState<{ id: string; data: ITransaction | undefined }>();
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
-
-  const { pendingTransactions } = useTransactionLoaderContext();
 
   const isAddAvailable = useCallback(() => {
     const vestingTransaction = pendingTransactions.find(

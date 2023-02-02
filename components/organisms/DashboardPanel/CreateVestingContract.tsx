@@ -118,7 +118,7 @@ AddVestingSchedulesProps) => {
     depositAmount,
     setRemoveOwnership
   } = useDashboardContext();
-  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const { pendingTransactions, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
   const [status, setStatus] = useState('');
@@ -128,10 +128,7 @@ AddVestingSchedulesProps) => {
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
 
-  const { pendingTransactions } = useTransactionLoaderContext();
-
   const isCreateAvailable = useCallback(() => {
-    console.log({ pendingTransactions });
     const vestingTransaction = pendingTransactions.find(
       (transaction) => transaction.data.type === 'VESTING_DEPLOYMENT'
     );
