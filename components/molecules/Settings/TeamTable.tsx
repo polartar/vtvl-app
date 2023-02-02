@@ -123,9 +123,9 @@ const TeamTable = ({
               return (
                 <tr key={row.id}>
                   <td className="flex items-center">
-                    <Avatar name={row.name || ''} />
+                    <Avatar name={row.name || row.email?.split('@')[0] || ''} />
                     <div className="flex flex-col ml-2 h-[40px]">
-                      <span className=" font-medium">{row.name}</span>
+                      <span className=" font-medium">{row.name || row.email?.split('@')[0]}</span>
                       <span className="  text-gray-400">{row.email}</span>
                     </div>
                   </td>
