@@ -125,6 +125,7 @@ AddVestingSchedulesProps) => {
   const { pendingTransactions, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
+
   const [status, setStatus] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
   const [insufficientBalance, setInsufficientBalance] = useState(false);
@@ -138,6 +139,7 @@ AddVestingSchedulesProps) => {
         transaction.data.type === 'ADDING_CLAIMS' &&
         transaction.data.vestingIds?.includes(vestings[activeVestingIndex].id)
     );
+
     return !vestingTransaction;
   }, [pendingTransactions, vestings, activeVestingIndex]);
 
@@ -736,17 +738,7 @@ AddVestingSchedulesProps) => {
   useEffect(() => {
     if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
       setStatus('success');
-    }
-  }, [activeVestingIndex, vestings]);
-
-  useEffect(() => {
-    if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
-      setStatus('success');
-    }
-  }, [activeVestingIndex, vestings]);
-
-  useEffect(() => {
-    if (
+    } else if (
       vestings[activeVestingIndex].data.status === 'LIVE' ||
       vestings[activeVestingIndex].data.status === 'COMPLETED'
     ) {

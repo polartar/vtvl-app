@@ -51,7 +51,6 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
     setIsCloseAvailable
   } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
-  console.log({ transactionLoaderStatus });
   const vestingContract = useMemo(
     () => vestingContracts.find((contract) => contract.id === data.vestingContractId),
     [data, vestingContracts]

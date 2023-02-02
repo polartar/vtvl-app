@@ -93,10 +93,11 @@ export function DashboardContextProvider({ children }: any) {
             }
             return vesting;
           });
-
+          setVestingContract(tmpVestingContracts.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
           setVestingContracts(tmpVestingContracts.slice());
         }
       });
+      setVestingContract(tmpVestingContracts.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
       setVestingContracts(tmpVestingContracts);
     });
 
@@ -300,6 +301,7 @@ export function DashboardContextProvider({ children }: any) {
           i === allRecipients.findIndex((r) => r.walletAddress.toLowerCase() === recipient.walletAddress.toLowerCase())
       )
     );
+    if (!organizationId) return;
     const q = query(vestingCollection, where('organizationId', '==', organizationId));
     const subscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
