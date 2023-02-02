@@ -57,7 +57,7 @@ const TeamTable = ({
 
       await sendTeammateInvite(
         selectedMember.email,
-        selectedMember.type || 'anonymous',
+        selectedMember.type || ITeamRole.Manager,
         selectedMember.name || 'anonymous',
         companyName,
         user.memberInfo?.org_id

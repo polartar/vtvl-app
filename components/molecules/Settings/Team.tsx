@@ -80,7 +80,6 @@ const Team = () => {
     control,
     handleSubmit,
     reset,
-    register,
     formState: { errors }
   } = useForm({ defaultValues: defaultTeammanagement, resolver: yupResolver(validationSchema) });
 
