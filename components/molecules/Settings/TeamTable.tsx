@@ -102,7 +102,7 @@ const TeamTable = ({
   };
 
   return (
-    <>
+    <div className="overflow-x-auto">
       <table className="border-primary-200 border-2 w-full">
         <thead>
           <tr>
@@ -187,7 +187,7 @@ const TeamTable = ({
           />
         )}
       </ModalWrapper>
-    </>
+    </div>
   );
 };
 
