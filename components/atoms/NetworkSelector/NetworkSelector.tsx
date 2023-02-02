@@ -86,6 +86,7 @@ const NetworkSelector = () => {
               className="h-10 flex flex-row items-center sm:gap-2 cursor-pointer transition-all hover:translate-x-1"
               onClick={async () => await selectNetwork(SupportedChains[key as SupportedChainId])}>
               <img
+                className="w-6 h-6 rounded-full"
                 src={SupportedChains[key as SupportedChainId].icon}
                 alt={SupportedChains[key as SupportedChainId].title}
               />

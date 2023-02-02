@@ -13,7 +13,7 @@ interface ICreateVestingContractModal {
 const CreateVestingContractModal: React.FC<ICreateVestingContractModal> = ({ hideModal }) => {
   const { chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
-  const { vestingContracts, fetchDashboardVestingContract } = useDashboardContext();
+  const { vestingContracts } = useDashboardContext();
   const { mintFormState } = useTokenContext();
 
   const [contractName, setContractName] = useState('');
@@ -48,7 +48,7 @@ const CreateVestingContractModal: React.FC<ICreateVestingContractModal> = ({ hid
           updatedAt: Math.floor(new Date().getTime() / 1000),
           transactionId: ''
         });
-        fetchDashboardVestingContract();
+        // fetchDashboardVestingContract();
         setLoading(false);
         hideModal();
       }

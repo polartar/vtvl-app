@@ -13,9 +13,11 @@ import Modal, { Styles } from 'react-modal';
 export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'ERROR';
 export interface TransactionModalProps {
   status: TransactionStatuses;
+  isCloseAvailable: boolean;
 }
 
-const TransactionModal = ({ status }: TransactionModalProps) => {
+const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) => {
+  console.log({ isCloseAvailable });
   const { connection } = useAuthContext();
   // Make Modal styles scrollable when exceeding the device view height
   const modalStyles: Styles = {
@@ -132,26 +134,34 @@ const TransactionModal = ({ status }: TransactionModalProps) => {
           {txTypes[status].image}
           <h2 className="sora font-semibold text-3xl text-neutral-900 mt-12">{txTypes[status].title}</h2>
           <p className="mt-4 font-medium text-sm text-neutral-500 text-center">{txTypes[status].description}</p>
-          {/* {status !== 'SUCCESS' && status !== 'ERROR' && (
-            <Chip
-              label={
-                <div className="flex flex-row items-center gap-2">
-                  <WarningIcon className="w-4 h-4" />
-                  Please do not refresh the page
-                </div>
-              }
-              color="warningAlt"
-              rounded
-              className="mt-8"
-            />
-          )} */}
-          {status === 'IN_PROGRESS' && (
-            <button
-              type="button"
-              className="primary flex flex-row gap-2 items-center mt-4"
-              onClick={() => setIsOpen(false)}>
-              Close
-            </button>
+          {isCloseAvailable ? (
+            <>
+              {status === 'IN_PROGRESS' && (
+                <button
+                  type="button"
+                  className="primary flex flex-row gap-2 items-center mt-4"
+                  onClick={() => setIsOpen(false)}>
+                  Close
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              {' '}
+              {status !== 'SUCCESS' && status !== 'ERROR' && (
+                <Chip
+                  label={
+                    <div className="flex flex-row items-center gap-2">
+                      <WarningIcon className="w-4 h-4" />
+                      Please do not refresh the page
+                    </div>
+                  }
+                  color="warningAlt"
+                  rounded
+                  className="mt-8"
+                />
+              )}
+            </>
           )}
         </Modal>
       ) : null}

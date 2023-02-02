@@ -29,7 +29,7 @@ export interface IMyTokenDetails {
 
 const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
   const { library, chainId, account, activate } = useWeb3React();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [totalVested, setTotalVested] = useState('');
   const [claimable, setClaimable] = useState('');
@@ -69,6 +69,8 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
     }
     if (vestingContractAddress) {
       const vestingContract = new ethers.Contract(vestingContractAddress, VTVL_VESTING_ABI.abi, library.getSigner());
+      setIsCloseAvailable(false);
+
       setTransactionStatus('PENDING');
       try {
         const withdrawTx = await vestingContract.withdraw();

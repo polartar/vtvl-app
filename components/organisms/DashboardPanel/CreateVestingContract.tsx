@@ -110,7 +110,7 @@ AddVestingSchedulesProps) => {
     transactions,
     vestingContract,
     ownershipTransfered,
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     fetchDashboardVestings,
     fetchDashboardTransactions,
     setOwnershipTransfered,
@@ -118,7 +118,7 @@ AddVestingSchedulesProps) => {
     depositAmount,
     setRemoveOwnership
   } = useDashboardContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
   const [status, setStatus] = useState('');
@@ -131,6 +131,7 @@ AddVestingSchedulesProps) => {
   const { pendingTransactions } = useTransactionLoaderContext();
 
   const isCreateAvailable = useCallback(() => {
+    console.log({ pendingTransactions });
     const vestingTransaction = pendingTransactions.find(
       (transaction) => transaction.data.type === 'VESTING_DEPLOYMENT'
     );
@@ -143,6 +144,8 @@ AddVestingSchedulesProps) => {
         activate(injected);
         return;
       } else if (organizationId) {
+        setIsCloseAvailable(false);
+
         setTransactionStatus('PENDING');
         const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI.abi);
         const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
@@ -197,7 +200,7 @@ AddVestingSchedulesProps) => {
         transactionData.status = 'SUCCESS';
         updateTransaction(transactionData, transactionId);
         setTransactionStatus('SUCCESS');
-        fetchDashboardVestingContract();
+        // fetchDashboardVestingContract();
         if (!safe?.address) {
           setStatus('success');
         } else setStatus('transferToMultisigSafe');
@@ -211,6 +214,8 @@ AddVestingSchedulesProps) => {
   const handleTransferOwnership = async () => {
     try {
       if (organizationId && chainId) {
+        setIsCloseAvailable(false);
+
         setTransactionStatus('PENDING');
         const vestingContractData = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
@@ -245,6 +250,8 @@ AddVestingSchedulesProps) => {
       }
 
       if (organizationId && safe?.address && account.toLowerCase() === safe?.owners[0].address.toLowerCase()) {
+        setIsCloseAvailable(false);
+
         setTransactionStatus('PENDING');
         const vestingContractData = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],

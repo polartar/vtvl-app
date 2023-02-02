@@ -115,14 +115,14 @@ AddVestingSchedulesProps) => {
     transactions,
     vestingContract,
     ownershipTransfered,
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     fetchDashboardVestings,
     fetchDashboardTransactions,
     setOwnershipTransfered,
     depositAmount,
     insufficientBalance: insufficientBalanceForAllVestings
   } = useDashboardContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
   const [status, setStatus] = useState('');
@@ -150,6 +150,7 @@ AddVestingSchedulesProps) => {
     } else if (organizationId) {
       try {
         setTransactionStatus('PENDING');
+        setIsCloseAvailable(false);
         const VestingFactory = new ethers.ContractFactory(
           VTVL_VESTING_ABI.abi,
           '0x' + VTVL_VESTING_ABI.bytecode,
@@ -184,7 +185,7 @@ AddVestingSchedulesProps) => {
           );
         }
 
-        fetchDashboardVestingContract();
+        // fetchDashboardVestingContract();
         setStatus('transferToMultisigSafe');
         setTransactionStatus('SUCCESS');
       } catch (err) {
@@ -203,6 +204,7 @@ AddVestingSchedulesProps) => {
       );
       if (vestingContractData?.data) {
         try {
+          setIsCloseAvailable(false);
           setTransactionStatus('PENDING');
           const vestingContract = new ethers.Contract(
             vestingContractData?.data?.address,
@@ -307,6 +309,8 @@ AddVestingSchedulesProps) => {
         vestingLinearVestAmounts,
         vestingCliffAmounts
       ]);
+
+      setIsCloseAvailable(true);
 
       if (safe?.address && account && chainId && organizationId) {
         const ethAdapter = new EthersAdapter({
@@ -451,6 +455,8 @@ AddVestingSchedulesProps) => {
 
   const handleApproveTransaction = async () => {
     try {
+      setIsCloseAvailable(false);
+
       if (safe?.address && chainId && transaction) {
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -492,6 +498,8 @@ AddVestingSchedulesProps) => {
 
   const handleExecuteTransaction = async () => {
     try {
+      setIsCloseAvailable(true);
+
       if (safe?.address && chainId && transaction) {
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -764,26 +772,30 @@ AddVestingSchedulesProps) => {
           return;
         }
         const vesting = vestings[activeVestingIndex];
-        const tokenContract = new ethers.Contract(
-          mintFormState.address,
-          [
-            // Read-Only Functions
-            'function balanceOf(address owner) view returns (uint256)',
-            'function decimals() view returns (uint8)',
-            'function symbol() view returns (string)',
-            // Authenticated Functions
-            'function transfer(address to, uint amount) returns (bool)',
-            // Events
-            'event Transfer(address indexed from, address indexed to, uint amount)'
-          ],
-          ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-        );
+        // const tokenContract = new ethers.Contract(
+        //   mintFormState.address,
+        //   [
+        //     // Read-Only Functions
+        //     'function balanceOf(address owner) view returns (uint256)',
+        //     'function decimals() view returns (uint8)',
+        //     'function symbol() view returns (string)',
+        //     // Authenticated Functions
+        //     'function transfer(address to, uint amount) returns (bool)',
+        //     // Events
+        //     'event Transfer(address indexed from, address indexed to, uint amount)'
+        //   ],
+        //   ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+        // );
         // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
-        tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
-          if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
-            setInsufficientBalance(true);
-          }
-        });
+        // tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
+        //   if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
+        //     setInsufficientBalance(true);
+        //   }
+        // });
+        const tokenBalance = vestingContract?.data?.balance || 0;
+        if (BigNumber.from(tokenBalance).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
+          setInsufficientBalance(true);
+        }
       } catch (err) {
         console.log('vestingContract balance - ', err);
       }
@@ -793,7 +805,7 @@ AddVestingSchedulesProps) => {
   useEffect(() => {
     if (account && safeTransaction && safe) {
       setApproved(safeTransaction.signatures.has(account.toLowerCase()));
-      if (safeTransaction.signatures.size >= safe?.threshold) {
+      if (safeTransaction.signatures.size >= safe?.threshold && transaction?.data?.status !== 'SUCCESS') {
         setExecutable(true);
       }
       if (transaction?.data?.status === 'SUCCESS') {

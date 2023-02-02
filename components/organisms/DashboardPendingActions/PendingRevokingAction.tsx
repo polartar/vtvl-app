@@ -40,14 +40,14 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
   const { account, chainId, activate, library } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   const {
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     vestingContracts,
     transactions,
     fetchDashboardTransactions,
     vestings,
     fetchDashboardData
   } = useDashboardContext();
-  const { setTransactionStatus: setTransactionLoaderStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
 
   const transaction = useMemo(
@@ -164,6 +164,8 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
 
   const handleApproveTransaction = async () => {
     try {
+      setIsCloseAvailable(false);
+
       if (safe?.address && chainId && transaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -171,7 +173,10 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
           signer: library?.getSigner(0)
         });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({
+          ethAdapter: ethAdapter,
+          safeAddress: safe?.address
+        });
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
@@ -181,7 +186,11 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         );
 
         const safeTx = await safeSdk.createTransaction({
-          safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
+          safeTransactionData: {
+            ...apiTx,
+            data: apiTx.data || '0x',
+            gasPrice: parseInt(apiTx.gasPrice)
+          }
         });
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
@@ -203,6 +212,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
 
   const handleExecuteTransaction = async () => {
     try {
+      setIsCloseAvailable(false);
       if (safe?.address && chainId && transaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
