@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /** @type {import('next').NextConfig} */
 /** @type {import('dotenv').Config} */
 
@@ -26,6 +27,11 @@ const nextConfig = {
       {
         source: '/',
         destination: '/onboarding',
+        permanent: true
+      },
+      {
+        source: '/onboarding/setup-safes',
+        destination: '/settings?tab=safe',
         permanent: true
       }
     ];
