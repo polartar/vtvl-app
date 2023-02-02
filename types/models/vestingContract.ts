@@ -9,7 +9,7 @@ export interface IVestingContract {
   updatedAt: number;
   chainId: number;
   transactionId: string;
-  balance: string;
+  balance?: string;
 }
 
 export interface IFundContractProps {
