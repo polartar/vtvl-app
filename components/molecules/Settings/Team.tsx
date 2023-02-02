@@ -152,7 +152,7 @@ const Team = () => {
           onSubmit={handleSubmit(inviteMember)}>
           {fields.map((item, index) => {
             return (
-              <section className="md:grid-cols-3 flex gap-2 mb-3" key={item.id}>
+              <section className="md:grid-cols-3   sm:flex gap-2 mb-3" key={item.id}>
                 <Controller
                   name={`members.${index}.name`}
                   control={control}
