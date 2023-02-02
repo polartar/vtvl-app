@@ -300,8 +300,8 @@ export function DashboardContextProvider({ children }: any) {
           i === allRecipients.findIndex((r) => r.walletAddress.toLowerCase() === recipient.walletAddress.toLowerCase())
       )
     );
-
-    const subscribe = onSnapshot(vestingCollection, (snapshot) => {
+    const q = query(vestingCollection, where('organizationId', '==', organizationId));
+    const subscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'modified') {
           const vestingInfo = change.doc.data();
@@ -327,7 +327,7 @@ export function DashboardContextProvider({ children }: any) {
     return () => {
       subscribe();
     };
-  }, [vestings]);
+  }, [vestings, organizationId]);
 
   useEffect(() => {
     if (vestingContract?.data && safe?.address && chainId) {

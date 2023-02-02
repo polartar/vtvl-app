@@ -146,7 +146,7 @@ const Team = () => {
         </div>
       </div>
 
-      <div className="lg:col-span-9 col-span-12 ml-2">
+      <div className="lg:col-span-9 col-span-12 ml-2 lg:pr-6 pr-0">
         <form
           className="flex-row  gap-5 border-b border-t py-5 border-neutral-300 my-5"
           onSubmit={handleSubmit(inviteMember)}>
