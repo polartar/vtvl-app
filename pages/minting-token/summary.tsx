@@ -29,7 +29,7 @@ const Summary: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
   const { library, account, activate, chainId } = useWeb3React();
   const { mintFormState, updateMintFormState, updateTokenId } = useTokenContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply } = mintFormState;
 
@@ -40,6 +40,7 @@ const Summary: NextPageWithLayout = () => {
       if (!library) {
         activate(injected);
       } else if (organizationId && chainId) {
+        setIsCloseAvailable(false);
         setTransactionStatus('PENDING');
         setLoading(true);
         const tokenTemplate = supplyCap === 'LIMITED' ? FullPremintERC20Token : VariableSupplyERC20Token;

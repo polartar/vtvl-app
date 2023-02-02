@@ -13,6 +13,7 @@ interface ITransactionLoadeerData {
   transactionStatus: TransactionStatuses;
   setTransactionStatus: (v: TransactionStatuses) => void;
   pendingTransactions: ITransactionData[];
+  setIsCloseAvailable: (v: boolean) => void;
 }
 
 const TransactionLoader = createContext({} as ITransactionLoadeerData);
@@ -20,12 +21,14 @@ const TransactionLoader = createContext({} as ITransactionLoadeerData);
 export function TransactionLoaderContextProvider({ children }: any) {
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatuses>('');
   const [pendingTransactions, setPendingTransactions] = useState<ITransactionData[]>([]);
+  const [isCloseAvailable, setIsCloseAvailable] = useState<boolean>(true);
   const { safe, organizationId } = useAuthContext();
   const value = useMemo(
     () => ({
       transactionStatus,
       setTransactionStatus,
-      pendingTransactions
+      pendingTransactions,
+      setIsCloseAvailable
     }),
     [transactionStatus, pendingTransactions, setTransactionStatus]
   );
@@ -70,7 +73,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
   return (
     <TransactionLoader.Provider value={value}>
       {children}
-      <TransactionModal status={transactionStatus} />
+      <TransactionModal status={transactionStatus} isCloseAvailable={isCloseAvailable} />
     </TransactionLoader.Provider>
   );
 }

@@ -56,7 +56,7 @@ import {
 const VestingScheduleProject: NextPageWithLayout = () => {
   const { account, library, activate, chainId } = useWeb3React();
   const { organizationId, safe } = useAuthContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { vestings } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
@@ -313,6 +313,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
     const recipient = data.recipients[rIndex].walletAddress;
     if (data.status === 'COMPLETED' || data.status === 'LIVE') {
+      setIsCloseAvailable(false);
       try {
         setTransactionStatus('PENDING');
         if (safe?.address) {

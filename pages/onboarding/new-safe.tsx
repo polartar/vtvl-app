@@ -33,7 +33,7 @@ const NewSafePage: NextPage = () => {
   const { fetchSafe } = useAuthContext();
   const { user } = useContext(AuthContext);
   const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
-  const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
+  const { transactionStatus, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { query, push: routerPush } = useRouter();
 
   const [importedSafe, setImportedSafe] = useState<Safe>();
@@ -201,7 +201,7 @@ const NewSafePage: NextPage = () => {
     setFormSuccess(false);
     setFormError(false);
     setFormMessage('');
-
+    setIsCloseAvailable(false);
     try {
       const values = getValues();
       const owners = values.owners.map((o) => o.address);

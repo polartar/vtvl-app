@@ -38,7 +38,7 @@ const defaultValues: IAdditionalSupply = {
 const MintSuppy: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
-  const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
+  const { transactionStatus, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { mintFormState, tokenId, updateMintFormState } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -71,6 +71,7 @@ const MintSuppy: NextPageWithLayout = () => {
 
   const onSubmit: SubmitHandler<IAdditionalSupply> = async (data) => {
     console.log('Submitting new supply', data);
+    setIsCloseAvailable(false);
     // Mint supply here
     try {
       // Connect to wallet first

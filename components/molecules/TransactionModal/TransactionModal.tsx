@@ -2,28 +2,22 @@ import Chip from '@components/atoms/Chip/Chip';
 import Loader from '@components/atoms/Loader/Loader';
 import { useAuthContext } from '@providers/auth.context';
 import Lottie from 'lottie-react';
-import { useRouter } from 'next/router';
 import ErrorAnimation from 'public/error-state.json';
 import WarningIcon from 'public/icons/warning.svg';
 import MetaMaskWalletAnimation from 'public/metamask_wallet_loader.json';
 import SuccessAnimation from 'public/successfully-done.json';
 import WalletConnectAnimation from 'public/walletconnect_loader.json';
-import { useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 
 export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'ERROR';
 export interface TransactionModalProps {
   status: TransactionStatuses;
+  isCloseAvailable: boolean;
 }
 
-const TransactionModal = ({ status }: TransactionModalProps) => {
-  const router = useRouter();
-
-  const isCloseAvailable = useMemo(() => {
-    return router.pathname !== '/minting-token/summary';
-  }, [router]);
-
+const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) => {
+  console.log({ isCloseAvailable });
   const { connection } = useAuthContext();
   // Make Modal styles scrollable when exceeding the device view height
   const modalStyles: Styles = {

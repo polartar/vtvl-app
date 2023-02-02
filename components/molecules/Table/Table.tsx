@@ -126,7 +126,7 @@ const Table = ({
   const { organizationId, safe } = useAuthContext();
   const { mintFormState } = useTokenContext();
   const { vestingContracts, fetchDashboardData } = useDashboardContext();
-  const { setTransactionStatus: setTransactionLoaderStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -226,6 +226,7 @@ const Table = ({
       const actualData = selectedFlatRows.map((row) => ({ ...row.original }));
 
       if (type === 'Metamask') {
+        setIsCloseAvailable(false);
         setTransactionLoaderStatus('PENDING');
         const tokenContract = new ethers.Contract(
           mintFormState.address,

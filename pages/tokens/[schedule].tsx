@@ -29,7 +29,7 @@ import { getChartData, getCliffAmount, getCliffDateTime, getNextUnlock, getRelea
 const MyTokenSchedule: NextPageWithLayout = () => {
   const { library, chainId, account, activate } = useWeb3React();
   const { mintFormState } = useTokenContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { userTokenDetails, vestingSchedules, selectedSchedule, selectedToken, setSelectedSchedule, fetchContract } =
     useClaimTokensContext();
@@ -73,6 +73,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
       setIsClaiming(false);
       return;
     }
+    setIsCloseAvailable(false);
     if (userTokenDetails.vestingContractAddress) {
       const vestingContract = new ethers.Contract(
         userTokenDetails.vestingContractAddress,

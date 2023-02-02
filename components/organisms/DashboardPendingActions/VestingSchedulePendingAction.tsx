@@ -46,7 +46,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
     fetchDashboardData,
     vestings
   } = useDashboardContext();
-  const { setTransactionStatus: setTransactionLoaderStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
 
   const vestingContract = useMemo(
@@ -166,6 +166,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
 
   const handleExecuteFundingTransaction = async () => {
     try {
+      setIsCloseAvailable(true);
       if (safe?.address && chainId && safeTransaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -236,7 +237,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         toast.info('Connect your wallet and try again.');
         return;
       }
-
+      setIsCloseAvailable(true);
       if (type === 'Metamask') {
         setTransactionLoaderStatus('PENDING');
         const tokenContract = new ethers.Contract(
