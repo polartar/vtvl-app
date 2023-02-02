@@ -75,13 +75,13 @@ const FounderRoutes = {
       route: '/cap-table',
       available: true
     },
-    {
-      title: 'Connect safe',
-      icon: '/icons/s_vestingSchedule.svg',
-      hoverIcon: '/icons/s_vestingSchedule2.svg',
-      route: '/onboarding/setup-safes',
-      available: true
-    },
+    // {
+    //   title: 'Connect safe',
+    //   icon: '/icons/s_vestingSchedule.svg',
+    //   hoverIcon: '/icons/s_vestingSchedule2.svg',
+    //   route: '/onboarding/setup-safes',
+    //   available: true
+    // },
     {
       title: 'Token performance',
       icon: '/icons/s_tokenPerformance.svg',
@@ -293,7 +293,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     if (user && user.memberInfo && user.memberInfo.type) {
       if (safe && user.memberInfo.type === 'founder') {
         const sbProps = SidebarProps[user?.memberInfo?.type];
-        sbProps.menuList.slice(3, 1); // Remove connect safe
+        // sbProps.menuList.slice(3, 1); // Remove connect safe
         setSidebarProperties({ ...sbProps });
       } else {
         setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
