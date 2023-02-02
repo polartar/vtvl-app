@@ -17,7 +17,6 @@ export interface TransactionModalProps {
 }
 
 const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) => {
-  console.log({ isCloseAvailable });
   const { connection } = useAuthContext();
   // Make Modal styles scrollable when exceeding the device view height
   const modalStyles: Styles = {
