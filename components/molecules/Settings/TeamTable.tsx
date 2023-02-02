@@ -157,7 +157,7 @@ const TeamTable = ({
                     {isTeamMember ? (
                       <button
                         className="border-[#ef4444] text-[#ef4444] border-2 font-medium"
-                        disabled={!isDisableAvailable}
+                        disabled={!isDisableAvailable && row.type === ITeamRole.Founder}
                         onClick={() => onDisableClick(row)}>
                         Disable
                       </button>
