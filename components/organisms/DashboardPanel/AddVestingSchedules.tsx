@@ -122,7 +122,7 @@ AddVestingSchedulesProps) => {
     depositAmount,
     insufficientBalance: insufficientBalanceForAllVestings
   } = useDashboardContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
   const [status, setStatus] = useState('');
@@ -150,6 +150,7 @@ AddVestingSchedulesProps) => {
     } else if (organizationId) {
       try {
         setTransactionStatus('PENDING');
+        setIsCloseAvailable(false);
         const VestingFactory = new ethers.ContractFactory(
           VTVL_VESTING_ABI.abi,
           '0x' + VTVL_VESTING_ABI.bytecode,
@@ -203,6 +204,7 @@ AddVestingSchedulesProps) => {
       );
       if (vestingContractData?.data) {
         try {
+          setIsCloseAvailable(false);
           setTransactionStatus('PENDING');
           const vestingContract = new ethers.Contract(
             vestingContractData?.data?.address,
@@ -307,6 +309,8 @@ AddVestingSchedulesProps) => {
         vestingLinearVestAmounts,
         vestingCliffAmounts
       ]);
+
+      setIsCloseAvailable(true);
 
       if (safe?.address && account && chainId && organizationId) {
         const ethAdapter = new EthersAdapter({
@@ -451,6 +455,8 @@ AddVestingSchedulesProps) => {
 
   const handleApproveTransaction = async () => {
     try {
+      setIsCloseAvailable(false);
+
       if (safe?.address && chainId && transaction) {
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -492,6 +498,8 @@ AddVestingSchedulesProps) => {
 
   const handleExecuteTransaction = async () => {
     try {
+      setIsCloseAvailable(true);
+
       if (safe?.address && chainId && transaction) {
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -797,7 +805,7 @@ AddVestingSchedulesProps) => {
   useEffect(() => {
     if (account && safeTransaction && safe) {
       setApproved(safeTransaction.signatures.has(account.toLowerCase()));
-      if (safeTransaction.signatures.size >= safe?.threshold) {
+      if (safeTransaction.signatures.size >= safe?.threshold && transaction?.data?.status !== 'SUCCESS') {
         setExecutable(true);
       }
       if (transaction?.data?.status === 'SUCCESS') {

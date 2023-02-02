@@ -47,7 +47,7 @@ const FundContract = () => {
   const { account, library, activate, chainId } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   const { mintFormState } = useTokenContext();
-  const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
+  const { transactionStatus, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const {
     vestings,
     transactions,
@@ -80,6 +80,8 @@ const FundContract = () => {
 
   const handleExecuteTransaction = async () => {
     try {
+      setIsCloseAvailable(true);
+
       if (safe?.address && chainId && transaction) {
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -128,6 +130,8 @@ const FundContract = () => {
   const handleApproveTransaction = async () => {
     try {
       if (safe?.address && chainId && transaction) {
+        setIsCloseAvailable(false);
+
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -167,6 +171,7 @@ const FundContract = () => {
         toast.info('Connect your wallet and try again.');
         return;
       }
+      setIsCloseAvailable(true);
 
       if (type === 'Metamask') {
         setTransactionStatus('PENDING');

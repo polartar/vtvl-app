@@ -23,12 +23,13 @@ const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContrac
   const { account, chainId, activate, library } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   // const { fetchDashboardVestingContract } = useDashboardContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
 
   const [status, setStatus] = useState<IStatus>('');
 
   const handleDeployVestingContract = async () => {
+    setIsCloseAvailable(false);
     try {
       if (!account || !chainId) {
         activate(injected);
@@ -73,6 +74,7 @@ const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContrac
 
   const handleTransferOwnership = async () => {
     try {
+      setIsCloseAvailable(false);
       if (organizationId && chainId) {
         setTransactionStatus('PENDING');
 
@@ -92,6 +94,7 @@ const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContrac
 
   const handleRemoveDeployerOwnership = async () => {
     try {
+      setIsCloseAvailable(false);
       if (!account || !library || !chainId) {
         activate(injected);
         return;
