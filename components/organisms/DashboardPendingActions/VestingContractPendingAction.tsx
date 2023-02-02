@@ -22,7 +22,7 @@ import { formatNumber, parseTokenAmount } from 'utils/token';
 const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContract }> = ({ id, data }) => {
   const { account, chainId, activate, library } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
-  const { fetchDashboardVestingContract } = useDashboardContext();
+  // const { fetchDashboardVestingContract } = useDashboardContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
 
@@ -58,7 +58,7 @@ const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContrac
         );
 
         setTransactionStatus('SUCCESS');
-        fetchDashboardVestingContract();
+        // fetchDashboardVestingContract();
         if (safe?.address) {
           setStatus('TRANSFER_OWNERSHIP');
         } else {
@@ -82,7 +82,7 @@ const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContrac
         await transactionResponse.wait();
         setStatus('REMOVE_ORIGINAL_OWNERSHIP');
         setTransactionStatus('SUCCESS');
-        fetchDashboardVestingContract();
+        // fetchDashboardVestingContract();
       }
     } catch (err) {
       console.log('handleTransferOwnership - ', err);

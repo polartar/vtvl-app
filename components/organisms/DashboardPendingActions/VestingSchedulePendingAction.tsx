@@ -39,7 +39,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
   const { account, chainId, activate, library } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   const {
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     vestingContracts,
     transactions,
     fetchDashboardTransactions,
@@ -117,27 +117,29 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         }
       }
     } else {
-      const TokenContract = new ethers.Contract(
-        mintFormState.address,
-        [
-          // Read-Only Functions
-          'function balanceOf(address owner) view returns (uint256)',
-          'function decimals() view returns (uint8)',
-          'function symbol() view returns (string)',
-          // Authenticated Functions
-          'function transfer(address to, uint amount) returns (bool)',
-          // Events
-          'event Transfer(address indexed from, address indexed to, uint amount)'
-        ],
-        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-      );
+      // const TokenContract = new ethers.Contract(
+      //   mintFormState.address,
+      //   [
+      //     // Read-Only Functions
+      //     'function balanceOf(address owner) view returns (uint256)',
+      //     'function decimals() view returns (uint8)',
+      //     'function symbol() view returns (string)',
+      //     // Authenticated Functions
+      //     'function transfer(address to, uint amount) returns (bool)',
+      //     // Events
+      //     'event Transfer(address indexed from, address indexed to, uint amount)'
+      //   ],
+      //   ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      // );
       const VestingContract = new ethers.Contract(
         vestingContract?.data.address || '',
         VTVL_VESTING_ABI.abi,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
-      const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
+      // const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
+      const tokenBalance = vestingContract.data.balance || 0;
+
       const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
 
       if (

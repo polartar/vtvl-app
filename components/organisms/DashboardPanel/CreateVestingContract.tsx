@@ -110,7 +110,7 @@ AddVestingSchedulesProps) => {
     transactions,
     vestingContract,
     ownershipTransfered,
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     fetchDashboardVestings,
     fetchDashboardTransactions,
     setOwnershipTransfered,
@@ -197,7 +197,7 @@ AddVestingSchedulesProps) => {
         transactionData.status = 'SUCCESS';
         updateTransaction(transactionData, transactionId);
         setTransactionStatus('SUCCESS');
-        fetchDashboardVestingContract();
+        // fetchDashboardVestingContract();
         if (!safe?.address) {
           setStatus('success');
         } else setStatus('transferToMultisigSafe');

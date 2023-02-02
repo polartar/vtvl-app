@@ -53,7 +53,7 @@ const FundContract = () => {
     transactions,
     vestingContract,
     ownershipTransfered,
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     fetchDashboardVestings,
     fetchDashboardTransactions,
     setOwnershipTransfered,
