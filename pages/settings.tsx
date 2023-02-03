@@ -2,7 +2,7 @@ import GonsisSafe from '@components/molecules/Settings/GnosisSafe';
 import Team from '@components/molecules/Settings/Team';
 import { useAuthContext } from '@providers/auth.context';
 import { useRouter } from 'next/router';
-import { useCallback, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ITeamRole } from 'types/models/settings';
 
 const Settings = () => {
@@ -10,21 +10,17 @@ const Settings = () => {
   const { tab } = router?.query ?? {};
 
   const { user } = useAuthContext();
+  const [isTeamPage, setIsTeamPage] = useState(true);
 
   const isFounder = useMemo(() => {
     return user?.memberInfo?.type === ITeamRole.Founder;
   }, [user]);
 
-  const isTeamPage = useMemo(() => tab !== 'safe', [tab]);
-
-  const handleChangeTab = useCallback((newTab: string) => {
-    router.push({
-      pathname: '/settings',
-      query: {
-        tab: newTab
-      }
-    });
-  }, []);
+  useEffect(() => {
+    if (tab === 'safe') {
+      setIsTeamPage(false);
+    }
+  }, [tab]);
 
   return (
     <>
@@ -35,7 +31,7 @@ const Settings = () => {
           className={`flex items-center h-14 mr-13 ${
             isTeamPage ? 'text-gray-800  border-b-[#2b298b] border-b-2' : 'text-gray-400'
           } cursor-pointer`}
-          onClick={() => !isTeamPage && handleChangeTab('team')}>
+          onClick={() => setIsTeamPage(true)}>
           Team
         </div>
 
@@ -43,7 +39,7 @@ const Settings = () => {
           className={`flex items-center h-14 ${
             isTeamPage ? 'text-gray-400 ' : 'text-gray-800 border-b-[#2b298b] border-b-2'
           } cursor-pointer`}
-          onClick={() => isTeamPage && handleChangeTab('safe')}>
+          onClick={() => setIsTeamPage(false)}>
           Gnosis Safe
         </div>
       </div>
