@@ -18,7 +18,7 @@ import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
 import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
@@ -110,7 +110,7 @@ AddVestingSchedulesProps) => {
     transactions,
     vestingContract,
     ownershipTransfered,
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     fetchDashboardVestings,
     fetchDashboardTransactions,
     setOwnershipTransfered,
@@ -118,7 +118,7 @@ AddVestingSchedulesProps) => {
     depositAmount,
     setRemoveOwnership
   } = useDashboardContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { pendingTransactions, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
   const [status, setStatus] = useState('');
@@ -128,12 +128,21 @@ AddVestingSchedulesProps) => {
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
 
+  const isCreateAvailable = useCallback(() => {
+    const vestingTransaction = pendingTransactions.find(
+      (transaction) => transaction.data.type === 'VESTING_DEPLOYMENT'
+    );
+    return !vestingTransaction;
+  }, [pendingTransactions]);
+
   const handleDeployVestingContract = async () => {
     try {
       if (!account || !chainId) {
         activate(injected);
         return;
       } else if (organizationId) {
+        setIsCloseAvailable(false);
+
         setTransactionStatus('PENDING');
         const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI.abi);
         const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
@@ -143,6 +152,21 @@ AddVestingSchedulesProps) => {
           library.getSigner()
         );
         const vestingContract = await VestingFactory.deploy(mintFormState.address);
+
+        const transactionData: ITransaction = {
+          hash: vestingContract.deployTransaction.hash,
+          safeHash: '',
+          status: 'PENDING',
+          to: '',
+          type: 'VESTING_DEPLOYMENT',
+          createdAt: Math.floor(new Date().getTime() / 1000),
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          organizationId: organizationId,
+          chainId,
+          vestingIds: []
+        };
+        const transactionId = await createTransaction(transactionData);
+
         setTransactionStatus('IN_PROGRESS');
         await vestingContract.deployed();
         const vestingContractId = await createVestingContract({
@@ -170,8 +194,10 @@ AddVestingSchedulesProps) => {
             vestings[activeVestingIndex].id
           );
         }
+        transactionData.status = 'SUCCESS';
+        updateTransaction(transactionData, transactionId);
         setTransactionStatus('SUCCESS');
-        fetchDashboardVestingContract();
+        // fetchDashboardVestingContract();
         if (!safe?.address) {
           setStatus('success');
         } else setStatus('transferToMultisigSafe');
@@ -185,6 +211,8 @@ AddVestingSchedulesProps) => {
   const handleTransferOwnership = async () => {
     try {
       if (organizationId && chainId) {
+        setIsCloseAvailable(false);
+
         setTransactionStatus('PENDING');
         const vestingContractData = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
@@ -219,6 +247,8 @@ AddVestingSchedulesProps) => {
       }
 
       if (organizationId && safe?.address && account.toLowerCase() === safe?.owners[0].address.toLowerCase()) {
+        setIsCloseAvailable(false);
+
         setTransactionStatus('PENDING');
         const vestingContractData = await fetchVestingContractByQuery(
           ['organizationId', 'chainId'],
@@ -251,7 +281,7 @@ AddVestingSchedulesProps) => {
       label: 'Vesting contract required',
       actions: (
         <>
-          <button className="secondary" onClick={handleDeployVestingContract}>
+          <button className="secondary" onClick={handleDeployVestingContract} disabled={!isCreateAvailable()}>
             Create vesting contract
           </button>
         </>
@@ -405,8 +435,8 @@ AddVestingSchedulesProps) => {
           <Chip
             label={
               <p className="row-center">
-                {statuses[status].icon}
-                {statuses[status].label}
+                {statuses[status]?.icon}
+                {statuses[status]?.label}
               </p>
             }
             color={status === 'approved' ? 'success' : status === 'declined' ? 'danger' : 'warning'}
@@ -439,7 +469,7 @@ AddVestingSchedulesProps) => {
         ) : null}
       </div>
       <div className="border-t mt-3 pt-3 row-center justify-between">
-        <div className="row-center">{status ? statuses[status].actions : ''}</div>
+        <div className="row-center">{status ? statuses[status]?.actions : ''}</div>
       </div>
     </div>
   );

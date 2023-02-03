@@ -50,8 +50,18 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
  * e.g., `<button className="primary large">` is the same as `<Button primary large>`.
  * `<Button label="My Button" />` is the same as `<Button>My Button</Button>`
  */
-const Button = ({ loading = false, ...props }: ButtonProps) => {
-  const { primary, secondary, outline, danger, success, warning, size, label } = props;
+const Button = ({
+  loading = false,
+  primary,
+  secondary,
+  outline,
+  danger,
+  success,
+  warning,
+  size,
+  label,
+  ...props
+}: ButtonProps) => {
   const getClassNames = () => {
     let className = '';
     if (primary) className += ' primary ';

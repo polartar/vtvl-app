@@ -1,10 +1,12 @@
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, onSnapshot, query, where } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import React, { SetStateAction, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
+import { toast } from 'react-toastify';
+import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
@@ -34,7 +36,7 @@ interface IDashboardData {
   vestingContractLoading: boolean;
   transactionsLoading: boolean;
   removeOwnership: boolean;
-  fetchDashboardVestingContract: () => void;
+  // fetchDashboardVestingContract: () => void;
   fetchDashboardVestings: () => void;
   fetchDashboardTransactions: () => void;
   setOwnershipTransfered: (v: boolean) => void;
@@ -68,27 +70,41 @@ export function DashboardContextProvider({ children }: any) {
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [recipients, setRecipients] = useState<MultiValue<IRecipient>>([]);
 
-  const fetchDashboardVestingContract = async () => {
-    try {
-      setVestingContractLoading(true);
-      const res = await fetchVestingContractsByQuery(
-        ['organizationId', 'chainId'],
-        ['==', '=='],
-        [organizationId!, chainId!]
-      );
-      if (res && res.length > 0) {
-        setVestingContract(res.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
-        setVestingContracts(res);
-      } else {
-        setVestingContract(undefined);
-        setVestingContracts([]);
-      }
-    } catch (err) {
-      console.log('fetchDashboardVestingContract - ', err);
-      setVestingContract(undefined);
-    }
-    setVestingContractLoading(false);
-  };
+  useEffect(() => {
+    if (!organizationId) return;
+    let tmpVestingContracts: { id: string; data: IVestingContract }[] = [];
+    const q = query(vestingContractCollection, where('organizationId', '==', organizationId));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        const vestingContractInfo = change.doc.data();
+
+        if (change.type === 'added') {
+          tmpVestingContracts.push({
+            id: change.doc.id,
+            data: vestingContractInfo
+          });
+        } else if (change.type === 'modified') {
+          tmpVestingContracts = tmpVestingContracts.map((vesting) => {
+            if (vesting.id === change.doc.id) {
+              return {
+                id: vesting.id,
+                data: vestingContractInfo
+              };
+            }
+            return vesting;
+          });
+          setVestingContract(tmpVestingContracts.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
+          setVestingContracts(tmpVestingContracts.slice());
+        }
+      });
+      setVestingContract(tmpVestingContracts.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
+      setVestingContracts(tmpVestingContracts);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [organizationId]);
 
   const fetchDashboardVestings = async () => {
     setVestingsLoading(true);
@@ -138,7 +154,7 @@ export function DashboardContextProvider({ children }: any) {
       showLoading();
       try {
         await fetchDashboardVestings();
-        await fetchDashboardVestingContract();
+        // await fetchDashboardVestingContract();
         await fetchDashboardTransactions();
         await fetchDashboardRevokings();
       } catch (err) {
@@ -172,26 +188,27 @@ export function DashboardContextProvider({ children }: any) {
           .forEach(
             (vesting) => (totalVestingAmount += parseFloat(vesting.data.details.amountToBeVested as unknown as string))
           );
-        const tokenContract = new ethers.Contract(
-          mintFormState.address,
-          [
-            // Read-Only Functions
-            'function balanceOf(address owner) view returns (uint256)',
-            'function decimals() view returns (uint8)',
-            'function symbol() view returns (string)',
-            // Authenticated Functions
-            'function transfer(address to, uint amount) returns (bool)',
-            // Events
-            'event Transfer(address indexed from, address indexed to, uint amount)'
-          ],
-          ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-        );
+        // const tokenContract = new ethers.Contract(
+        //   mintFormState.address,
+        //   [
+        //     // Read-Only Functions
+        //     'function balanceOf(address owner) view returns (uint256)',
+        //     'function decimals() view returns (uint8)',
+        //     'function symbol() view returns (string)',
+        //     // Authenticated Functions
+        //     'function transfer(address to, uint amount) returns (bool)',
+        //     // Events
+        //     'event Transfer(address indexed from, address indexed to, uint amount)'
+        //   ],
+        //   ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+        // );
         const vestingContractInstance = new ethers.Contract(
           vestingContract.data!.address,
           VTVL_VESTING_ABI.abi,
           library.getSigner()
         );
-        const tokenBalance = await tokenContract.balanceOf(vestingContract.data?.address);
+        // const tokenBalance = await tokenContract.balanceOf(vestingContract.data?.address);
+        const tokenBalance = vestingContract.data?.balance || 0;
         const numberOfTokensReservedForVesting = await vestingContractInstance.numTokensReservedForVesting();
         if (
           BigNumber.from(tokenBalance).gte(BigNumber.from(numberOfTokensReservedForVesting)) &&
@@ -236,7 +253,7 @@ export function DashboardContextProvider({ children }: any) {
       vestingContractLoading,
       transactionsLoading,
       removeOwnership,
-      fetchDashboardVestingContract,
+      // fetchDashboardVestingContract,
       fetchDashboardVestings,
       fetchDashboardTransactions,
       setOwnershipTransfered,
@@ -270,20 +287,49 @@ export function DashboardContextProvider({ children }: any) {
   }, [vestingContract, vestings, mintFormState, chainId]);
 
   useEffect(() => {
-    if (vestings) {
-      let allRecipients: MultiValue<IRecipient> = [];
-      vestings.forEach((vesting) => {
-        allRecipients = [...allRecipients, ...vesting.data.recipients];
-      });
-      setRecipients(
-        allRecipients.filter(
-          (recipient, i) =>
-            i ===
-            allRecipients.findIndex((r) => r.walletAddress.toLowerCase() === recipient.walletAddress.toLowerCase())
-        )
-      );
+    if (!vestings) {
+      return;
     }
-  }, [vestings]);
+
+    let allRecipients: MultiValue<IRecipient> = [];
+    vestings.forEach((vesting) => {
+      allRecipients = [...allRecipients, ...vesting.data.recipients];
+    });
+    setRecipients(
+      allRecipients.filter(
+        (recipient, i) =>
+          i === allRecipients.findIndex((r) => r.walletAddress.toLowerCase() === recipient.walletAddress.toLowerCase())
+      )
+    );
+    if (!organizationId) return;
+    const q = query(vestingCollection, where('organizationId', '==', organizationId));
+    const subscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'modified') {
+          const vestingInfo = change.doc.data();
+          if (vestingInfo.status === 'LIVE') {
+            const newVestings = vestings.map((vesting) => {
+              if (vesting.id === change.doc.id) {
+                toast.success('Added schedules successfully.');
+
+                return {
+                  id: vesting.id,
+                  data: vestingInfo
+                };
+              }
+              return vesting;
+            });
+
+            setVestings(newVestings);
+          }
+        }
+      });
+    });
+
+    return () => {
+      subscribe();
+    };
+  }, [vestings, organizationId]);
 
   useEffect(() => {
     if (vestingContract?.data && safe?.address && chainId) {

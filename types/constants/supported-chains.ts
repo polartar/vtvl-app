@@ -8,7 +8,9 @@ export enum SupportedChainId {
   AVALANCHE = 43114,
   FANTOM = 250 || 4002,
   CRONOS = 25 || 338,
-  MUMBAI = 80001
+  MUMBAI = 80001,
+  OKC_MAINNET = 66,
+  OKC_TESTNET = 65
 }
 
 interface Network {
@@ -114,6 +116,15 @@ export const prodSupportedChains: SupportedChainsType = {
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
     multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
+  },
+  [SupportedChainId.OKC_MAINNET]: {
+    id: 66,
+    icon: '/icons/chains/okc.png',
+    title: 'OKC Mainnet',
+    code: 'OKT',
+    rpc: 'https://exchainrpc.okex.org',
+    explorer: 'https://www.oklink.com/en/okc',
+    multisigTxUrl: ''
   }
 };
 
@@ -216,6 +227,15 @@ const devSupportedChains: SupportedChainsType = {
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
     multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
+  },
+  [SupportedChainId.OKC_TESTNET]: {
+    id: 65,
+    icon: '/icons/chains/okc.png',
+    title: 'OKC Testnet',
+    code: 'OKT',
+    rpc: 'https://exchaintestrpc.okex.org/',
+    explorer: 'https://www.oklink.com/en/okc-test',
+    multisigTxUrl: ''
   }
 };
 

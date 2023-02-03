@@ -75,13 +75,13 @@ const FounderRoutes = {
       route: '/cap-table',
       available: true
     },
-    {
-      title: 'Connect safe',
-      icon: '/icons/s_vestingSchedule.svg',
-      hoverIcon: '/icons/s_vestingSchedule2.svg',
-      route: '/onboarding/setup-safes',
-      available: true
-    },
+    // {
+    //   title: 'Connect safe',
+    //   icon: '/icons/s_vestingSchedule.svg',
+    //   hoverIcon: '/icons/s_vestingSchedule2.svg',
+    //   route: '/onboarding/setup-safes',
+    //   available: true
+    // },
     {
       title: 'Token performance',
       icon: '/icons/s_tokenPerformance.svg',
@@ -107,7 +107,8 @@ const FounderRoutes = {
   submenuList: [
     { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
     { title: 'Support', icon: '/icons/support.svg', route: '/support' },
-    { title: 'Switch to investor', icon: '/icons/switchUser.svg', route: '/switch-account' }
+    { title: 'Switch to investor', icon: '/icons/switchUser.svg', route: '/switch-account' },
+    { title: 'Settings', icon: '/icons/settings.svg', route: '/settings', available: true }
   ],
   userName: 'John Doe',
   role: 'founder'
@@ -292,7 +293,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     if (user && user.memberInfo && user.memberInfo.type) {
       if (safe && user.memberInfo.type === 'founder') {
         const sbProps = SidebarProps[user?.memberInfo?.type];
-        sbProps.menuList.slice(3, 1); // Remove connect safe
+        // sbProps.menuList.slice(3, 1); // Remove connect safe
         setSidebarProperties({ ...sbProps });
       } else {
         setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });

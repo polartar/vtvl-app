@@ -18,7 +18,7 @@ import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
 import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchOrgByQuery } from 'services/db/organization';
 import {
@@ -47,13 +47,13 @@ const FundContract = () => {
   const { account, library, activate, chainId } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   const { mintFormState } = useTokenContext();
-  const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
+  const { transactionStatus, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const {
     vestings,
     transactions,
     vestingContract,
     ownershipTransfered,
-    fetchDashboardVestingContract,
+    // fetchDashboardVestingContract,
     fetchDashboardVestings,
     fetchDashboardTransactions,
     setOwnershipTransfered,
@@ -71,9 +71,17 @@ const FundContract = () => {
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
 
   const handleCreateSignTransaction = () => {};
+  const { pendingTransactions } = useTransactionLoaderContext();
+
+  const isFundAvailable = useCallback(() => {
+    const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
+    return !fundingTransaction;
+  }, [pendingTransactions]);
 
   const handleExecuteTransaction = async () => {
     try {
+      setIsCloseAvailable(true);
+
       if (safe?.address && chainId && transaction) {
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -122,6 +130,8 @@ const FundContract = () => {
   const handleApproveTransaction = async () => {
     try {
       if (safe?.address && chainId && transaction) {
+        setIsCloseAvailable(false);
+
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -161,6 +171,7 @@ const FundContract = () => {
         toast.info('Connect your wallet and try again.');
         return;
       }
+      setIsCloseAvailable(true);
 
       if (type === 'Metamask') {
         setTransactionStatus('PENDING');
@@ -194,7 +205,23 @@ const FundContract = () => {
           vestingContract?.data?.address,
           ethers.utils.parseEther(amount)
         );
+        console.log({ fundTransaction });
+        const transactionData: ITransaction = {
+          hash: fundTransaction.hash,
+          safeHash: '',
+          status: 'PENDING',
+          to: '',
+          type: 'FUNDING_CONTRACT',
+          createdAt: Math.floor(new Date().getTime() / 1000),
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          organizationId: organizationId || '',
+          chainId,
+          vestingIds: []
+        };
+        const transactionId = await createTransaction(transactionData);
         setTransactionStatus('IN_PROGRESS');
+        setShowFundingContractModal(false);
+
         await fundTransaction.wait();
         // This should have a function to update the vesting schedule status
         // From INITIALIZED into WAITING_APPROVAL
@@ -210,6 +237,10 @@ const FundContract = () => {
             vestingSched.id
           );
         }
+
+        transactionData.status = 'SUCCESS';
+        updateTransaction(transactionData, transactionId);
+
         toast.success('Token deposited successfully');
         setStatus('success');
         fetchVestingContractBalance();
@@ -265,6 +296,8 @@ const FundContract = () => {
               chainId
             });
             setApproved(true);
+            setShowFundingContractModal(false);
+
             // This does not tie-up with what the vesting schedule is being vested
             // This should have a function to update the vesting schedule status
             // From INITIALIZED into WAITING_APPROVAL
@@ -302,7 +335,6 @@ const FundContract = () => {
           }
         }
       }
-      setShowFundingContractModal(false);
     } catch (err: any) {
       console.log('fundContract - ', err);
       toast.error(err.reason ? err.reason : 'Something went wrong. Try again later.');
@@ -350,7 +382,7 @@ const FundContract = () => {
       label: 'Funding required',
       actions: (
         <>
-          <button className="secondary" onClick={() => setShowFundingContractModal(true)}>
+          <button className="secondary" onClick={() => setShowFundingContractModal(true)} disabled={!isFundAvailable()}>
             Fund contract
           </button>
           <button className="line primary" onClick={() => {}}>

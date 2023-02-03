@@ -92,7 +92,7 @@ const DashboardPendingActions = () => {
           <div className="w-52 py-3">Status</div>
           <div className="w-40 py-3">Contract</div>
           <div className="w-32 py-3">Safe</div>
-          <div className="w-40 py-3">Total allocations</div>
+          <div className="w-40 py-3">Total allocation</div>
           <div className="min-w-[200px] flex-grow py-3"></div>
         </div>
         {pendingVestingContracts.map((vestingContract) => (

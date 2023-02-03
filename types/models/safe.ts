@@ -8,6 +8,7 @@ export interface IOwner {
 export interface ISafe {
   id?: string;
   user_id?: string;
+  safe_name?: string;
   org_name: string;
   org_id: string;
   address: string;

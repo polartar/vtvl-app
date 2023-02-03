@@ -13,6 +13,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
+import { ITeamRole } from 'types/models/settings';
 
 interface Contributor {
   name: string;
@@ -141,7 +142,8 @@ const AccountSetupPage: NextPage = () => {
           await addInvitee({
             name: contributor.name,
             email: contributor.email,
-            org_id: user.memberInfo?.org_id || org_id || ''
+            org_id: user.memberInfo?.org_id || org_id || '',
+            type: ITeamRole.Manager
           });
           await sendTeammateInvite(
             contributor.email,
@@ -180,7 +182,8 @@ const AccountSetupPage: NextPage = () => {
         success={formSuccess}
         message={formMessage}>
         <div className="flex flex-row items-center gap-3.5 pb-5 border-b border-neutral-200">
-          <Avatar name={userName.value || 'Your name'} size="large" placeholder="initials" />
+          {/* TEMPORARILY HIDE the avatar as it does not have a function yet */}
+          {/* <Avatar name={userName.value || 'Your name'} size="large" placeholder="initials" /> */}
           <div>
             <h2 className="h6 text-neutral-900">{userName.value || 'Your name'}</h2>
             <p className="text-sm text-neutral-500">{userCompany.value || 'Company name'}</p>

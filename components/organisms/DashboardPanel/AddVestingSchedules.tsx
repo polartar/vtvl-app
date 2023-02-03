@@ -6,30 +6,24 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useWeb3React } from '@web3-react/core';
 import Chip from 'components/atoms/Chip/Chip';
 import StepWizard from 'components/atoms/StepWizard/StepWizard';
-import ContractOverview from 'components/molecules/ContractOverview/ContractOverview';
-import FundContract from 'components/molecules/FundCotract/FundContract';
 import ScheduleOverview from 'components/molecules/ScheduleOverview/ScheduleOverview';
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
-import { Timestamp, doc, onSnapshot } from 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore';
 import Router from 'next/router';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
 import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
 import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { transactionCollection, vestingCollection } from 'services/db/firestore';
-import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
-import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
-import { IFundContractProps } from 'types/models/vestingContract';
 import { parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -39,32 +33,10 @@ import {
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
 
-import FundingContractModal from '../FundingContractModal/FundingContractModal';
-
 interface AddVestingSchedulesProps {
   className?: string;
-  // status:
-  //   | 'authRequired'
-  //   | 'vestingContractRequired'
-  //   | 'transferToMultisigSafe'
-  //   | 'fundingRequired'
-  //   | 'fundingInProgress'
-  //   | 'approved'
-  //   | 'declined';
-  // schedule?: IScheduleOverviewProps;
-  // contract?: IVestingContractProps;
-  // step?: number;
-  // className?: string;
-  // onPrimaryClick?: () => void;
-  // onSecondaryClick?: () => void;
-  type: string;
-}
 
-interface AddVestingSchedulesPagination {
-  total: number;
-  page: number;
-  onPrevious: () => void;
-  onNext: () => void;
+  type: string;
 }
 
 interface IAddVestingSchedulesStatuses {
@@ -112,25 +84,32 @@ AddVestingSchedulesProps) => {
   const { mintFormState } = useTokenContext();
   const {
     vestings,
-    transactions,
     vestingContract,
     ownershipTransfered,
-    fetchDashboardVestingContract,
-    fetchDashboardVestings,
-    fetchDashboardTransactions,
+
     setOwnershipTransfered,
-    depositAmount,
     insufficientBalance: insufficientBalanceForAllVestings
   } = useDashboardContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { pendingTransactions, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
+
   const [status, setStatus] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [transaction, setTransaction] = useState<{ id: string; data: ITransaction | undefined }>();
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
+
+  const isAddAvailable = useCallback(() => {
+    const vestingTransaction = pendingTransactions.find(
+      (transaction) =>
+        transaction.data.type === 'ADDING_CLAIMS' &&
+        transaction.data.vestingIds?.includes(vestings[activeVestingIndex].id)
+    );
+
+    return !vestingTransaction;
+  }, [pendingTransactions, vestings, activeVestingIndex]);
 
   const handleDeployVestingContract = async () => {
     if (!account || !chainId) {
@@ -139,6 +118,7 @@ AddVestingSchedulesProps) => {
     } else if (organizationId) {
       try {
         setTransactionStatus('PENDING');
+        setIsCloseAvailable(false);
         const VestingFactory = new ethers.ContractFactory(
           VTVL_VESTING_ABI.abi,
           '0x' + VTVL_VESTING_ABI.bytecode,
@@ -173,7 +153,7 @@ AddVestingSchedulesProps) => {
           );
         }
 
-        fetchDashboardVestingContract();
+        // fetchDashboardVestingContract();
         setStatus('transferToMultisigSafe');
         setTransactionStatus('SUCCESS');
       } catch (err) {
@@ -192,6 +172,7 @@ AddVestingSchedulesProps) => {
       );
       if (vestingContractData?.data) {
         try {
+          setIsCloseAvailable(false);
           setTransactionStatus('PENDING');
           const vestingContract = new ethers.Contract(
             vestingContractData?.data?.address,
@@ -296,6 +277,8 @@ AddVestingSchedulesProps) => {
         vestingLinearVestAmounts,
         vestingCliffAmounts
       ]);
+
+      setIsCloseAvailable(true);
 
       if (safe?.address && account && chainId && organizationId) {
         const ethAdapter = new EthersAdapter({
@@ -409,26 +392,10 @@ AddVestingSchedulesProps) => {
           vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
-        // updateVesting(
-        //   {
-        //     ...vesting,
-        //     transactionId,
-        //     // Because the schedule is now confirmed and ready for the vesting
-        //     status: 'LIVE'
-        //   },
-        //   vestingId
-        // );
+
         await addingClaimsTransaction.wait();
-        // updateTransaction(
-        //   {
-        //     ...transactionData,
-        //     status: 'SUCCESS',
-        //     updatedAt: Math.floor(new Date().getTime() / 1000)
-        //   },
-        //   transactionId
-        // );
+
         setStatus('success');
-        // toast.success('Added schedules successfully.');
         setTransactionStatus('SUCCESS');
       }
     } catch (err) {
@@ -440,6 +407,8 @@ AddVestingSchedulesProps) => {
 
   const handleApproveTransaction = async () => {
     try {
+      setIsCloseAvailable(false);
+
       if (safe?.address && chainId && transaction) {
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -481,6 +450,8 @@ AddVestingSchedulesProps) => {
 
   const handleExecuteTransaction = async () => {
     try {
+      setIsCloseAvailable(true);
+
       if (safe?.address && chainId && transaction) {
         setTransactionStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -560,7 +531,9 @@ AddVestingSchedulesProps) => {
       actions: (
         <>
           <button
-            disabled={approved || !vestingContract?.id || !ownershipTransfered || insufficientBalance}
+            disabled={
+              approved || !vestingContract?.id || !ownershipTransfered || insufficientBalance || !isAddAvailable()
+            }
             className="secondary"
             onClick={handleCreateSignTransaction}>
             {approved ? 'Approved' : safe?.address ? 'Create and Sign the transaction' : 'Add Schedule'}
@@ -714,14 +687,13 @@ AddVestingSchedulesProps) => {
     }
   }, [type, vestingContract, ownershipTransfered]);
 
-  // useEffect(() => {
-  //   if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
-  //     setStatus('success');
-  //   }
-  // }, [activeVestingIndex, vestings]);
-
   useEffect(() => {
     if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
+      setStatus('success');
+    } else if (
+      vestings[activeVestingIndex].data.status === 'LIVE' ||
+      vestings[activeVestingIndex].data.status === 'COMPLETED'
+    ) {
       setStatus('success');
     }
   }, [activeVestingIndex, vestings]);
@@ -751,26 +723,30 @@ AddVestingSchedulesProps) => {
           return;
         }
         const vesting = vestings[activeVestingIndex];
-        const tokenContract = new ethers.Contract(
-          mintFormState.address,
-          [
-            // Read-Only Functions
-            'function balanceOf(address owner) view returns (uint256)',
-            'function decimals() view returns (uint8)',
-            'function symbol() view returns (string)',
-            // Authenticated Functions
-            'function transfer(address to, uint amount) returns (bool)',
-            // Events
-            'event Transfer(address indexed from, address indexed to, uint amount)'
-          ],
-          ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-        );
+        // const tokenContract = new ethers.Contract(
+        //   mintFormState.address,
+        //   [
+        //     // Read-Only Functions
+        //     'function balanceOf(address owner) view returns (uint256)',
+        //     'function decimals() view returns (uint8)',
+        //     'function symbol() view returns (string)',
+        //     // Authenticated Functions
+        //     'function transfer(address to, uint amount) returns (bool)',
+        //     // Events
+        //     'event Transfer(address indexed from, address indexed to, uint amount)'
+        //   ],
+        //   ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+        // );
         // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
-        tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
-          if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
-            setInsufficientBalance(true);
-          }
-        });
+        // tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
+        //   if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
+        //     setInsufficientBalance(true);
+        //   }
+        // });
+        const tokenBalance = vestingContract?.data?.balance || 0;
+        if (BigNumber.from(tokenBalance).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
+          setInsufficientBalance(true);
+        }
       } catch (err) {
         console.log('vestingContract balance - ', err);
       }
@@ -780,7 +756,7 @@ AddVestingSchedulesProps) => {
   useEffect(() => {
     if (account && safeTransaction && safe) {
       setApproved(safeTransaction.signatures.has(account.toLowerCase()));
-      if (safeTransaction.signatures.size >= safe?.threshold) {
+      if (safeTransaction.signatures.size >= safe?.threshold && transaction?.data?.status !== 'SUCCESS') {
         setExecutable(true);
       }
       if (transaction?.data?.status === 'SUCCESS') {

@@ -6,11 +6,13 @@ import { Typography } from '@components/atoms/Typography/Typography';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useShallowState } from 'hooks/useShallowState';
 import useToggle from 'hooks/useToggle';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import Select, { OnChangeValue } from 'react-select';
+import { IScheduleState } from 'types/vesting';
 import { isBlankObject } from 'utils/regex';
 
 export interface VestingSetupPanelProps {
+  initialState: IScheduleState;
   onReturn: () => void;
   onContinue: (form: {
     scheduleName: string;
@@ -31,7 +33,7 @@ const ERROR_EMPTY_STATE = {
   vestingContract: ''
 };
 
-export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ onReturn, onContinue }) => {
+export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialState, onReturn, onContinue }) => {
   const { vestingContracts } = useDashboardContext();
 
   const [form, setForm] = useShallowState({
@@ -97,6 +99,18 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ onReturn, 
     [vestingContractOptions]
   );
 
+  useEffect(() => {
+    setForm({
+      scheduleName: initialState?.name ?? '',
+      contractName: initialState?.contractName,
+      createNewContract: initialState?.vestingContractId ? false : true,
+      vestingContract: vestingContractOptions?.find((option) => option.value === initialState?.vestingContractId) ?? {
+        label: '',
+        value: ''
+      }
+    });
+  }, [vestingContractOptions, initialState]);
+
   return (
     <div className="w-full mb-6 panel max-w-2xl">
       <div className="mb-6">
@@ -135,7 +149,7 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ onReturn, 
             />
             <VestingSetupOption
               shortTitle="No"
-              longTitle="Select a preview contract"
+              longTitle="Select an existing contract"
               selected={!form.createNewContract}
               onClick={handleToggle}
             />
