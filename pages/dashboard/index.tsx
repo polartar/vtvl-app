@@ -114,6 +114,9 @@ const Dashboard: NextPageWithLayout = () => {
             image="/images/cryptocurrency-trading-bot.gif"
             title="No projects found"
             description={<>Create a project by selecting an option below</>}>
+            <button type="button" className="line" onClick={() => router.push('/dashboard/import-token')}>
+              Import existing token
+            </button>
             <button
               type="button"
               className="primary flex flex-row gap-2 items-center"
@@ -121,9 +124,6 @@ const Dashboard: NextPageWithLayout = () => {
               onClick={() => router.push('/minting-token')}>
               <PlusIcon className="w-5 h-5" />
               Mint a new token
-            </button>
-            <button type="button" className="line" onClick={() => router.push('/dashboard/import-token')}>
-              Import existing token
             </button>
           </EmptyState>
         </>
@@ -233,7 +233,9 @@ const Dashboard: NextPageWithLayout = () => {
             step={2}
             className="mb-6"
           /> */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
+
+          {/* TEMPORARILY REMOVE THESE SECTION as it does not have functionalities yet */}
+          {/* <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
             <DashboardInfoCard
               icon="/icons/calendar.svg"
               title="Vesting overview"
@@ -256,9 +258,9 @@ const Dashboard: NextPageWithLayout = () => {
             <div className="panel">
               <h3 className="h5 text-neutral-900 inter font-semibold mb-4">Activity</h3>
               <p className="text-neutral-400">Coming soon</p>
-              {/* <ActivityFeed activities={activities} /> */}
+              <ActivityFeed activities={activities} />
             </div>
-          </div>
+          </div> */}
           <ModalWrapper>
             <CreateVestingContractModal hideModal={hideModal} />
           </ModalWrapper>
@@ -273,7 +275,7 @@ Dashboard.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [{ title: 'Dashboard', route: '/dashboard' }];
   return (
-    <SteppedLayout title="Dashboard" crumbs={crumbSteps}>
+    <SteppedLayout title="Dashboard" crumbs={crumbSteps} padded={false}>
       {page}
     </SteppedLayout>
   );

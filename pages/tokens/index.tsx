@@ -47,7 +47,7 @@ const MyTokenStatus: NextPageWithLayout = () => {
 
   // const statuses = [
   //   { label: 'All', value: 'all' },
-  //   { label: 'Claimed', value: 'claimed' },
+  //   { label: 'Withdrawn', value: 'claimed' },
   //   { label: 'Unclaimed', value: 'unclaimed' }
   // ];
 

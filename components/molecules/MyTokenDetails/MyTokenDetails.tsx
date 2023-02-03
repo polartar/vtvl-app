@@ -163,7 +163,7 @@ const MyTokenDetails: React.FC<IMyTokenDetails> = ({ token, vesting }) => {
         </div>
         <div className="grid grid-cols-3 py-4 border-b border-gray-200">
           {/* <div>
-            <p className="text-xs font-medium text-neutral-500 mb-1">Claimed</p>
+            <p className="text-xs font-medium text-neutral-500 mb-1">Withdrawn</p>
             <p className="text-sm font-semibold text-neutral-600">
               {claimable ? formatNumber(+claimable, 0) : 0} {token?.symbol}
             </p>

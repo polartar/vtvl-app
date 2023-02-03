@@ -320,12 +320,12 @@ const NewSafePage: NextPage = () => {
                 rules={{ required: true }}
                 render={({ field }) => (
                   <Input
-                    label="Owner address"
-                    placeholder="Enter owner address"
+                    label="Owner wallet address"
+                    placeholder="Enter owner wallet address"
                     required
                     disabled={importedSafe ? true : false}
                     error={Boolean(getOwnersState(ownerIndex).address.state.error)}
-                    message={getOwnersState(ownerIndex).address.state.error ? 'Please enter owner address' : ''}
+                    message={getOwnersState(ownerIndex).address.state.error ? 'Please enter owner wallet address' : ''}
                     className="md:col-span-2"
                     {...field}
                   />

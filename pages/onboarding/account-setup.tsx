@@ -182,7 +182,8 @@ const AccountSetupPage: NextPage = () => {
         success={formSuccess}
         message={formMessage}>
         <div className="flex flex-row items-center gap-3.5 pb-5 border-b border-neutral-200">
-          <Avatar name={userName.value || 'Your name'} size="large" placeholder="initials" />
+          {/* TEMPORARILY HIDE the avatar as it does not have a function yet */}
+          {/* <Avatar name={userName.value || 'Your name'} size="large" placeholder="initials" /> */}
           <div>
             <h2 className="h6 text-neutral-900">{userName.value || 'Your name'}</h2>
             <p className="text-sm text-neutral-500">{userCompany.value || 'Company name'}</p>

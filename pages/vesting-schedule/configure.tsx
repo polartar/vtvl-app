@@ -971,7 +971,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   }, [totalAllocations]);
 
   return (
-    <div className="px-8">
+    <>
       {/* TEMPLATE PROMPT AND SELECTION SECTION */}
       {templateOptions && templateOptions.length ? (
         <div className="w-full text-left">
@@ -1392,22 +1392,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               ref={step[4].ref}
               isExpanded={step[4].isExpanded}
               isActive={step[4].active}
-              label="Amount to be vested"
+              label="Total amount to be vested"
               required
-              description={
-                <>
-                  Select the total amount of tokens to be locked up in this schedule. If you have added multiple users,
-                  note that this amount will be equally split between each user. Your current available supply is{' '}
-                  <strong>{formatNumber(totalTokenSupply)}</strong> <strong>{mintFormState.symbol}</strong>.
-                </>
-              }
-              hint={
-                <>
-                  An example is if you have added 3 users in the previous step and the total amount to be vested is
-                  600,000 <strong>{mintFormState.symbol}</strong>, then each user will be allocated 200,000{' '}
-                  <strong>{mintFormState.symbol}</strong>.
-                </>
-              }
+              description="You can edit this amount on the Add Recipient(s) page"
               onFocus={() => setActiveStep(4)}>
               <div className="relative">
                 {/* Step 5 Input field for the amount to be vested */}
@@ -1442,7 +1429,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 /> */}
               </div>
               {/* Step 5 Slider section */}
-              <div className="mt-6">
+              {/* <div className="mt-6">
                 <RangeSlider
                   max={totalTokenSupply || 0}
                   value={amountToBeVested.value ? amountToBeVested.value : 0}
@@ -1450,7 +1437,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                   // onChange={handleAmountToBeVestedChange}
                   onBlur={() => setActiveStep(5)}
                 />
-              </div>
+              </div> */}
             </StepLabel>
 
             <hr className="mx-6" />
@@ -1499,7 +1486,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

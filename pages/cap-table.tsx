@@ -116,13 +116,13 @@ const CapTable: NextPageWithLayout = () => {
       },
       {
         id: 'claimed',
-        Header: 'Claimed',
+        Header: 'Withdrawn',
         accessor: 'claimed',
         Cell: CellClaimedAmount
       },
       {
         id: 'unclaimed',
-        Header: 'Amount vested to-date',
+        Header: 'Unclaimed',
         accessor: 'unclaimed',
         Cell: CellUnclaimedAmount
       }
