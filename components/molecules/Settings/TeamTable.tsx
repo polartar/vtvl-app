@@ -57,7 +57,7 @@ const TeamTable = ({
 
       await sendTeammateInvite(
         selectedMember.email,
-        selectedMember.type || 'anonymous',
+        selectedMember.type || ITeamRole.Manager,
         selectedMember.name || 'anonymous',
         companyName,
         user.memberInfo?.org_id
@@ -102,7 +102,7 @@ const TeamTable = ({
   };
 
   return (
-    <>
+    <div className="overflow-x-auto">
       <table className="border-primary-200 border-2 w-full">
         <thead>
           <tr>
@@ -123,9 +123,9 @@ const TeamTable = ({
               return (
                 <tr key={row.id}>
                   <td className="flex items-center">
-                    <Avatar name={row.name || ''} />
+                    <Avatar name={row.name || row.email?.split('@')[0] || ''} />
                     <div className="flex flex-col ml-2 h-[40px]">
-                      <span className=" font-medium">{row.name}</span>
+                      <span className=" font-medium">{row.name || row.email?.split('@')[0]}</span>
                       <span className="  text-gray-400">{row.email}</span>
                     </div>
                   </td>
@@ -157,7 +157,7 @@ const TeamTable = ({
                     {isTeamMember ? (
                       <button
                         className="border-[#ef4444] text-[#ef4444] border-2 font-medium"
-                        disabled={!isDisableAvailable}
+                        disabled={!isDisableAvailable && row.type === ITeamRole.Founder}
                         onClick={() => onDisableClick(row)}>
                         Disable
                       </button>
@@ -187,7 +187,7 @@ const TeamTable = ({
           />
         )}
       </ModalWrapper>
-    </>
+    </div>
   );
 };
 

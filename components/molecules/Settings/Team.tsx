@@ -80,7 +80,6 @@ const Team = () => {
     control,
     handleSubmit,
     reset,
-    register,
     formState: { errors }
   } = useForm({ defaultValues: defaultTeammanagement, resolver: yupResolver(validationSchema) });
 
@@ -139,19 +138,21 @@ const Team = () => {
   };
 
   return (
-    <div className="flex w-full">
-      <div className="w-[400px] ml-6">
-        <h1 className="h2 font-normal ">Members</h1>
-        <p className=" text-gray-500 text-sm">Invite team members to your organization</p>
+    <div className="w-full grid grid-cols-12 gap-3">
+      <div className="lg:col-span-3 ml-6 col-span-12">
+        <div>
+          <h1 className="h2 font-normal ">Members</h1>
+          <p className=" text-gray-500 text-sm">Invite team members to your organization</p>
+        </div>
       </div>
 
-      <div className="w-full pr-4">
+      <div className="lg:col-span-9 col-span-12 ml-2 lg:pr-6 pr-0">
         <form
           className="flex-row  gap-5 border-b border-t py-5 border-neutral-300 my-5"
           onSubmit={handleSubmit(inviteMember)}>
           {fields.map((item, index) => {
             return (
-              <section className="md:grid-cols-3 flex gap-2 mb-3" key={item.id}>
+              <section className="md:grid-cols-3   sm:flex gap-2 mb-3" key={item.id}>
                 <Controller
                   name={`members.${index}.name`}
                   control={control}
