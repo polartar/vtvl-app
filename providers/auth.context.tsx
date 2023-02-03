@@ -58,6 +58,7 @@ export type AuthContextData = {
   expandSidebar: () => void;
   forceCollapseSidebar: () => void;
   fetchSafe: () => void;
+  setSafe: (safe: ISafe) => void;
   agreedOnConsent: boolean;
   setAgreedOnConsent: (data: any) => void;
 };
@@ -368,12 +369,12 @@ export function AuthContextProvider({ children }: any) {
       expandSidebar,
       forceCollapseSidebar: () => setSidebarIsExpanded(false),
       fetchSafe,
+      setSafe,
       agreedOnConsent,
       setAgreedOnConsent
     }),
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent, connection]
   );
-  console.log('organzationId - ', organizationId);
 
   useEffect(() => {
     if (
