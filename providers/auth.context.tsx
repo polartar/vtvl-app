@@ -35,6 +35,7 @@ export type AuthContextData = {
   safe: ISafe | undefined;
   organizationId: string | undefined;
   connection?: TConnections;
+  setConnection: (data?: TConnections) => void;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   emailSignUp: (newSignUp: IMember, url: string) => Promise<void>;
@@ -58,6 +59,7 @@ export type AuthContextData = {
   expandSidebar: () => void;
   forceCollapseSidebar: () => void;
   fetchSafe: () => void;
+  setSafe: (safe: ISafe) => void;
   agreedOnConsent: boolean;
   setAgreedOnConsent: (data: any) => void;
 };
@@ -65,7 +67,7 @@ export type AuthContextData = {
 const AuthContext = createContext({} as AuthContextData);
 
 export function AuthContextProvider({ children }: any) {
-  const { chainId, account, connector } = useWeb3React();
+  const { chainId, account, library } = useWeb3React();
   const [user, setUser] = useState<IUser | undefined>();
   // Remove default value when merging to develop, staging or main
   // Mock organizationId 'v2S4z6kgjac61iDsQqr7'
@@ -100,18 +102,20 @@ export function AuthContextProvider({ children }: any) {
   // Will surely update and refactor this function later as we add in
   // more wallet options like coinbase and ledger.
   useEffect(() => {
-    if (connector) {
-      connector?.getProvider().then((res) => {
-        //   // Assumes that this is coming from a WalletConnect
-        //   // Normally the value of this is "wc" for WalletConnect
-        //   // If so, we set the connection to "walletconnect"
-        //   // Else, we set it to the default "metamask"
-        setConnection(
-          res && res.signer && res.signer.connection && res.signer.connection.wc ? 'walletconnect' : 'metamask'
-        );
-      });
+    // Checks the library object if it uses a metamask or other connector type
+    if (library && library.connection && library.connection.url) {
+      switch (library.connection.url) {
+        case 'metamask':
+          setConnection('metamask');
+          break;
+        case 'eip-1193:':
+          setConnection('walletconnect');
+          break;
+        default:
+          break;
+      }
     }
-  }, [connector]);
+  }, [library]);
 
   const signInWithGoogle = async (): Promise<NewLogin | undefined> => {
     setLoading(true);
@@ -347,6 +351,7 @@ export function AuthContextProvider({ children }: any) {
       safe,
       organizationId,
       connection,
+      setConnection,
       signUpWithEmail,
       signInWithEmail,
       emailSignUp,
@@ -368,12 +373,12 @@ export function AuthContextProvider({ children }: any) {
       expandSidebar,
       forceCollapseSidebar: () => setSidebarIsExpanded(false),
       fetchSafe,
+      setSafe,
       agreedOnConsent,
       setAgreedOnConsent
     }),
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent, connection]
   );
-  console.log('organzationId - ', organizationId);
 
   useEffect(() => {
     if (

@@ -49,8 +49,8 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   const countDownComponent = useRef<Countdown>(null);
 
   const [chartData, setChartData] = useState([
-    { name: 'Claimed', value: 0 },
-    { name: 'Amount vested to-date', value: 0 },
+    { name: 'Withdrawn', value: 0 },
+    { name: 'Unclaimed', value: 0 },
     { name: 'Remaining', value: 0 }
   ]);
 
@@ -158,6 +158,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
         let newValue = 0;
         switch (data.name) {
           case 'Claimed':
+          case 'Withdrawn':
             newValue = parseFloat(userTokenDetails.claimedAmount.toString());
             break;
           case 'Unclaimed':
@@ -293,7 +294,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                         <Cell
                           key={`cell-${index}`}
                           fill={
-                            entry.name === 'Claimed'
+                            entry.name === 'Claimed' || entry.name === 'Withdrawn'
                               ? 'var(--secondary-900)'
                               : entry.name === 'Unclaimed' || entry.name === 'Amount vested to-date'
                               ? 'var(--primary-900)'
@@ -321,7 +322,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 my-6 border-b border-gray-200 pb-6">
                   <div className="border-b border-gray-200 pb-3 lg:border-0 lg:pb-0">
-                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Claimed</p>
+                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Withdrawn</p>
                     <div className="paragraphy-small-semibold text-neutral-600 flex flex-row gap-1">
                       <div className="mt-1 w-3 h-3 rounded-full bg-secondary-900 flex-shrink-0"></div>
                       <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
@@ -330,7 +331,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     </div>
                   </div>
                   <div className="border-b border-gray-200 pb-3 lg:border-0 lg:pb-0">
-                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Amount vested to-date</p>
+                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Unclaimed</p>
                     <div className="paragraphy-small-semibold text-neutral-600 flex flex-row gap-1">
                       <div className="mt-1 w-3 h-3 rounded-full bg-primary-900 flex-shrink-0"></div>
                       <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>

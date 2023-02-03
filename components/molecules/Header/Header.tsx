@@ -50,18 +50,20 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
           alt="VTVL"
           onClick={redirectToHome}
         />
-        <div className="hidden md:block">
+        {/* Hide the search bar as it does not have functionality yet */}
+        {/* <div className="hidden md:block">
           <SearchInput placeholder="Search" />
-        </div>
+        </div> */}
       </div>
       {['/onboarding/connect-wallet', '/onboarding'].every((o) => asPath !== o) && (
         <div className="flex flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5">
-          <div className="flex flex-row items-center gap-1 sm:gap-2">
+          {/* Temporarily remove gwei */}
+          {/* <div className="flex flex-row items-center gap-1 sm:gap-2">
             <img src="/icons/gas.svg" alt="Gas" className="w-4" />
             <p className="text-xs text-neutral-600">
               9 <span className="hidden sm:inline">gwei</span>
             </p>
-          </div>
+          </div> */}
           {active ? <NetworkSelector /> : null}
           <WalletConnect connected={active} account={account || ''} />
         </div>

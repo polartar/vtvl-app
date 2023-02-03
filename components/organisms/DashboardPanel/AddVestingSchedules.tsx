@@ -6,13 +6,11 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useWeb3React } from '@web3-react/core';
 import Chip from 'components/atoms/Chip/Chip';
 import StepWizard from 'components/atoms/StepWizard/StepWizard';
-import ContractOverview from 'components/molecules/ContractOverview/ContractOverview';
-import FundContract from 'components/molecules/FundCotract/FundContract';
 import ScheduleOverview from 'components/molecules/ScheduleOverview/ScheduleOverview';
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
-import { Timestamp, doc, onSnapshot } from 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore';
 import Router from 'next/router';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
@@ -21,15 +19,11 @@ import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { transactionCollection, vestingCollection } from 'services/db/firestore';
-import { fetchOrgByQuery } from 'services/db/organization';
 import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
-import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
-import { IFundContractProps } from 'types/models/vestingContract';
 import { parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -39,32 +33,10 @@ import {
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
 
-import FundingContractModal from '../FundingContractModal/FundingContractModal';
-
 interface AddVestingSchedulesProps {
   className?: string;
-  // status:
-  //   | 'authRequired'
-  //   | 'vestingContractRequired'
-  //   | 'transferToMultisigSafe'
-  //   | 'fundingRequired'
-  //   | 'fundingInProgress'
-  //   | 'approved'
-  //   | 'declined';
-  // schedule?: IScheduleOverviewProps;
-  // contract?: IVestingContractProps;
-  // step?: number;
-  // className?: string;
-  // onPrimaryClick?: () => void;
-  // onSecondaryClick?: () => void;
-  type: string;
-}
 
-interface AddVestingSchedulesPagination {
-  total: number;
-  page: number;
-  onPrevious: () => void;
-  onNext: () => void;
+  type: string;
 }
 
 interface IAddVestingSchedulesStatuses {
@@ -112,19 +84,16 @@ AddVestingSchedulesProps) => {
   const { mintFormState } = useTokenContext();
   const {
     vestings,
-    transactions,
     vestingContract,
     ownershipTransfered,
-    // fetchDashboardVestingContract,
-    fetchDashboardVestings,
-    fetchDashboardTransactions,
+
     setOwnershipTransfered,
-    depositAmount,
     insufficientBalance: insufficientBalanceForAllVestings
   } = useDashboardContext();
-  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const { pendingTransactions, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
+
   const [status, setStatus] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
   const [insufficientBalance, setInsufficientBalance] = useState(false);
@@ -132,14 +101,13 @@ AddVestingSchedulesProps) => {
   const [approved, setApproved] = useState(false);
   const [executable, setExecutable] = useState(false);
 
-  const { pendingTransactions } = useTransactionLoaderContext();
-
   const isAddAvailable = useCallback(() => {
     const vestingTransaction = pendingTransactions.find(
       (transaction) =>
         transaction.data.type === 'ADDING_CLAIMS' &&
         transaction.data.vestingIds?.includes(vestings[activeVestingIndex].id)
     );
+
     return !vestingTransaction;
   }, [pendingTransactions, vestings, activeVestingIndex]);
 
@@ -424,26 +392,10 @@ AddVestingSchedulesProps) => {
           vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
-        // updateVesting(
-        //   {
-        //     ...vesting,
-        //     transactionId,
-        //     // Because the schedule is now confirmed and ready for the vesting
-        //     status: 'LIVE'
-        //   },
-        //   vestingId
-        // );
+
         await addingClaimsTransaction.wait();
-        // updateTransaction(
-        //   {
-        //     ...transactionData,
-        //     status: 'SUCCESS',
-        //     updatedAt: Math.floor(new Date().getTime() / 1000)
-        //   },
-        //   transactionId
-        // );
+
         setStatus('success');
-        // toast.success('Added schedules successfully.');
         setTransactionStatus('SUCCESS');
       }
     } catch (err) {
@@ -738,17 +690,7 @@ AddVestingSchedulesProps) => {
   useEffect(() => {
     if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
       setStatus('success');
-    }
-  }, [activeVestingIndex, vestings]);
-
-  useEffect(() => {
-    if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
-      setStatus('success');
-    }
-  }, [activeVestingIndex, vestings]);
-
-  useEffect(() => {
-    if (
+    } else if (
       vestings[activeVestingIndex].data.status === 'LIVE' ||
       vestings[activeVestingIndex].data.status === 'COMPLETED'
     ) {

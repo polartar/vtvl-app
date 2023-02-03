@@ -8,10 +8,8 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import {
-  IStatus,
-  ITransactionStatus,
-  STATUS_MAPPING,
-  TRANSACTION_STATUS_MAPPING
+  IStatus, // ITransactionStatus,
+  STATUS_MAPPING // TRANSACTION_STATUS_MAPPING
 } from 'components/organisms/DashboardPendingActions';
 import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
@@ -19,13 +17,13 @@ import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
-import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
+// import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { ITransaction, IVesting, IVestingContract } from 'types/models';
+import { ITransaction, IVesting } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -42,13 +40,17 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
     // fetchDashboardVestingContract,
     vestingContracts,
     transactions,
-    fetchDashboardTransactions,
+    // fetchDashboardTransactions,
     fetchDashboardData,
     vestings
   } = useDashboardContext();
-  const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const {
+    pendingTransactions,
+    transactionStatus: transactionLoaderStatus,
+    setTransactionStatus: setTransactionLoaderStatus,
+    setIsCloseAvailable
+  } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
-
   const vestingContract = useMemo(
     () => vestingContracts.find((contract) => contract.id === data.vestingContractId),
     [data, vestingContracts]
@@ -63,9 +65,15 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
   const [transactionStatus, setTransactionStatus] = useState<
     'INITIALIZE' | 'EXECUTABLE' | 'WAITING_APPROVAL' | 'APPROVAL_REQUIRED' | ''
   >('');
+
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
+
+  const isFundAvailable = useCallback(() => {
+    const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
+    return !fundingTransaction;
+  }, [pendingTransactions]);
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
     if (safe?.address && chainId) {
@@ -443,7 +451,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         vestingLinearVestAmounts,
         vestingCliffAmounts
       ]);
-
+      setIsCloseAvailable(false);
       if (safe?.address && account && chainId && organizationId) {
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -561,6 +569,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
 
   const handleApproveTransaction = async () => {
     try {
+      setIsCloseAvailable(false);
       if (safe?.address && chainId && transaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
@@ -599,6 +608,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
   };
 
   const handleExecuteTransaction = async () => {
+    setIsCloseAvailable(true);
     try {
       if (safe?.address && chainId && transaction) {
         setTransactionLoaderStatus('PENDING');
@@ -701,7 +711,10 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
       <div className="flex items-center w-40 py-3">{formatNumber(data.details.amountToBeVested)}</div>
       <div className="flex items-center min-w-[200px] flex-grow py-3">
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'INITIALIZE' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleCreateSignTransaction}>
+          <button
+            className="secondary small whitespace-nowrap"
+            onClick={handleCreateSignTransaction}
+            disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
             Create & sign
           </button>
         )}
@@ -716,13 +729,17 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
           </button>
         )}
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleExecuteTransaction}>
+          <button
+            className="secondary small whitespace-nowrap"
+            onClick={handleExecuteTransaction}
+            disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
             Execute
           </button>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
           <button
             className="secondary small whitespace-nowrap"
+            disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
             onClick={() => {
               setShowFundingContractModal(true);
             }}>
@@ -749,7 +766,10 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
           </button>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleExecuteFundingTransaction}>
+          <button
+            className="secondary small whitespace-nowrap"
+            onClick={handleExecuteFundingTransaction}
+            disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
             Execute Funding
           </button>
         )}

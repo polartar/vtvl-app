@@ -35,15 +35,15 @@ const StepLabel = React.forwardRef<HTMLDivElement, StepLabelProps>(
       <div
         ref={ref}
         tabIndex={0}
-        className={`flex flex-row gap-3 p-6 group hover:bg-neutral-100 focus:bg-neutral-100 transition-all ${className} ${
-          isExpanded && isActive ? 'bg-neutral-100' : 'bg-transparent'
+        className={`flex flex-row gap-3 p-6 group transition-all ${className} ${
+          isExpanded && !isActive ? 'bg-transparent' : 'bg-neutral-100'
         }`}>
         {step ? (
           <div
-            className={`flex flex-row items-center justify-center flex-shrink-0 h-6 w-6 border-2 rounded-full text-xs font-bold transition-all group-hover:bg-primary-900 group-hover:text-white group-hover:border-transparent group-focus:bg-primary-900 group-focus:text-white group-focus:border-transparent ${
-              isExpanded && isActive
-                ? 'bg-primary-900 text-white border-transparent'
-                : 'bg-transparent text-neutral-800 border-neutral-800'
+            className={`flex flex-row items-center justify-center flex-shrink-0 h-6 w-6 border-2 rounded-full text-xs font-bold transition-all ${
+              isExpanded && !isActive
+                ? 'bg-transparent text-neutral-800 border-neutral-800'
+                : 'bg-primary-900 text-white border-transparent'
             }`}>
             {step}
           </div>
@@ -52,8 +52,8 @@ const StepLabel = React.forwardRef<HTMLDivElement, StepLabelProps>(
           {label || hint ? (
             <div className="flex flex-row items-center justify-between">
               <span
-                className={`font-medium text-base transition-all group-hover:text-primary-900 group-focus:text-primary-900 ${
-                  isExpanded && isActive ? 'text-primary-900' : 'text-neutral-900'
+                className={`font-medium text-base transition-all ${
+                  isExpanded && !isActive ? 'text-neutral-900' : 'text-primary-900'
                 }`}>
                 {label} {required ? '*' : ''}
               </span>

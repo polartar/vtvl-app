@@ -798,6 +798,7 @@ body {
 .ant-picker {
   border-radius: 9999px !important;
   padding-right: 1.5rem !important;
+  background-color: var(--neutral-50) !important;
 }
 .MuiOutlinedInput-root input,
 .ant-picker {

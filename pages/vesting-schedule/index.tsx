@@ -426,7 +426,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       },
       {
         id: 'totalAllocation',
-        Header: 'Total allocations',
+        Header: 'Total allocation',
         accessor: 'data.details.amountToBeVested',
         Cell: CellAmount
       },
@@ -723,7 +723,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                 <TokenProfile {...mintFormState} className="mb-2" />
                 <Copy text={mintFormState.address}>
                   <p className="text-sm font-medium text-netural-900">
-                    Contract address: <span className="text-neutral-500">{mintFormState.address}</span>
+                    Token address: <span className="text-neutral-500">{mintFormState.address}</span>
                   </p>
                 </Copy>
               </div>

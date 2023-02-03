@@ -1,6 +1,7 @@
 import Carousel from '@components/atoms/Carousel/Carousel';
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
+import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
 import OnboardingContext, { Step, useOnboardingContext } from '@providers/onboarding.context';
 import { NextPage } from 'next';
@@ -8,7 +9,7 @@ import Router from 'next/router';
 import AstroHelmet from 'public/icons/astronaut-helmet.svg';
 import { useContext, useEffect } from 'react';
 
-const OnboardingContainer = styled.section`
+const OnboardingContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 26px;
@@ -89,25 +90,27 @@ const SelectLoginTypePage: NextPage = () => {
   ];
 
   return (
-    <OnboardingContainer>
-      <Signing>
-        <div>
-          <h1 className="font-medium">Access VTVL as</h1>
-          <p className="text-sm font-medium text-neutral-500">
-            Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
-            <strong>Guest</strong> to test our platform.
-          </p>
-        </div>
-        <WalletContainer>
-          <div className="max-w-sm mx-auto mb-11">
-            <Wallets wallets={wallets} />
+    <PaddedLayout>
+      <OnboardingContainer>
+        <Signing>
+          <div>
+            <h1 className="font-medium">Access VTVL as</h1>
+            <p className="text-sm font-medium text-neutral-500">
+              Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
+              <strong>Guest</strong> to test our platform.
+            </p>
           </div>
-        </WalletContainer>
-      </Signing>
-      <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
-        <Carousel variant="dark" items={carouselItems} />
-      </Vesting>
-    </OnboardingContainer>
+          <WalletContainer>
+            <div className="max-w-sm mx-auto mb-11">
+              <Wallets wallets={wallets} />
+            </div>
+          </WalletContainer>
+        </Signing>
+        <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
+          <Carousel variant="dark" items={carouselItems} />
+        </Vesting>
+      </OnboardingContainer>
+    </PaddedLayout>
   );
 };
 
