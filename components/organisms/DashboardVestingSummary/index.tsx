@@ -135,7 +135,7 @@ const DashboardVestingSummary = () => {
         <div>
           <div className="text-label text-sm font-medium">Maximum Supply</div>
           <div className="mt-1.5 text-info text-base font-medium text-right">
-            {mintFormState.supplyCap === 'UNLIMITED' ? 'Unlimited' : mintFormState.maxSupply}
+            {mintFormState.supplyCap === 'UNLIMITED' ? 'Unlimited' : formatNumber(+mintFormState.maxSupply)}
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@ const DashboardVestingSummary = () => {
         </div>
         <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
           <div>
-            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Claimed</div>
+            <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Withdrawn</div>
             <div className="text-[32px] font-medium text-black group-hover:text-white">{claims}</div>
           </div>
           <img src="/icons/caret-right-border.svg" alt="VTVL" />

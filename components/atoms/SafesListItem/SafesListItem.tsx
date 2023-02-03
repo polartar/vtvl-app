@@ -3,9 +3,17 @@ import React from 'react';
 interface SafeListItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   buttonLabel?: string;
   label: string;
+  selected?: boolean;
+  selectedLabel?: string;
 }
 
-const SafesListItem = ({ buttonLabel = 'Import', label, ...props }: SafeListItemProps) => {
+const SafesListItem = ({
+  buttonLabel = 'Import',
+  label,
+  selected = false,
+  selectedLabel = '',
+  ...props
+}: SafeListItemProps) => {
   return (
     <div className="flex flex-row items-center justify-between gap-3.5 py-3 border-b border-neutral-200">
       <div className="flex flex-row items-center gap-3.5">
@@ -14,8 +22,8 @@ const SafesListItem = ({ buttonLabel = 'Import', label, ...props }: SafeListItem
         </div>
         <p className="text-sm font-bold text-neutral-600">{label}</p>
       </div>
-      <button className="small primary" onClick={props.onClick}>
-        {buttonLabel}
+      <button type="button" disabled={selected} className="small primary" onClick={props.onClick}>
+        {selected ? selectedLabel : buttonLabel}
       </button>
     </div>
   );

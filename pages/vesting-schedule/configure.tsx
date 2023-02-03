@@ -6,6 +6,10 @@ import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Checkbox from '@components/atoms/FormControls/Checkbox/Checkbox';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import { Timepicker } from '@components/atoms/FormControls/Pickers';
+// import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+// import { TimePicker } from 'antd';
+import Datepicker from '@components/atoms/FormControls/Pickers/Datepicker/Datepicker';
 import QuantityInput from '@components/atoms/FormControls/QuantityInput/QuantityInput';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
@@ -16,18 +20,20 @@ import TextField from '@mui/material/TextField';
 import { StaticDatePicker } from '@mui/x-date-pickers';
 import { StaticTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { PickersActionBarProps } from '@mui/x-date-pickers/PickersActionBar';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import add from 'date-fns/add';
+import differenceInHours from 'date-fns/differenceInHours';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import format from 'date-fns/format';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
-import { ElementType, ForwardedRef, ReactElement, useEffect, useRef, useState } from 'react';
+import { ElementType, ForwardedRef, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import Select from 'react-select';
@@ -71,11 +77,17 @@ const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
   const { account } = useWeb3React();
-  const { scheduleFormState, updateScheduleFormState } = useVestingContext();
+  const { recipients, scheduleFormState, updateScheduleFormState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formMessage, setFormMessage] = useState('');
+
+  const totalAllocations = useMemo(
+    () => recipients?.reduce((val, recipient) => val + Number(recipient?.allocations ?? 0), 0),
+    [recipients]
+  );
+
   // Use form to initially assign default values
   const {
     control,
@@ -91,8 +103,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     defaultValues: {
       ...scheduleFormState,
       // Set default amount to be vested to be the total token supply
-      amountToBeVested: parseFloat(mintFormState.initialSupply.toString()),
-      amountToBeVestedText: formatNumber(parseFloat(mintFormState.initialSupply.toString())).toString(),
+      // amountToBeVested: parseFloat(mintFormState.initialSupply.toString()),
+      // amountToBeVestedText: formatNumber(parseFloat(mintFormState.initialSupply.toString())).toString(),
+      amountToBeVested: parseFloat(totalAllocations?.toString() ?? '0'),
+      amountToBeVestedText: formatNumber(parseFloat(totalAllocations?.toString() ?? '0')).toString(),
       cliffDurationNumber: 1,
       cliffDurationOption: defaultCliffDurationOption as CliffDuration | DateDurationOptionValues,
       releaseFrequencySelectedOption: 'continuous',
@@ -119,6 +133,11 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Handle the submit of the form
   const onSubmit: SubmitHandler<IScheduleFormState> = async (data) => {
+    // Validate schedule
+    if (!isScheduleValid()) {
+      return;
+    }
+
     console.log('Form Submitted', data, getValues());
     // Check first if the user is saving the configuration as a template as well.
     if (saveAsTemplate.value) {
@@ -579,6 +598,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
 
     // Get the start date and add the corresponding new date
+    console.log('Quick add Date', startDateTime.value);
     if (startDateTime.value) {
       const prospectiveEndDateTime = add(startDateTime.value, durationOption);
       setValue('endDateTime', prospectiveEndDateTime);
@@ -603,11 +623,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
     console.log('Date time changing', newDate, field);
     if (field.includes('start')) {
-      setPickerStartDateTime(newDate);
+      setValue('startDateTime', newDate);
+      // setPickerStartDateTime(newDate);
     }
 
     if (field.includes('end')) {
-      setPickerEndDateTime(newDate);
+      setValue('endDateTime', newDate);
+      // setPickerEndDateTime(newDate);
     }
   };
 
@@ -637,69 +659,74 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Reset the state of the picker date time and do not update the form value
   // close the picker
-  const handleActionBarCancel = (field: CustomActionBarDateTimeField) => {
-    // Reset the date time values
-    if ((field === 'startTime' || field === 'startDate') && startDateTime.value) {
-      setPickerStartDateTime(startDateTime.value);
-    }
+  // const handleActionBarCancel = (field: CustomActionBarDateTimeField) => {
+  //   // Reset the date time values
+  //   if ((field === 'startTime' || field === 'startDate') && startDateTime.value) {
+  //     setPickerStartDateTime(startDateTime.value);
+  //   }
 
-    if ((field === 'endTime' || field === 'endDate') && endDateTime.value) {
-      setPickerEndDateTime(endDateTime.value);
-    }
+  //   if ((field === 'endTime' || field === 'endDate') && endDateTime.value) {
+  //     setPickerEndDateTime(endDateTime.value);
+  //   }
 
-    handleHidePickers(field);
-  };
+  //   handleHidePickers(field);
+  // };
 
   // Set the value of the date time in the form into the state of selected date time
   // Close the picker
-  const handleActionBarAccept = (field: CustomActionBarDateTimeField) => {
-    // Update the date time form values
-    if ((field === 'startTime' || field === 'startDate') && startDateTime.value) {
-      setValue('startDateTime', pickerStartDateTime);
-    }
+  // const handleActionBarAccept = (field: CustomActionBarDateTimeField) => {
+  //   // Update the date time form values
+  //   if ((field === 'startTime' || field === 'startDate') && startDateTime.value) {
+  //     setValue('startDateTime', pickerStartDateTime);
+  //   }
 
-    if ((field === 'endTime' || field === 'endDate') && endDateTime.value) {
-      setValue('endDateTime', pickerEndDateTime);
-    }
+  //   if ((field === 'endTime' || field === 'endDate') && endDateTime.value) {
+  //     setValue('endDateTime', pickerEndDateTime);
+  //   }
 
-    // Close the corresponding picker
-    handleHidePickers(field);
-  };
+  //   // Close the corresponding picker
+  //   handleHidePickers(field);
+  // };
 
-  const CustomActionBar = ({ field }: CustomActionBarProps) => {
-    return (
-      <div className="row-center justify-end mt-3">
-        <button className="uppercase small line primary" onClick={() => handleActionBarCancel(field)}>
-          Cancel
-        </button>
-        <button className="uppercase small primary" onClick={() => handleActionBarAccept(field)}>
-          Ok
-        </button>
-      </div>
-    );
-  };
+  // const CustomActionBar = ({ field }: CustomActionBarProps) => {
+  //   return (
+  //     <div className="row-center justify-end mt-3">
+  //       <button className="uppercase small line primary" onClick={() => handleActionBarCancel(field)}>
+  //         Cancel
+  //       </button>
+  //       <button className="uppercase small primary" onClick={() => handleActionBarAccept(field)}>
+  //         Ok
+  //       </button>
+  //     </div>
+  //   );
+  // };
 
-  const ActionBarStartDate: ElementType<PickersActionBarProps> = () => <CustomActionBar field="startDate" />;
-  const ActionBarStartTime: ElementType<PickersActionBarProps> = () => <CustomActionBar field="startTime" />;
-  const ActionBarEndDate: ElementType<PickersActionBarProps> = () => <CustomActionBar field="endDate" />;
-  const ActionBarEndTime: ElementType<PickersActionBarProps> = () => <CustomActionBar field="endTime" />;
+  // const ActionBarStartDate: ElementType<PickersActionBarProps> = () => <CustomActionBar field="startDate" />;
+  // const ActionBarStartTime: ElementType<PickersActionBarProps> = () => <CustomActionBar field="startTime" />;
+  // const ActionBarEndDate: ElementType<PickersActionBarProps> = () => <CustomActionBar field="endDate" />;
+  // const ActionBarEndTime: ElementType<PickersActionBarProps> = () => <CustomActionBar field="endTime" />;
 
   // Updates the current Date and Time input states when the actual form values change.
-  useEffect(() => {
-    if (isScheduleValid()) {
-      if (startDateTime.value && endDateTime.value) {
-        setPickerStartDateTime(startDateTime.value);
-        setPickerEndDateTime(endDateTime.value);
-      }
-      // Remove formErrors if any when these data changes
-      setFormError(false);
-      setFormMessage('');
-    }
-  }, [startDateTime.value, endDateTime.value]);
+  // useEffect(() => {
+  //   if (isScheduleValid()) {
+  //     if (startDateTime.value && endDateTime.value) {
+  //       setPickerStartDateTime(startDateTime.value);
+  //       setPickerEndDateTime(endDateTime.value);
+  //     }
+  //     // Remove formErrors if any when these data changes
+  //     setFormError(false);
+  //     setFormMessage('');
+  //   }
+  // }, [startDateTime.value, endDateTime.value]);
 
   useEffect(() => {
     if (isScheduleValid()) {
       setFormError(false);
+      setFormSuccess(true);
+      setFormMessage('');
+    } else {
+      setFormError(true);
+      setFormSuccess(false);
       setFormMessage('');
     }
   }, [amountToBeVested.value]);
@@ -710,15 +737,24 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   }, [startDateTime.value, endDateTime.value, cliffDuration.value]);
 
   const isScheduleValid = () => {
-    if (startDateTime.value && endDateTime.value && cliffDuration.value !== 'no-cliff') {
+    if (startDateTime.value && endDateTime.value) {
       // Compute duration of start and end dates
       const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
+      const diffHours = differenceInHours(endDateTime.value, startDateTime.value);
       const releaseFreqSeconds = getReleaseFrequencyTimestamp(startDateTime.value, releaseFrequency.value);
       const cliffSeconds = getCliffDurationTimestamp(cliffDuration.value, startDateTime.value);
       const idealScheduleDuration = cliffSeconds + releaseFreqSeconds;
       console.log('Difference', idealScheduleDuration, diffSeconds, releaseFreqSeconds, cliffSeconds);
       // Compare to cliff duration
-      if (idealScheduleDuration > diffSeconds) {
+
+      if (diffHours < 24) {
+        setFormError(true);
+        setFormSuccess(false);
+        setFormMessage('End date must be at least 24 hours after the start date');
+        return false;
+      }
+
+      if (cliffDuration.value !== 'no-cliff' && idealScheduleDuration > diffSeconds) {
         // Error
         setFormError(true);
         setFormSuccess(false);
@@ -726,13 +762,23 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           'Cliff duration and release frequency should fall within the Start date and End date of the schedule.'
         );
         return false;
-      } else if (formError) {
-        // Convert to successful if the state came from an error
-        setFormError(false);
-        setFormSuccess(true);
-        setFormMessage('');
       }
     }
+
+    if (!amountToBeVested.value) {
+      setFormError(true);
+      setFormSuccess(false);
+      setFormMessage("Amount to be vested can't be 0");
+      return false;
+    }
+
+    // Convert to successful if the state came from an error
+    if (formError) {
+      setFormError(false);
+      setFormSuccess(true);
+      setFormMessage('');
+    }
+
     return true;
   };
 
@@ -740,10 +786,29 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   // Currently, react-number-format returns it's value as a string with % sign.
   // To do: Refactor this later and move it's responsibility to the <Input type="percent" /> component.
   useEffect(() => {
-    if (typeof lumpSumReleaseAfterCliff.value === 'string' && lumpSumReleaseAfterCliff.value !== '') {
-      setValue('lumpSumReleaseAfterCliff', +lumpSumReleaseAfterCliff.value.slice(0, -1));
-    }
+    handleLumpSumReleaseAfterCliffChanges(true);
   }, [lumpSumReleaseAfterCliff.value]);
+
+  // Handles to makes changes to the value of the lumpsumreleaseaftercliff
+  // Removes the % sign from the string
+  // If coming from an input, detects if the last character is a . with missing number in the decimal place
+  // else, just update the value into a number
+  const handleLumpSumReleaseAfterCliffChanges = (onInput = false) => {
+    if (
+      typeof lumpSumReleaseAfterCliff.value === 'string' &&
+      lumpSumReleaseAfterCliff.value !== '' &&
+      lumpSumReleaseAfterCliff.value.includes('%')
+    ) {
+      const removedPercentSign = lumpSumReleaseAfterCliff.value.slice(0, -1);
+      if (onInput) {
+        if (removedPercentSign.charAt(removedPercentSign.length - 1) !== '.') {
+          setValue('lumpSumReleaseAfterCliff', +removedPercentSign);
+        }
+      } else {
+        setValue('lumpSumReleaseAfterCliff', +removedPercentSign);
+      }
+    }
+  };
 
   const totalTokenSupply = parseFloat(mintFormState.initialSupply.toString());
 
@@ -901,6 +966,10 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   console.log('TOUCHED AND DIRTY', releaseFrequency.state.isTouched, releaseFrequency.state.isDirty);
 
+  useEffect(() => {
+    if (totalAllocations <= 0) Router.push('/vesting-schedule/add-recipients');
+  }, [totalAllocations]);
+
   return (
     <>
       {/* TEMPLATE PROMPT AND SELECTION SECTION */}
@@ -983,7 +1052,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       ) : null}
 
       {/* CONFIGURATION FORM SECTION */}
-      <div className={`grid md:grid-cols-12 w-full gap-3.5 ${isUserTemplatePromptActive() ? 'opacity-20' : ''}`}>
+      <div className={`grid md:grid-cols-12 w-full gap-3.5 mt-5 ${isUserTemplatePromptActive() ? 'opacity-20' : ''}`}>
         <div className="md:col-span-7">
           <Form
             isSubmitting={isSubmitting}
@@ -1021,66 +1090,46 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               <div className="flex flex-row gap-3">
                 {/* Step 1 start date section */}
                 <div className="flex-grow">
-                  {startDateTime.value ? (
-                    <>
-                      <Input
-                        required
-                        value={format(startDateTime.value, 'MM/dd/yyyy')}
-                        onFocus={() => {
-                          setShowStartDatePicker(true);
-                          setActiveStep(0);
-                        }}
-                      />
-                      {showStartDatePicker ? (
-                        <LocalizationProvider dateAdapter={AdapterDateFns}>
-                          <StaticDatePicker
-                            displayStaticWrapperAs="mobile"
-                            value={pickerStartDateTime}
-                            onChange={(newValue) => {
-                              handleDateTimeChange(newValue, 'startDate');
-                            }}
-                            renderInput={(params) => <TextField {...params} />}
-                            components={{
-                              ActionBar: ActionBarStartDate
-                            }}
-                          />
-                        </LocalizationProvider>
-                      ) : null}
-                    </>
-                  ) : null}
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      value={startDateTime.value}
+                      onChange={(newValue) => {
+                        handleDateTimeChange(newValue, 'startDate');
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          onFocus={() => {
+                            // setShowStartDatePicker(true);
+                            setActiveStep(0);
+                          }}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
                 </div>
                 <span className="flex-shrink-0 text-xs font-medium text-neutral-500 flex flex-row items-center justify-center h-10">
                   to
                 </span>
                 {/* Step 1 end date section */}
                 <div className="flex-grow">
-                  {endDateTime.value ? (
-                    <>
-                      <Input
-                        required
-                        value={format(endDateTime.value, 'MM/dd/yyyy')}
-                        onFocus={() => {
-                          setShowEndDatePicker(true);
-                          setActiveStep(0);
-                        }}
-                      />
-                      {showEndDatePicker ? (
-                        <LocalizationProvider dateAdapter={AdapterDateFns}>
-                          <StaticDatePicker
-                            displayStaticWrapperAs="mobile"
-                            value={pickerEndDateTime}
-                            onChange={(newValue) => {
-                              handleDateTimeChange(newValue, 'endDate');
-                            }}
-                            renderInput={(params) => <TextField {...params} />}
-                            components={{
-                              ActionBar: ActionBarEndDate
-                            }}
-                          />
-                        </LocalizationProvider>
-                      ) : null}
-                    </>
-                  ) : null}
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      value={endDateTime.value}
+                      onChange={(newValue) => {
+                        handleDateTimeChange(newValue, 'endDate');
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          onFocus={() => {
+                            // setShowEndDatePicker(true);
+                            setActiveStep(0);
+                          }}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
                 </div>
               </div>
               {/* Step 1 quick date adding section */}
@@ -1129,67 +1178,30 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               <div className="flex flex-row gap-3">
                 {/* Step 2 start time section */}
                 <div className="flex-grow">
-                  {startDateTime.value ? (
-                    <>
-                      <Input
-                        type="text"
-                        required
-                        value={format(startDateTime.value, 'hh:mm a')}
-                        onFocus={() => {
-                          setShowStartTimePicker(true);
-                          setActiveStep(1);
-                        }}
-                      />
-                      {showStartTimePicker ? (
-                        <LocalizationProvider dateAdapter={AdapterDateFns}>
-                          <StaticTimePicker
-                            displayStaticWrapperAs="mobile"
-                            value={pickerStartDateTime}
-                            onChange={(newValue) => {
-                              handleDateTimeChange(newValue, 'startTime');
-                            }}
-                            renderInput={(params) => <TextField {...params} />}
-                            components={{
-                              ActionBar: ActionBarStartTime
-                            }}
-                          />
-                        </LocalizationProvider>
-                      ) : null}
-                    </>
-                  ) : null}
+                  {/* <LocalizationProvider dateAdapter={AdapterDateFns}> */}
+                  <Timepicker
+                    format="HH:mm"
+                    value={startDateTime.value}
+                    onChange={(newValue) => {
+                      handleDateTimeChange(newValue, 'startTime');
+                    }}
+                  />
+                  {/* </LocalizationProvider> */}
                 </div>
                 <span className="flex-shrink-0 text-xs font-medium text-neutral-500 flex flex-row items-center justify-center h-10">
                   to
                 </span>
                 {/* Step 2 end time section */}
                 <div className="flex-grow">
-                  {endDateTime.value ? (
-                    <>
-                      <Input
-                        required
-                        value={format(endDateTime.value, 'h:mm aa')}
-                        onFocus={() => {
-                          setShowEndTimePicker(true);
-                          setActiveStep(1);
-                        }}
-                      />
-                      {showEndTimePicker ? (
-                        <LocalizationProvider dateAdapter={AdapterDateFns}>
-                          <StaticTimePicker
-                            displayStaticWrapperAs="mobile"
-                            value={pickerEndDateTime}
-                            onChange={(newValue) => {
-                              handleDateTimeChange(newValue, 'endTime');
-                            }}
-                            renderInput={(params) => <TextField {...params} />}
-                            components={{
-                              ActionBar: ActionBarEndTime
-                            }}
-                          />
-                        </LocalizationProvider>
-                      ) : null}
-                    </>
-                  ) : null}
+                  {/* <LocalizationProvider dateAdapter={AdapterDateFns}> */}
+                  <Timepicker
+                    format="HH:mm"
+                    value={endDateTime.value}
+                    onChange={(newValue) => {
+                      handleDateTimeChange(newValue, 'endTime');
+                    }}
+                  />
+                  {/* </LocalizationProvider> */}
                 </div>
               </div>
             </StepLabel>
@@ -1258,7 +1270,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         />
                         <span
                           className={`absolute top-0 right-0 transform transition-all text-sm text-neutral-700 ${
-                            fieldState.error ? 'translate-y-3.5 -translate-x-4' : 'translate-y-2.5 -translate-x-3.5'
+                            fieldState.error ? 'translate-y-5 -translate-x-6' : 'translate-y-4 -translate-x-5'
                           }`}>
                           {formatCliffDurationOption(+cliffDurationNumber.value, cliffDurationOption.value)}
                         </span>
@@ -1274,14 +1286,17 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     render={({ field, fieldState, formState }) => (
                       <Input
                         label="Tokens unlocked after cliff (0-99%)"
-                        placeholder="Enter whole percentage amount"
+                        placeholder="Enter percentage amount"
                         className="mt-4"
                         required
                         error={Boolean(fieldState.error)}
                         message={fieldState.error ? 'Please enter lump sum amount' : ''}
                         onFocus={() => setActiveStep(2)}
                         {...field}
-                        onBlur={() => setActiveStep(5)}
+                        onBlur={() => {
+                          setActiveStep(5);
+                          handleLumpSumReleaseAfterCliffChanges();
+                        }}
                         type="percent"
                       />
                     )}
@@ -1377,22 +1392,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               ref={step[4].ref}
               isExpanded={step[4].isExpanded}
               isActive={step[4].active}
-              label="Amount to be vested"
+              label="Total amount to be vested"
               required
-              description={
-                <>
-                  Select the total amount of tokens to be locked up in this schedule. If you have added multiple users,
-                  note that this amount will be equally split between each user. Your current available supply is{' '}
-                  <strong>{formatNumber(totalTokenSupply)}</strong> <strong>{mintFormState.symbol}</strong>.
-                </>
-              }
-              hint={
-                <>
-                  An example is if you have added 3 users in the previous step and the total amount to be vested is
-                  600,000 <strong>{mintFormState.symbol}</strong>, then each user will be allocated 200,000{' '}
-                  <strong>{mintFormState.symbol}</strong>.
-                </>
-              }
+              description="You can edit this amount on the Add Recipient(s) page"
               onFocus={() => setActiveStep(4)}>
               <div className="relative">
                 {/* Step 5 Input field for the amount to be vested */}
@@ -1411,30 +1413,31 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         onFocus={() => setActiveStep(4)}
                         {...field}
                         onBlur={() => setActiveStep(5)}
+                        readOnly
                       />
                     </>
                   )}
                 />
-                <Chip
+                {/* <Chip
                   label="MAX"
                   color={amountToBeVested.value < totalTokenSupply ? 'secondary' : 'default'}
                   onClick={handleMaxAmount}
                   onBlur={() => setActiveStep(5)}
                   className={`absolute right-6 cursor-pointer ${
-                    amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-2'
+                    amountToBeVested.value > totalTokenSupply || errors.amountToBeVestedText ? 'bottom-9' : 'bottom-3'
                   }`}
-                />
+                /> */}
               </div>
               {/* Step 5 Slider section */}
-              <div className="mt-6">
+              {/* <div className="mt-6">
                 <RangeSlider
                   max={totalTokenSupply || 0}
                   value={amountToBeVested.value ? amountToBeVested.value : 0}
                   className="mt-5"
-                  onChange={handleAmountToBeVestedChange}
+                  // onChange={handleAmountToBeVestedChange}
                   onBlur={() => setActiveStep(5)}
                 />
-              </div>
+              </div> */}
             </StepLabel>
 
             <hr className="mx-6" />

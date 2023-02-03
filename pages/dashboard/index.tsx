@@ -13,6 +13,7 @@ import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
+import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import CreateVestingContract from 'components/organisms/DashboardPanel/CreateVestingContract';
@@ -20,7 +21,7 @@ import FundContract from 'components/organisms/DashboardPanel/FundContract';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, useCallback, useEffect } from 'react';
 
 import { NextPageWithLayout } from '../_app';
 
@@ -44,6 +45,7 @@ const Dashboard: NextPageWithLayout = () => {
     recipients
   } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
+  const { pendingTransactions } = useTransactionLoaderContext();
   const { ModalWrapper, open, showModal, hideModal } = useModal({});
 
   const router = useRouter();
@@ -54,6 +56,11 @@ const Dashboard: NextPageWithLayout = () => {
     if (email) loginWithUrl(email);
     fetchDashboardData();
   }, []);
+
+  const isMintAvailabe = useCallback(() => {
+    const mintingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'TOKEN_DEPLOYMENT');
+    return !mintingTransaction;
+  }, [pendingTransactions]);
 
   const loginWithUrl = async (email: string) => {
     try {
@@ -107,15 +114,16 @@ const Dashboard: NextPageWithLayout = () => {
             image="/images/cryptocurrency-trading-bot.gif"
             title="No projects found"
             description={<>Create a project by selecting an option below</>}>
+            <button type="button" className="line" onClick={() => router.push('/dashboard/import-token')}>
+              Import existing token
+            </button>
             <button
               type="button"
               className="primary flex flex-row gap-2 items-center"
+              disabled={!isMintAvailabe()}
               onClick={() => router.push('/minting-token')}>
               <PlusIcon className="w-5 h-5" />
               Mint a new token
-            </button>
-            <button type="button" className="line" onClick={() => router.push('/dashboard/import-token')}>
-              Import existing token
             </button>
           </EmptyState>
         </>
@@ -225,7 +233,9 @@ const Dashboard: NextPageWithLayout = () => {
             step={2}
             className="mb-6"
           /> */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
+
+          {/* TEMPORARILY REMOVE THESE SECTION as it does not have functionalities yet */}
+          {/* <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
             <DashboardInfoCard
               icon="/icons/calendar.svg"
               title="Vesting overview"
@@ -248,9 +258,9 @@ const Dashboard: NextPageWithLayout = () => {
             <div className="panel">
               <h3 className="h5 text-neutral-900 inter font-semibold mb-4">Activity</h3>
               <p className="text-neutral-400">Coming soon</p>
-              {/* <ActivityFeed activities={activities} /> */}
+              <ActivityFeed activities={activities} />
             </div>
-          </div>
+          </div> */}
           <ModalWrapper>
             <CreateVestingContractModal hideModal={hideModal} />
           </ModalWrapper>
@@ -265,7 +275,7 @@ Dashboard.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [{ title: 'Dashboard', route: '/dashboard' }];
   return (
-    <SteppedLayout title="Dashboard" crumbs={crumbSteps}>
+    <SteppedLayout title="Dashboard" crumbs={crumbSteps} padded={false}>
       {page}
     </SteppedLayout>
   );

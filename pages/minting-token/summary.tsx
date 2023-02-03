@@ -21,13 +21,15 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { db } from 'services/auth/firebase';
 import { createToken, fetchTokenByQuery } from 'services/db/token';
+import { createTransaction, updateTransaction } from 'services/db/transaction';
+import { ITransaction } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
   const { library, account, activate, chainId } = useWeb3React();
   const { mintFormState, updateMintFormState, updateTokenId } = useTokenContext();
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply } = mintFormState;
 
@@ -38,6 +40,7 @@ const Summary: NextPageWithLayout = () => {
       if (!library) {
         activate(injected);
       } else if (organizationId && chainId) {
+        setIsCloseAvailable(false);
         setTransactionStatus('PENDING');
         setLoading(true);
         const tokenTemplate = supplyCap === 'LIMITED' ? FullPremintERC20Token : VariableSupplyERC20Token;
@@ -52,8 +55,23 @@ const Summary: NextPageWithLayout = () => {
                 parseTokenAmount(maxSupply, decimals)
               )
             : await TokenFactory.deploy(name, symbol, parseTokenAmount(initialSupply, decimals));
+
+        const transactionData: ITransaction = {
+          hash: tokenContract.deployTransaction.hash,
+          safeHash: '',
+          status: 'PENDING',
+          to: '',
+          type: 'TOKEN_DEPLOYMENT',
+          createdAt: Math.floor(new Date().getTime() / 1000),
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          organizationId: organizationId,
+          chainId,
+          vestingIds: []
+        };
+        const transactionId = await createTransaction(transactionData);
+
         setTransactionStatus('IN_PROGRESS');
-        await tokenContract.deployed();
+        const tx = await tokenContract.deployed();
 
         const tokenId = await createToken({
           name: name,
@@ -73,6 +91,9 @@ const Summary: NextPageWithLayout = () => {
 
         updateMintFormState({ ...mintFormState, address: tokenContract.address, status: 'SUCCESS', chainId });
         updateTokenId(tokenId);
+
+        transactionData.status = 'SUCCESS';
+        updateTransaction(transactionData, transactionId);
 
         console.log('Address:', tokenContract.address);
         toast.success('Token created successfully');

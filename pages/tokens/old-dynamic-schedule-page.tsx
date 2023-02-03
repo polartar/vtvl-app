@@ -133,8 +133,8 @@ const MyTokenSchedule: NextPageWithLayout = () => {
   ];
 
   const chartData = [
-    { name: 'Claimed', value: 1000 },
-    { name: 'Amount vested to-date', value: 500 },
+    { name: 'Withdrawn', value: 1000 },
+    { name: 'Unclaimed', value: 500 },
     { name: 'Remaining', value: 9630 }
   ];
 
@@ -211,7 +211,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                       <Cell
                         key={`cell-${index}`}
                         fill={
-                          entry.name === 'Claimed'
+                          entry.name === 'Claimed' || entry.name === 'Withdrawn'
                             ? 'var(--secondary-900)'
                             : entry.name === 'Unclaimed' || entry.name === 'Amount vested to-date'
                             ? 'var(--primary-900)'
@@ -227,14 +227,14 @@ const MyTokenSchedule: NextPageWithLayout = () => {
               <VestingProgress duration="32 days left" progress={50} />
               <div className="grid grid-cols-4 gap-3 my-6">
                 <div>
-                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Claimed</p>
+                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Withdrawn</p>
                   <div className="paragraphy-small-semibold text-neutral-600 row-center">
                     <div className="w-3 h-3 rounded-full bg-secondary-900"></div>
                     {formatNumber(1000)} {mintFormState.symbol || 'Token'}
                   </div>
                 </div>
                 <div>
-                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Amount vested to-date</p>
+                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Unclaimed</p>
                   <div className="paragraphy-small-semibold text-neutral-600 row-center">
                     <div className="w-3 h-3 rounded-full bg-primary-900"></div>
                     {formatNumber(500)} {mintFormState.symbol || 'Token'}

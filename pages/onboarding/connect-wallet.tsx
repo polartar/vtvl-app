@@ -1,5 +1,6 @@
 import Carousel from '@components/atoms/Carousel/Carousel';
 import ConnectWalletOptions from '@components/molecules/ConnectWalletOptions/ConnectWalletOptions';
+import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -9,7 +10,7 @@ import { NextPage } from 'next';
 import Router from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 
-const OnboardingContainer = styled.section`
+const OnboardingContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 26px;
@@ -91,14 +92,16 @@ const ConnectWalletPage: NextPage = () => {
   ];
 
   return (
-    <OnboardingContainer>
-      <Signing>
-        <ConnectWalletOptions onConnect={handleConnectedState} />
-      </Signing>
-      <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
-        <Carousel variant="dark" items={carouselItems} />
-      </Vesting>
-    </OnboardingContainer>
+    <PaddedLayout>
+      <OnboardingContainer>
+        <Signing>
+          <ConnectWalletOptions onConnect={handleConnectedState} />
+        </Signing>
+        <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
+          <Carousel variant="dark" items={carouselItems} />
+        </Vesting>
+      </OnboardingContainer>
+    </PaddedLayout>
   );
 };
 

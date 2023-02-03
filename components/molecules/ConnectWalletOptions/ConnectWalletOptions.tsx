@@ -1,3 +1,4 @@
+import { useAuthContext } from '@providers/auth.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { useState } from 'react';
@@ -18,6 +19,7 @@ interface ConnectWalletOptionsProps {
 const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProps) => {
   // Use web3 react to activate the connection
   const { active, activate } = useWeb3React();
+  const { setConnection } = useAuthContext();
   // Stores the state of the ledger modal
   const [ledgerModalShow, setLedgerModalShow] = useState(false);
 
@@ -50,6 +52,7 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
     try {
       await activate(injected);
       // Trigger the onConnect function when the connection is established
+      setConnection('metamask');
       onConnect();
     } catch (error) {
       console.log('connection error ', error);
@@ -61,6 +64,7 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
     try {
       await activate(walletconnect, (error) => {}, true);
       // Trigger the onConnect function when the connection is established
+      setConnection('walletconnect');
       onConnect();
     } catch (error) {
       console.log('connection error ', error);

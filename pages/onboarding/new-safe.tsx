@@ -34,7 +34,7 @@ const NewSafePage: NextPage = () => {
   const { user } = useContext(AuthContext);
   const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
   const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
-  const { query } = useRouter();
+  const { query, push: routerPush } = useRouter();
 
   const [importedSafe, setImportedSafe] = useState<Safe>();
   const [owners, setOwners] = useState<{ name: string; address: string; email: string }[]>([
@@ -45,6 +45,8 @@ const NewSafePage: NextPage = () => {
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [safeRef, setSafeRef] = useState<string>();
+
+  const returnUrl = (query?.returnUrl ?? '') as string;
 
   useEffect(() => {
     console.log('we have imported safe here ', importedSafe);
@@ -82,7 +84,7 @@ const NewSafePage: NextPage = () => {
       setOwners(o);
       const t = await safe.getThreshold();
       setThreshold(t);
-    } catch (error: any) {
+    } catch (error) {
       console.log('error importing safe ', error);
     }
   };
@@ -185,7 +187,7 @@ const NewSafePage: NextPage = () => {
       // setOptions(defaultValues.authorizedUsers);
       setOptions(o.length);
       reset({ ...defaultValues });
-    } catch (error: any) {
+    } catch (error) {
       console.log('error importing safe ', error);
       setFormError(true);
       setFormMessage(
@@ -253,9 +255,9 @@ const NewSafePage: NextPage = () => {
         setTransactionStatus('SUCCESS');
       }
       return await onNext({ safeAddress: safe.getAddress() });
-    } catch (error: any) {
+    } catch (error) {
       console.error('error getting safe info ', error);
-      setFormMessage(`Multisig error: ${error.message}`);
+      setFormMessage(`Multisig error: ${(error as any)?.message}`);
       setFormError(true);
       if (!importedSafe) {
         setTransactionStatus('ERROR');
@@ -318,12 +320,12 @@ const NewSafePage: NextPage = () => {
                 rules={{ required: true }}
                 render={({ field }) => (
                   <Input
-                    label="Owner address"
-                    placeholder="Enter owner address"
+                    label="Owner wallet address"
+                    placeholder="Enter owner wallet address"
                     required
                     disabled={importedSafe ? true : false}
                     error={Boolean(getOwnersState(ownerIndex).address.state.error)}
-                    message={getOwnersState(ownerIndex).address.state.error ? 'Please enter owner address' : ''}
+                    message={getOwnersState(ownerIndex).address.state.error ? 'Please enter owner wallet address' : ''}
                     className="md:col-span-2"
                     {...field}
                   />
@@ -391,7 +393,10 @@ const NewSafePage: NextPage = () => {
           </div>
         ) : null}
         <div className="flex flex-row justify-between items-center">
-          <BackButton label="Back to founder details" onClick={() => onPrevious()} />
+          <BackButton
+            label={returnUrl ? 'Back to settings' : 'Back to founder details'}
+            onClick={() => (returnUrl ? routerPush(returnUrl) : onPrevious())}
+          />
           <Button className="primary group" type="submit" loading={isSubmitting}>
             <span className="flex flex-row items-center gap-2 ">
               Sign and authorize
