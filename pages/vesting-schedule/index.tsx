@@ -172,6 +172,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       const secondsFromNow = differenceInSeconds(new Date(), actualDates.startDateTime);
       progress = Math.round((secondsFromNow / totalSeconds) * 100);
     }
+    progress = progress >= 100 ? 100 : progress;
     return (
       <div className="row-center">
         <ProgressCircle value={progress} max={100} />

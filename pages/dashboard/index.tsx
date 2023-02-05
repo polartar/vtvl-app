@@ -193,13 +193,13 @@ const Dashboard: NextPageWithLayout = () => {
                 </div>
               ))
             : !hasVestingContract && <DashboardPanel type="contract" />} */}
-          <div className="px-8 mt-8">
+          {/* <div className="px-8 mt-8">
             {(!vestingContract?.id || !ownershipTransfered || removeOwnership) && (
               <CreateVestingContract type="contract" />
             )}
             <FundContract />
             {vestings && vestings.length > 0 && <AddVestingSchedules type="schedule" />}
-          </div>
+          </div> */}
 
           <div className="px-8 py-4">
             <DashboardPendingActions />

@@ -65,7 +65,6 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
   const [transactionStatus, setTransactionStatus] = useState<
     'INITIALIZE' | 'EXECUTABLE' | 'WAITING_APPROVAL' | 'APPROVAL_REQUIRED' | ''
   >('');
-
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
