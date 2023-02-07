@@ -75,6 +75,7 @@ const CapTable: NextPageWithLayout = () => {
   const CellClaimedAmount = ({ row }: any) => <CellAmount amount={row.original.claimed} />;
   const CellUnclaimedAmount = ({ row }: any) => <CellAmount amount={row.original.unclaimed} />;
   const CellWithdrawnAmount = ({ row }: any) => <CellAmount amount={row.original.withdrawn} />;
+  const CellLockedTokens = ({ row }: any) => <CellAmount amount={row.original.lockedTokens} />;
 
   // Renderer for the toggle switch in managing alerts for each schedule
   const CellToggleSwitch = (props: any) => {
@@ -125,6 +126,12 @@ const CapTable: NextPageWithLayout = () => {
         Header: 'Unclaimed',
         accessor: 'unclaimed',
         Cell: CellUnclaimedAmount
+      },
+      {
+        id: 'lockedTokens',
+        Header: 'Locked tokens',
+        accessor: 'lockedTokens',
+        Cell: CellLockedTokens
       }
       // {
       //   id: 'withdrawn',

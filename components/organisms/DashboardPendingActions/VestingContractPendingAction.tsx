@@ -40,7 +40,7 @@ const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContrac
         const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
         const VestingFactory = new ethers.ContractFactory(
           VTVL_VESTING_ABI.abi,
-          '0x' + VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
+          VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
           library.getSigner()
         );
         const vestingContract = await VestingFactory.deploy(mintFormState.address);

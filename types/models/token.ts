@@ -31,4 +31,5 @@ export interface TUserTokenDetails {
   cliffDate: string | Date;
   numberOfReleases: number;
   vestingContractAddress: string;
+  lockedTokens: Decimal;
 }

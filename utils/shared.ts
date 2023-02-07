@@ -131,7 +131,8 @@ export const getUserTokenDetails = async (
     vestingProgress: 0,
     cliffDate: '',
     numberOfReleases: 0,
-    vestingContractAddress: ''
+    vestingContractAddress: '',
+    lockedTokens: new Decimal(0)
   };
   // Start getting datas when the selected schedule is present
   if (selectedSchedule && selectedSchedule.data) {
@@ -219,6 +220,7 @@ export const getUserTokenDetails = async (
         userTokenDetails.vestedAmount = vestedAmount;
         userTokenDetails.name = tokenName;
         userTokenDetails.symbol = tokenSymbol;
+        userTokenDetails.lockedTokens = totalAllocation.minus(vestedAmount);
 
         // Compute amounts based on the results above
         if (totalAllocation || claimableAmount || vestedAmount) {
