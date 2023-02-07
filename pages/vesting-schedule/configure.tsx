@@ -741,7 +741,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       // Compute duration of start and end dates
       const diffSeconds = differenceInSeconds(endDateTime.value, startDateTime.value);
       const diffHours = differenceInHours(endDateTime.value, startDateTime.value);
-      const releaseFreqSeconds = getReleaseFrequencyTimestamp(startDateTime.value, releaseFrequency.value);
+      const releaseFreqSeconds = getReleaseFrequencyTimestamp(
+        startDateTime.value,
+        endDateTime.value,
+        releaseFrequency.value,
+        cliffDuration.value
+      );
       const cliffSeconds = getCliffDurationTimestamp(cliffDuration.value, startDateTime.value);
       const idealScheduleDuration = cliffSeconds + releaseFreqSeconds;
       console.log('Difference', idealScheduleDuration, diffSeconds, releaseFreqSeconds, cliffSeconds);
@@ -888,7 +893,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Automatically selects the "start from scratch" option when there is no template available.
   useEffect(() => {
-    if (templateOptions && !templateOptions.length) {
+    if (templateOptions && !templateOptions.length && !isUserTemplatePromptActive()) {
       fuSetValue('formUsage', 'FROM_SCRATCH');
       setTimeout(() => {
         if (step[0].ref && step[0].ref.current) {
