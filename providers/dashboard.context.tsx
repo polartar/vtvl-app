@@ -22,6 +22,8 @@ import { useLoaderContext } from './loader.context';
 import { useSharedContext } from './shared.context';
 import { useTokenContext } from './token.context';
 
+type IVestingStatus = 'FUNDING_REQUIRED' | 'PENDING' | 'EXECUTABLE' | 'LIVE';
+
 interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
   revokings: { id: string; data: IRevoking }[];
@@ -36,6 +38,7 @@ interface IDashboardData {
   vestingContractLoading: boolean;
   transactionsLoading: boolean;
   removeOwnership: boolean;
+  vestingsStatus: { [key: string]: IVestingStatus };
   // fetchDashboardVestingContract: () => void;
   fetchDashboardVestings: () => void;
   fetchDashboardTransactions: () => void;
@@ -43,6 +46,7 @@ interface IDashboardData {
   fetchDashboardData: () => void;
   fetchVestingContractBalance: () => void;
   setRemoveOwnership: (v: boolean) => void;
+  setVestingsStatus: (v: { [key: string]: IVestingStatus }) => void;
 }
 
 const DashboardContext = createContext({} as IDashboardData);
@@ -69,6 +73,7 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingContractLoading, setVestingContractLoading] = useState(false);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [recipients, setRecipients] = useState<MultiValue<IRecipient>>([]);
+  const [vestingsStatus, setVestingsStatus] = useState<{ [key: string]: IVestingStatus }>({});
 
   useEffect(() => {
     if (!organizationId) return;
@@ -253,13 +258,15 @@ export function DashboardContextProvider({ children }: any) {
       vestingContractLoading,
       transactionsLoading,
       removeOwnership,
+      vestingsStatus,
       // fetchDashboardVestingContract,
       fetchDashboardVestings,
       fetchDashboardTransactions,
       setOwnershipTransfered,
       fetchDashboardData,
       fetchVestingContractBalance,
-      setRemoveOwnership
+      setRemoveOwnership,
+      setVestingsStatus
     }),
     [
       vestings,
@@ -274,7 +281,8 @@ export function DashboardContextProvider({ children }: any) {
       transactionsLoading,
       removeOwnership,
       vestingContracts,
-      revokings
+      revokings,
+      vestingsStatus
     ]
   );
 
@@ -371,6 +379,19 @@ export function DashboardContextProvider({ children }: any) {
         });
     }
   }, [ownershipTransfered, organizationId, vestingContract, safe, account, chainId]);
+
+  useEffect(() => {
+    if (vestings && vestings.length > 0) {
+      vestings.forEach((vesting) => {
+        if (vesting.data.status === 'LIVE') {
+          setVestingsStatus((previousStatus) => ({
+            ...previousStatus,
+            [vesting.id]: 'LIVE'
+          }));
+        }
+      });
+    }
+  }, [vestings]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

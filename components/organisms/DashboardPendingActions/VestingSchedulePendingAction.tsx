@@ -42,7 +42,9 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
     transactions,
     // fetchDashboardTransactions,
     fetchDashboardData,
-    vestings
+    vestings,
+    vestingsStatus,
+    setVestingsStatus
   } = useDashboardContext();
   const {
     pendingTransactions,
@@ -115,12 +117,24 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         if (safeTx.signatures.size >= safe?.threshold) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('EXECUTABLE');
+          setVestingsStatus({
+            ...vestingsStatus,
+            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
+          });
         } else if (safeTx.signatures.has(account.toLowerCase())) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('WAITING_APPROVAL');
+          setVestingsStatus({
+            ...vestingsStatus,
+            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
+          });
         } else {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('APPROVAL_REQUIRED');
+          setVestingsStatus({
+            ...vestingsStatus,
+            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
+          });
         }
       }
     } else {
@@ -164,9 +178,17 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
           )
         );
         setTransactionStatus('INITIALIZE');
+        setVestingsStatus({
+          ...vestingsStatus,
+          [id]: 'FUNDING_REQUIRED'
+        });
       } else {
         setStatus('AUTHORIZATION_REQUIRED');
         setTransactionStatus('INITIALIZE');
+        setVestingsStatus({
+          ...vestingsStatus,
+          [id]: 'PENDING'
+        });
       }
     }
   };
