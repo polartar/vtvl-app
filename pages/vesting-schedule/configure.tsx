@@ -884,16 +884,18 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   // Checks for the prompt status first before letting the user interact with the form
   const isUserTemplatePromptActive = () => {
-    // If there is no selected option in the prompt
-    if (!formUsage.value) return true;
-    // If the user selects to use saved templates but does not yet select one
-    if (formUsage.value === 'USE_TEMPLATE' && !template.value) return true;
+    if (templateOptions && templateOptions.length) {
+      // If there is no selected option in the prompt
+      if (!formUsage.value) return true;
+      // If the user selects to use saved templates but does not yet select one
+      if (formUsage.value === 'USE_TEMPLATE' && !template.value) return true;
+    }
     return false;
   };
 
   // Automatically selects the "start from scratch" option when there is no template available.
   useEffect(() => {
-    if (templateOptions && !templateOptions.length && !isUserTemplatePromptActive()) {
+    if (!isUserTemplatePromptActive()) {
       fuSetValue('formUsage', 'FROM_SCRATCH');
       setTimeout(() => {
         if (step[0].ref && step[0].ref.current) {

@@ -693,7 +693,6 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         setStatus('SUCCESS');
         setTransactionLoaderStatus('SUCCESS');
         setTransactionStatus('');
-        toast.success('Revoking is done successfully.');
       }
     } catch (err) {
       console.log('handleExecuteTransaction - ', err);
