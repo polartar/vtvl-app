@@ -1,5 +1,7 @@
 import add from 'date-fns/add';
 import differenceInHours from 'date-fns/differenceInHours';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
+import differenceInSeconds from 'date-fns/differenceInSeconds';
 import eachDayOfInterval from 'date-fns/eachDayOfInterval';
 import eachHourOfInterval from 'date-fns/eachHourOfInterval';
 import eachMinuteOfInterval from 'date-fns/eachMinuteOfInterval';
@@ -133,7 +135,12 @@ export const getReleaseFrequencyTimestamp = (
     cliffDuration && cliffDuration !== 'no-cliff' ? getCliffDateTime(startDate, cliffDuration) : startDate;
 
   const intervals = getNumberOfReleases(releaseFrequency, actualStartDateTime, endDate);
-  const intervalSeconds = Math.round((getUnixTime(endDate) - getUnixTime(actualStartDateTime)) / intervals); //startWithIntervalSeconds - getUnixTime(actualStartDateTime);
+  const intervalSeconds =
+    releaseFrequency === 'continuous'
+      ? 1
+      : releaseFrequency === 'minute'
+      ? 60
+      : Math.round((getUnixTime(endDate) - getUnixTime(actualStartDateTime)) / intervals); //startWithIntervalSeconds - getUnixTime(actualStartDateTime);
 
   console.log('FREQUENCY TIMESTAMP', startDate, endDate, intervalSeconds);
   return intervalSeconds;
@@ -210,12 +217,14 @@ export const getNumberOfReleases = (frequency: ReleaseFrequency, startDate: Date
   const start = startDate;
   const end = endDate;
   const diffHours = differenceInHours(end, start);
+  const diffSeconds = differenceInSeconds(end, start);
+  const diffMinutes = differenceInMinutes(end, start);
 
   // Always make sure that the end date time should be at least 24 hours after start date time
   if (diffHours >= 24) {
     switch (frequency) {
       case 'continuous':
-        intervals = eachMinuteOfInterval({ start, end });
+        // intervals = eachMinuteOfInterval({ start, end });
         break;
       case 'hourly':
         intervals = eachHourOfInterval({ start, end });
@@ -266,8 +275,15 @@ export const getNumberOfReleases = (frequency: ReleaseFrequency, startDate: Date
   }
 
   // Return the number of intervals
-  console.log('INTERVALS', intervals.length, intervals);
-  return intervals.length - 1;
+  console.log('INTERVALS', intervals.length, intervals, diffSeconds);
+  // Avoids having to bloat the number of releases when doing years gap and continuous/minute release frequencies
+  return frequency && frequency === 'continuous'
+    ? // Use the difference of dates in seconds for the intervals in the continuous frequency
+      diffSeconds
+    : frequency === 'minute'
+    ? // Use the difference of dates in minutes for the intervals in the minute frequency
+      diffMinutes
+    : intervals.length - 1;
 };
 
 /**
