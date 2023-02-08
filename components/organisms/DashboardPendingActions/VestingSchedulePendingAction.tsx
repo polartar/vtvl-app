@@ -449,7 +449,9 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
       const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
-        vesting.details.releaseFrequency
+        vestingEndTimestamp!,
+        vesting.details.releaseFrequency,
+        vesting.details.cliffDuration
       );
       const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
       const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
@@ -736,7 +738,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
             className="secondary small whitespace-nowrap"
             onClick={handleCreateSignTransaction}
             disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
-            Create & sign
+            Create &amp; sign
           </button>
         )}
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (

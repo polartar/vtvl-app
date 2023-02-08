@@ -580,9 +580,12 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           Math.floor(vestingEndTimestamp!.getTime() / 1000)
         );
         const vestingCliffTimestamps1 = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
+        const actualDates = getActualDateTime(vesting.details);
         const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
-          new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-          vesting.details.releaseFrequency
+          actualDates.startDateTime!,
+          actualDates.endDateTime!,
+          vesting.details.releaseFrequency,
+          vesting.details.cliffDuration
         );
         const vestingReleaseIntervals1 = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
         const vestingLinearVestAmounts1 = new Array(vesting.recipients.length).fill(

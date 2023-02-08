@@ -254,7 +254,9 @@ AddVestingSchedulesProps) => {
       const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
-        vesting.details.releaseFrequency
+        vestingEndTimestamp!,
+        vesting.details.releaseFrequency,
+        vesting.details.cliffDuration
       );
       const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
       const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
