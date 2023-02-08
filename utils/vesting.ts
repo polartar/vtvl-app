@@ -483,15 +483,6 @@ export const getChartData = ({ start, end, cliffDuration, cliffAmount, frequency
     }
   }
 
-  // Update projected end date and subtract 1 second
-  // Example:
-  // start date = January 1, 2023
-  // end date = January 1, 2027
-  // no cliff
-  // frequency = monthly
-  // projected end date and display should be = December 31, 2026
-  projectedEndDateTime = sub(projectedEndDateTime, { seconds: 1 });
-
   // Move the projected end date time here
   return { release: releaseData, cliff: cliffData, projectedEndDateTime };
 };
