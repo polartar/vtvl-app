@@ -6,7 +6,9 @@ import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
+import { useRouter } from 'next/router';
 import React, { useContext, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { IMember } from 'types/models';
 
 const MemberWalletPage: NextPage = () => {
@@ -14,7 +16,7 @@ const MemberWalletPage: NextPage = () => {
   const { user, signUpWithToken } = useContext(AuthContext);
   const { activate } = useWeb3React();
   const [member, setMember] = React.useState<IMember>();
-
+  const router = useRouter();
   useEffect(() => {
     startOnboarding(Step.ChainSetup);
     const params: any = new URL(window.location.toString());
@@ -39,6 +41,15 @@ const MemberWalletPage: NextPage = () => {
           const { token, name, orgId, email, type } = res.data;
 
           signUpWithToken({ email, name, org_id: orgId, type, companyEmail: email }, token);
+        })
+        .catch((err) => {
+          console.log({ err });
+          if (err.response.data.message === 'jwt expired') {
+            toast.error('The token was expired');
+          } else {
+            toast.error('The toke is invalid');
+          }
+          router.push('/error');
         });
     }
   }, []);

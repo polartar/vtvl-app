@@ -13,7 +13,15 @@ type Data = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const { memberId, email, type, orgId, orgName, name } = req.body;
 
-  const token = GetSignInToken(memberId, email, type, orgId, orgName, name);
+  if (!process.env.CUSTOM_TOKEN_PRIVATE_KEY) {
+    return res.status(400).send({ message: 'Private key not exist' });
+  }
+  let token;
+  try {
+    token = GetSignInToken(memberId, email, type, orgId, orgName, name);
+  } catch (err: any) {
+    return res.status(200).json({ message: err.message });
+  }
   const emailLink = process.env.NEXT_PUBLIC_DOMAIN_NAME + '/member?token=' + token;
   await SendMail({
     to: email,
