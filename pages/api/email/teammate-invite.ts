@@ -1,9 +1,8 @@
 import dotenv from 'dotenv';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { firebaseAdmin } from 'services/auth/firebaseAdmin';
 import SendMail, { MailTemplates } from 'utils/email';
 
-import { GetSignInToken } from '../token/getSigninToken';
+import { GetSignInToken } from '../token/getCustomToken';
 
 dotenv.config();
 
