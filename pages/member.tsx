@@ -3,6 +3,7 @@ import Wallets from '@components/molecules/Wallets/Wallets';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
+import axios from 'axios';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
 import React, { useContext, useEffect } from 'react';
@@ -10,7 +11,7 @@ import { IMember } from 'types/models';
 
 const MemberWalletPage: NextPage = () => {
   const { completeOnboarding, startOnboarding } = useContext(OnboardingContext);
-  const { user, emailSignUp } = useContext(AuthContext);
+  const { user, signUpWithToken } = useContext(AuthContext);
   const { activate } = useWeb3React();
   const [member, setMember] = React.useState<IMember>();
 
@@ -21,6 +22,7 @@ const MemberWalletPage: NextPage = () => {
     const orgId = params.searchParams.get('orgId');
     const email = params.searchParams.get('email');
     const type = params.searchParams.get('type');
+    const token = params.searchParams.get('token');
     setMember({
       email,
       companyEmail: email,
@@ -28,23 +30,18 @@ const MemberWalletPage: NextPage = () => {
       name,
       type
     });
-    if (email)
-      loginWithUrl({
-        email,
-        companyEmail: email,
-        org_id: orgId,
-        name,
-        type
-      });
-  }, []);
+    if (token) {
+      axios
+        .post('/api/token/getCustomToken', {
+          encryptToken: token
+        })
+        .then((res) => {
+          const { token, name, orgId, email, type } = res.data;
 
-  const loginWithUrl = async (mem: IMember) => {
-    try {
-      await emailSignUp(mem, window.location.toString());
-    } catch (error: any) {
-      console.log('error ', error);
+          signUpWithToken({ email, name, org_id: orgId, type, companyEmail: email }, token);
+        });
     }
-  };
+  }, []);
 
   async function metamaskActivate() {
     try {
