@@ -1,8 +1,19 @@
 import add from 'date-fns/add';
+import differenceInHours from 'date-fns/differenceInHours';
+import differenceInMinutes from 'date-fns/differenceInMinutes';
+import differenceInSeconds from 'date-fns/differenceInSeconds';
+import eachDayOfInterval from 'date-fns/eachDayOfInterval';
+import eachHourOfInterval from 'date-fns/eachHourOfInterval';
+import eachMinuteOfInterval from 'date-fns/eachMinuteOfInterval';
+import eachMonthOfInterval from 'date-fns/eachMonthOfInterval';
+import eachQuarterOfInterval from 'date-fns/eachQuarterOfInterval';
+import eachWeekOfInterval from 'date-fns/eachWeekOfInterval';
+import eachYearOfInterval from 'date-fns/eachYearOfInterval';
 import format from 'date-fns/format';
 import formatDuration from 'date-fns/formatDuration';
 import getUnixTime from 'date-fns/getUnixTime';
 import intervalToDuration from 'date-fns/intervalToDuration';
+import sub from 'date-fns/sub';
 import Decimal from 'decimal.js';
 import { CliffDuration, DateDurationOptionsPlural, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IChartDataTypes } from 'types/vesting';
@@ -116,6 +127,7 @@ export const getCliffAmountDecimal = (
  */
 export const getReleaseFrequencyTimestamp = (
   startDate: Date,
+  endDate: Date,
   releaseFrequency: ReleaseFrequency,
   cliffDuration?: CliffDuration
 ) => {
@@ -123,55 +135,15 @@ export const getReleaseFrequencyTimestamp = (
   const actualStartDateTime =
     cliffDuration && cliffDuration !== 'no-cliff' ? getCliffDateTime(startDate, cliffDuration) : startDate;
 
-  // Default option before adding to actual dates
-  const dateOption = {
-    years: 0,
-    months: 0,
-    weeks: 0,
-    days: 0,
-    hours: 0,
-    minutes: 0
-  };
+  const intervals = getNumberOfReleases(releaseFrequency, actualStartDateTime, endDate);
+  const intervalSeconds =
+    releaseFrequency === 'continuous'
+      ? 1
+      : releaseFrequency === 'minute'
+      ? 60
+      : Math.round((getUnixTime(endDate) - getUnixTime(actualStartDateTime)) / intervals); //startWithIntervalSeconds - getUnixTime(actualStartDateTime);
 
-  // Check release frequency value for the right addition
-  switch (releaseFrequency) {
-    case 'continuous':
-      dateOption.minutes = 1;
-      break;
-    case 'hourly':
-      dateOption.hours = 1;
-      break;
-    case 'daily':
-      dateOption.days = 1;
-      break;
-    case 'weekly':
-      dateOption.weeks = 1;
-      break;
-    case 'monthly':
-      dateOption.months = 1;
-      break;
-    case 'quarterly':
-      dateOption.months = 3;
-      break;
-    case 'yearly':
-      dateOption.years = 1;
-      break;
-    default:
-      {
-        // every-1-days, every-2-days & every-4-weeks
-        const splitFrequencyValue = releaseFrequency.split('-');
-        const count = splitFrequencyValue[1];
-        const duration = splitFrequencyValue[2];
-        // Update corresponding date option and its value
-        dateOption[duration as DateDurationOptionsPlural] = +count;
-      }
-      break;
-  }
-
-  const startWithInterval = add(actualStartDateTime, dateOption);
-  const startWithIntervalSeconds = getUnixTime(startWithInterval);
-  const intervalSeconds = startWithIntervalSeconds - getUnixTime(actualStartDateTime);
-
+  console.log('FREQUENCY TIMESTAMP', startDate, endDate, intervalSeconds);
   return intervalSeconds;
 };
 
@@ -242,12 +214,95 @@ export const humanizeFrequency = (releaseFrequency: ReleaseFrequency) => {
  */
 export const getNumberOfReleases = (frequency: ReleaseFrequency, startDate: Date, endDate: Date) => {
   // Convert dates into integers -- in seconds for better computation.
-  const start = getUnixTime(startDate);
-  const end = getUnixTime(endDate);
-  const cliffToEndDateTime = end - start;
-  const frequencyTimestamp = getReleaseFrequencyTimestamp(startDate, frequency);
-  // Make the number of releases whole number
-  return Math.round(cliffToEndDateTime / frequencyTimestamp);
+  let intervals: any = [];
+  const start = startDate;
+  const end = endDate;
+  const diffHours = differenceInHours(end, start);
+  const diffSeconds = differenceInSeconds(end, start);
+  const diffMinutes = differenceInMinutes(end, start);
+
+  // Always make sure that the end date time should be at least 24 hours after start date time
+  if (diffHours >= 24) {
+    switch (frequency) {
+      case 'continuous':
+        // intervals = eachMinuteOfInterval({ start, end });
+        break;
+      case 'hourly':
+        intervals = eachHourOfInterval({ start, end });
+        break;
+      case 'daily':
+        intervals = eachDayOfInterval({ start, end });
+        break;
+      case 'weekly':
+        intervals = eachWeekOfInterval({ start, end });
+        break;
+      case 'monthly':
+        intervals = eachMonthOfInterval({ start, end });
+        break;
+      case 'quarterly':
+        intervals = eachQuarterOfInterval({ start, end });
+        break;
+      case 'yearly':
+        intervals = eachYearOfInterval({ start, end });
+        break;
+      default:
+        {
+          if (frequency) {
+            // every-1-days, every-2-days & every-4-weeks
+            const splitFrequencyValue = frequency.split('-');
+            const count = splitFrequencyValue[1];
+            const duration = splitFrequencyValue[2];
+            // trim down the day intervals based on the count value
+            switch (duration) {
+              case 'days':
+                intervals = trimIntervals(eachDayOfInterval({ start, end }), +count);
+                break;
+              case 'weeks':
+                intervals = trimIntervals(eachWeekOfInterval({ start, end }), +count);
+                break;
+              case 'months':
+                intervals = trimIntervals(eachMonthOfInterval({ start, end }), +count);
+                break;
+              case 'years':
+                intervals = trimIntervals(eachYearOfInterval({ start, end }), +count);
+                break;
+              default:
+                break;
+            }
+          }
+        }
+        break;
+    }
+  }
+
+  // Return the number of intervals
+  console.log('INTERVALS', intervals.length, intervals, diffSeconds);
+  // Avoids having to bloat the number of releases when doing years gap and continuous/minute release frequencies
+  return frequency && frequency === 'continuous'
+    ? // Use the difference of dates in seconds for the intervals in the continuous frequency
+      diffSeconds
+    : frequency === 'minute'
+    ? // Use the difference of dates in minutes for the intervals in the minute frequency
+      diffMinutes
+    : intervals.length - 1;
+};
+
+/**
+ * This function is used to trim down the intervals date recordset based on the number of releases.
+ * This is very useful especially in trimming down for custom release frequencies.
+ * @param data
+ * @param every
+ * @returns
+ */
+const trimIntervals = (data: Date[], every: number) => {
+  const newIntervals: Date[] = [];
+
+  // Loop through the data and increment per the number
+  for (let i = 0; i < data.length; i = i + every) {
+    newIntervals.push(data[i]);
+  }
+
+  return newIntervals;
 };
 
 /**
@@ -427,6 +482,7 @@ export const getChartData = ({ start, end, cliffDuration, cliffAmount, frequency
       }
     }
   }
+
   // Move the projected end date time here
   return { release: releaseData, cliff: cliffData, projectedEndDateTime };
 };
@@ -458,7 +514,7 @@ export const getNextUnlock = (
   } else {
     // If not, use the projected end date time and subtract the current date time (as seconds)
     const remainingDateTimeSeconds = projectedEndDateTimeSeconds - currentDateTimeSeconds;
-    const frequencyTimestamp = getReleaseFrequencyTimestamp(cliffDateTime, releaseFrequency);
+    const frequencyTimestamp = getReleaseFrequencyTimestamp(cliffDateTime, projectedEndDateTime, releaseFrequency);
     // then, divide the subtracted result into the release frequency
     const remainder = remainingDateTimeSeconds % frequencyTimestamp;
     if (remainder) {

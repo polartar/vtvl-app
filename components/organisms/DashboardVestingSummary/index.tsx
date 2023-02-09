@@ -3,6 +3,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import getUnixTime from 'date-fns/getUnixTime';
 import { ContractCallContext, ContractCallResults, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -34,54 +35,72 @@ const DashboardVestingSummary = () => {
         ethersProvider: ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc),
         tryAggregate: true
       });
+
+      // Setup multicall
       const contractCallContext: ContractCallContext[] = vestingContracts.reduce((res, vestingContract, index) => {
         res = [
           ...res,
           ...recipientAddresses.map((recipient) => ({
-            reference: `claim-${vestingContract.data.address}-${recipient}`,
+            reference: `multicall-${vestingContract.data.address}-${recipient}`,
             contractAddress: vestingContract.data.address,
             abi: VTVL_VESTING_ABI.abi,
-            calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient] }]
-          })),
-          ...recipientAddresses.map((recipient) => ({
-            reference: `claimableAmount-${vestingContract.data.address}-${recipient}`,
-            contractAddress: vestingContract.data.address,
-            abi: VTVL_VESTING_ABI.abi,
-            calls: [{ reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [recipient] }]
+            calls: [
+              { reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [recipient] },
+              { reference: 'finalVestedAmount', methodName: 'finalVestedAmount', methodParameters: [recipient] },
+              {
+                reference: 'vestedAmount',
+                methodName: 'vestedAmount',
+                methodParameters: [recipient, getUnixTime(new Date())]
+              }
+            ]
           }))
         ];
         return res;
       }, [] as ContractCallContext[]);
 
+      // Call the multicall feature
       multicall
         .call(contractCallContext)
         .then((res) => {
-          const VEST_AMOUNT_COLUMN = 4;
-          const WITHDRAWN_AMOUNT_COLUMN = 6;
+          console.log('MULTICALL', res);
+          // Set constants for referencing the calls based on the multicall setup above
+          const CLAIMABLE_AMOUNT_CALL = 0;
+          const FINAL_VESTED_AMOUNT_CALL = 1;
+          const VESTED_AMOUNT_CALL = 2;
 
+          // Set the default values for the totals
           let claimedCount = 0;
           let totalAllocationAmount = ethers.BigNumber.from(0);
           let totalWithdrawnAmount = ethers.BigNumber.from(0);
           let totalClaimableAmount = ethers.BigNumber.from(0);
 
-          Object.keys(res.results).forEach((key) => {
-            if (key.includes('claimableAmount')) {
-              totalClaimableAmount = totalClaimableAmount.add(res.results[key].callsReturnContext[0].returnValues[0]);
-            } else {
-              totalAllocationAmount = totalAllocationAmount.add(
-                res.results[key].callsReturnContext[0].returnValues[VEST_AMOUNT_COLUMN]
-              );
-              totalWithdrawnAmount = totalWithdrawnAmount.add(
-                res.results[key].callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_COLUMN]
-              );
+          Object.keys(res.results).forEach((key, index) => {
+            const record = res.results[key].callsReturnContext;
+            // Gets the claimable amount of the recipient
+            const claimableAmount = record[CLAIMABLE_AMOUNT_CALL].returnValues[0];
+            // Gets the total allocation of the recipient
+            const finalVestedAmount = record[FINAL_VESTED_AMOUNT_CALL].returnValues[0];
+            // Gets the vested amount of the recipient -- which is the claimed and unclaimed tokens
+            const vestedAmount = record[VESTED_AMOUNT_CALL].returnValues[0];
+            // Computes the actual withdrawn amount by getting the claimed tokens
+            // unclaimed = claimableAmount
+            // claimed = vested amount - unclaimed
+            const claimedAmount = ethers.BigNumber.from(vestedAmount).gt(claimableAmount)
+              ? ethers.BigNumber.from(vestedAmount).sub(claimableAmount)
+              : ethers.BigNumber.from(0);
 
-              if (
-                ethers.BigNumber.from(res.results[key].callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_COLUMN]).gt(
-                  ethers.BigNumber.from(0)
-                )
-              )
-                claimedCount++;
-            }
+            console.group('RESULT LOOP', index, key);
+
+            console.log('Claimable amount', claimableAmount);
+            console.log('Total allocation', finalVestedAmount);
+            console.log('Withdrawn', claimedAmount);
+
+            console.groupEnd();
+
+            totalClaimableAmount = totalClaimableAmount.add(claimableAmount);
+            totalAllocationAmount = totalAllocationAmount.add(finalVestedAmount);
+            totalWithdrawnAmount = totalWithdrawnAmount.add(claimedAmount);
+            if (claimedAmount.gt(ethers.BigNumber.from(0))) claimedCount++;
           });
 
           setClaims(claimedCount);

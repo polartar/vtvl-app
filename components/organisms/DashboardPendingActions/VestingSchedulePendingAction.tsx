@@ -42,7 +42,9 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
     transactions,
     // fetchDashboardTransactions,
     fetchDashboardData,
-    vestings
+    vestings,
+    vestingsStatus,
+    setVestingsStatus
   } = useDashboardContext();
   const {
     pendingTransactions,
@@ -115,12 +117,24 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         if (safeTx.signatures.size >= safe?.threshold) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('EXECUTABLE');
+          setVestingsStatus({
+            ...vestingsStatus,
+            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
+          });
         } else if (safeTx.signatures.has(account.toLowerCase())) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('WAITING_APPROVAL');
+          setVestingsStatus({
+            ...vestingsStatus,
+            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
+          });
         } else {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('APPROVAL_REQUIRED');
+          setVestingsStatus({
+            ...vestingsStatus,
+            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
+          });
         }
       }
     } else {
@@ -164,9 +178,17 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
           )
         );
         setTransactionStatus('INITIALIZE');
+        setVestingsStatus({
+          ...vestingsStatus,
+          [id]: 'FUNDING_REQUIRED'
+        });
       } else {
         setStatus('AUTHORIZATION_REQUIRED');
         setTransactionStatus('INITIALIZE');
+        setVestingsStatus({
+          ...vestingsStatus,
+          [id]: 'PENDING'
+        });
       }
     }
   };
@@ -427,7 +449,9 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
       const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
-        vesting.details.releaseFrequency
+        vestingEndTimestamp!,
+        vesting.details.releaseFrequency,
+        vesting.details.cliffDuration
       );
       const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
       const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
@@ -669,7 +693,6 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         setStatus('SUCCESS');
         setTransactionLoaderStatus('SUCCESS');
         setTransactionStatus('');
-        toast.success('Revoking is done successfully.');
       }
     } catch (err) {
       console.log('handleExecuteTransaction - ', err);
@@ -714,7 +737,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
             className="secondary small whitespace-nowrap"
             onClick={handleCreateSignTransaction}
             disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
-            Create & sign
+            Create &amp; sign
           </button>
         )}
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
