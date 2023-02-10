@@ -681,13 +681,27 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         );
         setTransactionStatus('IN_PROGRESS');
         await addingClaimsTransaction.wait();
-        updateTransaction(
+        await updateTransaction(
           {
             ...transactionData,
             status: 'SUCCESS',
             updatedAt: Math.floor(new Date().getTime() / 1000)
           },
           transactionId
+        );
+        await Promise.all(
+          selectedRows.map(async (row: any) => {
+            const vestingId = row.id;
+            const vesting = row.data;
+            await updateVesting(
+              {
+                ...vesting,
+                status: 'LIVE',
+                transactionId
+              },
+              vestingId
+            );
+          })
         );
         toast.success('Added schedules successfully.');
         setTransactionStatus('SUCCESS');
