@@ -220,10 +220,7 @@ export function AuthContextProvider({ children }: any) {
 
     const member = await fetchMember(credential.user.uid);
     const memberInfo = member
-      ? {
-          ...member,
-          type: newSignUp.type
-        }
+      ? { ...member }
       : {
           email: newSignUp.email || credential.user.email || '',
           companyEmail: newSignUp.email || credential.user.email || '',
