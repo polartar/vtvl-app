@@ -21,6 +21,15 @@ colorNames.map((color) => {
   };
 });
 
+const sizes = {
+  100: '100px',
+  150: '150px',
+  250: '250px',
+  323: '323px',
+  368: '368px'
+};
+
+// eslint-disable-next-line no-undef
 module.exports = {
   content: ['./{pages,components}/**/*.{js,jsx,ts,tsx}', './stories/**/*.{ts,tsx}'],
   theme: {
@@ -61,7 +70,17 @@ module.exports = {
         body: '1.43',
         caption: '1.67',
         small: '2.4'
-      }
+      },
+      borderRadius: {
+        8: '8px',
+        10: '10px'
+      },
+      width: sizes,
+      height: sizes,
+      maxWidth: sizes,
+      maxHeight: sizes,
+      minWidth: sizes,
+      minHeight: sizes
     }
   },
   plugins: [],

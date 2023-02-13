@@ -125,6 +125,13 @@ const employeeInvestorMenuItems = {
     //   available: false
     // },
     {
+      title: 'Claims Portal',
+      route: '/claim-portal',
+      icon: '/icons/claims-portal.svg',
+      hoverIcon: '/icons/claims-portal-hover.svg',
+      available: true
+    },
+    {
       title: 'My tokens',
       icon: '/icons/s_dashboard.svg',
       hoverIcon: '/icons/s_dashboard2.svg',
