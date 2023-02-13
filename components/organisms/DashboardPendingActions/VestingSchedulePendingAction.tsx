@@ -381,9 +381,9 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         }
       }
       setShowFundingContractModal(false);
-    } catch (err: any) {
+    } catch (err) {
       console.log('fundContract - ', err);
-      toast.error(err.reason ? err.reason : 'Something went wrong. Try again later.');
+      toast.error((err as any).reason ? (err as any).reason : 'Something went wrong. Try again later.');
       setTransactionLoaderStatus('ERROR');
     }
   };
@@ -454,8 +454,11 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         vesting.details.cliffDuration
       );
       const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
-      const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
-        parseTokenAmount(vestingAmountPerUser, 18)
+      // const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
+      //   parseTokenAmount(vestingAmountPerUser, 18)
+      // );
+      const vestingLinearVestAmounts = vesting.recipients.map((recipient) =>
+        parseTokenAmount(Number(recipient.allocations), 18)
       );
       const vestingCliffAmounts = new Array(vesting.recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
 

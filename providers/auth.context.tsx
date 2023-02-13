@@ -9,10 +9,12 @@ import {
   onAuthStateChanged,
   setPersistence,
   signInAnonymously,
+  signInWithCustomToken,
   signInWithEmailAndPassword,
   signInWithEmailLink,
   signInWithPopup,
-  signOut
+  signOut,
+  updateEmail
 } from 'firebase/auth';
 import useEagerConnect from 'hooks/useEagerConnect';
 import Router from 'next/router';
@@ -39,6 +41,7 @@ export type AuthContextData = {
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   emailSignUp: (newSignUp: IMember, url: string) => Promise<void>;
+  signUpWithToken: (newSignUp: IMember, token: string) => Promise<void>;
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
   registerNewMember: (
@@ -46,7 +49,14 @@ export type AuthContextData = {
     org: IOrganization
   ) => Promise<string | undefined>;
   teammateSignIn: (email: string, type: string, orgId: string, url: string) => Promise<void>;
-  sendTeammateInvite: (email: string, type: string, userName: string, orgName: string, orgId?: string) => Promise<void>;
+  sendTeammateInvite: (
+    email: string,
+    type: string,
+    userName: string,
+    orgName: string,
+    orgId?: string,
+    memberId?: string
+  ) => Promise<void>;
   sendLoginLink: (email: string) => Promise<void>;
   loading: boolean;
   isNewUser: boolean;
@@ -62,6 +72,8 @@ export type AuthContextData = {
   setSafe: (safe: ISafe) => void;
   agreedOnConsent: boolean;
   setAgreedOnConsent: (data: any) => void;
+  loginToken: string;
+  setLoginToken: (token: string) => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -78,6 +90,8 @@ export function AuthContextProvider({ children }: any) {
   const [agreedOnConsent, setAgreedOnConsent] = useState<boolean>(false);
   const tried = useEagerConnect();
   const [error, setError] = useState('');
+  const [loginToken, setLoginToken] = useState('');
+
   // Remove after implementing context to show/hide the sidebar
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
   const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(true);
@@ -241,6 +255,45 @@ export function AuthContextProvider({ children }: any) {
     setLoading(false);
   };
 
+  const signUpWithToken = async (newSignUp: IMember, token: string) => {
+    setLoading(true);
+    await setPersistence(auth, browserSessionPersistence);
+    const credential = await signInWithCustomToken(auth, token);
+
+    if (!credential.user.email) {
+      try {
+        await updateEmail(credential.user, newSignUp.email || '');
+      } catch (err) {
+        /// We should handle this error in the future
+        console.log(err);
+      }
+    }
+    console.log({ credential });
+    const additionalInfo = getAdditionalUserInfo(credential);
+    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+    const member = await fetchMember(credential.user.uid);
+    const memberInfo = member
+      ? {
+          ...member,
+          type: newSignUp.type
+        }
+      : {
+          email: newSignUp.email || credential.user.email || '',
+          companyEmail: newSignUp.email || credential.user.email || '',
+          name: newSignUp.name || credential.user.displayName || '',
+          type: newSignUp.type,
+          org_id: newSignUp.org_id
+        };
+
+    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+    await newMember(credential.user.uid, {
+      ...memberInfo
+    });
+    setUser({ ...credential.user, memberInfo });
+
+    setLoading(false);
+  };
+
   const teammateSignIn = async (email: string, type: string, orgId: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
@@ -295,7 +348,8 @@ export function AuthContextProvider({ children }: any) {
     type: string,
     name: string,
     orgName: string,
-    orgId?: string
+    orgId?: string,
+    memberId?: string
   ): Promise<void> => {
     setLoading(true);
     //TODO: extract api calls
@@ -304,7 +358,8 @@ export function AuthContextProvider({ children }: any) {
       type,
       orgId,
       orgName,
-      name
+      name,
+      memberId
     });
     setLoading(false);
   };
@@ -354,6 +409,7 @@ export function AuthContextProvider({ children }: any) {
       setConnection,
       signUpWithEmail,
       signInWithEmail,
+      signUpWithToken,
       emailSignUp,
       signInWithGoogle,
       anonymousSignIn,
@@ -375,7 +431,9 @@ export function AuthContextProvider({ children }: any) {
       fetchSafe,
       setSafe,
       agreedOnConsent,
-      setAgreedOnConsent
+      setAgreedOnConsent,
+      loginToken,
+      setLoginToken
     }),
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent, connection]
   );

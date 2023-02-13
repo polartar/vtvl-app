@@ -732,6 +732,20 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           },
           transactionId
         );
+        await Promise.all(
+          selectedRows.map(async (row: any) => {
+            const vestingId = row.id;
+            const vesting = row.data;
+            await updateVesting(
+              {
+                ...vesting,
+                status: 'LIVE',
+                transactionId
+              },
+              vestingId
+            );
+          })
+        );
         toast.success('Added schedules successfully.');
         setTransactionStatus('SUCCESS');
       }

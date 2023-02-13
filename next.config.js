@@ -22,6 +22,10 @@ const nextConfig = {
 
     return config;
   },
+  images: {
+    domains: ['firebasestorage.googleapis.com'],
+    formats: ['image/avif', 'image/webp']
+  },
   async redirects() {
     return [
       {

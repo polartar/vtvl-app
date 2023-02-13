@@ -60,7 +60,8 @@ const TeamTable = ({
         selectedMember.type || ITeamRole.Manager,
         selectedMember.name || 'anonymous',
         companyName,
-        user.memberInfo?.org_id
+        user.memberInfo?.org_id,
+        selectedMember.id
       );
       toast.success('Resent email successfully');
     } catch (err) {

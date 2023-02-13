@@ -46,6 +46,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   // Use the layout defined at the page level, if available
   // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.
   const getLayout = Component.getLayout ?? ((page) => page);
+
   return (
     <>
       <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
