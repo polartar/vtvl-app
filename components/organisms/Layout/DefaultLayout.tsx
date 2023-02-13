@@ -294,8 +294,6 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     (async () => await refreshUser())();
   }, []);
 
-  console.log('ROute', router);
-
   useEffect(() => {
     if (user && user.memberInfo && user.memberInfo.type) {
       if (safe && user.memberInfo.type === 'founder') {
@@ -323,7 +321,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       '/onboarding/login',
       '/onboarding',
       '/onboarding/member-login',
-      '/onboarding/connect-wallet'
+      '/onboarding/connect-wallet',
+      '/expired'
     ];
     console.log('CHECKS ', account, active);
     if (!hideConnectModalOnRoutes.includes(router.pathname) && !active && !account) {
@@ -331,7 +330,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     } else {
       setConnectWalletModal(false);
     }
-  }, [account, active]);
+  }, [account, active, router]);
 
   return (
     <>

@@ -13,7 +13,7 @@ import { IMember } from 'types/models';
 
 const MemberWalletPage: NextPage = () => {
   const { completeOnboarding, startOnboarding } = useContext(OnboardingContext);
-  const { user, signUpWithToken } = useContext(AuthContext);
+  const { user, signUpWithToken, setLoginToken } = useContext(AuthContext);
   const { activate } = useWeb3React();
   const [member, setMember] = React.useState<IMember>();
   const router = useRouter();
@@ -32,6 +32,7 @@ const MemberWalletPage: NextPage = () => {
       name,
       type
     });
+
     if (token) {
       axios
         .post('/api/token/getCustomToken', {
@@ -42,14 +43,15 @@ const MemberWalletPage: NextPage = () => {
 
           signUpWithToken({ email, name, org_id: orgId, type, companyEmail: email }, token);
         })
-        .catch((err) => {
-          console.log({ err });
+        .catch(async (err) => {
           if (err.response.data.message === 'jwt expired') {
-            toast.error('The token was expired');
+            setLoginToken(token);
+
+            router.push({ pathname: '/expired' });
           } else {
-            toast.error('The toke is invalid');
+            await toast.error('The toke is invalid');
+            router.push('/onboarding');
           }
-          router.push('/error');
         });
     }
   }, []);

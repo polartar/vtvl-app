@@ -44,12 +44,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const cert = process.env.CUSTOM_TOKEN_PUBLIC_KEY?.replace(/\\n/g, '\n');
     signInToken = jwt.verify(encryptToken, cert || '') as SignInToken;
+    const token = await firebaseAdmin?.auth().createCustomToken(signInToken.memberId);
+
+    res.status(200).json({ ...signInToken, token: token, message: 'Success!' });
   } catch (err: any) {
     console.log(err);
-    return res.status(400).send({ message: err.message });
+    res.status(400).send({ message: err.message });
   }
-
-  const token = await firebaseAdmin?.auth().createCustomToken(signInToken.memberId);
-
-  res.status(200).json({ ...signInToken, token: token, message: 'Success!' });
 }
