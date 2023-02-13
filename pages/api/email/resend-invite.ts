@@ -16,12 +16,10 @@ type Data = {
 const checkMemberExist = async (email: string) => {
   if (firebaseAdmin) {
     const member = await fetchMemberByEmail(email);
-    console.log({ member });
     if (member) {
       return true;
     } else {
       const invitee = await fetchInviteeByEmail(email);
-      console.log({ invitee });
       if (invitee) {
         return true;
       }
