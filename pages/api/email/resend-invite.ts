@@ -41,6 +41,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(403).json({ message: 'Wrong email' });
     }
 
+    if (payload.domain !== process.env.NEXT_PUBLIC_DOMAIN_NAME) {
+      return res.status(403).json({ message: 'Wrong domain' });
+    }
+
     token = GetSignInToken(payload.memberId, payload.email, payload.type, payload.orgId, payload.orgName, payload.name);
     if (!(await checkMemberExist(payload.email))) {
       return res.status(403).json({ message: 'Not authorized email' });

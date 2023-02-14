@@ -13,7 +13,7 @@ import { IMember } from 'types/models';
 
 const MemberWalletPage: NextPage = () => {
   const { completeOnboarding, startOnboarding } = useContext(OnboardingContext);
-  const { user, signUpWithToken, setLoginToken } = useContext(AuthContext);
+  const { user, signUpWithToken } = useContext(AuthContext);
   const { activate } = useWeb3React();
   const [member, setMember] = React.useState<IMember>();
   const router = useRouter();
@@ -45,9 +45,7 @@ const MemberWalletPage: NextPage = () => {
         })
         .catch(async (err) => {
           if (err.response.data.message === 'jwt expired') {
-            setLoginToken(token);
-
-            router.push({ pathname: '/expired' });
+            router.push({ pathname: '/expired', query: { loginToken: token } });
           } else {
             await toast.error('The toke is invalid');
             router.push('/onboarding');

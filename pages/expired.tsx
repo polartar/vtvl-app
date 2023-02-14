@@ -1,19 +1,21 @@
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
-import { useAuthContext } from '@providers/auth.context';
 import axios from 'axios';
 import Lottie from 'lottie-react';
 import { useRouter } from 'next/router';
 import ErrorAnimation from 'public/error-state.json';
+import { useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 const Expired = () => {
-  const { loginToken } = useAuthContext();
-
   const router = useRouter();
+
+  const loginToken = useMemo(() => {
+    return router.query.loginToken;
+  }, [router]);
   const {
     control,
     handleSubmit,
@@ -39,7 +41,7 @@ const Expired = () => {
         toast.error(err.response.data.message);
       }
     } else {
-      router.push('/onboarding');
+      toast.error("You don't have the token");
     }
   };
 
