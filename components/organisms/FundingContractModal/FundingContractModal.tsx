@@ -39,7 +39,6 @@ const FundingContractModal = ({
   hideModal
 }: IFundingContractModalProps) => {
   const { account, chainId } = useWeb3React();
-  const { vestingContract } = useDashboardContext();
   const { mintFormState } = useTokenContext();
   const { safe, connection } = useAuthContext();
 
@@ -130,7 +129,7 @@ const FundingContractModal = ({
   }, [depositAmount, fundingMethod.value]);
 
   useEffect(() => {
-    if (vestingContract && account) {
+    if (account) {
       const tokenContract = new ethers.Contract(
         mintFormState.address,
         [

@@ -200,10 +200,10 @@ DashboardImportToken.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Dashboard', route: '/dashboard' },
-    { title: 'Import token', route: '/dashboard/import-token' }
+    { title: 'Import token details', route: '/dashboard/import-token' }
   ];
   return (
-    <SteppedLayout title="Import token" crumbs={crumbSteps}>
+    <SteppedLayout title="Import token details" crumbs={crumbSteps}>
       {page}
     </SteppedLayout>
   );

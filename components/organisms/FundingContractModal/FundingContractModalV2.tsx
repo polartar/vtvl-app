@@ -2,6 +2,7 @@ import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
 import Form from '@components/atoms/FormControls/Form/Form';
+import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
 import WalletRadioButton from '@components/molecules/FormControls/WalletRadioButton/WalletRadioButton';
@@ -276,16 +277,21 @@ const FundingContractModal = ({
                 {/* CUSTOM AMOUNT FUNDING SECTION */}
                 {fundingMethod.value === 'CUSTOM_AMOUNT' ? (
                   <div className="mt-5">
-                    <LimitedSupply
-                      label="Amount to be funded"
-                      maximumLabel="Total token supply"
-                      required
-                      initial={+amount.value}
-                      minimum={+depositAmount}
-                      maximum={+mintFormState.maxSupply}
-                      onMinChange={handleMinChange}
-                      onUseMax={handleMaxChange}
-                      maxReadOnly
+                    <Controller
+                      name="amount"
+                      control={control}
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <Input
+                          label="Amount to be funded"
+                          required
+                          type="number"
+                          {...field}
+                          onChange={(v) => {
+                            setValue('amount', parseFloat(v.target.value.replaceAll(',', '')));
+                          }}
+                        />
+                      )}
                     />
                   </div>
                 ) : null}
