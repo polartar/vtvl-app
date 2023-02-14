@@ -84,7 +84,6 @@ AddVestingSchedulesProps) => {
   const { mintFormState } = useTokenContext();
   const {
     vestings,
-    vestingContract,
     ownershipTransfered,
 
     setOwnershipTransfered,
@@ -533,9 +532,7 @@ AddVestingSchedulesProps) => {
       actions: (
         <>
           <button
-            disabled={
-              approved || !vestingContract?.id || !ownershipTransfered || insufficientBalance || !isAddAvailable()
-            }
+            disabled={approved || !ownershipTransfered || insufficientBalance || !isAddAvailable()}
             className="secondary"
             onClick={handleCreateSignTransaction}>
             {approved ? 'Approved' : safe?.address ? 'Create and Sign the transaction' : 'Add Schedule'}
@@ -682,14 +679,6 @@ AddVestingSchedulesProps) => {
   }, [transaction, account]);
 
   useEffect(() => {
-    if (type === 'contract' && !vestingContract?.id) {
-      setStatus('vestingContractRequired');
-    } else if (type === 'contract' && vestingContract?.id) {
-      setStatus('transferToMultisigSafe');
-    }
-  }, [type, vestingContract, ownershipTransfered]);
-
-  useEffect(() => {
     if (vestings[activeVestingIndex].data.status === 'SUCCESS') {
       setStatus('success');
     } else if (
@@ -716,44 +705,6 @@ AddVestingSchedulesProps) => {
       setStatus('success');
     }
   }, [type, transaction]);
-
-  useEffect(() => {
-    if (vestings && vestings.length > 0 && vestingContract && vestingContract.id && mintFormState.address && chainId) {
-      try {
-        if (!insufficientBalanceForAllVestings) {
-          setInsufficientBalance(false);
-          return;
-        }
-        const vesting = vestings[activeVestingIndex];
-        // const tokenContract = new ethers.Contract(
-        //   mintFormState.address,
-        //   [
-        //     // Read-Only Functions
-        //     'function balanceOf(address owner) view returns (uint256)',
-        //     'function decimals() view returns (uint8)',
-        //     'function symbol() view returns (string)',
-        //     // Authenticated Functions
-        //     'function transfer(address to, uint amount) returns (bool)',
-        //     // Events
-        //     'event Transfer(address indexed from, address indexed to, uint amount)'
-        //   ],
-        //   ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-        // );
-        // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
-        // tokenContract.balanceOf(vestingContract.data?.address).then((res: string) => {
-        //   if (BigNumber.from(res).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
-        //     setInsufficientBalance(true);
-        //   }
-        // });
-        const tokenBalance = vestingContract?.data?.balance || 0;
-        if (BigNumber.from(tokenBalance).lt(BigNumber.from(parseTokenAmount(vesting.data.details.amountToBeVested)))) {
-          setInsufficientBalance(true);
-        }
-      } catch (err) {
-        console.log('vestingContract balance - ', err);
-      }
-    }
-  }, [vestingContract, activeVestingIndex, vestings, mintFormState, chainId, insufficientBalanceForAllVestings]);
 
   useEffect(() => {
     if (account && safeTransaction && safe) {
