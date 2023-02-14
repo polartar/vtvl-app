@@ -91,7 +91,6 @@ export function AuthContextProvider({ children }: any) {
   const tried = useEagerConnect();
   const [error, setError] = useState('');
   const [loginToken, setLoginToken] = useState<string | undefined>();
-  console.log({ loginToken });
   // Remove after implementing context to show/hide the sidebar
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
   const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(true);
