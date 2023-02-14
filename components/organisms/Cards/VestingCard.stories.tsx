@@ -31,7 +31,7 @@ export default is<ComponentMeta<typeof VestingCard>>()({
     },
     unlockDate: {
       defaultValue: '',
-      control: 'text'
+      control: 'number'
     },
     withdrawnAmount: {
       defaultValue: '',
@@ -73,7 +73,7 @@ Vesting.args = {
   percentage: 55,
   startDate: 'Aug 06, 2022 07:00 (GST) ',
   endDate: 'Nov 12, 2022 23:00 (GST) ',
-  unlockDate: '0d 0h 0m 0s',
+  unlockDate: 36000,
   withdrawnAmount: '0',
   unclaimedAmount: '205',
   totalLockedAmount: '15,000',

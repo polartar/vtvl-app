@@ -3,8 +3,8 @@ import { Typography } from '@components/atoms/Typography/Typography';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
-import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
+import differenceInSeconds from 'date-fns/differenceInSeconds';
+import { ethers } from 'ethers';
 import useChainVestings from 'hooks/useChainVestings';
 import useOrganizations from 'hooks/useOrganizations';
 import { useShallowState } from 'hooks/useShallowState';
@@ -13,10 +13,10 @@ import useVestingContracts from 'hooks/useVestingContracts';
 import useVestings from 'hooks/useVestings';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { IVesting } from 'types/models';
 import { compareAddresses } from 'utils';
-import { formatDate } from 'utils/shared';
+import { formatDate, getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
+import { getCliffDateTime, getNextUnlock } from 'utils/vesting';
 
 import AllocationSummaryChart from '../Cards/AllocationSummaryChart';
 import StandardCard from '../Cards/StandardCard';
@@ -75,7 +75,7 @@ export default function ClaimPortal() {
    * Sum of total allocations from current(selected) organization
    */
   const totalAllocations = useMemo(() => {
-    return myRecipes.reduce((val, recipe) => val + (recipe?.allocations ?? 0), 0);
+    return myRecipes.reduce((val, recipe) => val + Number(recipe?.allocations ?? 0), 0);
   }, [myRecipes]);
 
   const vestingDetails = useMemo(
@@ -130,6 +130,9 @@ export default function ClaimPortal() {
     [tokens]
   );
 
+  /**
+   * Get vesting info data by contract address
+   */
   const getVestingInfoByContract = useCallback(
     (contract: string) => vestingInfos.find((vi) => compareAddresses(vi.address, contract)),
     [vestingInfos]
@@ -146,33 +149,38 @@ export default function ClaimPortal() {
    * Claim Vesting
    */
   const handleClaim = useCallback(
-    (vestingInfo: { address: string; allocations: string; locked: string; withdrawn: string; unclaimed: string }) =>
-      async () => {
-        if (Number(vestingInfo.unclaimed) > 0) {
-          // withdraw
-          try {
-            const vestingContract = new ethers.Contract(vestingInfo.address, VTVL_VESTING_ABI.abi, library.getSigner());
-            setIsCloseAvailable(false);
-            setTransactionStatus('PENDING');
+    async (vestingInfo: {
+      address: string;
+      allocations: string;
+      locked: string;
+      withdrawn: string;
+      unclaimed: string;
+    }) => {
+      if (Number(vestingInfo.unclaimed) > 0) {
+        // withdraw
+        try {
+          const vestingContract = new ethers.Contract(vestingInfo.address, VTVL_VESTING_ABI.abi, library.getSigner());
+          setIsCloseAvailable(false);
+          setTransactionStatus('PENDING');
 
-            const withdrawTx = await vestingContract.withdraw();
-            setTransactionStatus('IN_PROGRESS');
-            await withdrawTx.wait();
+          const withdrawTx = await vestingContract.withdraw();
+          setTransactionStatus('IN_PROGRESS');
+          await withdrawTx.wait();
 
-            // Update ChainVestings data
-            onUpdateChainVestings(
-              vestingInfo.address,
-              ['unclaimed', 'withdrawn'],
-              ['0', String(Number(vestingInfo.withdrawn) + Number(vestingInfo.unclaimed))]
-            );
+          // Update ChainVestings data
+          onUpdateChainVestings(
+            vestingInfo.address,
+            ['unclaimed', 'withdrawn'],
+            ['0', String(Number(vestingInfo.withdrawn) + Number(vestingInfo.unclaimed))]
+          );
 
-            setTransactionStatus('SUCCESS');
-          } catch (err) {
-            console.log('handleClaim - ', err);
-            setTransactionStatus('ERROR');
-          }
+          setTransactionStatus('SUCCESS');
+        } catch (err) {
+          console.log('handleClaim - ', err);
+          setTransactionStatus('ERROR');
         }
-      },
+      }
+    },
     [library]
   );
 
@@ -209,7 +217,7 @@ export default function ClaimPortal() {
             </Typography>
             {token && vestingDetail ? (
               <Typography size="subtitle" className="font-semibold">
-                {formatNumber(totalAllocations)} {getTokenSymbol(token.id)}
+                {formatNumber(totalAllocations)} {token.data.symbol}
               </Typography>
             ) : (
               <div className="animate-pulse">
@@ -290,22 +298,43 @@ export default function ClaimPortal() {
           : vestings.map((singleVesting) => {
               const contract = contracts.find((c) => c.id === singleVesting.data.vestingContractId);
               const vestingInfo = getVestingInfoByContract(String(contract?.data.address));
+              const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = singleVesting.data.details;
+              const computeCliffDateTime = getCliffDateTime(startDateTime!, cliffDuration);
+
+              const actualDates = getActualDateTime(singleVesting.data.details);
+              let progress = 0;
+              if (actualDates.startDateTime && actualDates.endDateTime && singleVesting.data.status === 'LIVE') {
+                const totalSeconds = differenceInSeconds(actualDates.endDateTime, actualDates.startDateTime);
+                const secondsFromNow = differenceInSeconds(new Date(), actualDates.startDateTime);
+                progress = Math.round((Number(secondsFromNow) / Number(totalSeconds)) * 100);
+              }
+              progress = progress >= 100 ? 100 : progress;
+
+              const unlockDate =
+                singleVesting.data.status === 'LIVE'
+                  ? Date.now() +
+                    (singleVesting.data.details.releaseFrequency !== 'continuous' && endDateTime
+                      ? getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime)
+                      : 60) *
+                      1000
+                  : undefined;
+
               return (
                 <VestingCard
                   key={singleVesting.id}
                   title={String(singleVesting.data.name)}
-                  startDate={formatDateTime(singleVesting.data.details.startDateTime)}
-                  endDate={formatDateTime(singleVesting.data.details.endDateTime)}
-                  unlockDate={'N/A'}
+                  startDate={formatDateTime(startDateTime)}
+                  endDate={formatDateTime(endDateTime)}
+                  unlockDate={unlockDate}
                   withdrawnAmount={Number(String(vestingInfo?.withdrawn)).toFixed(2)}
                   unclaimedAmount={Number(String(vestingInfo?.unclaimed)).toFixed(2)}
                   totalLockedAmount={Number(String(vestingInfo?.locked)).toFixed(2)}
                   buttonLabel={`CLAIM ${Number(String(vestingInfo?.unclaimed)).toFixed(2)} ${getTokenSymbol(
                     String(singleVesting.data.tokenId)
                   )}`}
-                  buttonAction={handleClaim(vestingInfo!)}
-                  percentage={Number(((vestingDetail.withdrawn * 100) / vestingDetail.allocations).toFixed(0))}
-                  disabled={false}
+                  buttonAction={() => vestingInfo && handleClaim(vestingInfo)}
+                  percentage={progress}
+                  disabled={!vestingInfo}
                 />
               );
             })}

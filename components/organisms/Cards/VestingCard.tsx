@@ -1,5 +1,6 @@
 import { Typography } from '@components/atoms/Typography/Typography';
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
+import Countdown from 'react-countdown';
 import { truncateComma } from 'utils';
 import { formatNumber } from 'utils/token';
 
@@ -10,7 +11,7 @@ export interface VestingCardProps {
   percentage: number;
   startDate: string;
   endDate: string;
-  unlockDate: string;
+  unlockDate?: number;
   withdrawnAmount: string;
   unclaimedAmount: string;
   totalLockedAmount: string;
@@ -20,16 +21,23 @@ export interface VestingCardProps {
   className?: string;
 }
 
-const VestingSection: React.FC<{ title: string; description: string }> = ({ title, description }) => {
+const VestingSection: React.FC<{ title: string; description?: string; children?: React.ReactElement }> = ({
+  title,
+  description,
+  children
+}) => {
   return (
     <div className="w-full">
       <Typography className="text-neutral-800 font-medium" size="body">
         {title}
       </Typography>
       <br />
-      <Typography className="text-neutral-500 font-medium" size="caption">
-        {description}
-      </Typography>
+      {description && (
+        <Typography className="text-neutral-500 font-medium" size="caption">
+          {description}
+        </Typography>
+      )}
+      {children && <>{children}</>}
     </div>
   );
 };
@@ -48,6 +56,8 @@ export default function VestingCard({
   buttonAction,
   className = ''
 }: VestingCardProps) {
+  const handleCountdownComplete = useCallback(() => {}, []);
+
   return (
     <div className={`w-full border border-primary-50 rounded-10 p-6 font-medium ${className}`}>
       <div className="flex items-center justify-between">
@@ -81,7 +91,21 @@ export default function VestingCard({
       <div className="grid grid-cols-3 gap-4">
         <VestingSection title="Start date" description={startDate} />
         <VestingSection title="End date" description={endDate} />
-        <VestingSection title="Next unlock" description={unlockDate} />
+        <VestingSection title="Next unlock" description={unlockDate ? '' : 'N/A'}>
+          <>
+            {unlockDate && (
+              <Countdown
+                date={unlockDate}
+                renderer={({ days, hours, minutes, seconds }) => (
+                  <Typography className="text-neutral-500 font-medium" size="caption">
+                    {days}d {hours}h {minutes}m {seconds}s
+                  </Typography>
+                )}
+                onComplete={handleCountdownComplete}
+              />
+            )}
+          </>
+        </VestingSection>
       </div>
       <hr className="my-3 bg-neutral-200" />
       <div className="grid grid-cols-3 gap-4">

@@ -1,5 +1,5 @@
-import PageLoader from 'components/atoms/PageLoader/PageLoader';
-import React, { SetStateAction, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import useToggle from 'hooks/useToggle';
+import React, { createContext, useContext } from 'react';
 
 interface ILoaderData {
   loading: boolean;
@@ -10,26 +10,18 @@ interface ILoaderData {
 const LoaderContext = createContext({} as ILoaderData);
 
 export function LoaderContextProvider({ children }: any) {
-  const [loading, setLoading] = useState(false);
+  const [loading, , , setLoading, setUnloading] = useToggle(false);
 
-  const showLoading = () => {
-    if (!loading) setLoading(true);
-  };
-
-  const hideLoading = () => {
-    setLoading(false);
-  };
-
-  const value = useMemo(
-    () => ({
-      loading,
-      showLoading,
-      hideLoading
-    }),
-    [loading]
+  return (
+    <LoaderContext.Provider
+      value={{
+        loading,
+        showLoading: setLoading,
+        hideLoading: setUnloading
+      }}>
+      {children}
+    </LoaderContext.Provider>
   );
-
-  return <LoaderContext.Provider value={value}>{children}</LoaderContext.Provider>;
 }
 
 export const useLoaderContext = () => ({

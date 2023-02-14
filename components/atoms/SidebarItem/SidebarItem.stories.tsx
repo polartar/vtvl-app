@@ -15,6 +15,5 @@ const Template: ComponentStory<typeof SidebarItem> = (args) => <SidebarItem {...
 export const SelectedItem = Template.bind({});
 SelectedItem.args = {
   selected: true,
-  hovered: false,
   children: 'Vesting schedule'
 };

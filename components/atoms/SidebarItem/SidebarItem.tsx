@@ -3,39 +3,24 @@ import React, { useEffect, useRef } from 'react';
 
 interface Props {
   selected: boolean;
-  hovered: boolean;
+  disabled: boolean;
   children: string | JSX.Element;
   onClick: () => void;
   icon: string;
-  hoverIcon: string;
+  hoverIcon?: string;
   className?: string;
 }
 
-const SidebarItem = ({ selected, hovered, children, onClick, icon, hoverIcon, className }: Props) => {
-  // const itemRef = useRef(null);
-  // const sItem: any = document.getElementsByClassName('sidebar-item');
-  // const sIcon: any = document.getElementsByClassName('sidebar-item-icon');
-  // for (let i = 0; i < sItem.length; i++) {
-  //   sItem[i].addEventListener('mouseover', (event: any) => {
-  //     event.target.style.backgroundColor = '#1B369A';
-  //     event.target.style.borderRadius = '24px';
-  //   });
-
-  //   sItem[i].addEventListener('mouseleave', (event: any) => {
-  //     event.target.style.backgroundColor = 'transparent';
-  //     event.target.style.borderRadius = '5px';
-  //     event.target.style.transition = 'all 0.3s ease-out';
-  //   });
-  // }
+const SidebarItem = ({ selected, disabled = false, children, onClick, icon, hoverIcon, className }: Props) => {
   return (
     <SidebarItemContainer
       selected={selected ? 1 : 0}
+      disabled={disabled}
       onClick={onClick}
-      // ref={itemRef}
       className={`sidebar-item ${className}`}
       icon={icon}
-      hoverIcon={hoverIcon}>
-      <IconArea className="sidebar-item-icon" icon={icon} selected={selected ? 1 : 0} hoverIcon={hoverIcon} />
+      hoverIcon={String(hoverIcon)}>
+      <IconArea className="sidebar-item-icon" icon={icon} selected={selected ? 1 : 0} hoverIcon={String(hoverIcon)} />
       {children}
     </SidebarItemContainer>
   );
@@ -45,6 +30,7 @@ const SidebarItemContainer = styled.div<{
   selected: number;
   icon: string;
   hoverIcon: string;
+  disabled: boolean;
 }>`
   height: 48px;
   border-radius: ${({ selected }) => (selected ? '24px' : '5px')};
@@ -59,15 +45,21 @@ const SidebarItemContainer = styled.div<{
   margin: 6px auto;
   transition: all 0.3s ease-out;
 
-  &:hover {
-    cursor: pointer;
-    background-color: #1b369a;
-    border-radius: 24px;
-    color: #f9fafb;
-  }
-  &:hover > .sidebar-item-icon {
-    background-image: url(${({ hoverIcon }) => (!hoverIcon ? '/icons/s_dashboard2.svg' : hoverIcon)});
-  }
+  ${({ disabled, hoverIcon }) =>
+    disabled
+      ? ''
+      : `
+    &:hover {
+      cursor: pointer;
+      background-color: #1b369a;
+      border-radius: 24px;
+      color: #f9fafb;
+    }
+    &:hover > .sidebar-item-icon {
+      background-image: url(${!hoverIcon ? '/icons/s_dashboard2.svg' : hoverIcon});
+    }
+  `}
+
   img {
     margin: 0 12px;
   }
