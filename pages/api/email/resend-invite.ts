@@ -31,12 +31,15 @@ const checkMemberExist = async (email: string) => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { encryptToken } = req.body;
+  const { encryptToken, email } = req.body;
 
   let token;
 
   try {
     const payload = jwt.decode(encryptToken) as SignInToken;
+    if (email !== payload.email) {
+      return res.status(403).json({ message: 'Wrong email' });
+    }
 
     token = GetSignInToken(payload.memberId, payload.email, payload.type, payload.orgId, payload.orgName, payload.name);
     if (!(await checkMemberExist(payload.email))) {

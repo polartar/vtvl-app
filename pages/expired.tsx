@@ -1,18 +1,18 @@
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
-import AuthContext from '@providers/auth.context';
+import { useAuthContext } from '@providers/auth.context';
 import axios from 'axios';
 import Lottie from 'lottie-react';
 import { useRouter } from 'next/router';
 import ErrorAnimation from 'public/error-state.json';
-import { useContext, useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 const Expired = () => {
-  const { loginToken } = useContext(AuthContext);
+  const { loginToken } = useAuthContext();
+
   const router = useRouter();
   const {
     control,
@@ -24,11 +24,12 @@ const Expired = () => {
     }
   });
 
-  const onConfirm = async () => {
+  const onConfirm = async (data: any) => {
     if (loginToken) {
       try {
         const res = await axios.post('/api/email/resend-invite', {
-          encryptToken: loginToken
+          encryptToken: loginToken,
+          email: data.email
         });
         if (res.data.message === 'Success!') {
           toast.success('We sent you invite email again');
