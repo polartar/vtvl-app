@@ -95,13 +95,15 @@ const NewSafePage: NextPage = () => {
     watch,
     getFieldState,
     getValues,
+    setValue,
     reset,
+    setError,
     formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
   } = useForm({
     defaultValues: {
       organizationName: '',
       owners: [{ name: '', address: '', email: '' }],
-      authorizedUsers: 0
+      authorizedUsers: 1
     }
   });
 
@@ -142,6 +144,8 @@ const NewSafePage: NextPage = () => {
   const addOwner = () => {
     append({ name: '', address: '', email: '' });
     setOptions(getValues('owners').length);
+    // Ensures that at least 1 signee is authorized after adding an owner and if the authorized users is set to 0.
+    if (!authorizedUsers.value) setValue('authorizedUsers', 1);
   };
 
   const importSafe = async (address: string) => {
@@ -196,6 +200,39 @@ const NewSafePage: NextPage = () => {
     }
   };
 
+  // Validates for duplicate wallet address and emails
+  const validateOwners = () => {
+    const owners = getValues('owners');
+    let validity = true;
+    // Loop through all the owners and check if the current owner has a duplicate wallet address or email
+    owners.map((ownerDetails, index) => {
+      owners.map((owner, ownerIndex) => {
+        // Validate only on possible duplicates
+        if (ownerIndex !== index) {
+          // Marks this current owner for error if it has the same wallet address
+          if (ownerDetails.address === owner.address) {
+            setError(`owners.${index}.address`, {
+              type: 'duplicateWallet',
+              message: 'Duplicate wallet address'
+            });
+            setError(`owners.${ownerIndex}.address`, {
+              type: 'duplicateWallet',
+              message: 'Duplicate wallet address'
+            });
+            validity = false;
+          }
+          // Marks this current owner for error if it has the same email address
+          if (ownerDetails.email === owner.email) {
+            setError(`owners.${index}.email`, { type: 'duplicateEmail', message: 'Duplicate email' });
+            setError(`owners.${ownerIndex}.email`, { type: 'duplicateEmail', message: 'Duplicate email' });
+            validity = false;
+          }
+        }
+      });
+    });
+    return validity;
+  };
+
   const onSubmit: SubmitHandler<ConfirmationForm> = async (data) => {
     console.log('Form Submitted', data, getValues());
     setFormSuccess(false);
@@ -213,6 +250,11 @@ const NewSafePage: NextPage = () => {
       if (!user) {
         setFormMessage('Please sign up to deploy a safe');
         setFormError(true);
+        return;
+      }
+
+      // Check for duplicates in the safe owners.
+      if (!validateOwners()) {
         return;
       }
 
@@ -325,7 +367,13 @@ const NewSafePage: NextPage = () => {
                     required
                     disabled={importedSafe ? true : false}
                     error={Boolean(getOwnersState(ownerIndex).address.state.error)}
-                    message={getOwnersState(ownerIndex).address.state.error ? 'Please enter owner wallet address' : ''}
+                    message={
+                      getOwnersState(ownerIndex).address.state.error
+                        ? getOwnersState(ownerIndex).address.state.error?.type === 'duplicateWallet'
+                          ? getOwnersState(ownerIndex).address.state.error?.message
+                          : 'Please enter owner wallet address'
+                        : ''
+                    }
                     className="md:col-span-2"
                     {...field}
                   />
@@ -341,7 +389,13 @@ const NewSafePage: NextPage = () => {
                     placeholder="Enter owner email"
                     required
                     error={Boolean(getOwnersState(ownerIndex).email.state.error)}
-                    message={getOwnersState(ownerIndex).email.state.error ? 'Please enter owner email' : ''}
+                    message={
+                      getOwnersState(ownerIndex).email.state.error
+                        ? getOwnersState(ownerIndex).email.state.error?.type === 'duplicateEmail'
+                          ? getOwnersState(ownerIndex).email.state.error?.message
+                          : 'Please enter owner email'
+                        : ''
+                    }
                     className="md:col-span-3"
                     {...field}
                   />

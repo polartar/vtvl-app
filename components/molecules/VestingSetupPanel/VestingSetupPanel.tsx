@@ -89,8 +89,13 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
   }, [form, onContinue]);
 
   const handleToggle = useCallback(() => {
-    setForm(({ createNewContract }) => ({ createNewContract: !createNewContract }));
-  }, []);
+    if (form.createNewContract && vestingContractOptions.length === 1) {
+      setForm(({ createNewContract }) => ({
+        createNewContract: !createNewContract,
+        vestingContract: vestingContractOptions[0]
+      }));
+    } else setForm(({ createNewContract }) => ({ createNewContract: !createNewContract }));
+  }, [form]);
 
   const handleChangeVesting = useCallback(
     (vestingContract: OnChangeValue<VestingContractOption, false>) => {

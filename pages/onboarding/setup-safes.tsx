@@ -84,7 +84,7 @@ const YourSafesPage: NextPage = () => {
           <button
             className="flex flex-row items-center gap-2 primary line group transition-all transform"
             type="button"
-            onClick={() => onNext({})}>
+            onClick={() => onNext({ skipSafe: true })}>
             I'm good without multi-sig{' '}
             <ArrowIcon
               alt="Proceed"

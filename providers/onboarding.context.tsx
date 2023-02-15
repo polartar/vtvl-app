@@ -96,20 +96,33 @@ export function OnboardingContextProvider({ children }: any) {
     router.replace(States[prevstep as Step].route);
   };
 
-  const setRoute = async (isFirstTimeUser?: boolean) => {
+  // Redirects the user based on the current step
+  const setRoute = async (isFirstTimeUser?: boolean, skipSafe?: boolean) => {
+    // Gets the next step if any
     const nextstep = Number(currentStep) + 1;
     console.log('current step is ', Number(currentStep));
     console.log('onboarding context nextstep == ', nextstep);
 
     if (nextstep > Step.SafeSetup) {
-      console.log('onboarding context ending onboarding');
+      // Ensures that the sidebar will appear
       setInProgress(false);
-      await router.push('/dashboard');
+
+      if (skipSafe) {
+        // Redirects the user to the dashboard when the last step is met
+        console.log('onboarding context ending onboarding');
+        await router.push('/dashboard');
+        return;
+      }
+
+      // Redirects the user to the safe success page -- assumes that the user does not skip safe setup
+      await router.push('/onboarding/setup-safe-success');
       return;
     }
 
+    // Just continue
     if (currentStep === Step.ChainSetup) setInProgress(true);
 
+    // Complete the onboarding process if the user is a returning one
     if (currentStep === Step.SignUp && !isFirstTimeUser) {
       completeOnboarding();
       return;
@@ -119,6 +132,7 @@ export function OnboardingContextProvider({ children }: any) {
     console.log('onboarding context valid route');
     setCurrentStep(nextstep);
 
+    // if the user is a new user, go to the onboarding process continuation
     if (nextstep == Step.UserTypeSetup) {
       console.log('is this a first time user -- contest -- ', isFirstTimeUser);
       await router.push(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
@@ -137,6 +151,7 @@ export function OnboardingContextProvider({ children }: any) {
     await router.push(States[nextstep as Step].route);
   };
 
+  // Identifies and manipulates data for each step
   const onNext = async (data: OnboardingInfo) => {
     switch (currentStep) {
       case Step.ChainSetup:
@@ -165,7 +180,7 @@ export function OnboardingContextProvider({ children }: any) {
       case Step.SafeSetup:
         if (data.skipSafe == false && !data.safeAddress) throw Error(States[currentStep].error);
         setInfo({ ...info, safeAddress: data.safeAddress });
-        await setRoute();
+        await setRoute(data.isFirstTimeUser, data.skipSafe);
         break;
 
       default:

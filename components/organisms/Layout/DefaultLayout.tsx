@@ -105,10 +105,16 @@ const FounderRoutes = {
     }
   ],
   submenuList: [
-    { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
-    { title: 'Support', icon: '/icons/support.svg', route: '/support' },
-    { title: 'Switch to investor', icon: '/icons/switchUser.svg', route: '/switch-account' },
-    { title: 'Settings', icon: '/icons/settings.svg', route: '/settings', available: true }
+    { title: 'Notifications', icon: '/icons/notifications.svg', hoverIcon: '', route: '/notifications' },
+    { title: 'Support', icon: '/icons/support.svg', hoverIcon: '', route: '/support' },
+    { title: 'Switch to investor', icon: '/icons/switchUser.svg', hoverIcon: '', route: '/switch-account' },
+    {
+      title: 'Settings',
+      icon: '/icons/settings.svg',
+      hoverIcon: 'icons/settings-hover.svg',
+      route: '/settings',
+      available: true
+    }
   ],
   userName: 'John Doe',
   role: 'founder'
@@ -124,6 +130,13 @@ const employeeInvestorMenuItems = {
     //   route: '/dashboard',
     //   available: false
     // },
+    {
+      title: 'Claims Portal',
+      route: '/claim-portal',
+      icon: '/icons/claims-portal.svg',
+      hoverIcon: '/icons/claims-portal-hover.svg',
+      available: true
+    },
     {
       title: 'My tokens',
       icon: '/icons/s_dashboard.svg',
@@ -287,8 +300,6 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     (async () => await refreshUser())();
   }, []);
 
-  console.log('ROute', router);
-
   useEffect(() => {
     if (user && user.memberInfo && user.memberInfo.type) {
       if (safe && user.memberInfo.type === 'founder') {
@@ -316,7 +327,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       '/onboarding/login',
       '/onboarding',
       '/onboarding/member-login',
-      '/onboarding/connect-wallet'
+      '/onboarding/connect-wallet',
+      '/expired'
     ];
     console.log('CHECKS ', account, active);
     if (!hideConnectModalOnRoutes.includes(router.pathname) && !active && !account) {
@@ -324,7 +336,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     } else {
       setConnectWalletModal(false);
     }
-  }, [account, active]);
+  }, [account, active, router]);
 
   return (
     <>

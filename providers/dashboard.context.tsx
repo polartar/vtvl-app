@@ -14,7 +14,6 @@ import { fetchVestingContractByQuery, fetchVestingContractsByQuery } from 'servi
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
-import { IVestingStatus } from 'types/models/vesting';
 import { IRecipient } from 'types/vesting';
 import { parseTokenAmount } from 'utils/token';
 
@@ -22,6 +21,8 @@ import { useAuthContext } from './auth.context';
 import { useLoaderContext } from './loader.context';
 import { useSharedContext } from './shared.context';
 import { useTokenContext } from './token.context';
+
+type IVestingStatus = 'FUNDING_REQUIRED' | 'PENDING' | 'EXECUTABLE' | 'LIVE';
 
 interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
@@ -36,12 +37,14 @@ interface IDashboardData {
   vestingContractLoading: boolean;
   transactionsLoading: boolean;
   removeOwnership: boolean;
+  vestingsStatus: { [key: string]: IVestingStatus };
   // fetchDashboardVestingContract: () => void;
   fetchDashboardVestings: () => void;
   fetchDashboardTransactions: () => void;
   setOwnershipTransfered: (v: boolean) => void;
   fetchDashboardData: () => void;
   setRemoveOwnership: (v: boolean) => void;
+  setVestingsStatus: (v: { [key: string]: IVestingStatus }) => void;
 }
 
 const DashboardContext = createContext({} as IDashboardData);
@@ -179,6 +182,7 @@ export function DashboardContextProvider({ children }: any) {
       vestingContractLoading,
       transactionsLoading,
       removeOwnership,
+      vestingsStatus,
       // fetchDashboardVestingContract,
       fetchDashboardVestings,
       fetchDashboardTransactions,
@@ -199,7 +203,8 @@ export function DashboardContextProvider({ children }: any) {
       transactionsLoading,
       removeOwnership,
       vestingContracts,
-      revokings
+      revokings,
+      vestingsStatus
     ]
   );
 
