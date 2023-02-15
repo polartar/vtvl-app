@@ -123,7 +123,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
           setTransactionStatus('APPROVAL_REQUIRED');
         }
       }
-    } else if (!safe) {
+    } else {
       const TokenContract = new ethers.Contract(
         mintFormState.address,
         [
