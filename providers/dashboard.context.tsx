@@ -14,6 +14,7 @@ import { fetchVestingContractByQuery, fetchVestingContractsByQuery } from 'servi
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IVestingStatus } from 'types/models/vesting';
 import { IRecipient } from 'types/vesting';
 import { parseTokenAmount } from 'utils/token';
 
@@ -26,7 +27,6 @@ interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
   revokings: { id: string; data: IRevoking }[];
   recipients: MultiValue<IRecipient>;
-  vestingContract: { id: string; data: IVestingContract | undefined } | undefined;
   vestingContracts: { id: string; data: IVestingContract }[];
   transactions: { id: string; data: ITransaction }[];
   ownershipTransfered: boolean;
@@ -41,7 +41,6 @@ interface IDashboardData {
   fetchDashboardTransactions: () => void;
   setOwnershipTransfered: (v: boolean) => void;
   fetchDashboardData: () => void;
-  fetchVestingContractBalance: () => void;
   setRemoveOwnership: (v: boolean) => void;
 }
 
@@ -56,9 +55,6 @@ export function DashboardContextProvider({ children }: any) {
 
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
   const [revokings, setRevokings] = useState<{ id: string; data: IRevoking }[]>([]);
-  const [vestingContract, setVestingContract] = useState<
-    { id: string; data: IVestingContract | undefined } | undefined
-  >();
   const [vestingContracts, setVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
   const [transactions, setTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
@@ -69,6 +65,7 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingContractLoading, setVestingContractLoading] = useState(false);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [recipients, setRecipients] = useState<MultiValue<IRecipient>>([]);
+  const [vestingsStatus, setVestingsStatus] = useState<{ [key: string]: IVestingStatus }>({});
 
   useEffect(() => {
     if (!organizationId) return;
@@ -93,11 +90,9 @@ export function DashboardContextProvider({ children }: any) {
             }
             return vesting;
           });
-          setVestingContract(tmpVestingContracts.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
           setVestingContracts(tmpVestingContracts.slice());
         }
       });
-      setVestingContract(tmpVestingContracts.find((vestingContract) => vestingContract.data.status === 'SUCCESS'));
       setVestingContracts(tmpVestingContracts);
     });
 
@@ -160,81 +155,13 @@ export function DashboardContextProvider({ children }: any) {
       } catch (err) {
         console.log('fetchDashboardData - ', err);
         setVestings([]);
-        setVestingContract(undefined);
         setTransactions([]);
       }
       hideLoading();
     } else {
       setVestings([]);
-      setVestingContract(undefined);
       setTransactions([]);
       setRevokings([]);
-    }
-  };
-
-  const fetchVestingContractBalance = async () => {
-    try {
-      if (
-        vestings &&
-        vestings.length > 0 &&
-        vestingContract &&
-        vestingContract.id &&
-        mintFormState.address &&
-        chainId
-      ) {
-        let totalVestingAmount = 0;
-        vestings
-          .filter((vesting) => vesting.data.status !== 'COMPLETED' && vesting.data.status !== 'LIVE')
-          .forEach(
-            (vesting) => (totalVestingAmount += parseFloat(vesting.data.details.amountToBeVested as unknown as string))
-          );
-        // const tokenContract = new ethers.Contract(
-        //   mintFormState.address,
-        //   [
-        //     // Read-Only Functions
-        //     'function balanceOf(address owner) view returns (uint256)',
-        //     'function decimals() view returns (uint8)',
-        //     'function symbol() view returns (string)',
-        //     // Authenticated Functions
-        //     'function transfer(address to, uint amount) returns (bool)',
-        //     // Events
-        //     'event Transfer(address indexed from, address indexed to, uint amount)'
-        //   ],
-        //   ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-        // );
-        const vestingContractInstance = new ethers.Contract(
-          vestingContract.data!.address,
-          VTVL_VESTING_ABI.abi,
-          library.getSigner()
-        );
-        // const tokenBalance = await tokenContract.balanceOf(vestingContract.data?.address);
-        const tokenBalance = vestingContract.data?.balance || 0;
-        const numberOfTokensReservedForVesting = await vestingContractInstance.numTokensReservedForVesting();
-        if (
-          BigNumber.from(tokenBalance).gte(BigNumber.from(numberOfTokensReservedForVesting)) &&
-          BigNumber.from(tokenBalance)
-            .sub(BigNumber.from(numberOfTokensReservedForVesting))
-            .lt(BigNumber.from(parseTokenAmount(totalVestingAmount)))
-        ) {
-          setInsufficientBalance(true);
-          setDepositAmount(
-            ethers.utils.formatEther(
-              BigNumber.from(parseTokenAmount(totalVestingAmount)).sub(
-                BigNumber.from(tokenBalance).sub(BigNumber.from(numberOfTokensReservedForVesting))
-              )
-            )
-          );
-          return;
-        } else {
-          setDepositAmount('');
-          setInsufficientBalance(false);
-          return;
-        }
-      }
-      setInsufficientBalance(false);
-      setDepositAmount('');
-    } catch (err) {
-      console.log('fetchVestingContractBalance - ', err);
     }
   };
 
@@ -243,7 +170,6 @@ export function DashboardContextProvider({ children }: any) {
       vestings,
       revokings,
       recipients,
-      vestingContract,
       vestingContracts,
       transactions,
       ownershipTransfered,
@@ -258,13 +184,12 @@ export function DashboardContextProvider({ children }: any) {
       fetchDashboardTransactions,
       setOwnershipTransfered,
       fetchDashboardData,
-      fetchVestingContractBalance,
-      setRemoveOwnership
+      setRemoveOwnership,
+      setVestingsStatus
     }),
     [
       vestings,
       recipients,
-      vestingContract,
       transactions,
       ownershipTransfered,
       insufficientBalance,
@@ -281,10 +206,6 @@ export function DashboardContextProvider({ children }: any) {
   useEffect(() => {
     if (chainId && (organizationId || (router && router.pathname === '/dashboard'))) fetchDashboardData();
   }, [organizationId, router, chainId]);
-
-  useEffect(() => {
-    fetchVestingContractBalance();
-  }, [vestingContract, vestings, mintFormState, chainId]);
 
   useEffect(() => {
     if (!vestings) {
@@ -332,45 +253,17 @@ export function DashboardContextProvider({ children }: any) {
   }, [vestings, organizationId]);
 
   useEffect(() => {
-    if (vestingContract?.data && safe?.address && chainId) {
-      const VestingContract = new ethers.Contract(
-        vestingContract.data.address,
-        VTVL_VESTING_ABI.abi,
-        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-      );
-      VestingContract.isAdmin(safe.address).then((res: any) => {
-        setOwnershipTransfered(res);
+    if (vestings && vestings.length > 0) {
+      vestings.forEach((vesting) => {
+        if (vesting.data.status === 'LIVE') {
+          setVestingsStatus((previousStatus) => ({
+            ...previousStatus,
+            [vesting.id]: 'LIVE'
+          }));
+        }
       });
-    } else if (vestingContract?.data && vestingContract.data.status === 'SUCCESS' && !safe?.address) {
-      setOwnershipTransfered(true);
     }
-  }, [organizationId, vestingContract, safe, chainId]);
-
-  useEffect(() => {
-    if (
-      vestingContract?.data &&
-      safe?.address &&
-      safe.owners[0] &&
-      chainId &&
-      ownershipTransfered &&
-      account &&
-      account.toLowerCase() === safe.owners[0].address.toLowerCase()
-    ) {
-      const VestingContract = new ethers.Contract(
-        vestingContract.data.address,
-        VTVL_VESTING_ABI.abi,
-        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-      );
-      VestingContract.isAdmin(account)
-        .then((res: any) => {
-          setRemoveOwnership(res);
-        })
-        .catch((err: any) => {
-          console.log('removeOwnership - ', err);
-          setRemoveOwnership(false);
-        });
-    }
-  }, [ownershipTransfered, organizationId, vestingContract, safe, account, chainId]);
+  }, [vestings]);
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

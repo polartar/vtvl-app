@@ -17,7 +17,6 @@ import { useTransactionLoaderContext } from '@providers/transaction-loader.conte
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import CreateVestingContract from 'components/organisms/DashboardPanel/CreateVestingContract';
-import FundContract from 'components/organisms/DashboardPanel/FundContract';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
@@ -30,20 +29,7 @@ const Dashboard: NextPageWithLayout = () => {
   const { organizationId, safe, emailSignUp, user } = useAuthContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { scheduleFormState } = useVestingContext();
-  const {
-    vestings,
-    vestingContract,
-    transactions,
-    ownershipTransfered,
-    removeOwnership,
-    insufficientBalance,
-    depositAmount,
-    vestingContractLoading,
-    vestingsLoading,
-    transactionsLoading,
-    fetchDashboardData,
-    recipients
-  } = useDashboardContext();
+  const { fetchDashboardData } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { pendingTransactions } = useTransactionLoaderContext();
   const { ModalWrapper, open, showModal, hideModal } = useModal({});
@@ -186,81 +172,9 @@ const Dashboard: NextPageWithLayout = () => {
           </div>
           <DashboardVestingSummary />
 
-          {/* {vestings
-            ? vestings.map((vesting) => (
-                <div className="panel mb-6">
-                  <DashboardPanel type="schedule" vestings={vestings} />
-                </div>
-              ))
-            : !hasVestingContract && <DashboardPanel type="contract" />} */}
-          {/* <div className="px-8 mt-8">
-            {(!vestingContract?.id || !ownershipTransfered || removeOwnership) && (
-              <CreateVestingContract type="contract" />
-            )}
-            <FundContract />
-            {vestings && vestings.length > 0 && <AddVestingSchedules type="schedule" />}
-          </div> */}
-
           <div className="px-8 py-4">
             <DashboardPendingActions />
           </div>
-
-          {/* <DashboardPanel
-            type="schedule"
-            schedule={sampleScheduleDetails}
-            status="authRequired"
-            step={1}
-            className="mb-6"
-            pagination={{ total: 5, page: currentPage, onNext: showNextSchedule, onPrevious: showPreviousSchedule }}
-          />
-          <DashboardPanel
-            type="contract"
-            contract={sampleContractDetails}
-            status="vestingContractRequired"
-            className="mb-6"
-          />
-          <DashboardPanel
-            type="contract"
-            contract={sampleContractDetails}
-            status="transferToMultisigSafe"
-            className="mb-6"
-          />
-          <DashboardPanel type="contract" contract={sampleContractDetails} status="fundingRequired" className="mb-6" />
-          <DashboardPanel
-            type="schedule"
-            schedule={sampleScheduleDetails}
-            status="fundingInProgress"
-            step={2}
-            className="mb-6"
-          /> */}
-
-          {/* TEMPORARILY REMOVE THESE SECTION as it does not have functionalities yet */}
-          {/* <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
-            <DashboardInfoCard
-              icon="/icons/calendar.svg"
-              title="Vesting overview"
-              description="Lorem ipsum dolor sit amet, consectetur elit. Smperdiet eleifend est, in ultricies massa elit faucibus in."
-              emptyTitle="No vesting found"
-              emptyImage="/images/chart-projection.svg"
-              emptyDescription="Vesting will be displayed here once ready."
-              url="/vesting-schedule"
-            />
-            <DashboardInfoCard
-              icon="/icons/pie-chart.svg"
-              title="Tokenomics"
-              description="Lorem ipsum dolor sit amet, consectetur elit. Smperdiet eleifend est, in ultricies massa elit faucibus in."
-              emptyTitle="No tokenomics found"
-              emptyImage="/images/chart-projection.svg"
-              emptyDescription="Tokenomics will be displayed here once ready."
-              url="/tokenomics"
-            />
-
-            <div className="panel">
-              <h3 className="h5 text-neutral-900 inter font-semibold mb-4">Activity</h3>
-              <p className="text-neutral-400">Coming soon</p>
-              <ActivityFeed activities={activities} />
-            </div>
-          </div> */}
           <ModalWrapper>
             <CreateVestingContractModal hideModal={hideModal} />
           </ModalWrapper>
