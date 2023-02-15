@@ -220,11 +220,11 @@ export function AuthContextProvider({ children }: any) {
 
     const member = await fetchMember(credential.user.uid);
     const memberInfo = member
-      ? {
-          ...member,
-          type: newSignUp.type
-        }
-      : {
+      ? // Updating the type to support email invites on team member management.
+        // By default uses the current user type of the member logging in.
+        { ...member, type: newSignUp.type || member.type }
+      : // Next block is used when a new user is detected.
+        {
           email: newSignUp.email || credential.user.email || '',
           companyEmail: newSignUp.email || credential.user.email || '',
           name: newSignUp.name || credential.user.displayName || '',
