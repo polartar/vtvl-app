@@ -137,7 +137,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
           });
         }
       }
-    } else if (!safe) {
+    } else {
       const TokenContract = new ethers.Contract(
         mintFormState.address,
         [

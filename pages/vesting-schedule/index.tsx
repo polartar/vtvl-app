@@ -724,7 +724,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         );
         setTransactionStatus('IN_PROGRESS');
         await addingClaimsTransaction.wait();
-        updateTransaction(
+        await updateTransaction(
           {
             ...transactionData,
             status: 'SUCCESS',
