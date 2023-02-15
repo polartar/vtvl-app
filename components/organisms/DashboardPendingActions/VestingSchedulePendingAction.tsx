@@ -1,3 +1,4 @@
+import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
@@ -6,6 +7,7 @@ import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/s
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import {
   IStatus, // ITransactionStatus,
@@ -46,6 +48,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
     vestingsStatus,
     setVestingsStatus
   } = useDashboardContext();
+  const { editSchedule, deleteSchedulePrompt, setShowDeleteModal } = useVestingContext();
   const {
     pendingTransactions,
     transactionStatus: transactionLoaderStatus,
@@ -704,6 +707,15 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
     }
   };
 
+  const handleDeleteSchedule = (id: string, data: IVesting) => {
+    // Should prompt the user
+    console.log('Deleting', id, data);
+    deleteSchedulePrompt(id, data);
+    // Show delete html can be seen in DefaultLayout.tsx
+    // while the data is handle in the vestingContext
+    setShowDeleteModal(true);
+  };
+
   useEffect(() => {
     initializeStatus();
   }, [data, safe, account, vestingContract, transactions, transaction]);
@@ -757,14 +769,22 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
           </button>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
-          <button
-            className="secondary small whitespace-nowrap"
-            disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
-            onClick={() => {
-              setShowFundingContractModal(true);
-            }}>
-            Fund Contract
-          </button>
+          <>
+            <button
+              className="secondary small whitespace-nowrap"
+              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              onClick={() => {
+                setShowFundingContractModal(true);
+              }}>
+              Fund Contract
+            </button>
+            <DropdownMenu
+              items={[
+                { label: 'Edit', onClick: () => editSchedule(id, data) },
+                { label: 'Delete', onClick: () => handleDeleteSchedule(id, data) }
+              ]}
+            />
+          </>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
           <button

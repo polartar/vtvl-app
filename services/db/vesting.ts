@@ -1,4 +1,4 @@
-import { WhereFilterOp, addDoc, doc, getDoc, getDocs, query, setDoc, where } from '@firebase/firestore';
+import { WhereFilterOp, addDoc, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from '@firebase/firestore';
 import { vestingCollection } from 'services/db/firestore';
 import { IVesting } from 'types/models';
 import { generateRandomName } from 'utils/shared';
@@ -51,6 +51,11 @@ export const updateVesting = async (vesting: IVesting, id: string): Promise<void
 export const createVesting = async (vesting: IVesting): Promise<string> => {
   const vestingRef = await addDoc(vestingCollection, { ...vesting, name: vesting.name || generateRandomName() });
   return vestingRef.id;
+};
+
+export const deleteVesting = async (id: string): Promise<void> => {
+  const vestingRef = doc(vestingCollection, id);
+  await deleteDoc(vestingRef);
 };
 
 /**

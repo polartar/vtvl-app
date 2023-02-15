@@ -1,9 +1,14 @@
+import Button from '@components/atoms/Button/Button';
+import Form from '@components/atoms/FormControls/Form/Form';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
+import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import ConnectWalletOptionsProps from '@components/molecules/ConnectWalletOptions/ConnectWalletOptions';
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
+import { useDashboardContext } from '@providers/dashboard.context';
 import OnboardingContext from '@providers/onboarding.context';
+import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -259,6 +264,34 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const [connectWalletModal, setConnectWalletModal] = useState(false);
   const router = useRouter();
 
+  // Vesting schedule section
+  const { fetchDashboardData } = useDashboardContext();
+  const {
+    scheduleMode,
+    deleteSchedule,
+    resetVestingState,
+    deleteInProgress,
+    setDeleteInProgress,
+    showDeleteModal,
+    setShowDeleteModal
+  } = useVestingContext();
+
+  // Hides the modal and sets the necessary states.
+  const handleHideModal = () => {
+    setShowDeleteModal(false);
+    resetVestingState();
+  };
+
+  // Actually deletes the data from the DB then closes the modal.
+  const handleDelete = async (id: string) => {
+    setDeleteInProgress(true);
+    const deletion = await deleteSchedule(id);
+    console.log('Deleted?', deletion);
+    await fetchDashboardData();
+    handleHideModal();
+    setDeleteInProgress(false);
+  };
+
   // Modal styles for the ledger modal
   const modalStyles: Styles = {
     overlay: {
@@ -368,6 +401,26 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       <Modal isOpen={connectWalletModal} style={modalStyles}>
         <ConnectWalletOptionsProps onConnect={handleWalletConnection} />
       </Modal>
+
+      {/* DELETE SCHEDULE MODAL PROMP */}
+      <PromptModal isOpen={showDeleteModal} hideModal={handleHideModal}>
+        <Form isSubmitting={deleteInProgress}>
+          <div className="text-center flex items-center justify-center flex-col gap-3 p-6">
+            <div>
+              Are you sure you want to delete{' '}
+              {scheduleMode && scheduleMode.data && scheduleMode.data.name ? scheduleMode.data.name : 'this schedule'}?
+            </div>
+            <div className="flex flex-row items-center justify-center gap-3">
+              <button type="button" className="primary" onClick={handleHideModal}>
+                No
+              </button>
+              <Button type="button" onClick={() => handleDelete(scheduleMode.id!)} loading={deleteInProgress}>
+                Yes
+              </Button>
+            </div>
+          </div>
+        </Form>
+      </PromptModal>
     </>
   );
 };

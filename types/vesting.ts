@@ -2,6 +2,7 @@ import Decimal from 'decimal.js';
 import { MultiValue } from 'react-select';
 
 import { CliffDuration, ReleaseFrequency } from './constants/schedule-configuration';
+import { IVesting } from './models';
 
 export interface IRecipient {
   walletAddress: string;
@@ -34,4 +35,11 @@ export interface IScheduleState {
   contractName?: string;
   createNewContract: boolean;
   vestingContractId?: string;
+}
+
+export interface IScheduleMode {
+  id?: string;
+  data?: IVesting;
+  edit?: boolean;
+  delete?: boolean;
 }
