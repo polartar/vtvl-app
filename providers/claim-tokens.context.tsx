@@ -86,7 +86,8 @@ export function ClaimTokensContextProvider({ children }: any) {
     vestingProgress: 0,
     cliffDate: '',
     numberOfReleases: 0,
-    vestingContractAddress: ''
+    vestingContractAddress: '',
+    lockedTokens: new Decimal(0)
   });
 
   // A function that will get all organization the current user belongs to / have claimable tokens

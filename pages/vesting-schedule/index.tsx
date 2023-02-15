@@ -7,6 +7,7 @@ import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
 import Table from '@components/molecules/Table/Table';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import VestingOverview from '@components/molecules/VestingOverview/VestingOverview';
+import VestingScheduleFilter from '@components/molecules/VestingScheduleFilter';
 import FundingContractModalV2 from '@components/organisms/FundingContractModal/FundingContractModalV2';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Safe from '@gnosis.pm/safe-core-sdk';
@@ -57,7 +58,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { account, library, activate, chainId } = useWeb3React();
   const { organizationId, safe } = useAuthContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
-  const { vestings } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { vestings: vestingSchedules, vestingContracts, fetchDashboardData } = useDashboardContext();
@@ -71,6 +71,35 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     totalRecipients: 0,
     progress: { current: 0, total: 0 }
   });
+  const [filter, setFilter] = useState<{
+    keyword: string;
+    status: 'ALL' | 'FUND' | 'INITIALIZED' | 'LIVE' | 'PENDING';
+  }>({ keyword: '', status: 'ALL' });
+
+  const filteredVestingSchedules = useMemo(() => {
+    return vestingSchedules && vestingSchedules.length > 0
+      ? vestingSchedules.filter((vesting) => {
+          if (filter.keyword && !vesting.data.name?.toLowerCase().includes(filter.keyword.toLowerCase())) {
+            return false;
+          }
+          if (filter.status === 'ALL') {
+            return true;
+          }
+          if (filter.status === 'FUND') {
+            return vesting.data.status === 'WAITING_FUNDS';
+          }
+          if (filter.status === 'INITIALIZED') {
+            return vesting.data.status === 'INITIALIZED';
+          }
+          if (filter.status === 'LIVE') {
+            return vesting.data.status === 'LIVE';
+          }
+          if (filter.status === 'PENDING') {
+            return vesting.data.status === 'WAITING_APPROVAL' || vesting.data.status === 'APPROVED';
+          }
+        })
+      : [];
+  }, [vestingSchedules, filter]);
 
   useEffect(() => {
     // Manually count all necessary data since we're fetching all of the schedules for this particular organization
@@ -202,9 +231,23 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       COMPLETED: { color: 'gray', label: 'Completed' }
     };
     return (
-      <div className="flex flex-row items-center gap-1">
-        <Chip {...statuses[value]} size="small" rounded />
-        {row.original.data.archive ? <Chip label="Archived" size="small" rounded color="grayAlt" /> : null}
+      <div
+        className="flex flex-row items-center gap-1"
+        onClick={() => {
+          if (value === 'INITIALIZED') {
+            setFilter({ ...filter, status: 'INITIALIZED' });
+          } else if (value === 'LIVE') {
+            setFilter({ ...filter, status: 'LIVE' });
+          } else if (value === 'WAITING_APPROVAL' || value === 'CREATING' || value === 'CREATED') {
+            setFilter({ ...filter, status: 'PENDING' });
+          } else if (value === 'WAITING_FUNDS') {
+            setFilter({ ...filter, status: 'FUND' });
+          }
+        }}>
+        <Chip {...statuses[value]} size="small" rounded className="cursor-pointer" />
+        {row.original.data.archive ? (
+          <Chip label="Archived" size="small" rounded color="grayAlt" className="cursor-pointer" />
+        ) : null}
       </div>
     );
   };
@@ -718,10 +761,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Get the total used supply based on all the schedules
   useEffect(() => {
-    if (vestings && vestings.length) {
-      setTotalUsedSupply(vestings.reduce((prev, curr) => prev + +curr.data.details.amountToBeVested, 0));
+    if (vestingSchedules && vestingSchedules.length) {
+      setTotalUsedSupply(vestingSchedules.reduce((prev, curr) => prev + +curr.data.details.amountToBeVested, 0));
     }
-  }, [vestings]);
+  }, [vestingSchedules]);
 
   // Sets the remaining based on the total supply
   useEffect(() => {
@@ -732,7 +775,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   return (
     <>
-      {vestings?.length && mintFormState ? (
+      {vestingSchedules?.length && mintFormState ? (
         <>
           <div className="w-full h-full">
             <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
@@ -763,6 +806,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               totalAllocation={+mintFormState.initialSupply || 0}
             />
           </div>
+          <div className="w-full">
+            <VestingScheduleFilter filter={filter} updateFilter={setFilter} />
+          </div>
           {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
             <Input
               label="Schedule name"
@@ -778,7 +824,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           </div> */}
           <Table
             columns={columns}
-            data={vestings}
+            data={filteredVestingSchedules}
             getTrProps={getTrProps}
             selectable
             pagination

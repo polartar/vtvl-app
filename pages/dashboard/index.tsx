@@ -3,6 +3,7 @@ import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
+import ClaimPortal from '@components/organisms/ClaimPortal';
 import CreateVestingContractModal from '@components/organisms/CreateVestingContractModal';
 import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
 import AddVestingSchedules from '@components/organisms/DashboardPanel/AddVestingSchedules';
@@ -20,7 +21,7 @@ import CreateVestingContract from 'components/organisms/DashboardPanel/CreateVes
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
-import { ReactElement, useCallback, useEffect } from 'react';
+import { ReactElement, useCallback, useEffect, useMemo } from 'react';
 
 import { NextPageWithLayout } from '../_app';
 
@@ -35,6 +36,8 @@ const Dashboard: NextPageWithLayout = () => {
   const { ModalWrapper, open, showModal, hideModal } = useModal({});
 
   const router = useRouter();
+
+  const isFounder = useMemo(() => user?.memberInfo?.type === 'founder', [user?.memberInfo?.type]);
 
   useEffect(() => {
     const params: any = new URL(window.location.toString());
@@ -51,33 +54,33 @@ const Dashboard: NextPageWithLayout = () => {
   const loginWithUrl = async (email: string) => {
     try {
       await emailSignUp({ email }, window.location.toString());
-    } catch (error: any) {
+    } catch (error) {
       console.log('error ', error);
     }
   };
 
-  const activities = [
-    {
-      icon: 'success',
-      text: 'Gnosis Safe integrated successfully',
-      date: new Date(2022, 9, 21, 10, 30)
-    },
-    {
-      icon: 'warning',
-      text: '3 vesting schedule needs approval',
-      date: new Date(2022, 9, 14, 9, 22)
-    },
-    {
-      icon: 'warning',
-      text: 'Vesting contract not yet created',
-      date: new Date(2022, 9, 12, 21, 16)
-    },
-    {
-      icon: 'success',
-      text: 'Beneficiaries added',
-      date: new Date(2022, 8, 28, 11, 32)
-    }
-  ];
+  // const activities = [
+  //   {
+  //     icon: 'success',
+  //     text: 'Gnosis Safe integrated successfully',
+  //     date: new Date(2022, 9, 21, 10, 30)
+  //   },
+  //   {
+  //     icon: 'warning',
+  //     text: '3 vesting schedule needs approval',
+  //     date: new Date(2022, 9, 14, 9, 22)
+  //   },
+  //   {
+  //     icon: 'warning',
+  //     text: 'Vesting contract not yet created',
+  //     date: new Date(2022, 9, 12, 21, 16)
+  //   },
+  //   {
+  //     icon: 'success',
+  //     text: 'Beneficiaries added',
+  //     date: new Date(2022, 8, 28, 11, 32)
+  //   }
+  // ];
 
   useEffect(() => {
     // console.log('user obj in auth context', user);
@@ -170,6 +173,7 @@ const Dashboard: NextPageWithLayout = () => {
               )}
             </div>
           </div>
+
           <DashboardVestingSummary />
 
           <div className="px-8 py-4">

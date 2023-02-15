@@ -12,6 +12,7 @@ interface ITransactionData {
 interface ITransactionLoadeerData {
   transactionStatus: TransactionStatuses;
   setTransactionStatus: (v: TransactionStatuses) => void;
+  transactions: ITransactionData[];
   pendingTransactions: ITransactionData[];
   setIsCloseAvailable: (v: boolean) => void;
 }
@@ -20,6 +21,7 @@ const TransactionLoader = createContext({} as ITransactionLoadeerData);
 
 export function TransactionLoaderContextProvider({ children }: any) {
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatuses>('');
+  const [transactions, setTransactions] = useState<ITransactionData[]>([]);
   const [pendingTransactions, setPendingTransactions] = useState<ITransactionData[]>([]);
   const [isCloseAvailable, setIsCloseAvailable] = useState<boolean>(true);
   const { safe, organizationId } = useAuthContext();
@@ -27,6 +29,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
     () => ({
       transactionStatus,
       setTransactionStatus,
+      transactions,
       pendingTransactions,
       setIsCloseAvailable
     }),
@@ -34,7 +37,8 @@ export function TransactionLoaderContextProvider({ children }: any) {
   );
 
   useEffect(() => {
-    let transactions: ITransactionData[] = [];
+    let allTransactions: ITransactionData[] = [];
+    let tmpPendingTransactions: ITransactionData[] = [];
     if (!organizationId) return;
 
     const q = query(transactionCollection, where('organizationId', '==', organizationId));
@@ -42,16 +46,32 @@ export function TransactionLoaderContextProvider({ children }: any) {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
           const data = change.doc.data();
+          allTransactions.push({
+            id: change.doc.id,
+            data
+          });
           if (data.status === 'PENDING') {
-            transactions.push({
+            tmpPendingTransactions.push({
               id: change.doc.id,
               data
             });
           }
         } else if (change.type === 'modified') {
           const data = change.doc.data();
+          allTransactions = allTransactions.map((transaction) => {
+            if (transaction.id === change.doc.id) {
+              return {
+                id: transaction.id,
+                data
+              };
+            }
+            return transaction;
+          });
+
+          setTransactions(allTransactions.slice());
           if (data.status !== 'PENDING') {
-            transactions = transactions.filter((transaction) => transaction.id !== change.doc.id);
+            tmpPendingTransactions = tmpPendingTransactions.filter((transaction) => transaction.id !== change.doc.id);
+            setPendingTransactions(tmpPendingTransactions.slice());
             if (data.status === 'SUCCESS') {
               setTransactionStatus('SUCCESS');
             }
@@ -62,7 +82,8 @@ export function TransactionLoaderContextProvider({ children }: any) {
         }
       });
 
-      setPendingTransactions(transactions.slice());
+      setTransactions(allTransactions.slice());
+      setPendingTransactions(tmpPendingTransactions.slice());
     });
 
     return () => {

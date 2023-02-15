@@ -37,7 +37,7 @@ const EmptyState = ({
     large: 'h-96'
   };
   return (
-    <div className="flex flex-col items-center justify-center max-w-md mx-auto">
+    <div className="flex flex-col items-center justify-center max-w-xl mx-auto">
       {image && typeof image === 'string' ? (
         <ImageRenderer blend={imageBlend}>
           <img src={image} alt={title} className={`mb-3.5 ${sizes[imageSize]}`} />

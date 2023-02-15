@@ -1,13 +1,11 @@
 import { Typography } from '@components/atoms/Typography/Typography';
 import useToggle from 'hooks/useToggle';
 import React, { useCallback, useMemo, useState } from 'react';
-import { validateEVMAddress } from 'utils/regex';
+import { truncateComma } from 'utils';
 import { formatNumber } from 'utils/token';
 import { truncateAddress } from 'utils/web3';
 
 import { EditableTypographyProps, EditableTypographyType, tdTypographyProps } from './utils';
-
-const truncateComma = (value: string) => value?.split(',')?.join('') ?? '';
 
 const formatOutput = (value: string | number, type: EditableTypographyType) => {
   switch (type) {

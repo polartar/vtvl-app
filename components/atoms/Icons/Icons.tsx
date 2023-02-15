@@ -54,3 +54,19 @@ export const PlusIcon: React.FC<IconProps> = ({ className = '' }) => {
     </span>
   );
 };
+
+export const VestingScheduleIcon: React.FC<IconProps> = ({ className = '' }) => {
+  return (
+    <span className={className}>
+      <Image src="/icons/vesting-schedule.svg" alt="vesting-schedule-icon" width={16} height={16} />
+    </span>
+  );
+};
+
+export const VestingCalendarIcon: React.FC<IconProps> = ({ className = '' }) => {
+  return (
+    <span className={className}>
+      <Image src="/icons/vesting-calendar.svg" alt="vesting-calendar-icon" width={16} height={16} />
+    </span>
+  );
+};

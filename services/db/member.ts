@@ -14,6 +14,12 @@ export const fetchMemberByEmail = async (email: string): Promise<IMember | undef
   return querySnapshot?.docs.at(0)?.data();
 };
 
+export const fetchInviteeByEmail = async (email: string): Promise<IInvitee | undefined> => {
+  const q = query(inviteeCollection, where('email', '==', email), limit(1));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot?.docs.at(0)?.data();
+};
+
 // export const createOrUpdateMember = async (member: IMember, id: string): Promise<void> => {
 //   const memberRef = doc(memberCollection, id);
 //   await setDoc(memberRef, member);
