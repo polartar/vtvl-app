@@ -105,10 +105,16 @@ const FounderRoutes = {
     }
   ],
   submenuList: [
-    { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
-    { title: 'Support', icon: '/icons/support.svg', route: '/support' },
-    { title: 'Switch to investor', icon: '/icons/switchUser.svg', route: '/switch-account' },
-    { title: 'Settings', icon: '/icons/settings.svg', route: '/settings', available: true }
+    { title: 'Notifications', icon: '/icons/notifications.svg', hoverIcon: '', route: '/notifications' },
+    { title: 'Support', icon: '/icons/support.svg', hoverIcon: '', route: '/support' },
+    { title: 'Switch to investor', icon: '/icons/switchUser.svg', hoverIcon: '', route: '/switch-account' },
+    {
+      title: 'Settings',
+      icon: '/icons/settings.svg',
+      hoverIcon: 'icons/settings-hover.svg',
+      route: '/settings',
+      available: true
+    }
   ],
   userName: 'John Doe',
   role: 'founder'

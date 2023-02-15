@@ -1,18 +1,17 @@
+import SidebarItem from '@components/atoms/SidebarItem/SidebarItem';
+import User from '@components/atoms/User/User';
 import styled from '@emotion/styled';
+import AuthContext from '@providers/auth.context';
 import { useClaimTokensContext } from '@providers/claim-tokens.context';
-import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect } from 'react';
 
-import AuthContext from '../../../providers/auth.context';
 import { Colors } from '../../CommonStyles';
-import IconText from '../../atoms/IconText/IconText';
-import SidebarItem from '../../atoms/SidebarItem/SidebarItem';
-import User from '../../atoms/User/User';
 
 interface SubMenuItemProps {
   title: string;
   icon: string;
+  hoverIcon?: string;
   route: string;
   available?: boolean;
 }
@@ -30,11 +29,12 @@ interface Props {
   role: string;
 }
 
-const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) => {
+const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
   const { sidebarIsExpanded, expandSidebar, forceCollapseSidebar, user, logOut } = useContext(AuthContext);
   const { vestingSchedules } = useClaimTokensContext();
   const currentRoute = useRouter();
   const [selectedRoute, setSelectedRoute] = React.useState(currentRoute.pathname || '');
+
   const handleMenuClick = (route: string) => {
     setSelectedRoute(route);
     Router.push(route);
@@ -74,11 +74,11 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
               <Fragment key={`menu-item-${index}`}>
                 <SidebarItem
                   selected={selectedRoute.includes(menu.route)}
-                  hovered={false}
+                  disabled={!menu.available}
                   onClick={() => (menu.available ? handleMenuClick(menu.route) : {})}
                   icon={menu.icon}
                   hoverIcon={menu.hoverIcon}
-                  className={`${sidebarIsExpanded ? 'w-60' : ''} ${!menu.available ? 'opacity-40' : ''}`}>
+                  className={`${sidebarIsExpanded ? 'w-60' : ''} ${!menu.available ? '!opacity-40' : ''}`}>
                   <div
                     className={`w-full transition-width overflow-hidden whitespace-nowrap ${
                       sidebarIsExpanded ? '' : 'opacity-0 w-0'
@@ -115,22 +115,29 @@ const Sidebar = ({ roleTitle, menuList, submenuList, userName, role }: Props) =>
       <div>
         {submenuList && submenuList.length
           ? submenuList.map((submenu, index) => (
-              <Link href={submenu.route}>
-                <div className={submenu.available ? ' hover:bg-[#1b369a] rounded-3xl' : 'pointer-events-none'}>
-                  <IconText
-                    key={`submenu-item-${index}`}
-                    sideIcon={submenu.icon}
-                    className={`${!submenu.available ? 'opacity-40' : ''}`}>
-                    <span
-                      className={`transition-width overflow-hidden whitespace-nowrap text-inherit	 ${
-                        sidebarIsExpanded ? '' : 'opacity-0 w-0'
-                      }`}>
-                      <p>{submenu.title}</p>
-                      {!submenu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
-                    </span>
-                  </IconText>
+              <SidebarItem
+                key={index}
+                disabled={!submenu.available}
+                selected={selectedRoute.includes(submenu.route)}
+                onClick={() => (submenu.available ? handleMenuClick(submenu.route) : {})}
+                icon={submenu.icon}
+                hoverIcon={submenu.hoverIcon}
+                className={`${sidebarIsExpanded ? 'w-60' : ''} ${!submenu.available ? '!opacity-40' : ''}`}>
+                <div
+                  className={`w-full transition-width overflow-hidden whitespace-nowrap ${
+                    sidebarIsExpanded ? '' : 'opacity-0 w-0'
+                  }`}>
+                  <div className="flex flex-row items-center justify-between mr-3">
+                    <p>{submenu.title}</p>
+                    {hasTokensToClaim(submenu) ? (
+                      <div className="bg-primary-700 text-xs text-white rounded-full py-0.5 px-2">
+                        {vestingSchedules.length}
+                      </div>
+                    ) : null}
+                  </div>
+                  {!submenu.available ? <p className="text-xs text-neutral-400 -mt-1">Coming soon</p> : null}
                 </div>
-              </Link>
+              </SidebarItem>
             ))
           : null}
         <UserContainer>
@@ -176,7 +183,7 @@ const UserContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding-top: 24px;
   border-top: 1px solid ${Colors.border};
   margin: 0 auto;

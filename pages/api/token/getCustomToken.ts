@@ -11,6 +11,7 @@ export interface SignInToken extends JwtPayload {
   orgId: string;
   orgName: string;
   name: string;
+  domain: string;
 }
 
 export const GetSignInToken = (
@@ -27,6 +28,7 @@ export const GetSignInToken = (
     type,
     orgId,
     orgName,
+    domain: process.env.NEXT_PUBLIC_DOMAIN_NAME || '',
     name,
     aud: 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit',
     iat: Math.floor(Date.now() / 1000)
@@ -44,6 +46,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const cert = process.env.CUSTOM_TOKEN_PUBLIC_KEY?.replace(/\\n/g, '\n');
     signInToken = jwt.verify(encryptToken, cert || '') as SignInToken;
+    if (signInToken.domain !== process.env.NEXT_PUBLIC_DOMAIN_NAME) {
+      return res.status(403).send({ message: 'Wrong domain' });
+    }
     const token = await firebaseAdmin?.auth().createCustomToken(signInToken.memberId);
 
     res.status(200).json({ ...signInToken, token: token, message: 'Success!' });

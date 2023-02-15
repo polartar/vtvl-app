@@ -72,8 +72,6 @@ export type AuthContextData = {
   setSafe: (safe: ISafe) => void;
   agreedOnConsent: boolean;
   setAgreedOnConsent: (data: any) => void;
-  loginToken: string;
-  setLoginToken: (token: string) => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -90,8 +88,6 @@ export function AuthContextProvider({ children }: any) {
   const [agreedOnConsent, setAgreedOnConsent] = useState<boolean>(false);
   const tried = useEagerConnect();
   const [error, setError] = useState('');
-  const [loginToken, setLoginToken] = useState('');
-
   // Remove after implementing context to show/hide the sidebar
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
   const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(true);
@@ -268,7 +264,6 @@ export function AuthContextProvider({ children }: any) {
         console.log(err);
       }
     }
-    console.log({ credential });
     const additionalInfo = getAdditionalUserInfo(credential);
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     const member = await fetchMember(credential.user.uid);
@@ -431,9 +426,7 @@ export function AuthContextProvider({ children }: any) {
       fetchSafe,
       setSafe,
       agreedOnConsent,
-      setAgreedOnConsent,
-      loginToken,
-      setLoginToken
+      setAgreedOnConsent
     }),
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent, connection]
   );

@@ -4,6 +4,10 @@ import { IVestingContract } from 'types/models';
 
 import { useShallowState } from './useShallowState';
 
+/**
+ * Get vesting contracts' detailed info from vesting contract ids.
+ * Vesting contract ids is coming from vestings data.
+ */
 export default function useVestingContracts(vestingContractIds: string[]) {
   const [state, setState] = useShallowState<{
     isLoading: boolean;

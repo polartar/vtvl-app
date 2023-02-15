@@ -16,12 +16,10 @@ type Data = {
 const checkMemberExist = async (email: string) => {
   if (firebaseAdmin) {
     const member = await fetchMemberByEmail(email);
-    console.log({ member });
     if (member) {
       return true;
     } else {
       const invitee = await fetchInviteeByEmail(email);
-      console.log({ invitee });
       if (invitee) {
         return true;
       }
@@ -33,12 +31,19 @@ const checkMemberExist = async (email: string) => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { encryptToken } = req.body;
+  const { encryptToken, email } = req.body;
 
   let token;
 
   try {
     const payload = jwt.decode(encryptToken) as SignInToken;
+    if (email !== payload.email) {
+      return res.status(403).json({ message: 'Wrong email' });
+    }
+
+    if (payload.domain !== process.env.NEXT_PUBLIC_DOMAIN_NAME) {
+      return res.status(403).json({ message: 'Wrong domain' });
+    }
 
     token = GetSignInToken(payload.memberId, payload.email, payload.type, payload.orgId, payload.orgName, payload.name);
     if (!(await checkMemberExist(payload.email))) {

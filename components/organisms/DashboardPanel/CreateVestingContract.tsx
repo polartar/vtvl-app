@@ -108,7 +108,6 @@ AddVestingSchedulesProps) => {
   const {
     vestings,
     transactions,
-    vestingContract,
     ownershipTransfered,
     // fetchDashboardVestingContract,
     fetchDashboardVestings,
@@ -386,36 +385,10 @@ AddVestingSchedulesProps) => {
   };
 
   useEffect(() => {
-    if (vestings && vestings.length > 0 && type !== 'fundContract') {
-      const vesting = vestings[activeVestingIndex].data;
-      if (vesting && vesting.transactionId) {
-        fetchTransaction(vesting.transactionId).then((res) => setTransaction(res));
-      } else if (!vesting.transactionId) {
-        setTransaction(undefined);
-        setSafeTransaction(undefined);
-        setApproved(false);
-        setExecutable(false);
-        if (!vestingContract?.id) setStatus('vestingContractRequired');
-        else setStatus('createSignTransaction');
-      }
-    }
-  }, [vestings, activeVestingIndex, type, vestingContract]);
-
-  useEffect(() => {
     if (transaction?.hash) {
       fetchSafeTransactionFromHash(transaction.hash);
     }
   }, [transaction, account]);
-
-  useEffect(() => {
-    if (type === 'contract' && !vestingContract?.id) {
-      setStatus('vestingContractRequired');
-    } else if (type === 'contract' && vestingContract?.id && !ownershipTransfered) {
-      setStatus('transferToMultisigSafe');
-    } else if (type === 'contract' && removeOwnership) {
-      setStatus('removeOwnership');
-    }
-  }, [type, vestingContract, ownershipTransfered, removeOwnership]);
 
   return (
     <div className={`panel ${className} mb-5`}>
