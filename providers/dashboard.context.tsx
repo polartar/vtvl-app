@@ -14,7 +14,6 @@ import { fetchVestingContractByQuery, fetchVestingContractsByQuery } from 'servi
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
-import { IVestingStatus } from 'types/models/vesting';
 import { IRecipient } from 'types/vesting';
 import { parseTokenAmount } from 'utils/token';
 
