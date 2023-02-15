@@ -34,7 +34,7 @@ const Expired = () => {
           email: data.email
         });
         if (res.data.message === 'Success!') {
-          toast.success('We sent you invite email again');
+          toast.success('A new invitation link has been sent to your email');
         }
       } catch (err: any) {
         console.log(err);
