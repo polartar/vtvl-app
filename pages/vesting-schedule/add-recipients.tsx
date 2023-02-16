@@ -6,7 +6,7 @@ import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useVestingContext } from '@providers/vesting.context';
 import { getDownloadURL, getStorage, ref } from 'firebase/storage';
 import { useShallowState } from 'hooks/useShallowState';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
@@ -58,15 +58,16 @@ const wizardSteps = [
 ];
 
 const crumbSteps = [
-  { title: 'Vesting schedule', route: '/vesting-schedule/create' },
-  { title: 'Configure schedule', route: '/vesting-schedule/create' }
+  { title: 'Vesting schedule', route: '/vesting-schedule' },
+  { title: 'Configure schedule', route: '/vesting-schedule/add-recipients' }
 ];
 
 const CreateVestingSchedule: NextPageWithLayout = () => {
-  const { updateRecipients, setScheduleState, scheduleState } = useVestingContext();
+  const { updateRecipients, setScheduleState, scheduleState, scheduleMode, recipients } = useVestingContext();
   const [rows, setRows] = useState<Array<RecipientTableRow>>([]);
   const [state, setState] = useShallowState({ step: 0 });
   const [duplicatedUsers, setDuplicatedUsers] = useState<Array<RecipientTableRow>>([]);
+  const router = useRouter();
 
   /**
    * Handles the modal step process
@@ -125,7 +126,12 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
   const handleReturn = useCallback(() => {
     if (state.step === 0) Router.push('/vesting-schedule');
-    else setState(({ step }) => ({ step: step - 1 }));
+    else {
+      Router.push(
+        `/vesting-schedule/add-recipients${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`
+      );
+      setState(({ step }) => ({ step: step - 1 }));
+    }
   }, [state.step]);
 
   const handleMoveToAddRecipientSection = useCallback(
@@ -157,11 +163,15 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
           prevRecipients = prevRecipients.concat(addresses);
         });
 
-        const res = data.filter((row: any) => prevRecipients.includes(row.address.toLowerCase()));
-        setDuplicatedUsers(res);
+        // To optimize later
+        // Apply validation of this only on add form
+        if (!scheduleMode.edit) {
+          const res = data.filter((row: any) => prevRecipients.includes(row.address.toLowerCase()));
+          setDuplicatedUsers(res);
 
-        if (res.length > 0) {
-          return;
+          if (res.length > 0) {
+            return;
+          }
         }
       }
 
@@ -175,7 +185,8 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
           recipientType: [getRecipient(row.type!)]
         })) ?? []
       );
-      Router.push('/vesting-schedule/configure');
+      // Route to the next page and check if the current route is edit or add.
+      Router.push(`/vesting-schedule/configure${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`);
     },
     [scheduleState, rows, updateRecipients]
   );
@@ -188,6 +199,27 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
       setTemplateUrl(url);
     });
   }, []);
+
+  useEffect(() => {
+    if (router.query && router.query.step && router.query.step === '1') {
+      setState({ step: 1 });
+    }
+  }, [router.query]);
+
+  // Get the recipients list and add it to the table on edit mode
+  useEffect(() => {
+    if (scheduleMode && scheduleMode.edit && recipients && recipients.length) {
+      setRows(
+        recipients.map((record: any, index: number) => ({
+          id: String(index),
+          name: record.name,
+          address: record.walletAddress,
+          allocations: record.allocations,
+          type: record.type || record.recipientType[0].value
+        }))
+      );
+    }
+  }, [scheduleMode, recipients]);
 
   return (
     <SteppedLayout title="Configure schedule" steps={wizardSteps} crumbs={crumbSteps} currentStep={state.step}>

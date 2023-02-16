@@ -1,5 +1,6 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useVestingContext } from '@providers/vesting.context';
 import Lottie from 'lottie-react';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -7,6 +8,7 @@ import SuccessAnimation from 'public/successfully-done.json';
 import { ReactElement } from 'react';
 
 const ConfirmationSuccess: NextPageWithLayout = () => {
+  const { scheduleMode } = useVestingContext();
   return (
     <>
       <h1 className="h2 font-medium text-center mb-10">Confirmation</h1>
@@ -14,7 +16,7 @@ const ConfirmationSuccess: NextPageWithLayout = () => {
         image={<Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />}
         imageSize="small"
         imageBlend={false}
-        title="Vesting schedule succesfully created!"
+        title={`Vesting schedule succesfully ${scheduleMode.edit ? 'updated' : 'created'}!`}
         description="A notification has been sent to the founder for approval">
         <button type="button" className="primary flex" onClick={() => Router.push(`/vesting-schedule`)}>
           View schedules

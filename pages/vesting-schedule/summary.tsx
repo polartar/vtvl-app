@@ -19,7 +19,7 @@ import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
-import { createVesting } from 'services/db/vesting';
+import { createVesting, updateVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContractByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { CLIFFDURATION_TIMESTAMP, CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChains } from 'types/constants/supported-chains';
@@ -46,19 +46,29 @@ interface ScheduleFormTypes {
 const ScheduleSummary: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { organizationId, safe, user } = useAuthContext();
-  const { recipients, scheduleFormState, scheduleState, resetVestingState, setScheduleState } = useVestingContext();
+  const { recipients, scheduleFormState, scheduleState, scheduleMode, resetVestingState, setScheduleState } =
+    useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
 
+  /**
+   * Handles the click function when user clicks the "Create schedule"
+   * This creates a vestingContract and vesting record in the DB for initial tracking purpose
+   * @returns
+   */
   const handleCreateSchedule = async () => {
+    // Check if the user is currently connected to their wallet.
     if (!account || !chainId) {
       activate(injected);
       return;
     }
-    const PERFORM_CREATE_FUNCTION = 'function performCreate(uint256 value, bytes memory deploymentData)';
-    const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
-    const ABI = [PERFORM_CREATE_FUNCTION];
 
+    // const PERFORM_CREATE_FUNCTION = 'function performCreate(uint256 value, bytes memory deploymentData)';
+    // const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
+    // const ABI = [PERFORM_CREATE_FUNCTION];
+
+    // Set the vestingContractId based on the scheduleState value coming from the previous forms.
     let vestingContractId = scheduleState.vestingContractId;
+    // If the contract is set to be a new one, let's create one.
     if (scheduleState.createNewContract) {
       vestingContractId = await createVestingContract({
         status: 'INITIALIZED',
@@ -74,23 +84,43 @@ const ScheduleSummary: NextPageWithLayout = () => {
       });
     }
 
-    const vestingId = await createVesting({
-      name: scheduleState.name,
-      details: { ...scheduleFormState },
-      recipients,
-      organizationId: organizationId!,
-      status: 'INITIALIZED',
-      createdAt: Math.floor(new Date().getTime() / 1000),
-      updatedAt: Math.floor(new Date().getTime() / 1000),
-      transactionId: '',
-      vestingContractId,
-      tokenAddress: mintFormState.address,
-      tokenId,
-      chainId
-    });
-    console.log('creating vesting schedule', vestingId);
+    // Create a draft vesting record -- which has a status of "CREATING".
+    // Draft records can still be edited or deleted as long as it's not yet funded.
+    if (scheduleMode && scheduleMode.edit && scheduleMode.id && scheduleMode.data) {
+      await updateVesting(
+        {
+          ...scheduleMode.data,
+          name: scheduleState.name,
+          details: { ...scheduleFormState },
+          recipients,
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          transactionId: '',
+          vestingContractId
+        },
+        scheduleMode.id
+      );
+    } else {
+      await createVesting({
+        name: scheduleState.name,
+        details: { ...scheduleFormState },
+        recipients,
+        organizationId: organizationId!,
+        status: 'INITIALIZED',
+        createdAt: Math.floor(new Date().getTime() / 1000),
+        updatedAt: Math.floor(new Date().getTime() / 1000),
+        transactionId: '',
+        vestingContractId,
+        tokenAddress: mintFormState.address,
+        tokenId,
+        chainId
+      });
+    }
+    console.log('creating vesting schedule');
+    // Redirect to the success page to notify the user
     await Router.push('/vesting-schedule/success');
-    resetVestingState();
+
+    // Reset the value of everything else from the previous forms
+    // resetVestingState();
     setScheduleState({
       name: '',
       contractName: '',
@@ -135,14 +165,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
         </div>
         <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
           <BackButton label="Return to configuration" href="/vesting-schedule/configure" />
-          <button
-            className="primary"
-            type="button"
-            onClick={() => {
-              handleCreateSchedule();
-              // Router.push('/vesting-schedule/success')
-            }}>
-            Create Schedule
+          <button className="primary" type="button" onClick={handleCreateSchedule}>
+            {scheduleMode && scheduleMode.edit ? 'Update Schedule' : 'Create Schedule'}
           </button>
         </div>
       </div>

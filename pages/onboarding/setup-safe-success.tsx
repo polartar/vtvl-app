@@ -13,14 +13,9 @@ const ConfirmationSuccess: NextPageWithLayout = () => {
       <EmptyState
         image={<Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />}
         imageSize="small"
-        imageBlend={false}
-        description={
-          <>
-            Now you can select to "<strong>Mint a new token</strong>" or "<strong>Import existing token</strong>".
-          </>
-        }>
+        imageBlend={false}>
         <button type="button" className="primary flex" onClick={() => Router.push(`/dashboard`)}>
-          Continue
+          Go to dashboard
         </button>
       </EmptyState>
     </>

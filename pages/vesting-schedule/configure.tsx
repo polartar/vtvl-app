@@ -77,7 +77,7 @@ const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
   const { account } = useWeb3React();
-  const { recipients, scheduleFormState, updateScheduleFormState } = useVestingContext();
+  const { recipients, scheduleFormState, scheduleMode, updateScheduleFormState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -107,11 +107,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       // amountToBeVestedText: formatNumber(parseFloat(mintFormState.initialSupply.toString())).toString(),
       amountToBeVested: parseFloat(totalAllocations?.toString() ?? '0'),
       amountToBeVestedText: formatNumber(parseFloat(totalAllocations?.toString() ?? '0')).toString(),
-      cliffDurationNumber: 1,
-      cliffDurationOption: defaultCliffDurationOption as CliffDuration | DateDurationOptionValues,
-      releaseFrequencySelectedOption: 'continuous',
-      customReleaseFrequencyNumber: 1,
-      customReleaseFrequencyOption: 'days'
+      cliffDurationNumber: scheduleFormState.cliffDurationNumber || 1,
+      cliffDurationOption:
+        scheduleFormState.cliffDurationOption ||
+        (defaultCliffDurationOption as CliffDuration | DateDurationOptionValues),
+      releaseFrequencySelectedOption: scheduleFormState.releaseFrequencySelectedOption || 'continuous',
+      customReleaseFrequencyNumber: scheduleFormState.customReleaseFrequencyNumber || 1,
+      customReleaseFrequencyOption: scheduleFormState.customReleaseFrequencyOption || 'days'
     }
   });
 
@@ -179,7 +181,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         endDateTime: projectedEndDateTime
       });
 
-      Router.push('/vesting-schedule/summary');
+      // Route based on current mode
+      Router.push(`/vesting-schedule/summary${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`);
     }
   };
 
@@ -977,6 +980,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     if (totalAllocations <= 0) Router.push('/vesting-schedule/add-recipients');
   }, [totalAllocations]);
 
+  useEffect(() => {
+    if (scheduleMode && scheduleMode.edit) {
+      // Update necessary local states based on the schedule data
+      // updateScheduleFormState()
+    }
+  }, [scheduleMode]);
+
   return (
     <>
       {/* TEMPLATE PROMPT AND SELECTION SECTION */}
@@ -1478,7 +1488,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             <div className="flex flex-row justify-between items-center p-6">
               <BackButton
                 label="Return to add recipients"
-                onClick={() => Router.push('/vesting-schedule/add-recipients')}
+                onClick={() =>
+                  Router.push(
+                    `/vesting-schedule/add-recipients?step=1${
+                      scheduleMode && scheduleMode.edit ? '&id=' + scheduleMode.id : ''
+                    }`
+                  )
+                }
               />
               <Button className="primary" type="submit" loading={isSubmitting} disabled={formError}>
                 Continue
