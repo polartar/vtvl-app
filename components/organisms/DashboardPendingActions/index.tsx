@@ -24,6 +24,7 @@ export type IStatus =
   | 'SUCCESS'
   | 'CONTRACT_REQUIRED'
   | 'FUNDING_REQUIRED'
+  | 'EXECUTABLE'
   | '';
 
 export type ITransactionStatus =
@@ -37,6 +38,7 @@ export type ITransactionStatus =
 export const STATUS_MAPPING: { [key in IStatus]: string } = {
   '': '',
   AUTHORIZATION_REQUIRED: 'Authorization required',
+  EXECUTABLE: 'Needs execution',
   PENDING_APPROVAL: 'Waiting for approval',
   TRANSFER_OWNERSHIP: 'Transfer ownership',
   REMOVE_ORIGINAL_OWNERSHIP: 'Remove original ownership',

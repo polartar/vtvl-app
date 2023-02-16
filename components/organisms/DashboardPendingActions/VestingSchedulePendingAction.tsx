@@ -118,7 +118,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
       if (safeTx) {
         setSafeTransaction(safeTx);
         if (safeTx.signatures.size >= safe?.threshold) {
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
+          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
             ...vestingsStatus,
