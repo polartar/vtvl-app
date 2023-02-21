@@ -1,3 +1,4 @@
+import PendingActionsFilter from '@components/molecules/PendingActionsFilter';
 import { injected } from '@connectors/index';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
@@ -63,6 +64,10 @@ const DashboardPendingActions = () => {
 
   const [pendingVestingContracts, setPendingVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
   const [pendingVestings, setPendingVestings] = useState<{ id: string; data: IVesting }[]>([]);
+  const [filter, setFilter] = useState<{
+    keyword: string;
+    status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
+  }>({ keyword: '', status: 'ALL' });
 
   useEffect(() => {
     if (vestingContracts && vestingContracts.length > 0) {
@@ -86,6 +91,9 @@ const DashboardPendingActions = () => {
   return (
     <div>
       <h1 className="mb-6 text-xl font-bold">Pending Actions</h1>
+      <div className="mb-6">
+        <PendingActionsFilter filter={filter} updateFilter={setFilter} />
+      </div>
       <div className="border border-[#d0d5dd] rounded-xl w-full overflow-hidden">
         <div className="flex bg-[#f2f4f7] text-[#475467] text-xs">
           <div className="w-16 py-3"></div>
@@ -98,12 +106,24 @@ const DashboardPendingActions = () => {
           <div className="min-w-[200px] flex-grow py-3"></div>
         </div>
         {pendingVestingContracts.map((vestingContract) => (
-          <VestingContractPendingAction id={vestingContract.id} data={vestingContract.data} key={vestingContract.id} />
+          <VestingContractPendingAction
+            id={vestingContract.id}
+            data={vestingContract.data}
+            key={vestingContract.id}
+            filter={filter}
+            updateFilter={setFilter}
+          />
         ))}
         {vestings
           .filter((vesting) => vesting.data.status !== 'COMPLETED' && vesting.data.status !== 'LIVE')
           .map((vesting) => (
-            <VestingSchedulePendingAction id={vesting.id} data={vesting.data} key={vesting.id} />
+            <VestingSchedulePendingAction
+              id={vesting.id}
+              data={vesting.data}
+              key={vesting.id}
+              filter={filter}
+              updateFilter={setFilter}
+            />
           ))}
         {revokings.map((revoking) => (
           <PendingRevokingAction id={revoking.id} data={revoking.data} key={revoking.id} />

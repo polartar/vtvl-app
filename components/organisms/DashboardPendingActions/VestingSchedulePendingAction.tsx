@@ -35,7 +35,25 @@ import {
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
 
-const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = ({ id, data }) => {
+interface IVestingContractPendingActionProps {
+  id: string;
+  data: IVesting;
+  filter: {
+    keyword: string;
+    status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
+  };
+  updateFilter: (v: {
+    keyword: string;
+    status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
+  }) => void;
+}
+
+const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps> = ({
+  id,
+  data,
+  filter,
+  updateFilter
+}) => {
   const { account, chainId, activate, library } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   const {
@@ -73,6 +91,13 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
+
+  const isVisible =
+    status !== 'SUCCESS' &&
+    (filter.status === 'ALL' ||
+      (filter.status === 'FUND' && status === 'FUNDING_REQUIRED') ||
+      (filter.status === 'APPROVE' && transactionStatus === 'APPROVAL_REQUIRED') ||
+      (filter.status === 'EXECUTE' && transactionStatus === 'EXECUTABLE'));
 
   const isFundAvailable = useCallback(() => {
     const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
@@ -720,14 +745,24 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
     initializeStatus();
   }, [data, safe, account, vestingContract, transactions, transaction]);
 
-  return status === 'SUCCESS' ? null : (
+  return isVisible ? (
     <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">
       <div className="flex items-center w-16 py-3"></div>
       <div className="flex items-center w-36 py-3">{data.name}</div>
       <div className="flex items-center w-52 py-3">Vesting Schedule</div>
       <div className="flex items-center w-52 py-3">
         {!!status && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#fef3c7] text-[#f59e0b] text-xs whitespace-nowrap">
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#fef3c7] text-[#f59e0b] text-xs whitespace-nowrap cursor-pointer"
+            onClick={() => {
+              if (status === 'FUNDING_REQUIRED') {
+                updateFilter({ ...filter, status: 'FUND' });
+              } else if (transactionStatus === 'EXECUTABLE') {
+                updateFilter({ ...filter, status: 'EXECUTE' });
+              } else if (transactionStatus === 'APPROVAL_REQUIRED' || transactionStatus === 'WAITING_APPROVAL') {
+                updateFilter({ ...filter, status: 'APPROVE' });
+              }
+            }}>
             <WarningIcon className="w-3 h-3" />
             {STATUS_MAPPING[status]}
           </div>
@@ -824,7 +859,7 @@ const VestingSchedulePendingAction: React.FC<{ id: string; data: IVesting }> = (
         />
       )}
     </div>
-  );
+  ) : null;
 };
 
 export default VestingSchedulePendingAction;
