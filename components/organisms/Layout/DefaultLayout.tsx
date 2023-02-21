@@ -67,6 +67,13 @@ const FounderRoutes = {
       available: true
     },
     {
+      title: 'Contracts',
+      route: '/contracts',
+      icon: '/icons/contracts.svg',
+      hoverIcon: '/icons/contracts-hover.svg',
+      available: true
+    },
+    {
       title: 'Vesting schedule',
       icon: '/icons/s_vestingSchedule.svg',
       hoverIcon: '/icons/s_vestingSchedule2.svg',

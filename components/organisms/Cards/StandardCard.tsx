@@ -8,14 +8,16 @@ export interface StandardCardProps {
   icon?: React.ReactElement;
   title: string;
   content: string;
-  contentType?: 'text' | 'number';
+  contentType?: 'text' | 'number' | 'compact';
   contentIcon?: React.ReactElement;
   className?: string;
+  isCaret?: boolean;
 }
 
-const renderContent = (content: string, contentType: 'text' | 'number') => {
+const renderContent = (content: string, contentType: 'text' | 'number' | 'compact') => {
   if (contentType === 'text') return content;
   if (contentType === 'number') return formatNumber(Number(truncateComma(content)));
+  if (contentType === 'compact') return Intl.NumberFormat('en', { notation: 'compact' }).format(Number(content));
 };
 
 export default function StandardCard({
@@ -25,7 +27,8 @@ export default function StandardCard({
   icon,
   contentType = 'text',
   contentIcon,
-  className
+  className,
+  isCaret
 }: StandardCardProps) {
   return (
     <div className={`border border-primary-50 rounded-10 py-4 px-6 font-medium ${className}`}>
@@ -43,7 +46,7 @@ export default function StandardCard({
           </>
         )}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex justify-between items-end">
         {isLoading ? (
           <div className="animate-pulse">
             <div className="bg-neutral-100 h-[33px] w-150 rounded-10"></div>
@@ -56,6 +59,7 @@ export default function StandardCard({
             </Typography>
           </>
         )}
+        {isCaret && <img src="/icons/caret-right-border.svg" alt="VTVL" />}
       </div>
     </div>
   );
