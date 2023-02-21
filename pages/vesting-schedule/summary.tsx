@@ -114,6 +114,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
         tokenId,
         chainId
       });
+
+      // TODO send emails to recipients
     }
     console.log('creating vesting schedule');
     // Redirect to the success page to notify the user

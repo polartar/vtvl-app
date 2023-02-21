@@ -11,15 +11,17 @@ import { NextPageWithLayout } from 'pages/_app';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { fetchVestingsByQuery } from 'services/db/vesting';
-import { createVestingContract, fetchVestingContractsByQuery } from 'services/db/vestingContract';
 import { IVesting } from 'types/models';
+import { isEmptyArray } from 'utils/regex';
+import { validate } from 'utils/validator';
 
 const beneficiaryFields = [
-  { label: 'Wallet Address', value: 'address' },
-  { label: 'Recipient Type', value: 'type' },
   { label: 'Name', value: 'name' },
-  { label: 'Company Name', value: 'company' },
-  { label: 'Allocations', value: 'allocations' }
+  { label: 'Email', value: 'email' },
+  { label: 'Wallet Address', value: 'address' },
+  { label: 'Allocations', value: 'allocations' },
+  { label: 'Recipient Type', value: 'type' },
+  { label: 'Company Name', value: 'company' }
 ];
 
 const styles: Styles = {
@@ -67,6 +69,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
   const [rows, setRows] = useState<Array<RecipientTableRow>>([]);
   const [state, setState] = useShallowState({ step: 0 });
   const [duplicatedUsers, setDuplicatedUsers] = useState<Array<RecipientTableRow>>([]);
+  const [errors, setErrors] = useState<string[]>([]);
   const router = useRouter();
 
   /**
@@ -116,6 +119,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
       data.map((record: any, index: number) => ({
         id: String(index),
         name: record.name,
+        email: record.email,
         address: record.address,
         allocations: record.allocations,
         type: record.type
@@ -136,7 +140,6 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
   const handleMoveToAddRecipientSection = useCallback(
     ({ scheduleName, contractName, createNewContract, vestingContractId }: any) => {
-      console.log('DEBUG_vestingContract', vestingContractId);
       setScheduleState({
         name: scheduleName,
         contractName,
@@ -149,7 +152,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
   );
 
   const handleContinue = useCallback(
-    async (data: any[]) => {
+    async (data: any[], newErrors: string[]) => {
       if (scheduleState.vestingContractId) {
         // const vestings = await fetchVestingContractsByQuery(['vestingContractId'], ['=='], [scheduleState.vestingContractId])
         const vestings: { id: string; data: IVesting }[] = await fetchVestingsByQuery(
@@ -159,7 +162,11 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
         );
         let prevRecipients: string[] = [];
         vestings.forEach((vesting) => {
-          const addresses = vesting.data.recipients.map((recipient) => recipient.walletAddress.toLowerCase());
+          const addresses =
+            vesting.data.recipients
+              .filter(({ walletAddress }) => !!walletAddress)
+              .map(({ walletAddress }) => String(walletAddress?.toLowerCase())) ?? [];
+
           prevRecipients = prevRecipients.concat(addresses);
         });
 
@@ -170,17 +177,24 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
           setDuplicatedUsers(res);
 
           if (res.length > 0) {
+            setErrors([...newErrors, 'Some wallet addresses are already registered in vesting contract.']);
             return;
           }
         }
       }
 
       setDuplicatedUsers([]);
+      setErrors(newErrors);
+
+      if (!isEmptyArray(newErrors)) {
+        return;
+      }
 
       await updateRecipients?.(
         data.map((row: any) => ({
           walletAddress: row.address,
           name: row.name,
+          email: row.email,
           allocations: row.allocations,
           recipientType: [getRecipient(row.type!)]
         })) ?? []
@@ -215,6 +229,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
           name: record.name,
           address: record.walletAddress,
           allocations: record.allocations,
+          email: String(record.email),
           type: record.type || record.recipientType[0].value
         }))
       );
@@ -230,41 +245,65 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
           onContinue={handleMoveToAddRecipientSection}
         />
       )}
-      {state.step === 1 && (
-        <div className="w-full mb-6 panel max-w-2xl">
-          <div className="mb-4 flex flex-col gap-7">
-            <Typography className="font-semibold" size="subtitle">
-              Add recipient
-            </Typography>
-            <a
-              href="javascript:;"
-              className="flex flex-row items-center gap-3 text-neutral-500"
-              onClick={() => setModalOpen(true)}>
-              <img src="/icons/import.svg" className="w-4 h-4" />
-              <Typography size="paragraph">Import CSV</Typography>
-            </a>
-          </div>
 
-          <RecipientTable initialRows={rows} onReturn={handleReturn} onContinue={handleContinue}>
-            {duplicatedUsers?.length ? (
-              <>
-                <p className="mb-2 text-danger-500">
-                  Following recipients were already added to the selected vesting contract:
-                </p>
-                <ul className="mb-4 pl-8 list-disc list-outside marker:text-danger-500">
-                  {duplicatedUsers?.map((user) => (
-                    <li key={user.address}>
-                      <Typography className="text-danger-500" variant="inter" size="caption">
-                        {user.name} - {user.address}
-                      </Typography>
-                    </li>
+      {state.step === 1 && (
+        <>
+          <div className={`rounded-3xl p-[6px] ${errors.length && 'border border-danger-600 bg-danger-100'}`}>
+            <div className="w-full mb-6 panel max-w-2xl bg-white">
+              <div className="mb-4 flex flex-col gap-7">
+                <div className="flex flex-col gap-1">
+                  <Typography className="font-semibold" size="subtitle">
+                    Add recipient
+                  </Typography>
+                  <Typography className="font-medium text-neutral-500" size="caption">
+                    For all recipients without a wallet address, please confirm by providing an{' '}
+                    <Typography className="font-bold" size="caption">
+                      email address
+                    </Typography>
+                  </Typography>
+                </div>
+                <a
+                  href="javascript:;"
+                  className="flex flex-row items-center gap-3 text-neutral-500"
+                  onClick={() => setModalOpen(true)}>
+                  <img src="/icons/import.svg" className="w-4 h-4" />
+                  <Typography size="paragraph">Import CSV</Typography>
+                </a>
+              </div>
+
+              <RecipientTable initialRows={rows} onReturn={handleReturn} onContinue={handleContinue}>
+                {duplicatedUsers?.length ? (
+                  <>
+                    <p className="mb-2 text-danger-500">
+                      Following recipients were already added to the selected vesting contract:
+                    </p>
+                    <ul className="mb-4 pl-8 list-disc list-outside marker:text-danger-500">
+                      {duplicatedUsers?.map((user) => (
+                        <li key={user.address}>
+                          <Typography className="text-danger-500" variant="inter" size="caption">
+                            {user.name} - {user.address}
+                          </Typography>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  ''
+                )}
+              </RecipientTable>
+            </div>
+            {!isEmptyArray(errors) && (
+              <div className="w-full flex justify-center -mt-4">
+                <div className="flex flex-col gap-1">
+                  {errors.map((error) => (
+                    <Typography key={error} className="text-danger-700" size="caption">
+                      {error}
+                    </Typography>
                   ))}
-                </ul>
-              </>
-            ) : (
-              ''
+                </div>
+              </div>
             )}
-          </RecipientTable>
+          </div>
 
           <Modal isOpen={modalOpen} className="z-50 max-w-lg w-full" style={styles}>
             <ImportCSVFlow
@@ -274,7 +313,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
               onComplete={handleCSVImport}
             />
           </Modal>
-        </div>
+        </>
       )}
     </SteppedLayout>
   );

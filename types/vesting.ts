@@ -7,6 +7,7 @@ import { IVesting } from './models';
 export interface IRecipient {
   walletAddress: string;
   name: string;
+  email: string;
   company: string;
   recipientType: MultiValue<IRecipientType>;
   allocations?: number;
