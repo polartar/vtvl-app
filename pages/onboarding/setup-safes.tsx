@@ -1,5 +1,6 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
+import Hint from '@components/atoms/Hint/Hint';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -42,7 +43,29 @@ const YourSafesPage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
-      <h1 className="text-neutral-900">Setup your multi-sig Safe</h1>
+      <div className="text-center">
+        <h1 className="text-neutral-900 mb-1 flex flex-row items-center gap-1">
+          Setup your multi-sig{' '}
+          <Hint
+            tip={
+              <>
+                <i>Safe</i> is a multi-signature smart contract wallet that allows users to define a list of
+                owner/signer accounts and a threshold number of signers required to confirm a transaction.
+              </>
+            }>
+            <img src="/images/safe.png" className="w-28" alt="Safe" />
+          </Hint>
+        </h1>
+        <p className="text-xs font-medium">
+          Need help with what exactly is Safe?{' '}
+          <a
+            className="text-primary-900"
+            href="https://help.gnosis-safe.io/en/collections/2289028-getting-started"
+            target="_blank">
+            Give me more info
+          </a>
+        </p>
+      </div>
       <div className="w-full my-6 panel">
         <h2 className="h5 font-semibold text-neutral-900">Your Safes</h2>
         <p className="text-sm text-neutral-500">Create a new Safe or import an existing Safe</p>
