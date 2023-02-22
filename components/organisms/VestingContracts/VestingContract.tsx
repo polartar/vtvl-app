@@ -61,28 +61,26 @@ export default function VestingContract({ vestingContractId }: { vestingContract
   });
   const vestingContractsInfo = useMemo(() => {
     if (!vestingSchedulesInfo || !vestingSchedulesInfo.length || !vestingContracts.length) return undefined;
-    let allocation = 0,
-      unclaimed = 0,
-      withdrawn = 0,
-      locked = 0;
+    let allocation = BigNumber.from(0),
+      unclaimed = BigNumber.from(0),
+      withdrawn = BigNumber.from(0),
+      locked = BigNumber.from(0);
     vestingSchedulesInfo.forEach((vesting) => {
-      allocation += Number(vesting.allocation);
-      unclaimed += Number(vesting.unclaimed);
-      withdrawn += Number(vesting.withdrawn);
-      locked += Number(vesting.locked);
+      allocation = allocation.add(vesting.allocation);
+      unclaimed = unclaimed.add(vesting.unclaimed);
+      withdrawn = withdrawn.add(vesting.withdrawn);
+      locked = locked.add(vesting.locked);
     });
     return {
       address: vestingSchedulesInfo[0].address,
       recipient: '',
-      allocation: allocation.toString(),
-      unclaimed: unclaimed.toString(),
-      withdrawn: withdrawn.toString(),
-      locked: locked.toString(),
-      reserved: (
-        Number(ethers.utils.formatEther(vestingContracts[0]?.data.balance || '0')) -
-        withdrawn +
-        unclaimed
-      ).toString()
+      allocation: allocation,
+      unclaimed: unclaimed,
+      withdrawn: withdrawn,
+      locked: locked,
+      reserved: BigNumber.from(vestingContracts[0]?.data.balance || '0')
+        .sub(withdrawn)
+        .add(unclaimed)
     };
   }, [vestingSchedulesInfo, vestingContracts]);
   return (
@@ -123,11 +121,13 @@ export default function VestingContract({ vestingContractId }: { vestingContract
             <ContractsProfile vestingContractsInfo={[vestingContractsInfo]} vestingCount={vestings.length} />
           )}
 
-          <VestingFilter
-            vestings={vestings}
-            vestingSchedulesInfo={vestingSchedulesInfo}
-            balanceInfo={balanceInfo as IBalanceInfo}
-          />
+          {balanceInfo && (
+            <VestingFilter
+              vestings={vestings}
+              vestingSchedulesInfo={vestingSchedulesInfo}
+              balanceInfo={balanceInfo as IBalanceInfo}
+            />
+          )}
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6 px-6">
             {!vestingContracts.length ? (

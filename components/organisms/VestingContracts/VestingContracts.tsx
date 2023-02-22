@@ -2,7 +2,8 @@ import Copy from '@components/atoms/Copy/Copy';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
-import { ethers } from 'ethers';
+import { BigNumber } from 'ethers';
+import { formatEther } from 'ethers/lib/utils';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import { useModal } from 'hooks/useModal';
 import Image from 'next/image';
@@ -28,29 +29,27 @@ export default function VestingContracts() {
   const getVestingInfoByContract = useCallback(
     (contract: string) => {
       const vestings = vestingSchedulesInfo.filter((vi) => compareAddresses(vi.address, contract));
-      let allocation = 0,
-        unclaimed = 0,
-        withdrawn = 0,
-        locked = 0;
+      let allocation = BigNumber.from(0),
+        unclaimed = BigNumber.from(0),
+        withdrawn = BigNumber.from(0),
+        locked = BigNumber.from(0);
       vestings.forEach((vesting) => {
-        allocation += Number(vesting.allocation);
-        unclaimed += Number(vesting.unclaimed);
-        withdrawn += Number(vesting.withdrawn);
-        locked += Number(vesting.locked);
+        allocation = allocation.add(vesting.allocation);
+        unclaimed = unclaimed.add(vesting.unclaimed);
+        withdrawn = withdrawn.add(vesting.withdrawn);
+        locked = locked.add(vesting.locked);
       });
       const vestingContract = vestingContracts.find((item) => compareAddresses(item.data.address, contract));
       return {
         address: contract,
         recipient: '',
-        allocation: allocation.toString(),
-        unclaimed: unclaimed.toString(),
-        withdrawn: withdrawn.toString(),
-        locked: locked.toString(),
-        reserved: (
-          Number(ethers.utils.formatEther(vestingContract?.data.balance || '0')) -
-          withdrawn +
-          unclaimed
-        ).toString()
+        allocation: allocation,
+        unclaimed: unclaimed,
+        withdrawn: withdrawn,
+        locked: locked,
+        reserved: BigNumber.from(vestingContract?.data.balance || '0')
+          .sub(withdrawn)
+          .add(unclaimed)
       };
     },
     [vestingSchedulesInfo]
@@ -102,10 +101,10 @@ export default function VestingContracts() {
                   key={vestingContractInfo.data.address}
                   title={String(vestingContractInfo.data.name)}
                   address={vestingContractInfo.data.address}
-                  totalAllocation={vestingInfo?.allocation || ''}
-                  withdrawnAmount={Number(String(vestingInfo?.withdrawn)).toFixed(2)}
-                  unclaimedAmount={Number(String(vestingInfo?.unclaimed)).toFixed(2)}
-                  totalLockedAmount={Number(String(vestingInfo?.locked)).toFixed(2)}
+                  totalAllocation={formatEther(vestingInfo?.allocation.toString()) || ''}
+                  withdrawnAmount={Number(formatEther(String(vestingInfo?.withdrawn))).toFixed(2)}
+                  unclaimedAmount={Number(formatEther(String(vestingInfo?.unclaimed))).toFixed(2)}
+                  totalLockedAmount={Number(formatEther(String(vestingInfo?.locked))).toFixed(2)}
                   buttonLabel="View contract"
                   buttonAction={() => router.push(`/contracts/${vestingContractInfo.id}`)}
                 />

@@ -1,20 +1,18 @@
-import Chip from '@components/atoms/Chip/Chip';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
 import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
-import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ethers } from 'ethers';
-import { BigNumber, BigNumberish } from 'ethers/lib/ethers';
+import { BigNumber } from 'ethers/lib/ethers';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import Image from 'next/image';
 import React, { useMemo, useState } from 'react';
 import { fetchRevokingSchedules } from 'services/db/revoking';
 import useSWR from 'swr';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVesting, IVestingContract } from 'types/models';
+import { IVesting } from 'types/models';
 
 import ScheduleTable from './ScheduleTable';
 import { IBalanceInfo } from './VestingContract';

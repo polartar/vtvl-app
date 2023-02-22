@@ -2,7 +2,7 @@ import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
-import { BigNumber, BigNumberish } from 'ethers/lib/ethers';
+import { BigNumber } from 'ethers/lib/ethers';
 import { useEffect } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting, IVestingContract } from 'types/models';
@@ -13,16 +13,15 @@ import { useShallowState } from './useShallowState';
 
 const TOTAL_ALLOCATION_AMOUNT_INDEX = 4;
 const WITHDRAWN_AMOUNT_INDEX = 5;
-const CLIFF_AMOUNT_INDEX = 6;
 
 export type VestingContractInfo = {
   address: string;
   recipient: string;
-  unclaimed: string;
-  allocation: string;
-  withdrawn: string;
-  locked: string;
-  reserved?: string;
+  unclaimed: BigNumber;
+  allocation: BigNumber;
+  withdrawn: BigNumber;
+  locked: BigNumber;
+  reserved?: BigNumber;
 };
 
 /**
@@ -89,10 +88,10 @@ export default function useChainVestingContracts(
         const chainData: Array<{
           address: string;
           recipient: string;
-          unclaimed: BigNumberish;
-          allocation: BigNumberish;
-          withdrawn: BigNumberish;
-          locked: BigNumberish;
+          unclaimed: BigNumber;
+          allocation: BigNumber;
+          withdrawn: BigNumber;
+          locked: BigNumber;
         }> = [];
         Object.keys(response.results).forEach((key) => {
           const value = response.results[key];
@@ -136,10 +135,10 @@ export default function useChainVestingContracts(
             return {
               address: data.address,
               recipient: data.recipient,
-              allocation: ethers.utils.formatEther(data.allocation.toString()),
-              withdrawn: ethers.utils.formatEther(data.withdrawn.toString()),
-              unclaimed: ethers.utils.formatEther(data.unclaimed.toString()),
-              locked: ethers.utils.formatEther((locked.gte(0) ? locked : BigNumber.from(0)).toString())
+              allocation: data.allocation,
+              withdrawn: data.withdrawn,
+              unclaimed: data.unclaimed,
+              locked: locked.gte(0) ? locked : BigNumber.from(0)
             };
           })
         });

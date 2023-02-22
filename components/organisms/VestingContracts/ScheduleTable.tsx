@@ -15,6 +15,7 @@ import {
 import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
+import { formatEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import { useTokenContext } from 'providers/token.context';
@@ -733,6 +734,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     [vestingSchedulesInfo]
   );
 
+  const formatValue = (value: BigNumber | undefined) => {
+    return value ? formatEther(value) : 0;
+  };
+
   return (
     <>
       <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">
@@ -856,10 +861,18 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
                   </p>
                 </Copy>
               </div>
-              <div className="flex items-center w-52 py-3">{getRecipientInfo(recipient.walletAddress)?.withdrawn}</div>
-              <div className="flex items-center w-40 py-3">{getRecipientInfo(recipient.walletAddress)?.unclaimed}</div>
-              <div className="flex items-center w-32 py-3">{getRecipientInfo(recipient.walletAddress)?.locked}</div>
-              <div className="flex items-center w-40 py-3">{getRecipientInfo(recipient.walletAddress)?.allocation}</div>
+              <div className="flex items-center w-52 py-3">
+                {formatValue(getRecipientInfo(recipient.walletAddress)?.withdrawn)}
+              </div>
+              <div className="flex items-center w-40 py-3">
+                {formatValue(getRecipientInfo(recipient.walletAddress)?.unclaimed)}
+              </div>
+              <div className="flex items-center w-32 py-3">
+                {formatValue(getRecipientInfo(recipient.walletAddress)?.locked)}
+              </div>
+              <div className="flex items-center w-40 py-3">
+                {formatValue(getRecipientInfo(recipient.walletAddress)?.allocation)}
+              </div>
               <div className="flex items-center min-w-[200px] flex-grow py-3"></div>
             </div>
           );
