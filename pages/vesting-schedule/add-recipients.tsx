@@ -220,9 +220,13 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
     }
   }, [router.query]);
 
-  // Get the recipients list and add it to the table on edit mode
+  // Get the recipients list and add it to the table on edit mode OR when navigating back here from the vesting schedule configuration form.
   useEffect(() => {
-    if (scheduleMode && scheduleMode.edit && recipients && recipients.length) {
+    if (
+      ((scheduleMode && scheduleMode.edit) || (router.query && router.query.step && router.query.step === '1')) &&
+      recipients &&
+      recipients.length
+    ) {
       setRows(
         recipients.map((record: any, index: number) => ({
           id: String(index),

@@ -166,7 +166,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
           <ScheduleDetails {...scheduleFormState} token={mintFormState.symbol || 'Token'} />
         </div>
         <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-          <BackButton label="Return to configuration" href="/vesting-schedule/configure" />
+          <BackButton label="Return" href="/vesting-schedule/configure" />
           <button className="primary" type="button" onClick={handleCreateSchedule}>
             {scheduleMode && scheduleMode.edit ? 'Update Schedule' : 'Create Schedule'}
           </button>
