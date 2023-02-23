@@ -485,9 +485,13 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       // const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
       //   parseTokenAmount(vestingAmountPerUser, 18)
       // );
-      const vestingLinearVestAmounts = vesting.recipients.map((recipient) =>
-        parseTokenAmount(Number(recipient.allocations), 18)
-      );
+      const vestingLinearVestAmounts = vesting.recipients.map((recipient) => {
+        const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
+        // Computes how many tokens are left after cliff based on percentage
+        const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
+        return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
+      });
+
       const vestingCliffAmounts = new Array(vesting.recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
 
       const CREATE_CLAIMS_BATCH_FUNCTION =
