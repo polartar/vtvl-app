@@ -198,7 +198,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
                   status === 'TRANSFER_OWNERSHIP' || status === 'REMOVE_ORIGINAL_OWNERSHIP'
                     ? 'TRANSFER_OWNERSHIP'
                     : status === 'AUTHORIZATION_REQUIRED'
-                    ? 'EXECUTE'
+                    ? 'DEPLOY_VESTING_CONTRACT'
                     : 'ALL'
               });
             }}>

@@ -97,7 +97,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     (filter.status === 'ALL' ||
       (filter.status === 'FUND' && status === 'FUNDING_REQUIRED') ||
       (filter.status === 'APPROVE' && transactionStatus === 'APPROVAL_REQUIRED') ||
-      (filter.status === 'EXECUTE' && transactionStatus === 'EXECUTABLE'));
+      (filter.status === 'EXECUTE' && (transactionStatus === 'EXECUTABLE' || status === 'AUTHORIZATION_REQUIRED')));
 
   const isFundAvailable = useCallback(() => {
     const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
