@@ -95,9 +95,10 @@ export function ClaimTokensContextProvider({ children }: any) {
     const vestings = await fetchAllVestingsWithId();
     // MOCK FEATURE
     // if (vestings && vestings.length > 0) {
-    if (vestings && vestings.length > 0 && account) {
+    if (vestings && vestings.length > 0 && account && chainId) {
       vestings.forEach((vesting) => {
         if (
+          vesting.data.chainId === chainId &&
           vesting.data.recipients &&
           vesting.data.recipients.length > 0 &&
           vesting.data.recipients.find((recipient) => recipient.walletAddress.toLowerCase() === account.toLowerCase())
@@ -229,7 +230,7 @@ export function ClaimTokensContextProvider({ children }: any) {
     fetchOrganizations();
     // MOCK FEATURE
     // }, []);
-  }, [user, account]);
+  }, [user, account, chainId]);
 
   // Stores the token list of the current user
   useEffect(() => {
