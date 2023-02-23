@@ -27,8 +27,8 @@ export default function VestingContracts() {
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(vestingContracts, allVestings);
 
   const getVestingInfoByContract = useCallback(
-    (contract: string) => {
-      const vestings = vestingSchedulesInfo.filter((vi) => compareAddresses(vi.address, contract));
+    (contractAddress: string) => {
+      const vestings = vestingSchedulesInfo.filter((vi) => compareAddresses(vi.address, contractAddress));
       let allocation = BigNumber.from(0),
         unclaimed = BigNumber.from(0),
         withdrawn = BigNumber.from(0),
@@ -39,17 +39,21 @@ export default function VestingContracts() {
         withdrawn = withdrawn.add(vesting.withdrawn);
         locked = locked.add(vesting.locked);
       });
-      const vestingContract = vestingContracts.find((item) => compareAddresses(item.data.address, contract));
+
+      const vestingContract = vestingContracts.find((contract) =>
+        compareAddresses(contract.data.address, contractAddress)
+      );
+
       return {
-        address: contract,
+        address: contractAddress,
         recipient: '',
         allocation: allocation,
         unclaimed: unclaimed,
         withdrawn: withdrawn,
         locked: locked,
-        reserved: BigNumber.from(vestingContract?.data.balance || '0')
-          .sub(withdrawn)
-          .add(unclaimed)
+        reserved: vestings.length
+          ? BigNumber.from(vestingContract?.data.balance || '0').sub(vestings[0].numTokensReservedForVesting || '0')
+          : BigNumber.from(0)
       };
     },
     [vestingSchedulesInfo]
@@ -85,7 +89,7 @@ export default function VestingContracts() {
         </div>
       </div>
 
-      <ContractsProfile vestingContractsInfo={vestingContractsInfo} vestingCount={vestingContracts.length} />
+      <ContractsProfile vestingContractsInfo={vestingContractsInfo} count={vestingContracts.length} title="Contract" />
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6 px-6">
         {!vestingContracts

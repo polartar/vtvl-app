@@ -15,12 +15,11 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { IVesting } from 'types/models';
 
 import ScheduleTable from './ScheduleTable';
-import { IBalanceInfo } from './VestingContract';
 
 interface IVestingsProps {
   vestings: { id: string; data: IVesting }[];
   vestingSchedulesInfo: VestingContractInfo[];
-  balanceInfo: IBalanceInfo;
+  totalBalance: string;
 }
 enum IStatus {
   ALL = 'ALL',
@@ -30,7 +29,7 @@ enum IStatus {
   Revoke = 'Revoke',
   Completed = 'Completed'
 }
-const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, balanceInfo }) => {
+const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, totalBalance }) => {
   const [filter, setFilter] = useState<{
     keyword: string;
     status: IStatus;
@@ -83,11 +82,10 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, ba
             isFund = transaction.data.type === 'FUNDING_CONTRACT' && vesting.data.status === 'WAITING_APPROVAL';
           } else {
             isFund =
-              BigNumber.from(balanceInfo.tokenBalance).gte(
-                BigNumber.from(balanceInfo.numberOfTokensReservedForVesting)
-              ) &&
-              BigNumber.from(balanceInfo.tokenBalance)
-                .sub(BigNumber.from(balanceInfo.numberOfTokensReservedForVesting))
+              vestingSchedulesInfo.length &&
+              BigNumber.from(totalBalance).gte(BigNumber.from(vestingSchedulesInfo[0].numTokensReservedForVesting)) &&
+              BigNumber.from(totalBalance)
+                .sub(BigNumber.from(vestingSchedulesInfo[0].numTokensReservedForVesting))
                 .lt(ethers.utils.parseEther(vesting.data.details.amountToBeVested.toString())) &&
               vesting.data.status !== 'LIVE';
           }
@@ -105,7 +103,10 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, ba
             return vesting.data.status === 'LIVE';
           }
           if (filter.status === IStatus.Create) {
-            return vesting.data.status === 'INITIALIZED' && !isFund;
+            return (
+              (vesting.data.status === 'INITIALIZED' && !isFund) ||
+              (vesting.data.status === 'WAITING_APPROVAL' && !vesting.data.transactionId)
+            );
           }
           if (filter.status === IStatus.Revoke) {
             return (
@@ -141,9 +142,10 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, ba
         isFund = transaction.data.type === 'FUNDING_CONTRACT' && vesting.data.status === 'WAITING_APPROVAL';
       } else {
         isFund =
-          BigNumber.from(balanceInfo.tokenBalance).gte(BigNumber.from(balanceInfo.numberOfTokensReservedForVesting)) &&
-          BigNumber.from(balanceInfo.tokenBalance)
-            .sub(BigNumber.from(balanceInfo.numberOfTokensReservedForVesting))
+          vestingSchedulesInfo.length &&
+          BigNumber.from(totalBalance).gte(BigNumber.from(vestingSchedulesInfo[0].numTokensReservedForVesting)) &&
+          BigNumber.from(totalBalance)
+            .sub(BigNumber.from(vestingSchedulesInfo[0].numTokensReservedForVesting))
             .lt(ethers.utils.parseEther(vesting.data.details.amountToBeVested.toString())) &&
           vesting.data.status !== 'LIVE';
       }
@@ -155,7 +157,10 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, ba
       if (isFund) {
         fundCount++;
       }
-      if (vesting.data.status === 'INITIALIZED' && !isFund) {
+      if (
+        (vesting.data.status === 'INITIALIZED' && !isFund) ||
+        (vesting.data.status === 'WAITING_APPROVAL' && !vesting.data.transactionId)
+      ) {
         createCount++;
       }
       if (
@@ -193,6 +198,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, ba
           {Object.values(IStatus).map((status, index) => {
             return (
               <div
+                key={status}
                 className={`px-4 py-3 bg-white border-r border-[#d0d5dd] text-sm text-[#1d2939] cursor-pointer hover:bg-[#eaeaea] ${
                   filter.status === status ? 'bg-[#eaeaea]' : ''
                 }`}

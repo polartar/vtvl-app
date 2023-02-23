@@ -2,29 +2,19 @@ import Copy from '@components/atoms/Copy/Copy';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
-import { useWeb3React } from '@web3-react/core';
-import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
-import { ethers } from 'ethers';
-import { BigNumber, BigNumberish } from 'ethers/lib/ethers';
+import { BigNumber } from 'ethers/lib/ethers';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import React, { useMemo } from 'react';
-import useSWR from 'swr';
-import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 import ContractsProfile from './VestingContractsProfile';
 import VestingFilter from './Vestings';
 
-export interface IBalanceInfo {
-  tokenBalance: BigNumberish;
-  numberOfTokensReservedForVesting: BigNumberish;
-}
 export default function VestingContract({ vestingContractId }: { vestingContractId: string }) {
   const { vestings: allVestings, vestingContracts: allVestingContracts } = useDashboardContext();
   const { safe } = useAuthContext();
-  const { chainId } = useWeb3React();
 
   const router = useRouter();
   const vestings = useMemo(() => {
@@ -37,28 +27,6 @@ export default function VestingContract({ vestingContractId }: { vestingContract
   }, [allVestingContracts]);
 
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(vestingContracts, allVestings);
-
-  const { data: balanceInfo } = useSWR(vestingContractId, async () => {
-    if (vestingContracts.length === 0) {
-      return {
-        tokenBalance: BigNumber.from('0'),
-        numberOfTokensReservedForVesting: BigNumber.from('0')
-      };
-    }
-    const vestingContract = vestingContracts[0];
-    const VestingContract = new ethers.Contract(
-      vestingContract?.data.address || '',
-      VTVL_VESTING_ABI.abi,
-      ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-    );
-    const tokenBalance = vestingContract.data.balance || 0;
-
-    const numberOfTokensReservedForVesting: BigNumberish = await VestingContract.numTokensReservedForVesting();
-    return {
-      tokenBalance: BigNumber.from(tokenBalance),
-      numberOfTokensReservedForVesting
-    };
-  });
   const vestingContractsInfo = useMemo(() => {
     if (!vestingSchedulesInfo || !vestingSchedulesInfo.length || !vestingContracts.length) return undefined;
     let allocation = BigNumber.from(0),
@@ -78,11 +46,14 @@ export default function VestingContract({ vestingContractId }: { vestingContract
       unclaimed: unclaimed,
       withdrawn: withdrawn,
       locked: locked,
-      reserved: BigNumber.from(vestingContracts[0]?.data.balance || '0')
-        .sub(withdrawn)
-        .add(unclaimed)
+      reserved: vestingSchedulesInfo.length
+        ? BigNumber.from(vestingContracts[0]?.data.balance || '0').sub(
+            vestingSchedulesInfo[0].numTokensReservedForVesting || '0'
+          )
+        : BigNumber.from(0)
     };
   }, [vestingSchedulesInfo, vestingContracts]);
+
   return (
     <div className="w-full">
       <div className="mb-9">
@@ -113,35 +84,30 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           </Copy>
         </div>
       </div>
-      {vestings.length === 0 ? (
-        <div className="flex justify-center">No vestings</div>
-      ) : (
-        <>
-          {vestingContractsInfo && (
-            <ContractsProfile vestingContractsInfo={[vestingContractsInfo]} vestingCount={vestings.length} />
-          )}
 
-          {balanceInfo && (
-            <VestingFilter
-              vestings={vestings}
-              vestingSchedulesInfo={vestingSchedulesInfo}
-              balanceInfo={balanceInfo as IBalanceInfo}
-            />
-          )}
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6 px-6">
-            {!vestingContracts.length ? (
-              Array.from(new Array(3)).map((_, index) => (
-                <div key={index} className="animate-pulse w-full">
-                  <div className="w-full h-368 bg-neutral-100 rounded-10"></div>
-                </div>
-              ))
-            ) : (
-              <></>
-            )}
-          </div>
-        </>
+      {vestingContractsInfo && (
+        <ContractsProfile vestingContractsInfo={[vestingContractsInfo]} count={vestings.length} title="Schedule" />
       )}
+
+      {vestingContracts[0] && (
+        <VestingFilter
+          vestings={vestings}
+          vestingSchedulesInfo={vestingSchedulesInfo}
+          totalBalance={vestingContracts[0].data.balance || '0'}
+        />
+      )}
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6 px-6">
+        {!vestingContracts.length ? (
+          Array.from(new Array(3)).map((_, index) => (
+            <div key={index} className="animate-pulse w-full">
+              <div className="w-full h-368 bg-neutral-100 rounded-10"></div>
+            </div>
+          ))
+        ) : (
+          <></>
+        )}
+      </div>
     </div>
   );
 }

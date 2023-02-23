@@ -182,14 +182,6 @@ export function DashboardContextProvider({ children }: any) {
             // Computes the locked tokens of the recipient
             const lockedTokens = ethers.BigNumber.from(finalVestedAmount).sub(claimedAmount).sub(claimableAmount);
 
-            console.group('RESULT LOOP', index, key);
-
-            console.log('Claimable amount', claimableAmount);
-            console.log('Total allocation', finalVestedAmount);
-            console.log('Withdrawn', claimedAmount);
-
-            console.groupEnd();
-
             totalClaimableAmount = totalClaimableAmount.add(claimableAmount);
             totalAllocationAmount = totalAllocationAmount.add(finalVestedAmount);
             totalWithdrawnAmount = totalWithdrawnAmount.add(claimedAmount);

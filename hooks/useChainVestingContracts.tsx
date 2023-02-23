@@ -22,6 +22,7 @@ export type VestingContractInfo = {
   withdrawn: BigNumber;
   locked: BigNumber;
   reserved?: BigNumber;
+  numTokensReservedForVesting?: BigNumber;
 };
 
 /**
@@ -58,6 +59,18 @@ export default function useChainVestingContracts(
       });
 
       let result: ContractCallContext[] = [];
+      result = result.concat({
+        reference: `numTokensReservedForVesting-${vestingContract.data.address}`,
+        contractAddress: vestingContract.data.address,
+        abi: VTVL_VESTING_ABI.abi,
+        calls: [
+          {
+            reference: 'numTokensReservedForVesting',
+            methodName: 'numTokensReservedForVesting',
+            methodParameters: []
+          }
+        ]
+      });
       allRecipients.forEach((recipient) => {
         result = result.concat([
           {
@@ -80,6 +93,7 @@ export default function useChainVestingContracts(
           }
         ]);
       });
+
       return [...res, ...result];
     }, [] as ContractCallContext[]);
     multicall
@@ -91,6 +105,7 @@ export default function useChainVestingContracts(
           unclaimed: BigNumber;
           allocation: BigNumber;
           withdrawn: BigNumber;
+          numTokensReservedForVesting: BigNumber;
           locked: BigNumber;
         }> = [];
         Object.keys(response.results).forEach((key) => {
@@ -112,13 +127,16 @@ export default function useChainVestingContracts(
                   withdrawn: BigNumber.from(0),
                   unclaimed: BigNumber.from(0),
                   locked: BigNumber.from(0),
+                  numTokensReservedForVesting: BigNumber.from(0),
                   recipient
                 };
           if (reference === 'withdrawn') {
             data.allocation = BigNumber.from(value.callsReturnContext[0].returnValues[TOTAL_ALLOCATION_AMOUNT_INDEX]);
             data.withdrawn = BigNumber.from(value.callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_INDEX]);
-          } else {
+          } else if (reference === 'unclaimed') {
             data.unclaimed = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
+          } else {
+            data.numTokensReservedForVesting = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
           }
 
           if (index > -1) {
@@ -138,6 +156,7 @@ export default function useChainVestingContracts(
               allocation: data.allocation,
               withdrawn: data.withdrawn,
               unclaimed: data.unclaimed,
+              numTokensReservedForVesting: data.numTokensReservedForVesting,
               locked: locked.gte(0) ? locked : BigNumber.from(0)
             };
           })
