@@ -554,11 +554,6 @@
     @apply border-b-0;
   }
 
-  /* Recharts override */
-  .recharts-cartesian-axis-tick-value {
-    @apply text-xs text-neutral-800;
-  }
-
   /* Markdown content styles -- due to Tailwind resetting all element styles, we need to add styling for these. */
   .markdown-content p {
     @apply my-4;
@@ -857,4 +852,10 @@ body {
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.2s, color 0.2s;
+}
+
+/* Recharts override */
+.recharts-cartesian-axis-tick-value {
+  font-size: 12px;
+  color: var(--neutral-800);
 }

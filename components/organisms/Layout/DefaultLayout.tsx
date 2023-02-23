@@ -410,19 +410,22 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       </Modal>
 
       {/* DELETE SCHEDULE MODAL PROMP */}
-      <PromptModal isOpen={showDeleteModal} hideModal={handleHideModal}>
+      <PromptModal isOpen={showDeleteModal} hideModal={handleHideModal} size="small">
         <Form isSubmitting={deleteInProgress}>
           <div className="text-center flex items-center justify-center flex-col gap-3 p-6">
             <div>
-              Are you sure you want to delete{' '}
-              {scheduleMode && scheduleMode.data && scheduleMode.data.name ? scheduleMode.data.name : 'this schedule'}?
+              <div>
+                Delete this schedule
+                {scheduleMode && scheduleMode.data && scheduleMode.data.name ? `: ${scheduleMode.data.name}` : ''}?
+              </div>
+              <p className="text-xs text-neutral-400 mb-3">It will be gone forever</p>
             </div>
             <div className="flex flex-row items-center justify-center gap-3">
               <button type="button" className="primary" onClick={handleHideModal}>
-                No
+                Cancel
               </button>
               <Button type="button" onClick={() => handleDelete(scheduleMode.id!)} loading={deleteInProgress}>
-                Yes
+                Delete
               </Button>
             </div>
           </div>

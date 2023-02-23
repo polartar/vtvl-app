@@ -202,7 +202,7 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
           </Typography>
         </button>
         <Button type="button" outline primary onClick={handleContinue}>
-          Continue
+          Create schedule
         </Button>
       </div>
     </div>
