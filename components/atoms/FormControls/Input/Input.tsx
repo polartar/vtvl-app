@@ -79,9 +79,7 @@ const Input = ({
               isAllowed={(values) => {
                 const { formattedValue, floatValue } = values;
                 console.log('IS ALLOWED', formattedValue, floatValue);
-                return (
-                  formattedValue === '' || (floatValue !== undefined ? floatValue >= 0 && floatValue <= 99 : false)
-                );
+                return formattedValue === '' || (floatValue ? floatValue >= 0 && floatValue <= 99 : false);
               }}
             />
           ) : (
