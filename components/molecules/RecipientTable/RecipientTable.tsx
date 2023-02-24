@@ -40,12 +40,13 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
       newErrors.push('At least one recipient must be added to proceed.');
     }
 
-    const hasDuplicatedAddress = validateDuplication(rows, 'address');
+    const addresses = rows.filter((row) => Boolean(row.address));
+    const hasDuplicatedAddress = validateDuplication(addresses, 'address');
     if (hasDuplicatedAddress) {
       newErrors.push('Recipient wallet address is duplicated.');
     }
 
-    const hasInvalidAddress = validate(rows, 'address', (value) => !validateEVMAddress(String(value)));
+    const hasInvalidAddress = validate(addresses, 'address', (value) => !validateEVMAddress(String(value)));
     if (hasInvalidAddress) {
       newErrors.push('Recipient wallet address is invalid.');
     }
