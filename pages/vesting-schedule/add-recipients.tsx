@@ -40,25 +40,6 @@ const styles: Styles = {
   }
 };
 
-const wizardSteps = [
-  {
-    title: 'Schedule & contract',
-    desc: 'Setup schedule and contract'
-  },
-  {
-    title: 'Add recipient(s)',
-    desc: ''
-  },
-  {
-    title: 'Setup schedule',
-    desc: ''
-  },
-  {
-    title: 'Schedule summary',
-    desc: ''
-  }
-];
-
 const crumbSteps = [
   { title: 'Vesting schedule', route: '/vesting-schedule' },
   { title: 'Configure schedule', route: '/vesting-schedule/add-recipients' }
@@ -77,6 +58,21 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
    */
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [templateUrl, setTemplateUrl] = useState('');
+
+  const wizardSteps = [
+    {
+      title: 'Schedule & contract',
+      desc: 'Setup schedule and contract'
+    },
+    {
+      title: 'Add recipients',
+      desc: ''
+    },
+    {
+      title: `${scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} schedule`,
+      desc: ''
+    }
+  ];
 
   const csvMappingSteps = useMemo(
     () => ({

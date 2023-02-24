@@ -82,7 +82,7 @@ interface CustomActionBarProps {
 const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no-cliff';
 
 const ConfigureSchedule: NextPageWithLayout = () => {
-  const { organizationId } = useAuthContext();
+  const { organizationId, safe } = useAuthContext();
   const { account, chainId, activate } = useWeb3React();
   const { recipients, scheduleFormState, scheduleMode, scheduleState, updateScheduleFormState, setScheduleState } =
     useVestingContext();
@@ -1617,13 +1617,15 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               </label>
               <p className="text-neutral-900">{scheduleState.contractName}</p>
             </div>
-            <div>
-              <label className="text-sm text-neutral-600 flex flex-row items-center gap-2 mb-2.5">
-                <img src="/icons/safe.png" className="w-4" />
-                Safe
-              </label>
-              <p className="text-neutral-900">Advisors</p>
-            </div>
+            {safe && safe?.address ? (
+              <div>
+                <label className="text-sm text-neutral-600 flex flex-row items-center gap-2 mb-2.5">
+                  <img src="/icons/safe.png" className="w-4" />
+                  Safe
+                </label>
+                <p className="text-neutral-900">{safe.org_name}</p>
+              </div>
+            ) : null}
           </div>
           <hr className="my-6" />
           <ScheduleDetails {...scheduleFormState} recipients={recipients} token={mintFormState.symbol || 'Token'} />
@@ -1639,7 +1641,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           <div className="flex flex-row items-center justify-between">
             <BackButton label="Back" onClick={() => setReviewModalShow(false)} />
             <Button className="primary" type="button" loading={savingSchedule} onClick={handleCreateSchedule}>
-              Create schedule
+              {scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} schedule
             </Button>
           </div>
         </div>
@@ -1650,6 +1652,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
 // Assign a stepped layout -- to refactor later and put into a provider / service / utility function because this is a repetitive function
 ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
+  const { scheduleMode } = useVestingContext();
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },
@@ -1663,15 +1666,11 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
       desc: 'Setup schedule and contract'
     },
     {
-      title: 'Add recipient(s)',
+      title: 'Add recipients',
       desc: ''
     },
     {
-      title: 'Setup schedule',
-      desc: ''
-    },
-    {
-      title: 'Schedule summary',
+      title: `${scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} schedule`,
       desc: ''
     }
   ];

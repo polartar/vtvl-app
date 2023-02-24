@@ -4,6 +4,7 @@ import { ArrowLeftIcon } from '@components/atoms/Icons';
 import { ToggleButton } from '@components/atoms/ToggleButton';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useVestingContext } from '@providers/vesting.context';
 import { useShallowState } from 'hooks/useShallowState';
 import useToggle from 'hooks/useToggle';
 import React, { useCallback, useEffect, useMemo } from 'react';
@@ -35,6 +36,7 @@ const ERROR_EMPTY_STATE = {
 
 export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialState, onReturn, onContinue }) => {
   const { vestingContracts } = useDashboardContext();
+  const { scheduleMode } = useVestingContext();
 
   const [form, setForm] = useShallowState({
     scheduleName: '',
@@ -99,20 +101,23 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
 
   const handleChangeVesting = useCallback(
     (vestingContract: OnChangeValue<VestingContractOption, false>) => {
-      setForm({ vestingContract: vestingContract as VestingContractOption });
+      setForm({ vestingContract: vestingContract as VestingContractOption, contractName: vestingContract?.label });
     },
     [vestingContractOptions]
   );
 
   useEffect(() => {
+    const selectedVestingContract = vestingContractOptions?.find(
+      (option) => option.value === initialState?.vestingContractId
+    ) ?? {
+      label: '',
+      value: ''
+    };
     setForm({
       scheduleName: initialState?.name ?? '',
-      contractName: initialState?.contractName,
+      contractName: selectedVestingContract.label,
       createNewContract: initialState?.vestingContractId ? false : true,
-      vestingContract: vestingContractOptions?.find((option) => option.value === initialState?.vestingContractId) ?? {
-        label: '',
-        value: ''
-      }
+      vestingContract: selectedVestingContract
     });
   }, [vestingContractOptions, initialState]);
 
@@ -120,7 +125,7 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
     <div className="w-full mb-6 panel max-w-2xl">
       <div className="mb-6">
         <Typography className="font-semibold" size="subtitle">
-          Create Schedule & Contract
+          {scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} Schedule &amp; Contract
         </Typography>
       </div>
 
@@ -202,7 +207,7 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
           </Typography>
         </button>
         <Button type="button" outline primary onClick={handleContinue}>
-          Create schedule
+          {scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} schedule
         </Button>
       </div>
     </div>
