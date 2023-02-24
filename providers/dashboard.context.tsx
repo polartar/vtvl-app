@@ -86,7 +86,15 @@ export function DashboardContextProvider({ children }: any) {
   const [claims, setClaims] = useState(0);
   const [recipientTokenDetails, setRecipientTokenDetails] = useState<TCapTableRecipientTokenDetails[]>([]);
 
-  useEffect(() => {
+  /**
+   * This function is intended to initialize the multicall function
+   * Will compute all the total amounts for
+   * - Withdrawn
+   * - Claimable tokens
+   * - Total allocation
+   * This will also map out all the recipients that has allocations and all their token details
+   */
+  const initializeMulticall = async () => {
     // Start to check for all the required states before doing anything
     if (
       vestingContracts.length &&
@@ -115,43 +123,51 @@ export function DashboardContextProvider({ children }: any) {
         // Ensure that what we add in the call has vesting contract address
         if (vestingContract && vestingContract.data && vestingContract.data.address) {
           const vestingSchedule = vestings.find((schedule) => schedule.data.vestingContractId === vestingContract.id);
-          res = [
-            ...res,
-            ...recipientAddresses.map((recipient) => ({
-              // Attach the contract address, recipient wallet and schedule ID
-              reference: `multicall-${vestingContract.data.address}-${recipient}-${vestingSchedule?.id}`,
-              contractAddress: vestingContract.data.address,
-              abi: VTVL_VESTING_ABI.abi,
-              calls: [
-                {
-                  // This gets the claimable amount by the recipient
-                  reference: 'claimableAmount',
-                  methodName: 'claimableAmount',
-                  methodParameters: [recipient]
-                },
-                {
-                  // This gets the total vested amount for the recipient (includes everything)
-                  reference: 'finalVestedAmount',
-                  methodName: 'finalVestedAmount',
-                  methodParameters: [recipient]
-                },
-                {
-                  // This gets the current vested amount as of date (currently unlocked tokens, both claimed and unclaimed)
-                  reference: 'vestedAmount',
-                  methodName: 'vestedAmount',
-                  methodParameters: [recipient, getUnixTime(new Date())]
-                }
-              ]
-            }))
-          ];
+          if (vestingSchedule) {
+            console.log('Schedule found', vestingSchedule, recipientAddresses);
+            res = [
+              ...res,
+              ...recipientAddresses.map((recipient) => ({
+                // Attach the contract address, recipient wallet and schedule ID
+                reference: `multicall-${vestingContract.data.address}-${recipient}-${vestingSchedule?.id}`,
+                contractAddress: vestingContract.data.address,
+                abi: VTVL_VESTING_ABI.abi,
+                calls: [
+                  {
+                    // This gets the claimable amount by the recipient
+                    reference: 'claimableAmount',
+                    methodName: 'claimableAmount',
+                    methodParameters: [recipient]
+                  },
+                  {
+                    // This gets the total vested amount for the recipient (includes everything)
+                    reference: 'finalVestedAmount',
+                    methodName: 'finalVestedAmount',
+                    methodParameters: [recipient]
+                  },
+                  {
+                    // This gets the current vested amount as of date (currently unlocked tokens, both claimed and unclaimed)
+                    reference: 'vestedAmount',
+                    methodName: 'vestedAmount',
+                    methodParameters: [recipient, getUnixTime(new Date())]
+                  }
+                ]
+              }))
+            ];
+          }
         }
         return res;
       }, [] as ContractCallContext[]);
 
+      // Initialize the recipients for the cap table
+      const recipientsTokenDetails: TCapTableRecipientTokenDetails[] = [];
+
       // Call the multicall feature
-      multicall
-        .call(contractCallContext)
-        .then((res) => {
+      const multicallResponse = await multicall.call(contractCallContext);
+      try {
+        if (multicallResponse) {
+          const res = multicallResponse;
+          console.log('MULTICALL RESPONSE', res);
           // Set constants for referencing the calls based on the multicall setup above
           const CLAIMABLE_AMOUNT_CALL = 0;
           const FINAL_VESTED_AMOUNT_CALL = 1;
@@ -162,7 +178,6 @@ export function DashboardContextProvider({ children }: any) {
           let totalAllocationAmount = ethers.BigNumber.from(0);
           let totalWithdrawnAmount = ethers.BigNumber.from(0);
           let totalClaimableAmount = ethers.BigNumber.from(0);
-          const recipientsTokenDetails: TCapTableRecipientTokenDetails[] = [];
 
           Object.keys(res.results).forEach((key, index) => {
             const record = res.results[key].callsReturnContext;
@@ -190,8 +205,10 @@ export function DashboardContextProvider({ children }: any) {
             // Setting up the recipient details based on wallet address from the multicall result
             const wallet = key.split('-')[2]; // contains the wallet address from `multicall-[0xContractAddress]-[0xWalletAddress]`
             const scheduleId = key.split('-')[3]; // contains the schedule id from multicall reference
+            // Get the recipient details
             const currentRecipient = recipients.find((recipient) => recipient.walletAddress === wallet);
-            if (currentRecipient) {
+            // Only add it in if the recipient on a particular vesting contract and schedule has vested allocation.
+            if (currentRecipient && ethers.BigNumber.from(finalVestedAmount).gt(0)) {
               recipientsTokenDetails.push({
                 scheduleId,
                 name: currentRecipient.name,
@@ -212,11 +229,19 @@ export function DashboardContextProvider({ children }: any) {
           setTotalAllocation(totalAllocationAmount);
           setTotalWithdrawn(totalWithdrawnAmount);
           setTotalClaimable(totalClaimableAmount);
-          // set the recipients table
-          setRecipientTokenDetails(recipientsTokenDetails);
-        })
-        .catch((err) => console.log({ err }));
+        } else {
+          throw multicallResponse;
+        }
+      } catch (err) {
+        console.log('Error on multicall', err);
+      }
+
+      setRecipientTokenDetails([...recipientsTokenDetails]);
     }
+  };
+
+  useEffect(() => {
+    initializeMulticall();
   }, [chainId, vestingContracts, mintFormState, vestings, recipients]);
 
   useEffect(() => {
