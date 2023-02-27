@@ -1,12 +1,10 @@
 import Chip from '@components/atoms/Chip/Chip';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
-import Hint from '@components/atoms/Hint/Hint';
 import format from 'date-fns/format';
-import { Timestamp } from 'firebase/firestore';
 import { MultiValue } from 'react-select';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
-import { IRecipient } from 'types/vesting';
+import { IRecipientForm } from 'types/models/recipient';
 import { formatDate, formatTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import {
@@ -30,7 +28,7 @@ interface ScheduleDetailProps extends React.AllHTMLAttributes<HTMLDivElement> {
   releaseFrequency: ReleaseFrequency;
   amountToBeVested: number;
   hint?: boolean;
-  recipients?: MultiValue<IRecipient>;
+  recipients?: MultiValue<IRecipientForm>;
 
   /**
    * Token - what is the token symbol / name being vested.

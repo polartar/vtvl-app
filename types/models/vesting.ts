@@ -1,9 +1,8 @@
 import { IScheduleFormState } from '@providers/vesting.context';
 import Decimal from 'decimal.js';
 import { MultiValue } from 'react-select';
-import { IRecipient } from 'types/vesting';
 
-import { IUser } from './member';
+import { IRecipientForm } from './recipient';
 
 export type IVestingStatus =
   | 'INITIALIZED'
@@ -21,7 +20,7 @@ export type IVestingStatus =
 export interface IVesting {
   name?: string;
   details: IScheduleFormState;
-  recipients: MultiValue<IRecipient>;
+  recipients: MultiValue<IRecipientForm>;
   status?: IVestingStatus;
   organizationId: string;
   tokenAddress?: string;

@@ -2,52 +2,25 @@ import BackButton from '@components/atoms/BackButton/BackButton';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
-import { Interface } from '@ethersproject/abi';
-import { BaseTransaction } from '@gnosis.pm/safe-apps-sdk';
-import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
-import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
-import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
-import VtvlVesting from 'contracts/abi/VtvlVesting.json';
 import Decimal from 'decimal.js';
-import { ethers } from 'ethers';
-import { BigNumber } from 'ethers';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
+import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
-import { createVestingContract, fetchVestingContractByQuery, updateVestingContract } from 'services/db/vestingContract';
-import { CLIFFDURATION_TIMESTAMP, CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
-import { SupportedChains } from 'types/constants/supported-chains';
-import { generateRandomName } from 'utils/shared';
-import { formatNumber, parseTokenAmount } from 'utils/token';
-import {
-  getChartData,
-  getCliffAmount,
-  getCliffDateTime,
-  getDuration,
-  getNumberOfReleases,
-  getReleaseAmount
-} from 'utils/vesting';
-
-interface ScheduleFormTypes {
-  startDateTime: Date;
-  endDateTime: Date;
-  cliffDuration: CliffDuration;
-  lumpSumReleaseAfterCliff: string | number;
-  releaseFrequency: ReleaseFrequency;
-  amountToBeVested: number;
-}
+import { createVestingContract } from 'services/db/vestingContract';
+import { formatRecipientsDocToForm } from 'utils/recipients';
+import { formatNumber } from 'utils/token';
 
 const ScheduleSummary: NextPageWithLayout = () => {
-  const { library, account, activate, chainId } = useWeb3React();
-  const { organizationId, safe, user } = useAuthContext();
-  const { recipients, scheduleFormState, scheduleState, scheduleMode, resetVestingState, setScheduleState } =
-    useVestingContext();
+  const { account, activate, chainId } = useWeb3React();
+  const { organizationId } = useAuthContext();
+  const { recipients, scheduleFormState, scheduleState, scheduleMode, setScheduleState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
 
   /**
@@ -92,18 +65,24 @@ const ScheduleSummary: NextPageWithLayout = () => {
           ...scheduleMode.data,
           name: scheduleState.name,
           details: { ...scheduleFormState },
-          recipients,
+          recipients: formatRecipientsDocToForm(recipients),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           transactionId: '',
           vestingContractId
         },
         scheduleMode.id
       );
+
+      await Promise.all(
+        recipients
+          .filter((recipient) => Boolean(recipient.id))
+          .map((recipient) => editRecipient(recipient.id, recipient.data))
+      );
     } else {
-      await createVesting({
+      const vestingId = await createVesting({
         name: scheduleState.name,
         details: { ...scheduleFormState },
-        recipients,
+        recipients: formatRecipientsDocToForm(recipients),
         organizationId: organizationId!,
         status: 'INITIALIZED',
         createdAt: Math.floor(new Date().getTime() / 1000),
@@ -115,8 +94,21 @@ const ScheduleSummary: NextPageWithLayout = () => {
         chainId
       });
 
-      // TODO send emails to recipients
+      const newRecipients = recipients.map(({ data: recipient }) =>
+        createRecipient({
+          vestingId: String(vestingId),
+          organizationId: String(organizationId),
+          name: recipient.name,
+          email: recipient.email,
+          allocations: String(recipient.allocations ?? 0),
+          walletAddress: String(recipient.walletAddress),
+          recipientType: String(recipient.recipientType)
+        })
+      );
+
+      await Promise.all(newRecipients);
     }
+
     console.log('creating vesting schedule');
     // Redirect to the success page to notify the user
     await Router.push('/vesting-schedule/success');
@@ -138,7 +130,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
           <span>Recipient(s)</span>
         </label>
         <div className="flex flex-row flex-wrap gap-2 pb-5 border-b border-neutral-200">
-          {recipients.map((recipient) => (
+          {recipients.map(({ data: recipient }) => (
             <Chip rounded label={recipient.name} color="random" />
           ))}
         </div>
