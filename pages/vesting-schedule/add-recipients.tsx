@@ -264,10 +264,11 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
                     Add recipient
                   </Typography>
                   <Typography className="font-medium text-neutral-500" size="caption">
-                    For all recipients without a wallet address, please confirm by providing an{' '}
+                    For all recipients without a wallet address, please ensure an{' '}
                     <Typography className="font-bold" size="caption">
                       email address
-                    </Typography>
+                    </Typography>{' '}
+                    is provided
                   </Typography>
                 </div>
                 <a
