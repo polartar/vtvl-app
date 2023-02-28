@@ -1,0 +1,13 @@
+<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#9vjjmasn0a)">
+        <path d="M19.64 21.62c-.88.26-1.92.38-3.14.38h-6c-1.22 0-2.26-.12-3.14-.38.22-2.6 2.89-4.65 6.14-4.65 3.25 0 5.92 2.05 6.14 4.65z" stroke="#F9FAFB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16.5 2h-6c-5 0-7 2-7 7v6c0 3.78 1.14 5.85 3.86 6.62.22-2.6 2.89-4.65 6.14-4.65 3.25 0 5.92 2.05 6.14 4.65 2.72-.77 3.86-2.84 3.86-6.62V9c0-5-2-7-7-7zm-3 12.17c-1.98 0-3.58-1.61-3.58-3.59C9.92 8.6 11.52 7 13.5 7s3.58 1.6 3.58 3.58-1.6 3.59-3.58 3.59z" stroke="#F9FAFB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17.08 10.58c0 1.98-1.6 3.59-3.58 3.59s-3.58-1.61-3.58-3.59C9.92 8.6 11.52 7 13.5 7s3.58 1.6 3.58 3.58z" stroke="#F9FAFB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M.5 7.79A.79.79 0 0 1 1.29 7h4.42a.79.79 0 0 1 0 1.579H1.29a.79.79 0 0 1-.79-.79zM.5 12a.79.79 0 0 1 .79-.79h4.42a.79.79 0 0 1 0 1.58H1.29A.79.79 0 0 1 .5 12zm0 4.21a.79.79 0 0 1 .79-.789h4.42a.79.79 0 1 1 0 1.579H1.29a.79.79 0 0 1-.79-.79z" fill="#F9FAFB"/>
+    </g>
+    <defs>
+        <clipPath id="9vjjmasn0a">
+            <path fill="#fff" transform="translate(.5)" d="M0 0h24v24H0z"/>
+        </clipPath>
+    </defs>
+</svg>
