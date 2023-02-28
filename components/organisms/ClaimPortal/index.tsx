@@ -36,6 +36,7 @@ export default function ClaimPortal() {
     recipes,
     vestingContractIds
   } = useVestings();
+  console.log('DEBUG-vestings', { vestings, tokenIds, vestingContractIds, isLoadingVestings });
   const { isLoading: isLoadingOrganizations, organizations } = useOrganizations(organizationIds);
   const { tokens } = useTokens(tokenIds);
   const { library } = useWeb3React();

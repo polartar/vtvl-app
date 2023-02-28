@@ -440,7 +440,7 @@ export function AuthContextProvider({ children }: any) {
       user.memberInfo.type !== 'manager' &&
       user.memberInfo.type !== 'manager2'
     ) {
-      Router.push('/tokens');
+      Router.push('/claim-portal');
       return;
     }
     if (user && user.email && user.uid) {

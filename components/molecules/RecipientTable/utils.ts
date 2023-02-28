@@ -75,7 +75,7 @@ export const tdFillClassName = `${tdClassName} p-0`;
 
 export const tdTypographyProps = {
   size: 'caption',
-  className: 'w-full flex items-center justify-center'
+  className: 'w-full flex items-center justify-center overflow-hidden'
 } as const;
 
 export const emptyRow = {

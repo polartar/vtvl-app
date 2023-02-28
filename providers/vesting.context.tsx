@@ -101,8 +101,6 @@ export function VestingContextProvider({ children }: any) {
 
   const router = useRouter();
 
-  console.log('DEBUG-recipients', { recipients });
-
   console.log('Current router settings', router);
 
   const resetVestingState = useCallback(() => {
