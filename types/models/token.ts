@@ -1,4 +1,7 @@
 import Decimal from 'decimal.js';
+import { ethers } from 'ethers';
+
+type TokenNumber = number | Decimal | ethers.BigNumber;
 
 export interface IToken {
   name: string;
@@ -32,4 +35,16 @@ export interface TUserTokenDetails {
   numberOfReleases: number;
   vestingContractAddress: string;
   lockedTokens: Decimal;
+}
+
+export interface TCapTableRecipientTokenDetails {
+  scheduleId: string;
+  name: string;
+  company: string;
+  recipientType: string;
+  address: string;
+  totalAllocation: TokenNumber;
+  claimed: TokenNumber;
+  unclaimed: TokenNumber;
+  lockedTokens: TokenNumber;
 }

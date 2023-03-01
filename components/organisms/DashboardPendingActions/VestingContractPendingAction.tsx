@@ -19,7 +19,25 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { IVesting, IVestingContract } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 
-const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContract }> = ({ id, data }) => {
+interface IVestingContractPendingActionProps {
+  id: string;
+  data: IVestingContract;
+  filter: {
+    keyword: string;
+    status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
+  };
+  updateFilter: (v: {
+    keyword: string;
+    status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
+  }) => void;
+}
+
+const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps> = ({
+  id,
+  data,
+  filter,
+  updateFilter
+}) => {
   const { account, chainId, activate, library } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   // const { fetchDashboardVestingContract } = useDashboardContext();
@@ -27,6 +45,12 @@ const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContrac
   const { mintFormState } = useTokenContext();
 
   const [status, setStatus] = useState<IStatus>('');
+
+  const shouldShow =
+    filter.status === 'ALL' ||
+    (filter.status === 'FUND' && status === 'FUNDING_REQUIRED') ||
+    (filter.status === 'TRANSFER_OWNERSHIP' &&
+      (status === 'REMOVE_ORIGINAL_OWNERSHIP' || status === 'TRANSFER_OWNERSHIP'));
 
   const handleDeployVestingContract = async () => {
     setIsCloseAvailable(false);
@@ -158,14 +182,26 @@ const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContrac
     }
   }, [data, safe, account]);
 
-  return status === 'SUCCESS' ? null : (
+  return status === 'SUCCESS' ? null : shouldShow ? (
     <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">
       <div className="flex items-center w-16 py-3"></div>
       <div className="flex items-center w-36 py-3">{data.name}</div>
       <div className="flex items-center w-52 py-3">Contract Deployment</div>
       <div className="flex items-center w-52 py-3">
         {!!status && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#fef3c7] text-[#f59e0b] text-xs whitespace-nowrap">
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#fef3c7] text-[#f59e0b] text-xs whitespace-nowrap"
+            onClick={() => {
+              updateFilter({
+                ...filter,
+                status:
+                  status === 'TRANSFER_OWNERSHIP' || status === 'REMOVE_ORIGINAL_OWNERSHIP'
+                    ? 'TRANSFER_OWNERSHIP'
+                    : status === 'AUTHORIZATION_REQUIRED'
+                    ? 'DEPLOY_VESTING_CONTRACT'
+                    : 'ALL'
+              });
+            }}>
             <WarningIcon className="w-3 h-3" />
             {STATUS_MAPPING[status]}
           </div>
@@ -195,7 +231,7 @@ const VestingContractPendingAction: React.FC<{ id: string; data: IVestingContrac
         ) : null}
       </div>
     </div>
-  );
+  ) : null;
 };
 
 export default VestingContractPendingAction;

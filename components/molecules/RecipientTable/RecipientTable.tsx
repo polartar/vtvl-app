@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Select, { OnChangeValue } from 'react-select';
 import { validate, validateDuplication, validateEVMAddress } from 'utils/regex';
 import { formatNumber } from 'utils/token';
+import { validate as validateSingleField } from 'utils/validator';
 
 import { EditableTypography } from './EditableTypography';
 import {
@@ -15,7 +16,8 @@ import {
   RecipientTypes,
   emptyRow,
   getRecipient,
-  tdClassName,
+  tdFillClassName,
+  tdInnerClassName,
   thClassName
 } from './utils';
 
@@ -27,7 +29,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
   onContinue
 }) => {
   const [rows, setRows] = useState<RecipientTableRow[]>(initialRows);
-  const [errors, setErrors] = useState<Array<string>>([]);
+  // const [errors, setErrors] = useState<Array<string>>([]);
 
   const totalAllocations = useMemo(() => rows?.reduce((val, row) => val + Number(row.allocations), 0) ?? 0, [rows]);
 
@@ -38,12 +40,13 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
       newErrors.push('At least one recipient must be added to proceed.');
     }
 
-    const hasDuplicatedAddress = validateDuplication(rows, 'address');
+    const addresses = rows.filter((row) => Boolean(row.address));
+    const hasDuplicatedAddress = validateDuplication(addresses, 'address');
     if (hasDuplicatedAddress) {
       newErrors.push('Recipient wallet address is duplicated.');
     }
 
-    const hasInvalidAddress = validate(rows, 'address', (value) => !validateEVMAddress(String(value)));
+    const hasInvalidAddress = validate(addresses, 'address', (value) => !validateEVMAddress(String(value)));
     if (hasInvalidAddress) {
       newErrors.push('Recipient wallet address is invalid.');
     }
@@ -63,11 +66,14 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
       newErrors.push('Allocations should be greater than 0.');
     }
 
-    setErrors(newErrors);
+    const hasEmptyEmails = validate(rows, 'email', (value) => !value);
+    if (hasEmptyEmails) {
+      newErrors.push('Recipient email is the required field.');
+    }
 
-    if (newErrors.length > 0) return;
+    // setErrors(newErrors);
 
-    onContinue?.(rows);
+    onContinue?.(rows, newErrors);
   }, [rows, onContinue]);
 
   const handleAddNewRecipient = useCallback(() => {
@@ -106,9 +112,11 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
           <thead className="bg-neutral-100 border-b border-primary-200 overflow-hidden rounded-xl">
             {RecipientTableColumns.map((column) => (
               <th key={column.id} className={thClassName}>
-                <Typography size="caption" className="w-full flex items-center justify-center">
-                  {column.title}
-                </Typography>
+                <label className={column.required ? 'required' : ''}>
+                  <Typography size="caption" className="w-full flex items-center justify-center !mb-0">
+                    {column.title}
+                  </Typography>
+                </label>
               </th>
             ))}
             <th className={`${thClassName} w-8`}></th>
@@ -116,42 +124,58 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
           <tbody>
             {rows?.map((row, index) => (
               <tr key={`recipient-table-row-${row.id}`}>
-                <td className={tdClassName}>
+                <td className={tdFillClassName}>
                   <EditableTypography
                     id={`${row.id}-name`}
                     initialValue={row.name}
+                    autoFocus
                     type="text"
                     placeholder="eg. Vitalik Armstrong"
-                    autoFocus
+                    validations={['required']}
                     onChange={handleChange(index, 'name')}
                   />
                 </td>
-                <td className={tdClassName}>
+                <td className={tdFillClassName}>
+                  <EditableTypography
+                    id={`${row.id}-email`}
+                    initialValue={row.email}
+                    autoFocus
+                    type="text"
+                    placeholder="eg. vitalik@vtvl.io"
+                    validations={['required', 'email']}
+                    onChange={handleChange(index, 'email')}
+                  />
+                </td>
+                <td className={tdFillClassName}>
                   <EditableTypography
                     id={`${row.id}-address`}
-                    initialValue={row.address}
+                    initialValue={String(row.address)}
+                    autoFocus
                     type="address"
                     placeholder="0x69...6c15"
+                    validations={['address']}
                     onChange={handleChange(index, 'address')}
                   />
                 </td>
-                <td className={tdClassName}>
+                <td className={tdFillClassName}>
                   <EditableTypography
                     id={`${row.id}-allocations`}
                     initialValue={row.allocations}
+                    autoFocus
                     type="number"
                     placeholder="15,000"
+                    validations={['required', 'number']}
                     onChange={handleChange(index, 'allocations')}
                   />
                 </td>
-                <td className={tdClassName}>
+                <td className={`${row.type ? tdInnerClassName : `${tdInnerClassName} bg-danger-50`}`}>
                   <Select
                     value={row.type ? getRecipient(row.type) : undefined}
                     options={RecipientTypes}
                     onChange={handleChangeRecipientType(index)}
                   />
                 </td>
-                <td className={tdClassName}>
+                <td className={tdInnerClassName}>
                   <button type="button" className="bg-transparent p-1" onClick={handleRemoveRow(index)}>
                     <TrashIcon className="w-6 h-6 m-auto" />
                   </button>
@@ -161,12 +185,12 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
 
             {!!rows?.length && (
               <tr>
-                <td colSpan={2} className={`${tdClassName} py-4`}>
+                <td colSpan={3} className={`${tdInnerClassName} py-4`}>
                   <Typography variant="inter" size="body" className="font-bold">
                     Token Allocations
                   </Typography>
                 </td>
-                <td colSpan={3} className={`${tdClassName} py-4`}>
+                <td colSpan={3} className={`${tdInnerClassName} py-4`}>
                   <Typography variant="inter" size="body" className="font-bold">
                     {formatNumber(+totalAllocations)}
                   </Typography>
@@ -197,7 +221,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
         </table>
       </div>
 
-      {errors?.length > 0 ? (
+      {/* {errors?.length > 0 ? (
         <ul className="mb-4 pl-8 list-disc list-outside marker:text-danger-500">
           {errors?.map((error) => (
             <li key={error}>
@@ -209,7 +233,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
         </ul>
       ) : (
         ''
-      )}
+      )} */}
 
       {children ?? <></>}
 

@@ -3,6 +3,7 @@ import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
+import Hint from '@components/atoms/Hint/Hint';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import AuthContext, { useAuthContext } from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -310,7 +311,29 @@ const NewSafePage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
-      <h1 className="text-neutral-900">Setup your multi-sig Safe</h1>
+      <div className="text-center">
+        <h1 className="text-neutral-900 mb-1 flex flex-row items-center gap-1">
+          Setup your multi-sig{' '}
+          <Hint
+            tip={
+              <>
+                <i>Safe</i> is a multi-signature smart contract wallet that allows users to define a list of
+                owner/signer accounts and a threshold number of signers required to confirm a transaction.
+              </>
+            }>
+            <img src="/images/safe.png" className="w-28" alt="Safe" />
+          </Hint>
+        </h1>
+        <p className="text-xs font-medium">
+          Need help with what exactly is Safe?{' '}
+          <a
+            className="text-primary-900"
+            href="https://help.gnosis-safe.io/en/collections/2289028-getting-started"
+            target="_blank">
+            Give me more info
+          </a>
+        </p>
+      </div>
       <Form
         className="w-full my-6"
         isSubmitting={isSubmitting}

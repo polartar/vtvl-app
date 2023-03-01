@@ -17,9 +17,9 @@ const SearchInput = (props: InputProps) => {
 
 const InputWrapper = styled.div<{ size?: string }>`
   width: 100%;
-  max-width: 280px;
+
   height: ${({ size }) => (size === 'small' ? '36px' : size === 'medium' ? '40px' : '44px')} !important;
-  border-radius: 24px;
+  border-radius: 10px;
   border: 1px solid #d0d5dd;
   display: flex;
   align-items: center;

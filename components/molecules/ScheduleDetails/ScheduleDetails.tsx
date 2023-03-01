@@ -3,8 +3,10 @@ import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import Hint from '@components/atoms/Hint/Hint';
 import format from 'date-fns/format';
 import { Timestamp } from 'firebase/firestore';
+import { MultiValue } from 'react-select';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
+import { IRecipient } from 'types/vesting';
 import { formatDate, formatTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import {
@@ -28,6 +30,7 @@ interface ScheduleDetailProps extends React.AllHTMLAttributes<HTMLDivElement> {
   releaseFrequency: ReleaseFrequency;
   amountToBeVested: number;
   hint?: boolean;
+  recipients?: MultiValue<IRecipient>;
 
   /**
    * Token - what is the token symbol / name being vested.
@@ -48,6 +51,7 @@ const ScheduleDetails = ({
   token,
   layout = 'default',
   hint = true,
+  recipients = [],
   includeDetails = true,
   ...props
 }: ScheduleDetailProps) => {
@@ -143,39 +147,50 @@ const ScheduleDetails = ({
        * This will force the responsive container to have a dynamic width and height.
        */}
       {hasChartValidValues() ? (
-        <ResponsiveContainer width={'99%'} height={300}>
-          <LineChart width={300} height={300}>
-            <CartesianGrid stroke="#d0d5dd" strokeDasharray="0 0" />
-            <XAxis dataKey="date" type="category" allowDuplicatedCategory={false} tickFormatter={formatTick} />
-            <YAxis
-              allowDataOverflow={true}
-              dataKey="value"
-              domain={[0, amountToBeVested]}
-              tickFormatter={(value) => formatNumber(value, 0).toString()}
-            />
-            <Tooltip formatter={(value, name, props) => formatNumber(parseFloat(value.toString()), 6)} />
-            <Line
-              type="stepAfter"
-              data={chartData.cliff}
-              dataKey="value"
-              name="Cliff"
-              stroke="var(--primary-900)"
-              strokeWidth={2}
-              dot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 3 }}
-              activeDot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 4 }}
-            />
-            <Line
-              type={singleLineFrequencies.includes(releaseFrequency) || numberOfReleases > 60 ? 'linear' : 'stepAfter'}
-              data={chartData.release}
-              dataKey="value"
-              name="Linear release"
-              stroke="var(--primary-900)"
-              strokeWidth={2}
-              dot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 3 }}
-              activeDot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 4 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="mb-11">
+          <ResponsiveContainer width={'99%'} height={300}>
+            <LineChart width={300} height={300}>
+              <CartesianGrid stroke="#d0d5dd" strokeDasharray="0 0" />
+              <XAxis
+                dataKey="date"
+                type="category"
+                allowDuplicatedCategory={false}
+                tickFormatter={formatTick}
+                tickMargin={16}
+              />
+              <YAxis
+                allowDataOverflow={true}
+                dataKey="value"
+                domain={[0, amountToBeVested]}
+                tickFormatter={(value) => formatNumber(value, 0).toString()}
+                tickMargin={8}
+              />
+              <Tooltip formatter={(value, name, props) => formatNumber(parseFloat(value.toString()), 6)} />
+              <Line
+                type="stepAfter"
+                data={chartData.cliff}
+                dataKey="value"
+                name="Cliff"
+                stroke="var(--primary-900)"
+                strokeWidth={2}
+                dot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 3 }}
+                activeDot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 4 }}
+              />
+              <Line
+                type={
+                  singleLineFrequencies.includes(releaseFrequency) || numberOfReleases > 60 ? 'linear' : 'stepAfter'
+                }
+                data={chartData.release}
+                dataKey="value"
+                name="Linear release"
+                stroke="var(--primary-900)"
+                strokeWidth={2}
+                dot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 3 }}
+                activeDot={{ fill: 'var(--secondary-900)', strokeWidth: 0, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       ) : (
         <EmptyState
           image="/images/blockchain-technology.gif"
@@ -190,7 +205,18 @@ const ScheduleDetails = ({
           }
         />
       )}
-      <div className={`grid gap-3 mt-5 ${layout === 'small' ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4 '}`}>
+      {recipients && recipients.length ? (
+        <div>
+          <label className="font-medium text-sm text-neutral-600 mb-3">Recipient(s)</label>
+          <div className="flex flex-row items-center gap-1">
+            {recipients.map((recipient) => (
+              <Chip rounded color="alt" label={recipient.name || recipient.email || recipient.walletAddress} />
+            ))}
+          </div>
+        </div>
+      ) : null}
+      <hr className="my-6" />
+      <div className={`grid gap-3 ${layout === 'small' ? 'grid-cols-2' : 'sm:grid-cols-2 md:grid-cols-4 '}`}>
         <label>
           <span>Cliff</span>
           <p className="flex flex-row items-start gap-2 text-xs">

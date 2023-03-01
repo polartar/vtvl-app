@@ -14,6 +14,7 @@ import QuantityInput from '@components/atoms/FormControls/QuantityInput/Quantity
 import Radio from '@components/atoms/FormControls/Radio/Radio';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
 import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
+import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import TextField from '@mui/material/TextField';
@@ -26,19 +27,24 @@ import { PickersActionBarProps } from '@mui/x-date-pickers/PickersActionBar';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
+import { injected } from 'connectors';
 import add from 'date-fns/add';
 import differenceInHours from 'date-fns/differenceInHours';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import format from 'date-fns/format';
+import { ethers } from 'ethers';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
+import ContractsIcon from 'public/icons/contracts-colored.svg';
 import { ElementType, ForwardedRef, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
+import { createVesting, updateVesting } from 'services/db/vesting';
+import { createVestingContract } from 'services/db/vestingContract';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
@@ -51,6 +57,7 @@ import {
   getNumberOfReleases,
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
+import { BNToAmountString } from 'utils/web3';
 
 type DateTimeType = Date | null;
 
@@ -75,9 +82,10 @@ interface CustomActionBarProps {
 const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no-cliff';
 
 const ConfigureSchedule: NextPageWithLayout = () => {
-  const { organizationId } = useAuthContext();
-  const { account } = useWeb3React();
-  const { recipients, scheduleFormState, updateScheduleFormState } = useVestingContext();
+  const { organizationId, safe } = useAuthContext();
+  const { account, chainId, activate } = useWeb3React();
+  const { recipients, scheduleFormState, scheduleMode, scheduleState, updateScheduleFormState, setScheduleState } =
+    useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -107,11 +115,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       // amountToBeVestedText: formatNumber(parseFloat(mintFormState.initialSupply.toString())).toString(),
       amountToBeVested: parseFloat(totalAllocations?.toString() ?? '0'),
       amountToBeVestedText: formatNumber(parseFloat(totalAllocations?.toString() ?? '0')).toString(),
-      cliffDurationNumber: 1,
-      cliffDurationOption: defaultCliffDurationOption as CliffDuration | DateDurationOptionValues,
-      releaseFrequencySelectedOption: 'continuous',
-      customReleaseFrequencyNumber: 1,
-      customReleaseFrequencyOption: 'days'
+      cliffDurationNumber: scheduleFormState.cliffDurationNumber || 1,
+      cliffDurationOption:
+        scheduleFormState.cliffDurationOption ||
+        (defaultCliffDurationOption as CliffDuration | DateDurationOptionValues),
+      releaseFrequencySelectedOption: scheduleFormState.releaseFrequencySelectedOption || 'continuous',
+      customReleaseFrequencyNumber: scheduleFormState.customReleaseFrequencyNumber || 1,
+      customReleaseFrequencyOption: scheduleFormState.customReleaseFrequencyOption || 'days'
     }
   });
 
@@ -179,7 +189,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         endDateTime: projectedEndDateTime
       });
 
-      Router.push('/vesting-schedule/summary');
+      // Show the modal after saving
+      setReviewModalShow(true);
     }
   };
 
@@ -977,8 +988,104 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     if (totalAllocations <= 0) Router.push('/vesting-schedule/add-recipients');
   }, [totalAllocations]);
 
+  useEffect(() => {
+    if (scheduleMode && scheduleMode.edit) {
+      // Update necessary local states based on the schedule data
+      // updateScheduleFormState()
+    }
+  }, [scheduleMode]);
+
+  // Review summary modal feature
+  const [reviewModalShow, setReviewModalShow] = useState(false);
+  const [savingSchedule, setSavingSchedule] = useState(false);
+
+  // Create the actual schedule
+  /**
+   * Handles the click function when user clicks the "Create schedule"
+   * This creates a vestingContract and vesting record in the DB for initial tracking purpose
+   * @returns
+   */
+  const handleCreateSchedule = async () => {
+    setSavingSchedule(true);
+    // Check if the user is currently connected to their wallet.
+    if (!account || !chainId) {
+      activate(injected);
+      setSavingSchedule(false);
+      return;
+    }
+
+    // const PERFORM_CREATE_FUNCTION = 'function performCreate(uint256 value, bytes memory deploymentData)';
+    // const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
+    // const ABI = [PERFORM_CREATE_FUNCTION];
+
+    // Set the vestingContractId based on the scheduleState value coming from the previous forms.
+    let vestingContractId = scheduleState.vestingContractId;
+    // If the contract is set to be a new one, let's create one.
+    if (scheduleState.createNewContract) {
+      vestingContractId = await createVestingContract({
+        status: 'INITIALIZED',
+        name: scheduleState.contractName!,
+        tokenAddress: mintFormState.address,
+        address: '',
+        deployer: '',
+        organizationId: organizationId!,
+        chainId,
+        transactionId: '',
+        createdAt: Math.floor(new Date().getTime() / 1000),
+        updatedAt: Math.floor(new Date().getTime() / 1000)
+      });
+    }
+
+    // Create a draft vesting record -- which has a status of "CREATING".
+    // Draft records can still be edited or deleted as long as it's not yet funded.
+    if (scheduleMode && scheduleMode.edit && scheduleMode.id && scheduleMode.data) {
+      await updateVesting(
+        {
+          ...scheduleMode.data,
+          name: scheduleState.name,
+          details: { ...scheduleFormState },
+          recipients,
+          updatedAt: Math.floor(new Date().getTime() / 1000),
+          transactionId: '',
+          vestingContractId
+        },
+        scheduleMode.id
+      );
+    } else {
+      await createVesting({
+        name: scheduleState.name,
+        details: { ...scheduleFormState },
+        recipients,
+        organizationId: organizationId!,
+        status: 'INITIALIZED',
+        createdAt: Math.floor(new Date().getTime() / 1000),
+        updatedAt: Math.floor(new Date().getTime() / 1000),
+        transactionId: '',
+        vestingContractId,
+        tokenAddress: mintFormState.address,
+        tokenId,
+        chainId
+      });
+
+      // TODO send emails to recipients
+    }
+    console.log('creating vesting schedule');
+    // Redirect to the success page to notify the user
+    await Router.push('/vesting-schedule/success');
+
+    // Reset the value of everything else from the previous forms
+    // resetVestingState();
+    setScheduleState({
+      name: '',
+      contractName: '',
+      createNewContract: false,
+      vestingContractId: ''
+    });
+    setSavingSchedule(false);
+  };
+
   return (
-    <>
+    <div className="max-w-2xl">
       {/* TEMPLATE PROMPT AND SELECTION SECTION */}
       {templateOptions && templateOptions.length ? (
         <div className="w-full text-left">
@@ -1059,8 +1166,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       ) : null}
 
       {/* CONFIGURATION FORM SECTION */}
-      <div className={`grid md:grid-cols-12 w-full gap-3.5 mt-5 ${isUserTemplatePromptActive() ? 'opacity-20' : ''}`}>
-        <div className="md:col-span-7">
+      <div className={`grid w-full gap-3.5 mt-5 ${isUserTemplatePromptActive() ? 'opacity-20' : ''}`}>
+        <div>
           <Form
             isSubmitting={isSubmitting}
             className="w-full mb-6"
@@ -1477,28 +1584,75 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
             <div className="flex flex-row justify-between items-center p-6">
               <BackButton
-                label="Return to add recipients"
-                onClick={() => Router.push('/vesting-schedule/add-recipients')}
+                label="Return"
+                onClick={() =>
+                  Router.push(
+                    `/vesting-schedule/add-recipients?step=1${
+                      scheduleMode && scheduleMode.edit ? '&id=' + scheduleMode.id : ''
+                    }`
+                  )
+                }
               />
-              <Button className="primary" type="submit" loading={isSubmitting} disabled={formError}>
-                Continue
+              <Button className="primary" type="submit" loading={reviewModalShow || isSubmitting} disabled={formError}>
+                Review schedule
               </Button>
             </div>
           </Form>
         </div>
-        <div className="md:col-span-5">
+        {/* <div className="md:col-span-5">
           <div className="panel">
             <label className="font-medium text-base text-neutral-900 mb-3">Schedule details</label>
             <ScheduleDetails {...getValues()} token={mintFormState.symbol || 'Token'} layout="small" />
           </div>
-        </div>
+        </div> */}
       </div>
-    </>
+      <PromptModal isOpen={reviewModalShow} hideModal={() => setReviewModalShow(false)}>
+        <div className="panel max-w-2xl w-full">
+          <label className="font-semibold text-xl text-neutral-900 mb-6">Schedule summary</label>
+          <div className="grid grid-cols-2 mb-5 font-medium">
+            <div>
+              <label className="text-sm text-neutral-600 flex flex-row items-center gap-2 mb-2.5">
+                <ContractsIcon className="h-4" />
+                Contract
+              </label>
+              <p className="text-neutral-900">{scheduleState.contractName}</p>
+            </div>
+            {safe && safe?.address ? (
+              <div>
+                <label className="text-sm text-neutral-600 flex flex-row items-center gap-2 mb-2.5">
+                  <img src="/icons/safe.png" className="w-4" />
+                  Safe
+                </label>
+                <p className="text-neutral-900">{safe.org_name}</p>
+              </div>
+            ) : null}
+          </div>
+          <hr className="my-6" />
+          <ScheduleDetails {...scheduleFormState} recipients={recipients} token={mintFormState.symbol || 'Token'} />
+
+          <hr className="my-6" />
+          <div className="font-medium">
+            <label className="text-sm text-neutral-600 mb-3">Total locked tokens</label>
+            <p className="text-neutral-900">
+              {amountToBeVestedText.value} {mintFormState.symbol || 'Token'}
+            </p>
+          </div>
+          <hr className="my-6" />
+          <div className="flex flex-row items-center justify-between">
+            <BackButton label="Back" onClick={() => setReviewModalShow(false)} />
+            <Button className="primary" type="button" loading={savingSchedule} onClick={handleCreateSchedule}>
+              {scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} schedule
+            </Button>
+          </div>
+        </div>
+      </PromptModal>
+    </div>
   );
 };
 
 // Assign a stepped layout -- to refactor later and put into a provider / service / utility function because this is a repetitive function
 ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
+  const { scheduleMode } = useVestingContext();
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },
@@ -1512,15 +1666,11 @@ ConfigureSchedule.getLayout = function getLayout(page: ReactElement) {
       desc: 'Setup schedule and contract'
     },
     {
-      title: 'Add recipient(s)',
+      title: 'Add recipients',
       desc: ''
     },
     {
-      title: 'Setup schedule',
-      desc: ''
-    },
-    {
-      title: 'Schedule summary',
+      title: `${scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} schedule`,
       desc: ''
     }
   ];

@@ -16,6 +16,7 @@ import SafeServiceClient from '@gnosis.pm/safe-service-client';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
+import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
@@ -61,6 +62,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { vestings: vestingSchedules, vestingContracts, fetchDashboardData } = useDashboardContext();
+  const { editSchedule, setShowDeleteModal, deleteSchedulePrompt } = useVestingContext();
 
   const [selected, setSelected] = useState('manual');
   const [vestingScheduleDataCounts, setVestingScheduleDataCounts] = useState({
@@ -201,7 +203,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       const secondsFromNow = differenceInSeconds(new Date(), actualDates.startDateTime);
       progress = Math.round((secondsFromNow / totalSeconds) * 100);
     }
-    progress = progress >= 100 ? 100 : progress;
+    progress = progress >= 100 ? 100 : progress < 0 ? 0 : progress;
     return (
       <div className="row-center">
         <ProgressCircle value={progress} max={100} />
@@ -264,6 +266,40 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     //           onClick: () => handleArchiving(id, data)
     //         }
     //       ];
+
+    // This function will help to consolidate the actions that are available in the actions column.
+    const actionItems = (recordIndex: number) => {
+      const items = [];
+      // Check for the status of the vesting schedule if it is live or completed.
+      if ((data as IVesting).status === 'COMPLETED' || (data as IVesting).status === 'LIVE') {
+        // Completed or Live vesting schedules can be revoked.
+        items.push({ label: 'Revoke', onClick: () => handleRevoke(id, data, recordIndex) });
+      } else {
+        // Other statuses can be archived.
+        items.push({
+          label: `${data.archive ? 'Unarchive' : 'Archive'}`,
+          onClick: () => handleArchiving(id, data)
+        });
+      }
+
+      // Check if the vesting schedule is a draft
+      const editableStatuses = ['CREATING', 'INITIALIZED', 'WAITING_APPROVAL'];
+      if (editableStatuses.includes((data as IVesting).status!)) {
+        items.push({ label: 'Edit', onClick: () => editSchedule(id, data) });
+        items.push({
+          label: 'Delete',
+          onClick: () => {
+            deleteSchedulePrompt(id, data);
+            // Show delete html can be seen in DefaultLayout.tsx
+            // while the data is handle in the vestingContext
+            setShowDeleteModal(true);
+          }
+        });
+      }
+
+      return items;
+    };
+
     return (
       <table className="-my-3.5 -mx-6">
         <tbody>
@@ -277,18 +313,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                       onClick={() => Router.push(`/vesting-schedule/${props.row.original.id}`)}>
                       Details
                     </button>
-                    <DropdownMenu
-                      items={
-                        (data as IVesting).status === 'COMPLETED' || (data as IVesting).status === 'LIVE'
-                          ? [{ label: 'Revoke', onClick: () => handleRevoke(id, data, rIndex) }]
-                          : [
-                              {
-                                label: `${data.archive ? 'Unarchive' : 'Archive'}`,
-                                onClick: () => handleArchiving(id, data)
-                              }
-                            ]
-                      }
-                    />
+                    <DropdownMenu items={actionItems(rIndex)} />
                   </div>
                 </td>
               </tr>

@@ -1,4 +1,4 @@
-import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
+import Copy from '@components/atoms/Copy/Copy';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
@@ -7,7 +7,6 @@ import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/s
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
-import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import {
   IStatus, // ITransactionStatus,
@@ -16,7 +15,9 @@ import {
 import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
+import { formatEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
+import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -26,33 +27,21 @@ import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 // import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction, IVesting } from 'types/models';
+import { compareAddresses } from 'utils';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
   getCliffAmount,
   getCliffDateTime,
+  getDuration,
   getNumberOfReleases,
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
 
-interface IVestingContractPendingActionProps {
-  id: string;
-  data: IVesting;
-  filter: {
-    keyword: string;
-    status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
-  };
-  updateFilter: (v: {
-    keyword: string;
-    status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
-  }) => void;
-}
-
-const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps> = ({
+const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo: VestingContractInfo[] }> = ({
   id,
   data,
-  filter,
-  updateFilter
+  vestingSchedulesInfo
 }) => {
   const { account, chainId, activate, library } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
@@ -66,7 +55,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     vestingsStatus,
     setVestingsStatus
   } = useDashboardContext();
-  const { editSchedule, deleteSchedulePrompt, setShowDeleteModal } = useVestingContext();
   const {
     pendingTransactions,
     transactionStatus: transactionLoaderStatus,
@@ -91,13 +79,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
-
-  const isVisible =
-    status !== 'SUCCESS' &&
-    (filter.status === 'ALL' ||
-      (filter.status === 'FUND' && status === 'FUNDING_REQUIRED') ||
-      (filter.status === 'APPROVE' && transactionStatus === 'APPROVAL_REQUIRED') ||
-      (filter.status === 'EXECUTE' && (transactionStatus === 'EXECUTABLE' || status === 'AUTHORIZATION_REQUIRED')));
+  const [isRecipientExpand, setIsRecipientExpand] = useState(false);
 
   const isFundAvailable = useCallback(() => {
     const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
@@ -143,7 +125,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       if (safeTx) {
         setSafeTransaction(safeTx);
         if (safeTx.signatures.size >= safe?.threshold) {
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
+          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
             ...vestingsStatus,
@@ -166,32 +148,20 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         }
       }
     } else {
-      const TokenContract = new ethers.Contract(
-        mintFormState.address,
-        [
-          // Read-Only Functions
-          'function balanceOf(address owner) view returns (uint256)',
-          'function decimals() view returns (uint8)',
-          'function symbol() view returns (string)',
-          // Authenticated Functions
-          'function transfer(address to, uint amount) returns (bool)',
-          // Events
-          'event Transfer(address indexed from, address indexed to, uint amount)'
-        ],
-        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
-      );
       const VestingContract = new ethers.Contract(
         vestingContract?.data.address || '',
         VTVL_VESTING_ABI.abi,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
-      const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
-      // const tokenBalance = vestingContract.data.balance || 0;
+      // const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
+      const tokenBalance = vestingContract.data.balance || 0;
 
       const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
 
-      if (
+      if (data.status === 'LIVE') {
+        setStatus('SUCCESS');
+      } else if (
         BigNumber.from(tokenBalance).gte(BigNumber.from(numberOfTokensReservedForVesting)) &&
         BigNumber.from(tokenBalance)
           .sub(BigNumber.from(numberOfTokensReservedForVesting))
@@ -491,7 +461,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
         return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
       });
-
       const vestingCliffAmounts = new Array(vesting.recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
 
       const CREATE_CLAIMS_BATCH_FUNCTION =
@@ -736,79 +705,87 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     }
   };
 
-  const handleDeleteSchedule = (id: string, data: IVesting) => {
-    // Should prompt the user
-    console.log('Deleting', id, data);
-    deleteSchedulePrompt(id, data);
-    // Show delete html can be seen in DefaultLayout.tsx
-    // while the data is handle in the vestingContext
-    setShowDeleteModal(true);
-  };
-
   useEffect(() => {
-    initializeStatus();
+    if (transactions.length) {
+      initializeStatus();
+    } else {
+      setStatus('FUNDING_REQUIRED');
+      setTransactionStatus('INITIALIZE');
+    }
   }, [data, safe, account, vestingContract, transactions, transaction]);
 
-  return isVisible ? (
-    <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">
-      <div className="flex items-center w-16 py-3"></div>
-      <div className="flex items-center w-36 py-3">{data.name}</div>
-      <div className="flex items-center w-52 py-3">Vesting Schedule</div>
-      <div className="flex items-center w-52 py-3">
-        {!!status && (
-          <div
-            className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#fef3c7] text-[#f59e0b] text-xs whitespace-nowrap cursor-pointer"
-            onClick={() => {
-              if (status === 'FUNDING_REQUIRED') {
-                updateFilter({ ...filter, status: 'FUND' });
-              } else if (transactionStatus === 'EXECUTABLE') {
-                updateFilter({ ...filter, status: 'EXECUTE' });
-              } else if (transactionStatus === 'APPROVAL_REQUIRED' || transactionStatus === 'WAITING_APPROVAL') {
-                updateFilter({ ...filter, status: 'APPROVE' });
-              }
-            }}>
-            <WarningIcon className="w-3 h-3" />
-            {STATUS_MAPPING[status]}
-          </div>
-        )}
-      </div>
-      <div className="flex items-center w-40 py-3">{vestingContract?.data.name}</div>
-      <div className="flex items-center w-32 py-3">
-        <div className="flex gap-1.5 items-center">
-          <img className="w-4 h-4" src="icons/safe.png" />
-          Founders
+  const CellCliff = () => {
+    const newValue = data.details.cliffDuration.replace('-', ' ');
+    return newValue.charAt(0).toUpperCase() + newValue.substring(1, newValue.length);
+  };
+
+  const getPeriod = () => {
+    return (
+      data.details.startDateTime &&
+      data.details.endDateTime &&
+      getDuration(
+        new Date((data.details.startDateTime as unknown as Timestamp).seconds * 1000),
+        new Date((data.details.endDateTime as unknown as Timestamp).seconds * 1000)
+      )
+    );
+  };
+
+  const getRecipientInfo = useCallback(
+    (wallet: string) => {
+      return vestingSchedulesInfo.find((vestingInfo) => compareAddresses(vestingInfo.recipient, wallet));
+    },
+    [vestingSchedulesInfo]
+  );
+
+  const formatValue = (value: BigNumber | undefined) => {
+    return value ? Number(formatEther(value)).toFixed(2) : 0;
+  };
+
+  return (
+    <>
+      <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">
+        <div className="flex items-center w-16 py-3"></div>
+        <div className="flex items-center w-36 py-3">{data.name}</div>
+        <div className="flex items-center w-52 py-3">
+          {!!status && status !== 'SUCCESS' && (
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#fef3c7] text-[#f59e0b] text-xs whitespace-nowrap">
+              <WarningIcon className="w-3 h-3" />
+              {STATUS_MAPPING[status]}
+            </div>
+          )}
         </div>
-      </div>
-      <div className="flex items-center w-40 py-3">{formatNumber(data.details.amountToBeVested)}</div>
-      <div className="flex items-center min-w-[200px] flex-grow py-3">
-        {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'INITIALIZE' && (
-          <button
-            className="secondary small whitespace-nowrap"
-            onClick={handleCreateSignTransaction}
-            disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
-            Create &amp; sign
-          </button>
-        )}
-        {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
-          <button className="secondary small whitespace-nowrap" disabled>
-            Waiting approval
-          </button>
-        )}
-        {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
-            Approve
-          </button>
-        )}
-        {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
-          <button
-            className="secondary small whitespace-nowrap"
-            onClick={handleExecuteTransaction}
-            disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
-            Execute
-          </button>
-        )}
-        {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
-          <>
+        <div className="flex items-center w-52 py-3">{CellCliff()}</div>
+        <div className="flex items-center w-40 py-3">{getPeriod()}</div>
+        <div className="flex items-center w-32 py-3"></div>
+        <div className="flex items-center w-40 py-3">{formatNumber(data.details.amountToBeVested)}</div>
+        <div className="flex items-center min-w-[200px] flex-grow py-3">
+          {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'INITIALIZE' && (
+            <button
+              className="secondary small whitespace-nowrap"
+              onClick={handleCreateSignTransaction}
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
+              Create &amp; sign
+            </button>
+          )}
+          {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
+            <button className="secondary small whitespace-nowrap" disabled>
+              Waiting approval
+            </button>
+          )}
+          {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
+            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+              Approve
+            </button>
+          )}
+          {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
+            <button
+              className="secondary small whitespace-nowrap"
+              onClick={handleExecuteTransaction}
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
+              Execute
+            </button>
+          )}
+          {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
             <button
               className="secondary small whitespace-nowrap"
               disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
@@ -817,53 +794,107 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               }}>
               Fund Contract
             </button>
-            <DropdownMenu
-              items={[
-                { label: 'Edit', onClick: () => editSchedule(id, data) },
-                { label: 'Delete', onClick: () => handleDeleteSchedule(id, data) }
-              ]}
-            />
-          </>
-        )}
-        {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button
-            className="secondary small whitespace-nowrap"
-            onClick={() => {
-              setShowFundingContractModal(true);
-            }}>
-            Approve Funding
-          </button>
-        )}
-        {status === 'FUNDING_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
-          <button
-            className="secondary small whitespace-nowrap"
-            disabled
-            onClick={() => {
-              // setShowFundingContractModal(true);
-            }}>
-            Approved
-          </button>
-        )}
-        {status === 'FUNDING_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
-          <button
-            className="secondary small whitespace-nowrap"
-            onClick={handleExecuteFundingTransaction}
-            disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
-            Execute Funding
-          </button>
+          )}
+          {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
+            <button
+              className="secondary small whitespace-nowrap"
+              onClick={() => {
+                setShowFundingContractModal(true);
+              }}>
+              Approve Funding
+            </button>
+          )}
+          {status === 'FUNDING_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
+            <button
+              className="secondary small whitespace-nowrap"
+              disabled
+              onClick={() => {
+                // setShowFundingContractModal(true);
+              }}>
+              Approved
+            </button>
+          )}
+          {status === 'FUNDING_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
+            <button
+              className="secondary small whitespace-nowrap"
+              onClick={handleExecuteFundingTransaction}
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
+              Execute Funding
+            </button>
+          )}
+        </div>
+        {vestingContract && (
+          <FundingContractModalV2
+            isOpen={showFundingContractModal}
+            vestingContract={vestingContract}
+            hideModal={() => setShowFundingContractModal(false)}
+            depositAmount={depositAmount}
+            handleFundContract={handleFundContract}
+          />
         )}
       </div>
-      {vestingContract && (
-        <FundingContractModalV2
-          isOpen={showFundingContractModal}
-          vestingContract={vestingContract}
-          hideModal={() => setShowFundingContractModal(false)}
-          depositAmount={depositAmount}
-          handleFundContract={handleFundContract}
-        />
+      <div className="flex bg-[#eaecf0] text-[#667085] text-xs border-t border-[#d0d5dd] font-semibold">
+        <div className="flex items-center w-16 py-3"></div>
+        <div className="flex items-center w-36 py-3">
+          Recipient
+          <div
+            className="avatar 
+                   bg-gray-500 text-gray-100  w-5 h-5 ml-3">
+            {data.recipients.length}
+          </div>
+        </div>
+        <div className="flex items-center w-52 py-3">Address</div>
+        <div className="flex items-center w-52 py-3">Withdrawn</div>
+        <div className="flex items-center w-40 py-3">Unclaimed</div>
+        <div className="flex items-center w-32 py-3">Total locked</div>
+        <div className="flex items-center w-40 py-3">Allocation</div>
+      </div>
+      {data.recipients.map((recipient, index) => {
+        if (index < 3 || isRecipientExpand) {
+          return (
+            <div
+              key={recipient.walletAddress}
+              className="flex  bg-[#eaecf0] text-[#667085] text-xs border-t border-[#d0d5dd]">
+              <div className="flex items-center w-16 py-3"></div>
+              <div className="flex items-center w-36 py-3">{recipient.name}</div>
+              <div className="flex items-center w-52 py-3">
+                <Copy text={recipient.walletAddress}>
+                  <p className="paragraphy-small ">
+                    {recipient.walletAddress.slice(0, 5)}...{recipient.walletAddress.slice(-4)}
+                  </p>
+                </Copy>
+              </div>
+              <div className="flex items-center w-52 py-3">
+                {formatValue(getRecipientInfo(recipient.walletAddress)?.withdrawn)}
+              </div>
+              <div className="flex items-center w-40 py-3">
+                {formatValue(getRecipientInfo(recipient.walletAddress)?.unclaimed)}
+              </div>
+              <div className="flex items-center w-32 py-3">
+                {formatValue(getRecipientInfo(recipient.walletAddress)?.locked)}
+              </div>
+              <div className="flex items-center w-40 py-3">
+                {formatValue(getRecipientInfo(recipient.walletAddress)?.allocation)}
+              </div>
+              <div className="flex items-center min-w-[200px] flex-grow py-3"></div>
+            </div>
+          );
+        } else {
+          return null;
+        }
+      })}
+      {data.recipients.length > 3 && (
+        <div className="flex  bg-[#eaecf0] text-[#667085] text-xs border-t border-[#d0d5dd]">
+          <div className="flex items-center w-16 py-3"></div>
+          <div
+            className="flex items-center w-36 py-3 text-[#1b369a] underline cursor-pointer"
+            onClick={() => setIsRecipientExpand(!isRecipientExpand)}>
+            {isRecipientExpand ? 'Hide ....' : 'View more...'}
+          </div>
+        </div>
       )}
-    </div>
-  ) : null;
+    </>
+  );
 };
 
-export default VestingSchedulePendingAction;
+export default ScheduleTable;

@@ -1,20 +1,21 @@
 import Decimal from 'decimal.js';
+import { ethers } from 'ethers';
 import Router from 'next/router';
 import RecipientsIcon from 'public/icons/cap-table-recipients.svg';
 import SchedulesIcon from 'public/icons/cap-table-schedules.svg';
 import PlusIcon from 'public/icons/plus.svg';
 import { convertToUSD } from 'utils/shared';
 import { formatNumber } from 'utils/token';
+import { BNToAmountString } from 'utils/web3';
 
 interface CapTableOverviewProps {
   token: string;
   url?: string;
-  claimed: number | Decimal;
+  claimed: number | Decimal | ethers.BigNumber;
   schedules: number;
-  unclaimed: number | Decimal;
+  unclaimed: number | Decimal | ethers.BigNumber;
   totalRecipients: number;
-  totalWithdrawn: number | Decimal;
-  totalAllocation: number | Decimal;
+  totalAllocation: number | Decimal | ethers.BigNumber;
 }
 
 const CapTableOverview = ({
@@ -24,7 +25,6 @@ const CapTableOverview = ({
   totalRecipients,
   claimed,
   unclaimed,
-  totalWithdrawn,
   totalAllocation
 }: CapTableOverviewProps) => {
   // Create a function here that converts the token amounts into currency ie., USD ($) etc.
@@ -49,18 +49,18 @@ const CapTableOverview = ({
           <p className="paragraphy-tiny-medium neutral-text mb-6">Withdrawn</p>
           <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
-              {formatNumber(+claimed.toString())} {token}
+              {formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(claimed))))} {token}
             </p>
-            <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(claimed)}</div>
+            {/* <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(claimed)}</div> */}
           </div>
         </div>
         <div>
           <p className="paragraphy-tiny-medium neutral-text mb-6">Unclaimed</p>
           <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
-              {formatNumber(+unclaimed.toString())} {token}
+              {formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(unclaimed))))} {token}
             </p>
-            <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(unclaimed)}</div>
+            {/* <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(unclaimed)}</div> */}
           </div>
         </div>
         {/* <div>
@@ -76,9 +76,9 @@ const CapTableOverview = ({
           <p className="paragraphy-tiny-medium neutral-text mb-6">Total allocation</p>
           <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
-              {formatNumber(totalAllocation)} {token}
+              {formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(totalAllocation))))} {token}
             </p>
-            <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(totalAllocation)}</div>
+            {/* <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(totalAllocation)}</div> */}
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@ const TOTAL_ALLOCATION_AMOUNT_INDEX = 4;
 const WITHDRAWN_AMOUNT_INDEX = 5;
 const CLIFF_AMOUNT_INDEX = 6;
 
-type VestingInfo = {
+export type VestingInfo = {
   address: string;
   allocations: string;
   locked: string;

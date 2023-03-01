@@ -32,3 +32,10 @@ export const validate = <T>(rows: Array<T>, key: keyof T, condition: (value: T[k
 export const isBlankObject = (value: any) => {
   return Object.keys(value || {}).filter((key: string) => !!value[key]).length === 0;
 };
+
+/**
+ * Return true if value is empty array
+ */
+export const isEmptyArray = (value: Array<any>) => {
+  return !value?.length;
+};
