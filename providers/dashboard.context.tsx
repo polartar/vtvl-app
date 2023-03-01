@@ -9,18 +9,15 @@ import React, { SetStateAction, createContext, useCallback, useContext, useEffec
 import { MultiValue } from 'react-select';
 import { toast } from 'react-toastify';
 import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
-import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { fetchVestingContractByQuery, fetchVestingContractsByQuery } from 'services/db/vestingContract';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
-import { IRecipientForm } from 'types/models/recipient';
+import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
-import { compareAddresses } from 'utils';
-import { getRecipient } from 'utils/recipients';
+import { IRecipient } from 'types/vesting';
 import { parseTokenAmount } from 'utils/token';
 
 import { useAuthContext } from './auth.context';
@@ -33,7 +30,7 @@ type IVestingStatus = 'FUNDING_REQUIRED' | 'PENDING' | 'EXECUTABLE' | 'LIVE';
 interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
   revokings: { id: string; data: IRevoking }[];
-  recipients: MultiValue<IRecipientForm>;
+  recipients: MultiValue<IRecipient>;
   vestingContracts: { id: string; data: IVestingContract }[];
   transactions: { id: string; data: ITransaction }[];
   ownershipTransfered: boolean;
@@ -78,7 +75,7 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingsLoading, setVestingsLoading] = useState(false);
   const [vestingContractLoading, setVestingContractLoading] = useState(false);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
-  const [recipients, setRecipients] = useState<MultiValue<IRecipientForm>>([]);
+  const [recipients, setRecipients] = useState<MultiValue<IRecipient>>([]);
   const [vestingsStatus, setVestingsStatus] = useState<{ [key: string]: IVestingStatus }>({});
 
   // Stores everything about the user token details
@@ -215,8 +212,8 @@ export function DashboardContextProvider({ children }: any) {
               recipientsTokenDetails.push({
                 scheduleId,
                 name: currentRecipient.name,
-                company: currentRecipient.company ?? '',
-                recipientType: String(currentRecipient.recipientType?.[0].label),
+                company: currentRecipient.company,
+                recipientType: currentRecipient.recipientType[0]?.label as string,
                 address: currentRecipient.walletAddress,
                 // Ensure that the totalAllocation for each recipient is divided by the number of recipients
                 totalAllocation: finalVestedAmount,
@@ -404,39 +401,16 @@ export function DashboardContextProvider({ children }: any) {
       return;
     }
 
-    const vestingIds: string[] = [];
+    let allRecipients: MultiValue<IRecipient> = [];
     vestings.forEach((vesting) => {
-      vestingIds.push(vesting.id);
+      allRecipients = [...allRecipients, ...vesting.data.recipients];
     });
-
-    showLoading();
-    fetchRecipientsByQuery(['vestingId'], ['in'], [vestingIds])
-      .then((allRecipients) => {
-        const recipientsData = allRecipients
-          .filter(
-            (recipient, i) =>
-              i === allRecipients.findIndex((r) => compareAddresses(r.data.walletAddress, recipient.data.walletAddress))
-          )
-          .map(
-            (recipient) =>
-              ({
-                walletAddress: recipient.data.walletAddress,
-                name: recipient.data.name,
-                email: recipient.data.email,
-                company: recipient.data.company ?? '',
-                allocations: Number(recipient.data.allocations),
-                recipientType: [getRecipient(recipient.data.recipientType)]
-              } as IRecipientForm)
-          );
-        setRecipients(recipientsData);
-      })
-      .catch((error) => {
-        console.error('Fetching recipients data error', error);
-      })
-      .finally(() => {
-        hideLoading();
-      });
-
+    setRecipients(
+      allRecipients.filter(
+        (recipient, i) =>
+          i === allRecipients.findIndex((r) => r.walletAddress.toLowerCase() === recipient.walletAddress.toLowerCase())
+      )
+    );
     if (!organizationId) return;
     const q = query(vestingCollection, where('organizationId', '==', organizationId));
     const subscribe = onSnapshot(q, (snapshot) => {

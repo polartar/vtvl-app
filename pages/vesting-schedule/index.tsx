@@ -37,7 +37,8 @@ import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, IToken, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IToken, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IRecipient } from 'types/vesting';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
 import { convertAllToOptions, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
@@ -302,7 +303,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     return (
       <table className="-my-3.5 -mx-6">
         <tbody>
-          {data.recipients.map((_: IRecipient, rIndex: number) => {
+          {data.recipients.map((recipient: IRecipient, rIndex: number) => {
             return (
               <tr key={`recipient-${rIndex}`} className="group">
                 <td className="group-last:border-b-0">

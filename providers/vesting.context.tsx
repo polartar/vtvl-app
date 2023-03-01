@@ -1,17 +1,16 @@
 import { useWeb3React } from '@web3-react/core';
+import { Timestamp, onSnapshot } from 'firebase/firestore';
 import { useShallowState } from 'hooks/useShallowState';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
-import { fetchRecipientByQuery, fetchRecipientsByQuery } from 'services/db/recipient';
 import { deleteVesting, fetchVesting, fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
-import { IRecipientDoc, IVesting } from 'types/models';
-import { IScheduleMode, IScheduleState } from 'types/vesting';
+import { IVesting } from 'types/models';
+import { IRecipient, IScheduleMode, IScheduleState } from 'types/vesting';
 import { generateRandomName, getActualDateTime } from 'utils/shared';
 
 import { useAuthContext } from './auth.context';
-import { useLoaderContext } from './loader.context';
 
 export interface IScheduleFormState {
   startDateTime: Date | null | undefined;
@@ -44,7 +43,7 @@ export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
   amountUnclaimed: 0
 };
 
-const INITIAL_RECIPIENT_FORM_STATE = [] as MultiValue<IRecipientDoc>;
+const INITIAL_RECIPIENT_FORM_STATE = [] as MultiValue<IRecipient>;
 
 const INITIAL_SCHEDULE_MODE: IScheduleMode = {
   id: '',
@@ -63,7 +62,7 @@ const INITIAL_SCHEDULE_STATE: IScheduleState = {
 interface IVestingData {
   vestings: { id: string; data: IVesting }[];
   scheduleFormState: IScheduleFormState;
-  recipients: MultiValue<IRecipientDoc>;
+  recipients: MultiValue<IRecipient>;
   scheduleState: IScheduleState;
   scheduleMode: IScheduleMode;
   updateScheduleFormState: (v: any) => void;
@@ -84,7 +83,6 @@ const VestingContext = createContext({} as IVestingData);
 export function VestingContextProvider({ children }: any) {
   const { account, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
-  const { showLoading, hideLoading } = useLoaderContext();
 
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
   // This contains all the details regarding the schedule form in the /configure
@@ -123,7 +121,7 @@ export function VestingContextProvider({ children }: any) {
       originalEndDateTime: actualDates.originalEndDateTime
     });
     // Sets the recipient list based on the data
-    // setRecipients([...data.recipients]);
+    setRecipients([...data.recipients]);
     // Sets the schedule mode
     setScheduleMode({ id, edit: true, data });
     // Sets the schedule state
@@ -136,22 +134,11 @@ export function VestingContextProvider({ children }: any) {
   };
 
   // This function is used to initialize editing of the schedule.
-  const editSchedule = useCallback(
-    async (id: string, data: IVesting) => {
-      showLoading();
-
-      const recipientsData = await fetchRecipientsByQuery(['vestingId'], ['=='], [id]);
-
-      console.log('EDIT:::: EDIT INITIALIZED', id, data);
-      updateScheduleStates(id, data);
-      setRecipients(recipientsData);
-
-      router.push(`/vesting-schedule/add-recipients?id=${id}`);
-
-      hideLoading();
-    },
-    [router, showLoading, hideLoading]
-  );
+  const editSchedule = (id: string, data: IVesting) => {
+    console.log('EDIT:::: EDIT INITIALIZED', id, data);
+    updateScheduleStates(id, data);
+    router.push(`/vesting-schedule/add-recipients?id=${id}`);
+  };
 
   // Updates the state on what to delete
   const deleteSchedulePrompt = (id: string, data: IVesting) => {

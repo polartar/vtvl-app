@@ -6,7 +6,7 @@ import { BigNumber } from 'ethers/lib/ethers';
 import { useEffect } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting, IVestingContract } from 'types/models';
-import { IRecipientForm } from 'types/models/recipient';
+import { IRecipient } from 'types/vesting';
 import { compareAddresses } from 'utils';
 
 import { useShallowState } from './useShallowState';
@@ -53,7 +53,7 @@ export default function useChainVestingContracts(
     const contractCallContext: ContractCallContext[] = vestingContracts.reduce((res, vestingContract) => {
       const partialVestings = vestings.filter((vesting) => vesting.data.vestingContractId === vestingContract.id);
 
-      let allRecipients: IRecipientForm[] = [];
+      let allRecipients: IRecipient[] = [];
       partialVestings.forEach((vesting) => {
         allRecipients = allRecipients.concat(vesting.data.recipients);
       });

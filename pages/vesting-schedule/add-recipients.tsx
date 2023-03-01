@@ -1,5 +1,5 @@
 import { Typography } from '@components/atoms/Typography/Typography';
-import { RecipientTable, RecipientTableRow } from '@components/molecules/RecipientTable';
+import { RecipientTable, RecipientTableRow, getRecipient } from '@components/molecules/RecipientTable';
 import { VestingSetupPanel } from '@components/molecules/VestingSetupPanel';
 import ImportCSVFlow from '@components/organisms/Forms/ImportCSVFlow';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
@@ -11,9 +11,9 @@ import { NextPageWithLayout } from 'pages/_app';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { fetchVestingsByQuery } from 'services/db/vesting';
-import { IRecipientDoc, IVesting } from 'types/models';
-import { getRecipient } from 'utils/recipients';
+import { IVesting } from 'types/models';
 import { isEmptyArray } from 'utils/regex';
+import { validate } from 'utils/validator';
 
 const beneficiaryFields = [
   { label: 'Name', value: 'name' },
@@ -148,7 +148,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
   );
 
   const handleContinue = useCallback(
-    async (data: RecipientTableRow[], newErrors: string[]) => {
+    async (data: any[], newErrors: string[]) => {
       if (scheduleState.vestingContractId) {
         // const vestings = await fetchVestingContractsByQuery(['vestingContractId'], ['=='], [scheduleState.vestingContractId])
         const vestings: { id: string; data: IVesting }[] = await fetchVestingsByQuery(
@@ -186,22 +186,15 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
         return;
       }
 
-      console.log('DEBUG-add-recipient', data);
-
-      updateRecipients?.(
-        data.map((row: RecipientTableRow) => ({
-          id: String(''),
-          data: {
-            walletAddress: row.address,
-            name: row.name,
-            email: row.email,
-            allocations: row.allocations,
-            recipientType: row.type,
-            company: row.company
-          }
+      await updateRecipients?.(
+        data.map((row: any) => ({
+          walletAddress: row.address,
+          name: row.name,
+          email: row.email,
+          allocations: row.allocations,
+          recipientType: [getRecipient(row.type!)]
         })) ?? []
       );
-
       // Route to the next page and check if the current route is edit or add.
       Router.push(`/vesting-schedule/configure${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`);
     },
@@ -231,14 +224,13 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
       recipients.length
     ) {
       setRows(
-        recipients.map((record: IRecipientDoc) => ({
-          id: record.id,
-          name: record.data.name,
-          address: record.data.walletAddress,
-          allocations: record.data.allocations,
-          email: String(record.data.email),
-          type: record.data.recipientType,
-          company: record.data.company
+        recipients.map((record: any, index: number) => ({
+          id: String(index),
+          name: record.name,
+          address: record.walletAddress,
+          allocations: record.allocations,
+          email: String(record.email),
+          type: record.type || record.recipientType[0].value
         }))
       );
     }

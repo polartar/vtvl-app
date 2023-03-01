@@ -3,18 +3,19 @@ import { ArrowLeftIcon, PlusIcon, TrashIcon } from '@components/atoms/Icons';
 import { Typography } from '@components/atoms/Typography/Typography';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Select, { OnChangeValue } from 'react-select';
-import { IRecipientType } from 'types/models/recipient';
-import { RECIPIENTS_TYPES } from 'utils/constants';
-import { getRecipient } from 'utils/recipients';
 import { validate, validateDuplication, validateEVMAddress } from 'utils/regex';
 import { formatNumber } from 'utils/token';
+import { validate as validateSingleField } from 'utils/validator';
 
 import { EditableTypography } from './EditableTypography';
 import {
+  Recipient,
   RecipientTableColumns,
   RecipientTableProps,
   RecipientTableRow,
+  RecipientTypes,
   emptyRow,
+  getRecipient,
   tdFillClassName,
   tdInnerClassName,
   thClassName
@@ -28,6 +29,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
   onContinue
 }) => {
   const [rows, setRows] = useState<RecipientTableRow[]>(initialRows);
+  // const [errors, setErrors] = useState<Array<string>>([]);
 
   const totalAllocations = useMemo(() => rows?.reduce((val, row) => val + Number(row.allocations), 0) ?? 0, [rows]);
 
@@ -69,6 +71,8 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
       newErrors.push('Recipient email is the required field.');
     }
 
+    // setErrors(newErrors);
+
     onContinue?.(rows, newErrors);
   }, [rows, onContinue]);
 
@@ -91,7 +95,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
   );
 
   const handleChangeRecipientType = useCallback(
-    (index: number) => (newValue: OnChangeValue<IRecipientType, false>) => {
+    (index: number) => (newValue: OnChangeValue<Recipient, false>) => {
       setRows((values) => values.map((val, idx) => (idx === index ? { ...val, type: newValue?.value } : val)));
     },
     []
@@ -167,7 +171,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
                 <td className={`${row.type ? tdInnerClassName : `${tdInnerClassName} bg-danger-50`}`}>
                   <Select
                     value={row.type ? getRecipient(row.type) : undefined}
-                    options={RECIPIENTS_TYPES}
+                    options={RecipientTypes}
                     onChange={handleChangeRecipientType(index)}
                   />
                 </td>
@@ -216,6 +220,20 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
           </tbody>
         </table>
       </div>
+
+      {/* {errors?.length > 0 ? (
+        <ul className="mb-4 pl-8 list-disc list-outside marker:text-danger-500">
+          {errors?.map((error) => (
+            <li key={error}>
+              <Typography className="text-danger-500" variant="inter" size="caption">
+                {error}
+              </Typography>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        ''
+      )} */}
 
       {children ?? <></>}
 
