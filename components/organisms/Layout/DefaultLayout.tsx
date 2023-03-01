@@ -87,13 +87,6 @@ const FounderRoutes = {
       route: '/cap-table',
       available: true
     },
-    {
-      title: 'Recipient',
-      icon: '/icons/recipient.svg',
-      hoverIcon: '/icons/recipient-hover.svg',
-      route: '/recipient',
-      available: true
-    },
     // {
     //   title: 'Connect safe',
     //   icon: '/icons/s_vestingSchedule.svg',

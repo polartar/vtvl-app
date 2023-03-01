@@ -222,7 +222,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
         </div>
       </div>
 
-      <div className="border border-[#d0d5dd] rounded-xl w-full overflow-hidden mt-3">
+      <div className="border border-[#d0d5dd] rounded-xl w-full overflow-hidden">
         <div className="flex bg-[#f2f4f7] text-[#475467] text-xs">
           <div className="w-16 py-3"></div>
           <div className="w-36 py-3">Schedule</div>

@@ -5,7 +5,6 @@ import { ClaimTokensContextProvider } from '@providers/claim-tokens.context';
 import { DashboardContextProvider } from '@providers/dashboard.context';
 import { LoaderContextProvider } from '@providers/loader.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
-import { RecipientContextProvider } from '@providers/recipient.context';
 import { TeammateContextProvider } from '@providers/teammate.context';
 import { TokenContextProvider } from '@providers/token.context';
 import { VestingContextProvider } from '@providers/vesting.context';
@@ -62,10 +61,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                     <TransactionLoaderContextProvider>
                       <TeammateContextProvider>
                         <ClaimTokensContextProvider>
-                          <RecipientContextProvider>
-                            <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                            <ToastContainer />
-                          </RecipientContextProvider>
+                          <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                          <ToastContainer />
                         </ClaimTokensContextProvider>
                       </TeammateContextProvider>
                     </TransactionLoaderContextProvider>

@@ -12,7 +12,6 @@ export interface EditableTypographyProps<T extends string = string> {
   placeholder?: string;
   autoFocus?: boolean;
   validations?: Validation[];
-  isNoPadding?: boolean;
   onChange?: (value: T) => void;
 }
 

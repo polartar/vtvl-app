@@ -8,7 +8,6 @@ export interface IRecipient {
   walletAddress: string;
   recipientType: IRecipientTypeValue;
   status?: 'accepted';
-  updatedAt?: number;
 }
 
 export interface IRecipientForm {
@@ -32,7 +31,4 @@ export interface IRecipientFormState {
 export interface IRecipientDoc {
   id: string;
   data: IRecipient;
-}
-export interface IRecipientData extends IRecipientDoc {
-  checked?: boolean;
 }
