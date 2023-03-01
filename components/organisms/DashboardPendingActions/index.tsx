@@ -14,8 +14,10 @@ import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVesting, IVestingContract } from 'types/models';
+import { ITransaction, IVesting, IVestingContract } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';
+
+import PendingAdminWithdrawAction from './PendingAdminWithdrawAction';
 
 export type IStatus =
   | 'AUTHORIZATION_REQUIRED'
@@ -60,10 +62,13 @@ export const TRANSACTION_STATUS_MAPPING: { [key in ITransactionStatus]: string }
 const DashboardPendingActions = () => {
   const { chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
-  const { vestingContracts, vestings, revokings } = useDashboardContext();
+  const { vestingContracts, vestings, revokings, transactions } = useDashboardContext();
 
   const [pendingVestingContracts, setPendingVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
   const [pendingVestings, setPendingVestings] = useState<{ id: string; data: IVesting }[]>([]);
+  const [pendingWithdrawTransactions, setPendingWithdrawTransactions] = useState<{ id: string; data: ITransaction }[]>(
+    []
+  );
   const [filter, setFilter] = useState<{
     keyword: string;
     status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
@@ -87,6 +92,16 @@ const DashboardPendingActions = () => {
       );
     }
   }, [vestings]);
+
+  useEffect(() => {
+    if (transactions && transactions.length) {
+      setPendingWithdrawTransactions(
+        transactions.filter(
+          (transaction) => transaction.data.type === 'ADMIN_WITHDRAW' && transaction.data.status === 'PENDING'
+        )
+      );
+    }
+  }, [transactions]);
 
   return (
     <div>
@@ -127,6 +142,9 @@ const DashboardPendingActions = () => {
           ))}
         {revokings.map((revoking) => (
           <PendingRevokingAction id={revoking.id} data={revoking.data} key={revoking.id} />
+        ))}
+        {pendingWithdrawTransactions.map((transaction) => (
+          <PendingAdminWithdrawAction id={transaction.id} data={transaction.data} key={transaction.id} />
         ))}
       </div>
     </div>
