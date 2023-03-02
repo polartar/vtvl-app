@@ -14,6 +14,7 @@ interface SubMenuItemProps {
   hoverIcon?: string;
   route: string;
   available?: boolean;
+  isExternal?: boolean;
 }
 
 interface MenuItemProps extends SubMenuItemProps {
@@ -35,9 +36,13 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
   const currentRoute = useRouter();
   const [selectedRoute, setSelectedRoute] = React.useState(currentRoute.pathname || '');
 
-  const handleMenuClick = (route: string) => {
-    setSelectedRoute(route);
-    Router.push(route);
+  const handleMenuClick = (route: string, isExternal?: boolean) => {
+    if (isExternal) {
+      window.open(route);
+    } else {
+      setSelectedRoute(route);
+      Router.push(route);
+    }
   };
 
   const hasTokensToClaim = (menu: any) =>
@@ -75,7 +80,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
                 <SidebarItem
                   selected={selectedRoute.includes(menu.route)}
                   disabled={!menu.available}
-                  onClick={() => (menu.available ? handleMenuClick(menu.route) : {})}
+                  onClick={() => (menu.available ? handleMenuClick(menu.route, menu.isExternal) : {})}
                   icon={menu.icon}
                   hoverIcon={menu.hoverIcon}
                   className={`${sidebarIsExpanded ? 'w-60' : ''} ${!menu.available ? '!opacity-40' : ''}`}>
@@ -119,7 +124,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
                 key={index}
                 disabled={!submenu.available}
                 selected={selectedRoute.includes(submenu.route)}
-                onClick={() => (submenu.available ? handleMenuClick(submenu.route) : {})}
+                onClick={() => (submenu.available ? handleMenuClick(submenu.route, submenu.isExternal) : {})}
                 icon={submenu.icon}
                 hoverIcon={submenu.hoverIcon}
                 className={`${sidebarIsExpanded ? 'w-60' : ''} ${!submenu.available ? '!opacity-40' : ''}`}>

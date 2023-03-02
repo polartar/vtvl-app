@@ -118,7 +118,14 @@ const FounderRoutes = {
   ],
   submenuList: [
     { title: 'Notifications', icon: '/icons/notifications.svg', hoverIcon: '', route: '/notifications' },
-    { title: 'Support', icon: '/icons/support.svg', hoverIcon: '', route: '/support' },
+    {
+      title: 'Support',
+      icon: '/icons/support.svg',
+      hoverIcon: '/icons/support-hover.svg',
+      route: 'https://app.gitbook.com/o/ZU2c5iaF4aXyvh8Ii9QB/s/tslbhiJoCUNqnvkdNUVE/introduction/',
+      isExternal: true,
+      available: true
+    },
     { title: 'Switch to investor', icon: '/icons/switchUser.svg', hoverIcon: '', route: '/switch-account' },
     {
       title: 'Settings',
@@ -159,7 +166,14 @@ const employeeInvestorMenuItems = {
   ],
   submenuList: [
     // { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
-    { title: 'Support', icon: '/icons/support.svg', route: '/support' },
+    {
+      title: 'Support',
+      icon: '/icons/support.svg',
+      hoverIcon: '/icons/support-hover.svg',
+      route: 'https://app.gitbook.com/o/ZU2c5iaF4aXyvh8Ii9QB/s/tslbhiJoCUNqnvkdNUVE/introduction/',
+      isExternal: true,
+      available: true
+    },
     { title: 'Switch to founder', icon: '/icons/switchUser.svg', route: '/switch-account' }
   ]
 };
