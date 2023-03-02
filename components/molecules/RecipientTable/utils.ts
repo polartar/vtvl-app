@@ -43,24 +43,14 @@ export const RecipientTableColumns = [
   }
 ] as const;
 
-export const RecipientTypes = [
-  { label: 'Advisor', value: 'advisor' },
-  { label: 'Founder', value: 'founder' },
-  { label: 'Investor', value: 'investor' },
-  { label: 'Employee', value: 'employee' }
-] as Recipient[];
-
-export const RecipientTypeIds = RecipientTypes.map(({ value }) => value);
-
-export type RecipientType = typeof RecipientTypeIds[number];
-
 export type RecipientTableRow = {
   id?: string;
   name: string;
   email: string;
   address?: string;
   allocations: string;
-  type?: RecipientType;
+  type?: IRecipientTypeValue;
+  company?: string;
 };
 
 export type RecipientTableValidation = {
@@ -68,7 +58,7 @@ export type RecipientTableValidation = {
   email: ValidationResponse;
   address: ValidationResponse;
   allocations: ValidationResponse;
-  // TODO add type
+  type: ValidationResponse;
 };
 
 export interface RecipientTableProps extends PropsWithChildren {
@@ -110,6 +100,3 @@ export const initialValidationResponse = {
     validated: true
   }
 } as RecipientTableValidation;
-
-export const getRecipient = (recipient: RecipientType) =>
-  RecipientTypes.find(({ value }) => value.toLowerCase() === recipient.toLowerCase());

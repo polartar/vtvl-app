@@ -43,11 +43,14 @@ import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
+import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
 import { createVestingContract } from 'services/db/vestingContract';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
+import { IRecipientForm } from 'types/models/recipient';
+import { formatRecipientsDocToForm, getRecipient } from 'utils/recipients';
 import { getActualDateTime, scrollIntoView } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import {
@@ -92,7 +95,23 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const [formMessage, setFormMessage] = useState('');
 
   const totalAllocations = useMemo(
-    () => recipients?.reduce((val, recipient) => val + Number(recipient?.allocations ?? 0), 0),
+    () => recipients?.reduce((val, recipient) => val + Number(recipient?.data.allocations ?? 0), 0),
+    [recipients]
+  );
+
+  const recipientsData = useMemo(
+    () =>
+      recipients.map(
+        (recipient) =>
+          ({
+            walletAddress: recipient.data.walletAddress,
+            name: recipient.data.name,
+            email: recipient.data.email,
+            company: recipient.data.company,
+            recipientType: [getRecipient(String(recipient.data.recipientType))],
+            allocations: Number(recipient.data.allocations)
+          } as IRecipientForm)
+      ),
     [recipients]
   );
 
@@ -1044,18 +1063,26 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           ...scheduleMode.data,
           name: scheduleState.name,
           details: { ...scheduleFormState },
-          recipients,
+          recipients: formatRecipientsDocToForm(recipients),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           transactionId: '',
           vestingContractId
         },
         scheduleMode.id
       );
+
+      await Promise.all(
+        recipients
+          .filter((recipient) => Boolean(recipient.id))
+          .map((recipient) => editRecipient(recipient.id, recipient.data))
+      );
     } else {
-      await createVesting({
+      const data = formatRecipientsDocToForm(recipients);
+      console.log('DEBUG-data', { data });
+      console.log('DEBUG-vesting', {
         name: scheduleState.name,
         details: { ...scheduleFormState },
-        recipients,
+        recipients: formatRecipientsDocToForm(recipients),
         organizationId: organizationId!,
         status: 'INITIALIZED',
         createdAt: Math.floor(new Date().getTime() / 1000),
@@ -1066,6 +1093,34 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         tokenId,
         chainId
       });
+      const vestingId = await createVesting({
+        name: scheduleState.name,
+        details: { ...scheduleFormState },
+        recipients: formatRecipientsDocToForm(recipients),
+        organizationId: organizationId!,
+        status: 'INITIALIZED',
+        createdAt: Math.floor(new Date().getTime() / 1000),
+        updatedAt: Math.floor(new Date().getTime() / 1000),
+        transactionId: '',
+        vestingContractId,
+        tokenAddress: mintFormState.address,
+        tokenId,
+        chainId
+      });
+
+      const newRecipients = recipients.map(({ data: recipient }) =>
+        createRecipient({
+          vestingId: String(vestingId),
+          organizationId: String(organizationId),
+          name: recipient.name,
+          email: recipient.email,
+          allocations: String(recipient.allocations ?? 0),
+          walletAddress: String(recipient.walletAddress),
+          recipientType: String(recipient.recipientType)
+        })
+      );
+
+      await Promise.all(newRecipients);
 
       // TODO send emails to recipients
     }
@@ -1628,7 +1683,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             ) : null}
           </div>
           <hr className="my-6" />
-          <ScheduleDetails {...scheduleFormState} recipients={recipients} token={mintFormState.symbol || 'Token'} />
+          <ScheduleDetails {...scheduleFormState} recipients={recipientsData} token={mintFormState.symbol || 'Token'} />
 
           <hr className="my-6" />
           <div className="font-medium">
