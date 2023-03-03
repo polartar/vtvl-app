@@ -10,7 +10,8 @@ export enum SupportedChainId {
   CRONOS = 25 || 338,
   MUMBAI = 80001,
   OKC_MAINNET = 66,
-  OKC_TESTNET = 65
+  OKC_TESTNET = 65,
+  BASE_GOERLI = 84531
 }
 
 interface Network {
@@ -235,6 +236,15 @@ const devSupportedChains: SupportedChainsType = {
     code: 'OKT',
     rpc: 'https://exchaintestrpc.okex.org/',
     explorer: 'https://www.oklink.com/en/okc-test',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.BASE_GOERLI]: {
+    id: 84531,
+    icon: '/icons/chains/base.svg',
+    title: 'Base Goerli',
+    code: 'BASE',
+    rpc: 'https://goerli.base.org/',
+    explorer: 'https://goerli.basescan.org',
     multisigTxUrl: ''
   }
 };

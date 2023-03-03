@@ -14,7 +14,8 @@ export const injected = new InjectedConnector({
     SupportedChainId.AVALANCHE,
     SupportedChainId.FANTOM,
     SupportedChainId.CRONOS,
-    SupportedChainId.MUMBAI
+    SupportedChainId.MUMBAI,
+    SupportedChainId.BASE_GOERLI
   ]
 });
 
