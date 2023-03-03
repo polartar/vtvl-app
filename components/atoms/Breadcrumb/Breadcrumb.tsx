@@ -16,6 +16,7 @@ const Breadcrumb = ({ steps }: Props) => {
     if (item === 'Tokenomics') return '/icons/s_tokenomics.svg';
     if (item === 'Transactions') return '/icons/s_transactions.svg';
     if (item === 'Contracts') return '/icons/contracts.svg';
+    if (item === 'Recipient') return '/icons/recipient.svg';
     else return '/icons/s_dashboard.svg';
   }
   return (

@@ -26,14 +26,20 @@ export const EditableTypography = ({
   placeholder = '',
   autoFocus = false,
   validations = [],
-  onChange
+  onChange,
+  isNoPadding
 }: EditableTypographyProps) => {
   const [value, setValue] = useState<string>(initialValue);
   const [editable, , setEditable] = useToggle(false);
   const [isError, , setIsError] = useToggle(false);
 
   const inputClassName = useMemo(
-    () => ['w-full rounded-none .inter text-caption leading-caption p-2 outline-none'].join(' '),
+    () =>
+      [
+        `${
+          isNoPadding ? 'p-0 min-w-[30px]' : 'w-full  p-2'
+        } rounded-none .inter text-caption leading-caption outline-none`
+      ].join(' '),
     []
   );
 
@@ -49,6 +55,17 @@ export const EditableTypography = ({
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
   }, []);
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        handleUpdate();
+      } else if (event.key === 'Escape') {
+        setValue(initialValue);
+        handleUpdate();
+      }
+    },
+    [value, initialValue]
+  );
 
   return editable ? (
     <input
@@ -60,11 +77,14 @@ export const EditableTypography = ({
       autoFocus={autoFocus}
       onChange={handleChange}
       onBlur={handleUpdate}
+      onKeyDown={handleKeyDown}
     />
   ) : (
     <button
       type="button"
-      className={`w-full rounded-none min-h-[55px] ${isError ? 'bg-danger-50' : 'bg-transparent'}`}
+      className={`${isNoPadding ? 'p-0 min-w-[30px] min-h-[35px]' : 'w-full min-h-[55px]'} rounded-none  ${
+        isError ? 'bg-danger-50' : 'bg-transparent'
+      }`}
       onClick={() => setEditable(true)}>
       <Typography {...tdTypographyProps}>{formatOutput(value, type)}</Typography>
     </button>

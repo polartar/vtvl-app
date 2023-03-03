@@ -10,7 +10,10 @@ export const createRecipient = async (recipient: IRecipient): Promise<string> =>
 
 export const editRecipient = async (id: string, recipient: IRecipient): Promise<void> => {
   const recipientRef = doc(recipientCollection, id);
-  await setDoc(recipientRef, recipient);
+  await setDoc(recipientRef, {
+    ...recipient,
+    updatedAt: Math.floor(new Date().getTime() / 1000)
+  });
 };
 
 export const fetchRecipient = async (id: string): Promise<IRecipient | undefined> => {
