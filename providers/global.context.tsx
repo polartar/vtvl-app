@@ -24,7 +24,6 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
 
   const initialization = useCallback(() => {
     const hostname = window.location.hostname;
-    console.log('DEBUG-hostname', hostname);
     fetchWebsiteByDomain(hostname)
       .then((website) => {
         setState({
