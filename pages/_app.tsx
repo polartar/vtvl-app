@@ -3,6 +3,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { AuthContextProvider } from '@providers/auth.context';
 import { ClaimTokensContextProvider } from '@providers/claim-tokens.context';
 import { DashboardContextProvider } from '@providers/dashboard.context';
+import { GlobalContextProvider } from '@providers/global.context';
 import { LoaderContextProvider } from '@providers/loader.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
 import { RecipientContextProvider } from '@providers/recipient.context';
@@ -46,6 +47,8 @@ function getLibrary(provider: any): Web3Provider {
   return library;
 }
 
+// const Web3ReactProviderReloaded = createWeb3ReactRoot('network')
+
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   useEffect(() => {
     hotjar.initialize(Number(process.env.NEXT_PUBLIC_HOTJAR_HJID), Number(process.env.NEXT_PUBLIC_HOTJAR_HJSV));
@@ -60,29 +63,32 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     <>
       <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
         <QueryClientProvider client={queryClient}>
-          <AuthContextProvider>
-            <LoaderContextProvider>
-              <TokenContextProvider>
-                <OnboardingContextProvider>
-                  <VestingContextProvider>
-                    <DashboardContextProvider>
-                      <TransactionLoaderContextProvider>
-                        <TeammateContextProvider>
-                          <ClaimTokensContextProvider>
-                            <RecipientContextProvider>
-                              <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                              <ToastContainer autoClose={6000} style={{ top: '6rem', right: '1rem' }} />
-                            </RecipientContextProvider>
-                          </ClaimTokensContextProvider>
-                        </TeammateContextProvider>
-                      </TransactionLoaderContextProvider>
-                    </DashboardContextProvider>
-                  </VestingContextProvider>
-                </OnboardingContextProvider>
-              </TokenContextProvider>
-            </LoaderContextProvider>
-          </AuthContextProvider>
+          <GlobalContextProvider>
+            <AuthContextProvider>
+              <LoaderContextProvider>
+                <TokenContextProvider>
+                  <OnboardingContextProvider>
+                    <VestingContextProvider>
+                      <DashboardContextProvider>
+                        <TransactionLoaderContextProvider>
+                          <TeammateContextProvider>
+                            <ClaimTokensContextProvider>
+                              <RecipientContextProvider>
+                                <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                                <ToastContainer autoClose={6000} style={{ top: '6rem', right: '1rem' }} />
+                              </RecipientContextProvider>
+                            </ClaimTokensContextProvider>
+                          </TeammateContextProvider>
+                        </TransactionLoaderContextProvider>
+                      </DashboardContextProvider>
+                    </VestingContextProvider>
+                  </OnboardingContextProvider>
+                </TokenContextProvider>
+              </LoaderContextProvider>
+            </AuthContextProvider>
+          </GlobalContextProvider>
         </QueryClientProvider>
+        {/* </Web3ReactProviderReloaded> */}
       </Web3ReactProvider>
       <div id="react-modal"></div>
     </>

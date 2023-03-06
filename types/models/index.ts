@@ -26,3 +26,5 @@ export type {
   IRecipient,
   IRecipientDoc
 };
+
+export * from './websites';
