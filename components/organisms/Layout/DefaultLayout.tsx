@@ -7,6 +7,7 @@ import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
@@ -62,6 +63,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     roleOverride
   } = useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
+  const { styles } = useGlobalContext();
   const { loading } = useLoaderContext();
   const { active, account } = useWeb3React();
   const [sidebarProperties, setSidebarProperties] = useState({
