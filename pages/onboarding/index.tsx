@@ -24,7 +24,7 @@ const Signing = styled.div`
   justify-content: center;
   gap: 32px;
   text-align: center;
-  padding: 48px 36px;
+  padding: 279px 74px;
   border: 1px solid #d0d5dd;
   border-right: none;
   border-radius: 26px 0 0 26px;
@@ -93,7 +93,7 @@ const SelectLoginTypePage: NextPage = () => {
     <PaddedLayout>
       <OnboardingContainer>
         <Signing>
-          <div>
+          <div className="max-w-[397px]">
             <h1 className="font-medium">Access VTVL as</h1>
             <p className="text-sm font-medium text-neutral-500">
               Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}

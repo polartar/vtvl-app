@@ -1,5 +1,6 @@
 import Button from '@components/atoms/Button/Button';
 import Input from '@components/atoms/FormControls/Input/Input';
+import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
 import { ArrowLeftIcon } from '@components/atoms/Icons';
 import { ToggleButton } from '@components/atoms/ToggleButton';
 import { Typography } from '@components/atoms/Typography/Typography';
@@ -7,10 +8,11 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useShallowState } from 'hooks/useShallowState';
 import useToggle from 'hooks/useToggle';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Select, { OnChangeValue } from 'react-select';
 import { IScheduleState } from 'types/vesting';
 import { isBlankObject } from 'utils/regex';
+import { scrollIntoView } from 'utils/shared';
 
 export interface VestingSetupPanelProps {
   initialState: IScheduleState;
@@ -121,19 +123,58 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
     });
   }, [vestingContractOptions, initialState]);
 
+  // Todo: Arvin - refactor this and make it a reusable feature across the app
+  // This contains step section auto focusing during interaction
+  // Contains 5 steps by default
+  const [step, setStep] = useState<{ active: boolean; isExpanded: boolean; interactionCount: number; ref: any }[]>([
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
+    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) }
+  ]);
+
+  const goToActiveStep = (indexUpdate: number) => {
+    setActiveStep(indexUpdate);
+    setTimeout(() => {
+      if (step[indexUpdate].ref && step[indexUpdate].ref.current) {
+        scrollIntoView(step[indexUpdate].ref.current);
+        step[indexUpdate].ref.current?.focus();
+      }
+    }, 600);
+  };
+
+  const setActiveStep = (indexUpdate: number) => {
+    setStep((prevState) => {
+      const prevIndex = indexUpdate - 1;
+      const newState = [...prevState].map((step, stepIndex) => {
+        if (stepIndex === indexUpdate) {
+          return { ...step, active: true, isExpanded: true };
+        } else if (prevIndex >= 0 && stepIndex < indexUpdate) {
+          return { ...step, active: false, isExpanded: false };
+        } else {
+          return { ...step, active: false };
+        }
+      });
+      return newState;
+    });
+  };
+
   return (
-    <div className="w-full mb-6 panel max-w-2xl">
-      <div className="mb-6">
+    <div className="w-full mb-6 panel max-w-2xl p-0">
+      <div className="p-6">
         <Typography className="font-semibold" size="subtitle">
           {scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} Schedule &amp; Contract
         </Typography>
       </div>
 
-      <VestingSetupStep
+      <StepLabel
+        ref={step[0].ref}
+        isExpanded={step[0].isExpanded}
+        isActive={step[0].active}
         step={1}
-        title="Schedule name"
+        label="Schedule name"
         description="Naming your schedule will help you determine your recipients collection."
-        required>
+        required
+        onFocus={() => setActiveStep(0)}>
         <Input
           name="scheduleName"
           value={form.scheduleName}
@@ -141,14 +182,21 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
           error={!!errors.scheduleName}
           message={errors.scheduleName}
           onChange={handleChange}
+          onFocus={() => setActiveStep(0)}
         />
-      </VestingSetupStep>
+      </StepLabel>
 
-      <VestingSetupStep
+      <hr className="mx-6" />
+
+      <StepLabel
+        ref={step[1].ref}
+        isExpanded={step[1].isExpanded}
+        isActive={step[1].active}
         step={2}
-        title="Will this schedule include a previously added wallet address?"
+        label="Will this schedule include a previously added wallet address?"
         description="A wallet address can only be used once in a single vesting contract, regardless of schedule."
-        required>
+        required
+        onFocus={() => setActiveStep(1)}>
         <>
           <div className="flex flex-col gap-4">
             <VestingSetupOption
@@ -156,21 +204,28 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
               longTitle="Create a new contract"
               selected={form.createNewContract}
               onClick={handleToggle}
+              onFocus={() => setActiveStep(1)}
             />
             <VestingSetupOption
               shortTitle="No"
               longTitle="Select an existing contract"
               selected={!form.createNewContract}
               onClick={handleToggle}
+              onFocus={() => setActiveStep(1)}
             />
           </div>
         </>
-      </VestingSetupStep>
+      </StepLabel>
+
+      <hr className="mx-6" />
 
       {form.createNewContract ? (
-        <VestingSetupStep
+        <StepLabel
+          ref={step[2].ref}
+          isExpanded={step[2].isExpanded}
+          isActive={step[2].active}
           step={3}
-          title="Contract name"
+          label="Contract name"
           description="Our vesting contract is built separately to the ERC-20 token contract for added security and flexibility."
           required>
           <Input
@@ -180,23 +235,32 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
             error={!!errors.contractName}
             message={errors.contractName}
             onChange={handleChange}
+            onFocus={() => setActiveStep(2)}
           />
-        </VestingSetupStep>
+        </StepLabel>
       ) : (
-        <VestingSetupStep
+        <StepLabel
+          ref={step[2].ref}
+          isExpanded={step[2].isExpanded}
+          isActive={step[2].active}
           step={3}
-          title="Contract name"
+          label="Contract name"
           description="Our vesting contract is built separately to the ERC-20 token contract for added security and flexibility."
           required>
           <>
-            <Select options={vestingContractOptions} value={form.vestingContract} onChange={handleChangeVesting} />
+            <Select
+              options={vestingContractOptions}
+              value={form.vestingContract}
+              onChange={handleChangeVesting}
+              onFocus={() => setActiveStep(2)}
+            />
 
             {errors.vestingContract && <p className="input-component__message">{errors.vestingContract}</p>}
           </>
-        </VestingSetupStep>
+        </StepLabel>
       )}
 
-      <div className="mt-8 flex items-center justify-between">
+      <div className="p-6 flex items-center justify-between">
         <button
           type="button"
           className="flex items-center gap-2 bg-transparent hover:bg-neutral-100"
@@ -253,11 +317,13 @@ export const VestingSetupOption: React.FC<{
   longTitle: string;
   selected: boolean;
   onClick: () => void;
-}> = ({ shortTitle, longTitle, selected, onClick }) => {
+  onFocus?: () => void;
+}> = ({ shortTitle, longTitle, selected, onClick, onFocus }) => {
   return (
     <button
       className="px-6 py-4 rounded-3xl border border-neutral-300 text-left bg-transparent flex items-center justify-between"
-      onClick={onClick}>
+      onClick={onClick}
+      onFocus={onFocus}>
       <span>
         <Typography variant="inter" size="body" className="font-bold">
           {shortTitle}{' '}

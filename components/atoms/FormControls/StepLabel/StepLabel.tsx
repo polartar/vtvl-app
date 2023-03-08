@@ -55,7 +55,7 @@ const StepLabel = React.forwardRef<HTMLDivElement, StepLabelProps>(
                 className={`font-medium text-base transition-all ${
                   isExpanded && !isActive ? 'text-neutral-900' : 'text-primary-900'
                 }`}>
-                {label} {required ? '*' : ''}
+                {label} {required ? <span className="text-danger-500">*</span> : ''}
               </span>
               {hint ? <Hint tip={hint} /> : null}
             </div>
