@@ -16,9 +16,10 @@ import { isExpired, sendRecipientInvite } from '.';
 
 const RecipientRow: React.FC<{
   recipient: IRecipientData;
+  symbol: string;
   vestingSchedulesInfo: VestingContractInfo[];
   setCheck: (checked: boolean, id: string) => void;
-}> = ({ recipient, vestingSchedulesInfo, setCheck }) => {
+}> = ({ recipient, symbol, vestingSchedulesInfo, setCheck }) => {
   const [newRecipient, setNewRecipient] = useState(recipient);
 
   useEffect(() => {
@@ -86,18 +87,20 @@ const RecipientRow: React.FC<{
   };
 
   const sendInvite = async () => {
-    return;
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      await sendRecipientInvite([
-        {
-          email: recipient.data.email,
-          type: 'recipient.recipientType',
-          name: recipient.data.name || '',
-          orgId: recipient.data.organizationId
-        }
-      ]);
+      await sendRecipientInvite(
+        [
+          {
+            email: recipient.data.email,
+            name: recipient.data.name || '',
+            orgId: recipient.data.organizationId,
+            memberId: recipient.id
+          }
+        ],
+        symbol
+      );
       toast.success('Invited recipient successfully');
     } catch (err) {
       toast.error('Something went wrong');

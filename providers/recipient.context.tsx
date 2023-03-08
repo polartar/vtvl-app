@@ -13,11 +13,9 @@ interface IRecipientContextData {
 const RecipientContext = createContext({} as IRecipientContextData);
 
 export function RecipientContextProvider({ children }: any) {
-  // const { library, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
 
   const [isRecipientLoading, setIsRecipientLoading] = useState(true);
-
   const [recipients, setRecipients] = useState<IRecipientDoc[]>([]);
 
   const value = useMemo(

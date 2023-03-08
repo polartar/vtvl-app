@@ -160,7 +160,7 @@ const MintingToken: NextPageWithLayout = () => {
                 render={({ field }) => (
                   <Input
                     label="Token name"
-                    placeholder="Enter token name"
+                    placeholder="Enter token name1"
                     required
                     error={Boolean(errors.name)}
                     message={errors.name ? 'Please enter token name' : ''}

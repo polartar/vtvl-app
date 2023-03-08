@@ -2,6 +2,7 @@ import Button from '@components/atoms/Button/Button';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useRecipientContext } from '@providers/recipient.context';
+import { useTokenContext } from '@providers/token.context';
 import axios from 'axios';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import Image from 'next/image';
@@ -21,14 +22,16 @@ enum IStatus {
 export const sendRecipientInvite = async (
   recipients: {
     email: string;
-    type: string;
     name: string;
     orgId?: string;
-  }[]
+    memberId: string;
+  }[],
+  symbol: string
 ): Promise<void> => {
   //TODO: extract api calls
   await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/email/recipient-invite`, {
-    recipients: recipients
+    recipients: recipients,
+    symbol: symbol
   });
 };
 export const isExpired = (timestamp: number | undefined) =>
@@ -45,6 +48,8 @@ export default function VestingContract() {
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(vestingContracts, vestings);
   const [allChecked, setAllChecked] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
+  const { mintFormState } = useTokenContext();
+
   useEffect(() => {
     setRecipients(initialRecipients);
   }, [initialRecipients]);
@@ -118,19 +123,18 @@ export default function VestingContract() {
   };
 
   const sendBatchEmail = async () => {
-    return;
     if (isInviting) return;
     setIsInviting(true);
     const inviteRecipients = recipients
       .filter((recipient) => recipient.checked)
       .map((recipient) => ({
         email: recipient.data.email,
-        type: 'type',
         orgId: recipient.data.organizationId || '',
-        name: recipient.data.name || ''
+        name: recipient.data.name || '',
+        memberId: recipient.id
       }));
     try {
-      await sendRecipientInvite(inviteRecipients);
+      await sendRecipientInvite(inviteRecipients, mintFormState.symbol);
       toast.success('Invited recipients successfully');
     } catch (err) {
       toast.error('Something went wrong');
@@ -224,6 +228,7 @@ export default function VestingContract() {
             recipient={recipient}
             vestingSchedulesInfo={vestingSchedulesInfo}
             setCheck={onRecipientChecked}
+            symbol={mintFormState.symbol}
           />
         ))}
       </div>

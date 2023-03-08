@@ -96,6 +96,7 @@ export default function useChainVestingContracts(
 
       return [...res, ...result];
     }, [] as ContractCallContext[]);
+
     multicall
       .call(contractCallContext)
       .then((response) => {

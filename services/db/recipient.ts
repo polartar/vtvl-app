@@ -1,4 +1,15 @@
-import { WhereFilterOp, addDoc, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from '@firebase/firestore';
+import {
+  WhereFilterOp,
+  addDoc,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where
+} from '@firebase/firestore';
 import { IRecipient, IRecipientDoc } from 'types/models';
 
 import { recipientCollection } from './firestore';
@@ -10,10 +21,18 @@ export const createRecipient = async (recipient: IRecipient): Promise<string> =>
 
 export const editRecipient = async (id: string, recipient: IRecipient): Promise<void> => {
   const recipientRef = doc(recipientCollection, id);
+
   await setDoc(recipientRef, {
     ...recipient,
     updatedAt: Math.floor(new Date().getTime() / 1000)
   });
+};
+
+export const updateRecipient = async (id: string, updateObj: { [key: string]: any }): Promise<void> => {
+  console.log({ updateObj });
+  const recipientRef = doc(recipientCollection, id);
+
+  await updateDoc(recipientRef, updateObj);
 };
 
 export const fetchRecipient = async (id: string): Promise<IRecipient | undefined> => {

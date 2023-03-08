@@ -1,11 +1,11 @@
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import getUnixTime from 'date-fns/getUnixTime';
-import { ContractCallContext, ContractCallResults, Multicall } from 'ethereum-multicall';
-import { BigNumber, ethers } from 'ethers';
-import { Timestamp, onSnapshot, query, where } from 'firebase/firestore';
+import { ContractCallContext, Multicall } from 'ethereum-multicall';
+import { ethers } from 'ethers';
+import { onSnapshot, query, where } from 'firebase/firestore';
 import { useRouter } from 'next/router';
-import React, { SetStateAction, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
 import { toast } from 'react-toastify';
 import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
@@ -13,19 +13,15 @@ import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
-import { fetchVestingContractByQuery, fetchVestingContractsByQuery } from 'services/db/vestingContract';
-import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
 import { IRecipientForm } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { compareAddresses } from 'utils';
 import { getRecipient } from 'utils/recipients';
-import { parseTokenAmount } from 'utils/token';
 
 import { useAuthContext } from './auth.context';
 import { useLoaderContext } from './loader.context';
-import { useSharedContext } from './shared.context';
 import { useTokenContext } from './token.context';
 
 type IVestingStatus = 'FUNDING_REQUIRED' | 'PENDING' | 'EXECUTABLE' | 'LIVE';
@@ -127,7 +123,6 @@ export function DashboardContextProvider({ children }: any) {
         if (vestingContract && vestingContract.data && vestingContract.data.address) {
           const vestingSchedule = vestings.find((schedule) => schedule.data.vestingContractId === vestingContract.id);
           if (vestingSchedule) {
-            console.log('Schedule found', vestingSchedule, recipientAddresses);
             res = [
               ...res,
               ...recipientAddresses.map((recipient) => ({
@@ -170,7 +165,6 @@ export function DashboardContextProvider({ children }: any) {
       try {
         if (multicallResponse) {
           const res = multicallResponse;
-          console.log('MULTICALL RESPONSE', res);
           // Set constants for referencing the calls based on the multicall setup above
           const CLAIMABLE_AMOUNT_CALL = 0;
           const FINAL_VESTED_AMOUNT_CALL = 1;
@@ -253,9 +247,13 @@ export function DashboardContextProvider({ children }: any) {
   }, [chainId, vestingContracts, mintFormState, vestings, recipients]);
 
   useEffect(() => {
-    if (!organizationId) return;
+    if (!organizationId || !chainId) return;
     let tmpVestingContracts: { id: string; data: IVestingContract }[] = [];
-    const q = query(vestingContractCollection, where('organizationId', '==', organizationId));
+    const q = query(
+      vestingContractCollection,
+      where('organizationId', '==', organizationId),
+      where('chainId', '==', chainId)
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         const vestingContractInfo = change.doc.data();
@@ -284,7 +282,7 @@ export function DashboardContextProvider({ children }: any) {
     return () => {
       unsubscribe();
     };
-  }, [organizationId]);
+  }, [organizationId, chainId]);
 
   const fetchDashboardVestings = async () => {
     setVestingsLoading(true);
@@ -467,8 +465,8 @@ export function DashboardContextProvider({ children }: any) {
         });
     }
 
-    if (!organizationId) return;
-    const q = query(vestingCollection, where('organizationId', '==', organizationId));
+    if (!organizationId || !chainId) return;
+    const q = query(vestingCollection, where('organizationId', '==', organizationId), where('chainId', '==', chainId));
     const subscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'modified') {
@@ -495,7 +493,7 @@ export function DashboardContextProvider({ children }: any) {
     return () => {
       subscribe();
     };
-  }, [vestings, organizationId]);
+  }, [vestings, organizationId, chainId]);
 
   useEffect(() => {
     if (vestings && vestings.length > 0) {

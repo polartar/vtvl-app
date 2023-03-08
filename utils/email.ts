@@ -5,7 +5,8 @@ mail.setApiKey(key || '');
 
 export enum MailTemplates {
   Login = 'd-dbd24a1f6b69408bbdcff1b4130ecde4',
-  TeammateInvite = 'd-bde77990c2394a1fba408a67285063b6'
+  TeammateInvite = 'd-bde77990c2394a1fba408a67285063b6',
+  RecipientInvite = 'd-c7dcc8f33282470099ae8a0247710d20'
 }
 export interface DT {
   firstname?: string;

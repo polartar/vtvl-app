@@ -23,7 +23,7 @@ import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
 import { fetchSafeByQuery } from 'services/db/safe';
-import { IMember, IOrganization, ISafe, IUser } from 'types/models';
+import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
 import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
 
 export type NewLogin = {
@@ -73,6 +73,10 @@ export type AuthContextData = {
   setSafe: (safe: ISafe) => void;
   agreedOnConsent: boolean;
   setAgreedOnConsent: (data: any) => void;
+  setUser: (data: any) => void;
+  setOrganizationId: (orgId: string) => void;
+  recipient: IRecipientDoc | undefined;
+  setRecipient: (data: any) => void;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -92,9 +96,15 @@ export function AuthContextProvider({ children }: any) {
   // Remove after implementing context to show/hide the sidebar
   const [showSideBar, setShowSideBar] = useState<boolean>(false);
   const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(true);
-
+  const [recipient, setRecipient] = useState<IRecipientDoc>();
   // Stores the connection status whether the user is connected via metamask or other wallets
   const [connection, setConnection] = useState<TConnections | undefined>();
+
+  useEffect(() => {
+    if (recipient && recipient.data && recipient.data.walletAddress) {
+      Router.push('/claim-portal');
+    }
+  }, [recipient]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -301,7 +311,6 @@ export function AuthContextProvider({ children }: any) {
     const org = await fetchOrg(orgId);
     if (!org) throw new Error('invalid sign url, no organization');
 
-    console.log('user type is ', type);
     const credential = await signInWithEmailLink(auth, email, url);
     const additionalInfo = getAdditionalUserInfo(credential);
 
@@ -330,7 +339,6 @@ export function AuthContextProvider({ children }: any) {
   const sendLoginLink = async (email: string): Promise<void> => {
     setLoading(true);
     const member = await fetchMemberByEmail(email);
-    console.log('sending login link here ', member);
     //TODO: abstract api calls
     await axios.post(`${window.location.origin || PUBLIC_DOMAIN_NAME}/api/email/login`, {
       email,
@@ -427,7 +435,11 @@ export function AuthContextProvider({ children }: any) {
       fetchSafe,
       setSafe,
       agreedOnConsent,
-      setAgreedOnConsent
+      setAgreedOnConsent,
+      setUser,
+      setOrganizationId,
+      recipient,
+      setRecipient
     }),
     [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent, connection]
   );
@@ -441,19 +453,16 @@ export function AuthContextProvider({ children }: any) {
       user.memberInfo.type !== 'manager' &&
       user.memberInfo.type !== 'manager2'
     ) {
-      Router.push('/claim-portal');
+      if (user.memberInfo.type === 'investor' && recipient && !recipient.data.walletAddress) {
+        Router.push('/recipient/schedule');
+      } else {
+        Router.push('/claim-portal');
+      }
+
       return;
     }
     if (user && user.email && user.uid) {
-      // console.log('logging auth context user', user);
-      // console.log('logging user org_id', user?.memberInfo?.org_id);
       setOrganizationId(user?.memberInfo?.org_id);
-
-      // fetchOrgByQuery('email', '==', user.email).then((org) => {
-      //   console.log('logging auth context org', org);
-
-      //   setOrganizationId(org?.id);
-      // });
     }
   }, [user]);
 

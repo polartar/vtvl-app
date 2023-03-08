@@ -389,9 +389,11 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       '/onboarding',
       '/onboarding/member-login',
       '/onboarding/connect-wallet',
-      '/expired'
+      '/expired',
+      '/recipient/create',
+      '/recipient/schedule'
     ];
-    console.log('CHECKS ', account, active);
+
     if (!hideConnectModalOnRoutes.includes(router.pathname) && !active && !account) {
       setConnectWalletModal(true);
     } else {

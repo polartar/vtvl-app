@@ -101,8 +101,6 @@ export function VestingContextProvider({ children }: any) {
 
   const router = useRouter();
 
-  console.log('Current router settings', router);
-
   const resetVestingState = useCallback(() => {
     setScheduleFormState(INITIAL_VESTING_FORM_STATE);
     setRecipients([]);

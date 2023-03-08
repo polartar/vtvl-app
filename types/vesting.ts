@@ -1,5 +1,4 @@
 import Decimal from 'decimal.js';
-import { MultiValue } from 'react-select';
 
 import { CliffDuration, ReleaseFrequency } from './constants/schedule-configuration';
 import { IVesting } from './models';

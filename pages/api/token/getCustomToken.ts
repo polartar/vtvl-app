@@ -49,6 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (signInToken.domain !== PUBLIC_DOMAIN_NAME) {
       return res.status(403).send({ message: 'Wrong domain' });
     }
+
     const token = await firebaseAdmin?.auth().createCustomToken(signInToken.memberId);
 
     res.status(200).json({ ...signInToken, token: token, message: 'Success!' });
