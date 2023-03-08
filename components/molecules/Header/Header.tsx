@@ -8,6 +8,7 @@ import Router, { useRouter } from 'next/router';
 import React from 'react';
 import Fade from 'react-reveal/Fade';
 import { IUser } from 'types/models';
+import { IS_ENABLED_AUTH_BY_ORG } from 'utils/constants';
 
 interface HeaderProps {
   user: IUser | undefined;
@@ -21,11 +22,13 @@ interface HeaderProps {
 const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSideBar }: HeaderProps) => {
   const { active, account } = useWeb3React();
   const { asPath } = useRouter();
-  const { styles } = useGlobalContext();
+  const {
+    website: { styles }
+  } = useGlobalContext();
 
   // Redirects the user to the right URL depending on the user's login state eg., /onboarding for non-logged in, /dashboard for logged-in users
   const redirectToHome = () => {
-    let url = '/onboarding';
+    let url = `/onboarding${IS_ENABLED_AUTH_BY_ORG ? '/connect-wallet' : ''}`;
     if (user) {
       if (user?.memberInfo?.type === 'employee') {
         url = '/onboarding/member';
@@ -51,7 +54,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
         <img src="/icons/vtvl-icon.svg" className="h-10 sm:hidden md:h-12" onClick={redirectToHome} />
         <img
           src={styles.logoImage ?? '/logo.svg'}
-          className="hidden sm:block w-48 h-9 cursor-pointer"
+          className="hidden sm:block w-48 h-12 cursor-pointer"
           alt="VTVL"
           onClick={redirectToHome}
         />

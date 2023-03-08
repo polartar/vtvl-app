@@ -116,7 +116,9 @@ export function AuthContextProvider({ children }: any) {
   const [error, setError] = useState('');
   const [showSideBar, setShowSideBar] = useToggle(false);
   const [sidebarIsExpanded, setSidebarIsExpanded, , , forceCollapseSidebar] = useToggle(true);
-  const { organizationId: currentOrganizationId } = useGlobalContext();
+  const {
+    website: { organizationId: currentOrganizationId }
+  } = useGlobalContext();
 
   const [recipient, setRecipient] = useState<IRecipientDoc>();
   // Stores the connection status whether the user is connected via metamask or other wallets
