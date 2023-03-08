@@ -32,9 +32,9 @@ const Signing = styled.div`
   border-radius: 26px 0 0 26px;
 `;
 
-const Vesting = styled.div`
+const Vesting = styled.div<{ background?: string }>`
   border-radius: 0 26px 26px 0;
-  background: url('/images/background.png');
+  background: url(${({ background }) => background ?? '/images/background.png'});
   background-size: cover;
 `;
 
@@ -70,7 +70,9 @@ const ConnectWalletPage: NextPage = () => {
   const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
   const { user, anonymousSignIn } = useContext(AuthContext);
   const [activated, setActivated] = useState(false);
-  const { styles } = useGlobalContext();
+  const {
+    website: { styles }
+  } = useGlobalContext();
 
   // When a wallet is connected
   const handleConnectedState = () => {
@@ -98,15 +100,9 @@ const ConnectWalletPage: NextPage = () => {
         <Signing>
           <ConnectWalletOptions onConnect={handleConnectedState} />
         </Signing>
-        {styles.loginBgImage ? (
-          <Vesting className="overflow-hidden">
-            <img src={styles.loginBgImage} alt="auth-login-image" className="w-full h-full object-cover" />
-          </Vesting>
-        ) : (
-          <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
-            <Carousel variant="dark" items={carouselItems} />
-          </Vesting>
-        )}
+        <Vesting className="flex flex-col items-center justify-center pt-12 pb-10" background={styles.loginBgImage}>
+          <Carousel variant="dark" items={carouselItems} />
+        </Vesting>
       </OnboardingContainer>
     </PaddedLayout>
   );

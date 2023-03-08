@@ -1,6 +1,7 @@
 export interface IWebsiteStyles {
   loginBgImage?: string;
   logoImage?: string;
+  theme?: any;
 }
 
 export interface IWebsite {

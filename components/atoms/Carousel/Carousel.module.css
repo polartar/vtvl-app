@@ -26,6 +26,6 @@
 }
 
 .dots_custom :global(li.slick-active) button {
-  background: #f9623b;
+  background: var(--secondary-700);
   width: 27px !important;
 }

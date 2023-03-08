@@ -30,10 +30,11 @@ const Signing = styled.div`
   border-radius: 26px 0 0 26px;
 `;
 
-const Vesting = styled.div`
+const Vesting = styled.div<{ background?: string }>`
   border-radius: 0 26px 26px 0;
-  background-color: #202b8b;
-  background: url('/images/background.png'), linear-gradient(0deg, #e65e43 -40%, #202b8b 70%, #202b8b 100%);
+  background-color: var(--primary-900);
+  background: url('${({ background }) => background ?? '/images/background.png'}'),
+    linear-gradient(0deg, var(--secondary-900) -40%, var(--primary-900) 70%, var(--primary-900) 100%);
   background-size: cover;
 `;
 
@@ -70,7 +71,9 @@ const carouselItems = [
 
 const SelectLoginTypePage: NextPage = () => {
   const { startOnboarding } = useOnboardingContext();
-  const { styles } = useGlobalContext();
+  const {
+    website: { styles, name }
+  } = useGlobalContext();
 
   useEffect(() => {
     startOnboarding(Step.ChainSetup);
@@ -96,7 +99,7 @@ const SelectLoginTypePage: NextPage = () => {
       <OnboardingContainer>
         <Signing>
           <div className="max-w-[397px]">
-            <h1 className="font-medium">Access VTVL as</h1>
+            <h1 className="font-medium">Access {name ?? 'VTVL'} as</h1>
             <p className="text-sm font-medium text-neutral-500">
               Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
               <strong>Guest</strong> to test our platform.
@@ -108,15 +111,9 @@ const SelectLoginTypePage: NextPage = () => {
             </div>
           </WalletContainer>
         </Signing>
-        {styles.loginBgImage ? (
-          <Vesting className="overflow-hidden">
-            <img src={styles.loginBgImage} alt="auth-login-image" className="w-full h-full object-cover" />
-          </Vesting>
-        ) : (
-          <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
-            <Carousel variant="dark" items={carouselItems} />
-          </Vesting>
-        )}
+        <Vesting className="flex flex-col items-center justify-center pt-12 pb-10" background={styles.loginBgImage}>
+          <Carousel variant="dark" items={carouselItems} />
+        </Vesting>
       </OnboardingContainer>
     </PaddedLayout>
   );

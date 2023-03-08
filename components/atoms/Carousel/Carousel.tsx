@@ -50,8 +50,10 @@ const Carousel = ({ variant = 'dark', items = [] }: CarouselProps) => {
           <div
             key={`carousel-item-${itemIndex}-${item.title}`}
             className="p-6 flex flex-col items-center justify-center text-center">
-            <h3 className="font-medium leading-snug mx-auto h-20">{item.title}</h3>
-            <img src={item.image} className="max-w-sm h-40 mx-auto mt-9 mb-16" alt={item.subtitle} />
+            <h3 key={`carousel-item-heading-${itemIndex}`} className="font-medium leading-snug mx-auto h-20">
+              {item.title}
+            </h3>
+            <img src={item.image} className="w-auto h-56 mx-auto mt-4 mb-16" alt={item.subtitle} />
             {item.subtitle ? <h3 className="text-sm font-bold mx-auto mb-2.5">{item.subtitle}</h3> : null}
             {item.description ? (
               <p className={`text-sm max-auto ${variant === 'dark' ? 'text-neutral-300' : 'text-neutral-500'}`}>
