@@ -50,7 +50,7 @@ const WalletConnect = ({ account, connected }: Props) => {
   ];
 
   return (
-    <div className="h-10" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
+    <div className="h-10 transition-all" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
       <div className="h-10 shrink-0 flex flex-row items-center gap-2 bg-primary-900 rounded-3xl px-2 sm:px-3 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125">
         <img src="/icons/wallet.svg" className={`w-5 ${connected ? 'hidden md:block' : ''}`} alt="e-wallet" />
         {connected && account ? (

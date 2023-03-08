@@ -143,7 +143,7 @@ const MintingToken: NextPageWithLayout = () => {
 
   return (
     <>
-      <div className="grid md:grid-cols-12 w-full gap-3.5 mt-14">
+      <div className="grid md:grid-cols-12 w-full gap-6 mt-14 w-full max-w-6xl">
         <div className="md:col-span-7">
           <Form
             className="w-full mb-6"

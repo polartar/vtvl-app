@@ -4,6 +4,7 @@ import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
 import { useWeb3React } from '@web3-react/core';
 import Router, { useRouter } from 'next/router';
 import React from 'react';
+import Fade from 'react-reveal/Fade';
 import { IUser } from 'types/models';
 
 interface HeaderProps {
@@ -32,42 +33,42 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
     Router.push(url);
   };
 
-  return (
-    <header className="sticky top-0 z-40 w-full h-20 flex flex-row gap-3 md:gap-5 justify-between items-center bg-gray-50 px-3 md:px-6 lg:px-8 border-b border-gray-300">
-      <div className="flex flex-row items-center">
-        {/* Remove after using context to show/hide the sidebar */}
-        {/* <img
-          src="/icons/collapse-btn.svg"
-          alt="toggle sidebar"
-          onClick={toggleSideBar}
-          className="fixed top-7 left-1 h-6 w-6 cursor-pointer opacity-10"
-          data-tip="Toggle sidebar"
-        /> */}
+  const displayWalletConnect = ['/onboarding/connect-wallet', '/onboarding'].every((o) => asPath !== o);
+
+  const renderVTVLLogo = () => {
+    return (
+      <div className={`flex flex-row items-center`}>
         <img src="/icons/vtvl-icon.svg" className="h-10 sm:hidden md:h-12" onClick={redirectToHome} />
-        <img
-          src="/logo.svg"
-          className="hidden sm:block w-48 h-9 mr-5 cursor-pointer"
-          alt="VTVL"
-          onClick={redirectToHome}
-        />
-        {/* Hide the search bar as it does not have functionality yet */}
-        {/* <div className="hidden md:block">
-          <SearchInput placeholder="Search" />
-        </div> */}
+        <img src="/logo.svg" className="hidden sm:block w-48 h-9 cursor-pointer" alt="VTVL" onClick={redirectToHome} />
       </div>
-      {['/onboarding/connect-wallet', '/onboarding'].every((o) => asPath !== o) && (
-        <div className="flex flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5">
-          {/* Temporarily remove gwei */}
-          {/* <div className="flex flex-row items-center gap-1 sm:gap-2">
-            <img src="/icons/gas.svg" alt="Gas" className="w-4" />
-            <p className="text-xs text-neutral-600">
-              9 <span className="hidden sm:inline">gwei</span>
-            </p>
-          </div> */}
-          {active ? <NetworkSelector /> : null}
-          <WalletConnect connected={active} account={account || ''} />
+    );
+  };
+
+  return (
+    <header className={`sticky top-0 z-40 w-full h-20 bg-gray-50 flex flex-col items-center border-b border-gray-300`}>
+      {/* Header with wallet and network selection section */}
+      <Fade top when={displayWalletConnect}>
+        <div className="w-full flex flex-row gap-3 md:gap-5 justify-between h-20 absolute z-10 px-3 md:px-6 lg:px-8 ">
+          {renderVTVLLogo()}
+          <div
+            className={`flex flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5 flex-shrink-0 transition-all delay-300 ${
+              displayWalletConnect ? 'w-auto' : 'w-0'
+            }`}>
+            <div className={`${active ? 'w-auto' : 'w-0'}`}>
+              <NetworkSelector />
+            </div>
+            <div>
+              <WalletConnect connected={active} account={account || ''} />
+            </div>
+          </div>
         </div>
-      )}
+      </Fade>
+      {/* Header with logo only */}
+      <Fade top when={!displayWalletConnect}>
+        <div className="w-full flex flex-row gap-3 md:gap-5 justify-center h-20 absolute px-3 md:px-6 lg:px-8 ">
+          {renderVTVLLogo()}
+        </div>
+      </Fade>
     </header>
   );
 };

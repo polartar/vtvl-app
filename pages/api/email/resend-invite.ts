@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
 import { fetchInviteeByEmail, fetchMemberByEmail } from 'services/db/member';
+import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 import { GetSignInToken, SignInToken } from '../token/getCustomToken';
@@ -41,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(403).json({ message: 'Wrong email' });
     }
 
-    if (payload.domain !== process.env.NEXT_PUBLIC_DOMAIN_NAME) {
+    if (payload.domain !== PUBLIC_DOMAIN_NAME) {
       return res.status(403).json({ message: 'Wrong domain' });
     }
 
@@ -50,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(403).json({ message: 'Not authorized email' });
     }
 
-    const emailLink = process.env.NEXT_PUBLIC_DOMAIN_NAME + '/member?token=' + token;
+    const emailLink = PUBLIC_DOMAIN_NAME + '/member?token=' + token;
     await SendMail({
       to: payload.email,
       data: { emailLink, orgName: payload.orgName, name: payload.name },

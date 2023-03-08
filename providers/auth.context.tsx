@@ -24,6 +24,7 @@ import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
 import { fetchSafeByQuery } from 'services/db/safe';
 import { IMember, IOrganization, ISafe, IUser } from 'types/models';
+import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -331,7 +332,7 @@ export function AuthContextProvider({ children }: any) {
     const member = await fetchMemberByEmail(email);
     console.log('sending login link here ', member);
     //TODO: abstract api calls
-    await axios.post(`${window.location.origin || process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/email/login`, {
+    await axios.post(`${window.location.origin || PUBLIC_DOMAIN_NAME}/api/email/login`, {
       email,
       newUser: member ? false : true
     });
@@ -348,7 +349,7 @@ export function AuthContextProvider({ children }: any) {
   ): Promise<void> => {
     setLoading(true);
     //TODO: extract api calls
-    await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/email/teammate-invite`, {
+    await axios.post(`${PUBLIC_DOMAIN_NAME}/api/email/teammate-invite`, {
       email,
       type,
       orgId,

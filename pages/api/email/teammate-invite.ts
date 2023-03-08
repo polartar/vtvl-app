@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 import { GetSignInToken } from '../token/getCustomToken';
@@ -22,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   } catch (err: any) {
     return res.status(200).json({ message: err.message });
   }
-  const emailLink = process.env.NEXT_PUBLIC_DOMAIN_NAME + '/member?token=' + token;
+  const emailLink = PUBLIC_DOMAIN_NAME + '/member?token=' + token;
   await SendMail({
     to: email,
     data: { emailLink, orgName, name },

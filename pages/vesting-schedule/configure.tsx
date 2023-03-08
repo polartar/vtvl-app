@@ -1639,7 +1639,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
             <div className="flex flex-row justify-between items-center p-6">
               <BackButton
-                label="Return"
+                label="Back"
                 onClick={() =>
                   Router.push(
                     `/vesting-schedule/add-recipients?step=1${

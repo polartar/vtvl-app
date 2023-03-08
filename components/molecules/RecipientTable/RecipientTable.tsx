@@ -238,7 +238,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
           onClick={onReturn}>
           <ArrowLeftIcon className="w-6 h-6" />
           <Typography variant="inter" size="body">
-            Return
+            Back
           </Typography>
         </button>
         <Button type="button" outline primary disabled={loading} onClick={handleContinue}>

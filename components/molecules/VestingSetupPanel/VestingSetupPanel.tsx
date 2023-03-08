@@ -203,7 +203,7 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
           onClick={onReturn}>
           <ArrowLeftIcon className="w-6 h-6" />
           <Typography variant="inter" size="body">
-            Return
+            Back
           </Typography>
         </button>
         <Button type="button" outline primary onClick={handleContinue}>

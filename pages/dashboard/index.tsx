@@ -20,6 +20,7 @@ import { useWeb3React } from '@web3-react/core';
 import CreateVestingContract from 'components/organisms/DashboardPanel/CreateVestingContract';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
+import ImportIcon from 'public/icons/import-icon.svg';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useCallback, useEffect, useMemo } from 'react';
 
@@ -103,12 +104,16 @@ const Dashboard: NextPageWithLayout = () => {
             image="/images/cryptocurrency-trading-bot.gif"
             title="No projects found"
             description={<>Create a project by selecting an option below</>}>
-            <button type="button" className="line" onClick={() => router.push('/dashboard/import-token')}>
+            <button
+              type="button"
+              className="primary flex flex-row gap-2 items-center"
+              onClick={() => router.push('/dashboard/import-token')}>
+              <ImportIcon className="w-5 h-5" />
               Import existing token
             </button>
             <button
               type="button"
-              className="primary flex flex-row gap-2 items-center"
+              className="line flex flex-row gap-2 items-center"
               disabled={!isMintAvailabe()}
               onClick={() => router.push('/minting-token')}>
               <PlusIcon className="w-5 h-5" />

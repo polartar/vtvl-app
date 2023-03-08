@@ -1,5 +1,6 @@
 import { useWeb3React } from '@web3-react/core';
 import React, { useEffect } from 'react';
+import Fade from 'react-reveal/Fade';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { toHex } from 'utils/web3';
 
@@ -79,24 +80,26 @@ const NetworkSelector = () => {
         />
       </div>
       {showNetworks && (
-        <div className="absolute z-10 top-12 flex flex-col bg-gray-50 border border-gray-200 rounded-3xl w-full py-1 px-2 sm:px-3">
-          {Object.keys(SupportedChains).map((key: any, idx: number) => (
-            <div
-              key={key}
-              className="h-10 flex flex-row items-center sm:gap-2 cursor-pointer transition-all hover:translate-x-1"
-              onClick={async () => await selectNetwork(SupportedChains[key as SupportedChainId])}>
-              <img
-                className="w-6 h-6 rounded-full"
-                src={SupportedChains[key as SupportedChainId].icon}
-                alt={SupportedChains[key as SupportedChainId].title}
-              />
-              <p className="text-sm text-primary-900 font-medium">
-                <span className="hidden sm:block lg:hidden">{SupportedChains[key as SupportedChainId].code}</span>
-                <span className="hidden lg:block">{SupportedChains[key as SupportedChainId].title}</span>
-              </p>
-            </div>
-          ))}
-        </div>
+        <Fade cascade bottom>
+          <div className="absolute z-10 top-12 flex flex-col bg-gray-50 border border-gray-200 rounded-3xl w-full py-1 px-2 sm:px-3">
+            {Object.keys(SupportedChains).map((key: any, idx: number) => (
+              <div
+                key={key}
+                className="h-10 flex flex-row items-center sm:gap-2 cursor-pointer transition-all hover:translate-x-1"
+                onClick={async () => await selectNetwork(SupportedChains[key as SupportedChainId])}>
+                <img
+                  className="w-6 h-6 rounded-full"
+                  src={SupportedChains[key as SupportedChainId].icon}
+                  alt={SupportedChains[key as SupportedChainId].title}
+                />
+                <p className="text-sm text-primary-900 font-medium">
+                  <span className="hidden sm:block lg:hidden">{SupportedChains[key as SupportedChainId].code}</span>
+                  <span className="hidden lg:block">{SupportedChains[key as SupportedChainId].title}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </Fade>
       )}
     </div>
   );

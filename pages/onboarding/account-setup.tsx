@@ -333,7 +333,7 @@ const AccountSetupPage: NextPage = () => {
           </>
         ) : null}
         <div className="flex flex-row justify-between items-center">
-          <BackButton label="Return" onClick={() => onPrevious()} />
+          <BackButton label="Back" onClick={() => onPrevious()} />
           <Button className="primary" type="submit" loading={isSubmitting}>
             Continue
           </Button>
