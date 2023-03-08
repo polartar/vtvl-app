@@ -216,7 +216,12 @@ export function DashboardContextProvider({ children }: any) {
                 scheduleId,
                 name: currentRecipient.name,
                 company: currentRecipient.company ?? '',
-                recipientType: String(currentRecipient.recipientType?.[0].label),
+                // Some data especially on the recipients collection saves the recipientType as string ie., 'employee', 'founder', etc.
+                // while in the old one, it uses the select components values ie [{ label: 'Employee', value: 'employee' }] etc.
+                recipientType:
+                  typeof currentRecipient.recipientType === 'string'
+                    ? currentRecipient.recipientType
+                    : String(currentRecipient.recipientType[0]?.label),
                 address: currentRecipient.walletAddress,
                 // Ensure that the totalAllocation for each recipient is divided by the number of recipients
                 totalAllocation: finalVestedAmount,
@@ -409,33 +414,58 @@ export function DashboardContextProvider({ children }: any) {
       vestingIds.push(vesting.id);
     });
 
-    showLoading();
-    fetchRecipientsByQuery(['vestingId'], ['in'], [vestingIds])
-      .then((allRecipients) => {
-        const recipientsData = allRecipients
-          .filter(
-            (recipient, i) =>
-              i === allRecipients.findIndex((r) => compareAddresses(r.data.walletAddress, recipient.data.walletAddress))
-          )
-          .map(
-            (recipient) =>
-              ({
-                walletAddress: recipient.data.walletAddress,
-                name: recipient.data.name,
-                email: recipient.data.email,
-                company: recipient.data.company ?? '',
-                allocations: Number(recipient.data.allocations),
-                recipientType: [getRecipient(recipient.data.recipientType)]
-              } as IRecipientForm)
-          );
-        setRecipients(recipientsData);
-      })
-      .catch((error) => {
-        console.error('Fetching recipients data error', error);
-      })
-      .finally(() => {
-        hideLoading();
-      });
+    // Run only when there are vestingIds present
+    if (vestingIds && vestingIds.length) {
+      console.log('DASHBOARD LOADING?');
+      showLoading();
+      // Firebase limits the IN operator into 10, so we have to batch it by 10s
+      const splicedVestingIds = [...vestingIds];
+      const batches = [];
+
+      // We loop as long as the new array for the vestingIds has items
+      while (splicedVestingIds.length) {
+        // Get only the first 10 of the remaining spliced vestingIds
+        const batch = splicedVestingIds.splice(0, 10);
+        // Add the 10 items into the query for the batch
+        batches.push(
+          fetchRecipientsByQuery(['vestingId'], ['in'], [[...batch]])
+            .then((allRecipients) => {
+              const recipientsData = allRecipients
+                .filter(
+                  (recipient, i) =>
+                    i ===
+                    allRecipients.findIndex((r) => compareAddresses(r.data.walletAddress, recipient.data.walletAddress))
+                )
+                .map(
+                  (recipient) =>
+                    ({
+                      walletAddress: recipient.data.walletAddress,
+                      name: recipient.data.name,
+                      email: recipient.data.email,
+                      company: recipient.data.company ?? '',
+                      allocations: Number(recipient.data.allocations),
+                      recipientType: [getRecipient(recipient.data.recipientType)]
+                    } as IRecipientForm)
+                );
+              return recipientsData;
+            })
+            .catch((error) => {
+              console.error('Fetching recipients data error', error);
+            })
+        );
+      }
+
+      // Execute all the batches and update the recipients state
+      Promise.all(batches)
+        .then((result) => {
+          // Gets the sublist of the batch list and flat them out into a single array
+          const allRecipientsData = result.flat() as IRecipientForm[];
+          setRecipients(allRecipientsData);
+        })
+        .finally(() => {
+          hideLoading();
+        });
+    }
 
     if (!organizationId) return;
     const q = query(vestingCollection, where('organizationId', '==', organizationId));

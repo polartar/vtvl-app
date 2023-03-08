@@ -169,8 +169,6 @@ const CapTable: NextPageWithLayout = () => {
   useEffect(() => {
     if (recipientTokenDetails.length && schedules.length && mintFormState) {
       hideLoading();
-    } else {
-      showLoading();
     }
   }, [loading, recipientTokenDetails, schedules, mintFormState]);
 
