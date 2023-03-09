@@ -11,7 +11,7 @@ import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { auth } from 'services/auth/firebase';
-import { editRecipient, fetchRecipientByQuery } from 'services/db/recipient';
+import { editRecipient, fetchRecipientByQuery, updateRecipient } from 'services/db/recipient';
 import { IRecipientDoc } from 'types/models';
 
 const RecipientCreate: NextPage = () => {
@@ -37,25 +37,27 @@ const RecipientCreate: NextPage = () => {
     const encryptToken = router.query.token;
 
     if (encryptToken) {
-      const email = 'muhans.abdullah@gmail.com';
-      fetchRecipientByQuery('email', '==', email).then((response) => {
-        setRecipient(response);
-        if (response?.data.name) {
-          setValue('name', response?.data.name);
-        }
-        if (response?.data.company) {
-          setValue('companyName', response?.data.company);
-        }
-        if (response?.data.email) {
-          setValue('companyEmail', response.data.email);
-        }
-      });
       axios
         .post('/api/token/getCustomToken', {
           encryptToken: encryptToken
         })
         .then((res) => {
           setToken(res.data.token);
+
+          fetchRecipientByQuery('email', '==', res.data.email).then((response) => {
+            setRecipient(response);
+            if (response) updateRecipient(response.id, { status: 'accepted' });
+
+            if (response?.data.name) {
+              setValue('name', response?.data.name);
+            }
+            if (response?.data.company) {
+              setValue('companyName', response?.data.company);
+            }
+            if (response?.data.email) {
+              setValue('companyEmail', response.data.email);
+            }
+          });
         })
         .catch(async (err) => {
           if (err.response.data.message === 'jwt expired') {
@@ -75,7 +77,7 @@ const RecipientCreate: NextPage = () => {
         org_id: recipient.data.organizationId,
         type: 'investor'
       };
-      await editRecipient(recipient.id, recipient.data);
+
       signUpWithToken(newRecipient, token);
       setCurrentRecipient({
         id: recipient.id,

@@ -7,7 +7,7 @@ export interface IRecipient {
   allocations: string;
   walletAddress: string;
   recipientType: IRecipientTypeValue;
-  status?: 'accepted';
+  status?: 'accepted' | 'delivered' | '';
   updatedAt?: number;
 }
 

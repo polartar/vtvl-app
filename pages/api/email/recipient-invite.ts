@@ -36,8 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
           templateId: MailTemplates.RecipientInvite
         });
         updateRecipient(recipient.memberId, {
-          updatedAt: Math.floor(new Date().getTime() / 1000),
-          status: ''
+          status: 'delivered'
         });
       } catch (err: any) {
         console.error(err.message);

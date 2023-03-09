@@ -49,7 +49,7 @@ export default function VestingContract() {
   const [allChecked, setAllChecked] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const { mintFormState } = useTokenContext();
-
+  console.log({ initialRecipients });
   useEffect(() => {
     setRecipients(initialRecipients);
   }, [initialRecipients]);
@@ -67,11 +67,11 @@ export default function VestingContract() {
       if (filter.status === IStatus.ALL) {
         return true;
       } else if (filter.status === IStatus.ACCEPTED) {
-        return recipient.data.status === 'accepted';
+        return recipient.data.status === 'accepted' && !recipient.data.walletAddress;
       } else if (filter.status === IStatus.DELIVERED) {
-        return !recipient.data.status && !isExpired(recipient.data.updatedAt);
+        return recipient.data.status === 'delivered' && !isExpired(recipient.data.updatedAt);
       } else {
-        return !recipient.data.status && isExpired(recipient.data.updatedAt);
+        return recipient.data.status === 'delivered' && isExpired(recipient.data.updatedAt);
       }
     });
   }, [filter, recipients]);
@@ -79,12 +79,15 @@ export default function VestingContract() {
   const filteredCounts = useMemo(() => {
     return {
       [IStatus.ALL]: recipients.length,
-      [IStatus.ACCEPTED]: recipients.filter((recipient) => recipient.data.status === 'accepted').length,
-      [IStatus.DELIVERED]: recipients.filter(
-        (recipient) => !recipient.data.status && !isExpired(recipient.data.updatedAt)
+      [IStatus.ACCEPTED]: recipients.filter(
+        (recipient) => recipient.data.status === 'accepted' && !recipient.data.walletAddress
       ).length,
-      [IStatus.EXPIRED]: recipients.filter((recipient) => !recipient.data.status && isExpired(recipient.data.updatedAt))
-        .length
+      [IStatus.DELIVERED]: recipients.filter(
+        (recipient) => recipient.data.status === 'delivered' && !isExpired(recipient.data.updatedAt)
+      ).length,
+      [IStatus.EXPIRED]: recipients.filter(
+        (recipient) => recipient.data.status === 'delivered' && isExpired(recipient.data.updatedAt)
+      ).length
     };
   }, [recipients]);
 

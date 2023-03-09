@@ -29,10 +29,12 @@ export const editRecipient = async (id: string, recipient: IRecipient): Promise<
 };
 
 export const updateRecipient = async (id: string, updateObj: { [key: string]: any }): Promise<void> => {
-  console.log({ updateObj });
   const recipientRef = doc(recipientCollection, id);
 
-  await updateDoc(recipientRef, updateObj);
+  await updateDoc(recipientRef, {
+    ...updateObj,
+    updatedAt: Math.floor(new Date().getTime() / 1000)
+  });
 };
 
 export const fetchRecipient = async (id: string): Promise<IRecipient | undefined> => {

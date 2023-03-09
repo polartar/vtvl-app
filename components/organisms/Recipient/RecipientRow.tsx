@@ -40,13 +40,19 @@ const RecipientRow: React.FC<{
 
   const getStatusLabel = () => {
     if (newRecipient.data.status === 'accepted') {
-      return 'Accepted';
-    } else {
+      if (newRecipient.data.walletAddress) {
+        return '';
+      } else {
+        return 'Accepted';
+      }
+    } else if (newRecipient.data.status === 'delivered') {
       if (isExpired(newRecipient.data.updatedAt)) {
         return 'Expired';
       } else {
         return 'Delivered';
       }
+    } else {
+      return '';
     }
   };
 
@@ -57,8 +63,10 @@ const RecipientRow: React.FC<{
       return 'bg-[#c8ffef] text-[#22c55e]';
     } else if (status === 'Delivered') {
       return 'bg-[#eaecf0] text-[#667085]';
-    } else {
+    } else if (status === 'Expired') {
       return 'bg-[#fee2e2] text-[#ef4444]';
+    } else {
+      return '';
     }
   };
 
@@ -121,7 +129,7 @@ const RecipientRow: React.FC<{
           </div>
           <div className="flex items-center w-36 py-3">{newRecipient.data.name}</div>
           <div className="flex items-center w-52 py-3">
-            {getStatusLabel() === 'Accepted' ? (
+            {getStatusLabel() !== 'Expired' && getStatusLabel() !== 'Delivered' ? (
               recipient.data.email
             ) : (
               <EditableTypography
