@@ -40,7 +40,7 @@ const RecipientRow: React.FC<{
 
   const getStatusLabel = () => {
     if (newRecipient.data.status === 'accepted') {
-      if (newRecipient.data.walletAddress) {
+      if (newRecipient.data.email && newRecipient.data.walletAddress) {
         return '';
       } else {
         return 'Accepted';
@@ -52,7 +52,7 @@ const RecipientRow: React.FC<{
         return 'Delivered';
       }
     } else {
-      return '';
+      return undefined;
     }
   };
 
@@ -129,7 +129,7 @@ const RecipientRow: React.FC<{
           </div>
           <div className="flex items-center w-36 py-3">{newRecipient.data.name}</div>
           <div className="flex items-center w-52 py-3">
-            {getStatusLabel() !== 'Expired' && getStatusLabel() !== 'Delivered' ? (
+            {getStatusLabel() !== 'Expired' && getStatusLabel() !== 'Delivered' && recipient.data.email ? (
               recipient.data.email
             ) : (
               <EditableTypography
@@ -164,7 +164,11 @@ const RecipientRow: React.FC<{
             {formatValue(getRecipientInfo(newRecipient.data.walletAddress || '')?.allocation)}
           </div>
           <div className="flex items-center w-[150px] flex-grow py-3">
-            <Button loading={isUpdating} className="w-full rounded-lg primary mr-1" onClick={() => sendInvite()}>
+            <Button
+              loading={isUpdating}
+              className="w-full rounded-lg primary mr-1"
+              onClick={() => sendInvite()}
+              disabled={!!(recipient.data.email && recipient.data.walletAddress)}>
               {isUpdating ? '...' : 'Resend invite'}
             </Button>
           </div>
