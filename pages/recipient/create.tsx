@@ -15,7 +15,7 @@ import { editRecipient, fetchRecipientByQuery, updateRecipient } from 'services/
 import { IRecipientDoc } from 'types/models';
 
 const RecipientCreate: NextPage = () => {
-  const { setUser, setOrganizationId, loading, setRecipient: setCurrentRecipient, signUpWithToken } = useAuthContext();
+  const { setOrganizationId, loading, setRecipient: setCurrentRecipient, signUpWithToken } = useAuthContext();
 
   const router = useRouter();
   const [recipient, setRecipient] = useState<IRecipientDoc>();
@@ -95,11 +95,11 @@ const RecipientCreate: NextPage = () => {
       </div>
       <div className="panel  text-left">
         <Typography variant="inter" size="title" className="font-semibold">
-          Satoshi Saylor
+          {recipient?.data.name}
         </Typography>
         <div className="flex items-center gap-3">
           <Image src={'/icons/company-logo.svg'} alt="company-logo" width={32} height={32} className="" />
-          <span>ACME</span>
+          <span>{recipient?.data.company}</span>
         </div>
         <form className="w-full mb-6 border-0 border-t my-7" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid md:grid-cols-2 gap-5 mb-5 mt-7 ">
@@ -122,12 +122,10 @@ const RecipientCreate: NextPage = () => {
             <Controller
               name="companyName"
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
                 <Input
                   label="Company name"
                   placeholder="ACME"
-                  required
                   error={Boolean(errors.companyName)}
                   message={errors.companyName ? 'Please enter your company name' : ''}
                   {...field}
