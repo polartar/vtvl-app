@@ -17,6 +17,7 @@ import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { sendRecipientInvite } from '@components/organisms/Recipient';
 import TextField from '@mui/material/TextField';
 import { StaticDatePicker } from '@mui/x-date-pickers';
 import { StaticTimePicker } from '@mui/x-date-pickers';
@@ -1115,14 +1116,24 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           name: recipient.name,
           email: recipient.email,
           allocations: String(recipient.allocations ?? 0),
-          walletAddress: String(recipient.walletAddress),
+          walletAddress: recipient.walletAddress ?? '',
           recipientType: String(recipient.recipientType)
         })
       );
+      const noWalletRecipients = recipients
+        .filter(({ data: recipient }) => Boolean(recipient.walletAddress))
+        .map((recipient) => ({
+          memberId: recipient.id,
+          email: recipient.data.email,
+          name: recipient.data.name,
+          orgId: organizationId
+        }));
 
       await Promise.all(newRecipients);
 
-      // TODO send emails to recipients
+      if (noWalletRecipients.length > 0) {
+        await sendRecipientInvite(noWalletRecipients, mintFormState.symbol);
+      }
     }
     console.log('creating vesting schedule');
     // Redirect to the success page to notify the user

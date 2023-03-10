@@ -26,27 +26,20 @@ const MemberLoginPage: NextPage = () => {
   const {
     control,
     handleSubmit,
-    watch,
-    getFieldState,
     getValues,
-    formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
+    formState: { errors, isSubmitting }
   } = useForm({
     defaultValues: {
       memberEmail: ''
     }
   });
 
-  const memberEmail = {
-    value: watch('memberEmail'),
-    state: getFieldState('memberEmail')
-  };
-
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
     onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
-  const onSubmit: SubmitHandler<LoginForm> = async (data) => {
+  const onSubmit: SubmitHandler<LoginForm> = async () => {
     const values = getValues();
     try {
       const params: any = new URL(window.location.toString() || '');
@@ -81,7 +74,7 @@ const MemberLoginPage: NextPage = () => {
         className="w-full my-6 flex flex-col items-center">
         <button
           type="button"
-          onClick={async () => await googleSignIn()}
+          onClick={googleSignIn}
           className="line flex flex-row items-center justify-center gap-2.5 w-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign in with Google

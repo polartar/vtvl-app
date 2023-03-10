@@ -2,6 +2,7 @@ import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import {
   GoogleAuthProvider,
+  UserCredential,
   browserSessionPersistence,
   createUserWithEmailAndPassword,
   getAdditionalUserInfo,
@@ -16,14 +17,16 @@ import {
   signOut,
   updateEmail
 } from 'firebase/auth';
-import useEagerConnect from 'hooks/useEagerConnect';
+import useToggle from 'hooks/useToggle';
 import Router from 'next/router';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
+import { fetchRecipientByQuery } from 'services/db/recipient';
 import { fetchSafeByQuery } from 'services/db/safe';
 import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
+import { compareAddresses } from 'utils';
 import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
 
 export type NewLogin = {
@@ -84,18 +87,15 @@ const AuthContext = createContext({} as AuthContextData);
 export function AuthContextProvider({ children }: any) {
   const { chainId, account, library } = useWeb3React();
   const [user, setUser] = useState<IUser | undefined>();
-  // Remove default value when merging to develop, staging or main
-  // Mock organizationId 'v2S4z6kgjac61iDsQqr7'
   const [organizationId, setOrganizationId] = useState<string | undefined>();
   const [safe, setSafe] = useState<ISafe | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const [agreedOnConsent, setAgreedOnConsent] = useState<boolean>(false);
-  const tried = useEagerConnect();
   const [error, setError] = useState('');
-  // Remove after implementing context to show/hide the sidebar
-  const [showSideBar, setShowSideBar] = useState<boolean>(false);
-  const [sidebarIsExpanded, setSidebarIsExpanded] = useState<boolean>(true);
+  const [showSideBar, setShowSideBar] = useToggle(false);
+  const [sidebarIsExpanded, setSidebarIsExpanded, , , forceCollapseSidebar] = useToggle(true);
+
   const [recipient, setRecipient] = useState<IRecipientDoc>();
   // Stores the connection status whether the user is connected via metamask or other wallets
   const [connection, setConnection] = useState<TConnections | undefined>();
@@ -138,37 +138,67 @@ export function AuthContextProvider({ children }: any) {
     }
   }, [library]);
 
+  const updateAuthState = useCallback(
+    async (credential: UserCredential) => {
+      const additionalInfo = getAdditionalUserInfo(credential);
+      const recipientInfo = await fetchRecipientByQuery('email', '==', String(credential.user.email));
+
+      setIsNewUser(Boolean(additionalInfo?.isNewUser));
+      if (additionalInfo?.isNewUser) {
+        // If the authorized user is new user
+        const payload: IMember = {
+          email: credential.user.email ?? '',
+          // TODO why companyEmail field is needed?
+          companyEmail: credential.user.email ?? '',
+          name: credential.user.displayName ?? '',
+          wallets: []
+        };
+
+        if (account) {
+          payload.wallets!.push({ walletAddress: account, chainId: chainId! });
+        }
+
+        if (recipientInfo) {
+          // If this user was already registered as a recipient
+          payload.org_id = recipientInfo.data.organizationId;
+          payload.name = recipientInfo.data.name;
+
+          if (account && !compareAddresses(account, recipientInfo.data.walletAddress)) {
+            // TODO add handler if recipient wallet is not matched with current wallet
+            // payload.wallets!.push({ walletAddress: recipientInfo.data.walletAddress, chainId: chainId! });
+          }
+        }
+
+        await newMember(credential.user.uid, payload);
+      }
+
+      const memberInfo = await fetchMember(credential.user.uid);
+      setOrganizationId(memberInfo?.org_id);
+      setUser({ ...credential.user, memberInfo });
+
+      return Boolean(additionalInfo?.isNewUser);
+    },
+    [account, chainId]
+  );
+
   const signInWithGoogle = async (): Promise<NewLogin | undefined> => {
     setLoading(true);
     await setPersistence(auth, browserSessionPersistence);
+
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
-    const additionalInfo = getAdditionalUserInfo(credential);
-    const memberInfo = await fetchMember(credential.user.uid);
-    if (additionalInfo?.isNewUser) {
-      const updatedMemberInfo: IMember = {
-        email: credential.user.email || '',
-        companyEmail: credential.user.email || '',
-        name: credential.user.displayName || ''
-      };
-      if (account) updatedMemberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
-      await newMember(credential.user.uid, { ...updatedMemberInfo });
-    }
-    setIsNewUser(additionalInfo?.isNewUser || false);
-    setOrganizationId(memberInfo?.org_id);
-    setUser({ ...credential.user, memberInfo });
+    const isFirstLogin = await updateAuthState(credential);
+
     setLoading(false);
-    return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
+    return { isFirstLogin, uuid: credential.user.uid };
   };
 
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true);
     await setPersistence(auth, browserSessionPersistence);
+
     const credential = await signInWithEmailAndPassword(auth, email, password);
-    const memberInfo = await fetchMember(credential.user.uid);
-    const additionalInfo = getAdditionalUserInfo(credential);
-    setOrganizationId(memberInfo?.org_id);
-    setUser({ ...credential.user, memberInfo });
-    setIsNewUser(additionalInfo?.isNewUser || false);
+
+    await updateAuthState(credential);
     setLoading(false);
   };
 
@@ -176,20 +206,7 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     await setPersistence(auth, browserSessionPersistence);
     const credential = await createUserWithEmailAndPassword(auth, email, password);
-    const memberInfo = await fetchMember(credential.user.uid);
-    const additionalInfo = getAdditionalUserInfo(credential);
-    if (additionalInfo?.isNewUser) {
-      const updatedMemberInfo: IMember = {
-        email: credential.user.email || '',
-        companyEmail: credential.user.email || '',
-        name: credential.user.displayName || ''
-      };
-      if (account) updatedMemberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
-      await newMember(credential.user.uid, { ...updatedMemberInfo });
-    }
-    setOrganizationId(memberInfo?.org_id);
-    setUser({ ...credential.user, memberInfo });
-    setIsNewUser(additionalInfo?.isNewUser || false);
+    await updateAuthState(credential);
     setLoading(false);
   };
 
@@ -271,10 +288,11 @@ export function AuthContextProvider({ children }: any) {
       try {
         await updateEmail(credential.user, newSignUp.email || '');
       } catch (err) {
-        /// We should handle this error in the future
+        // TODO handle this error in the future
         console.log(err);
       }
     }
+
     const additionalInfo = getAdditionalUserInfo(credential);
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     const member = await fetchMember(credential.user.uid);
@@ -368,17 +386,25 @@ export function AuthContextProvider({ children }: any) {
     setLoading(false);
   };
 
-  const anonymousSignIn = async (): Promise<NewLogin | undefined> => {
+  /**
+   * @description Auth platform in guest mode
+   *
+   * It's not getting or creating the `Member` info from/to database.
+   */
+  const anonymousSignIn = useCallback(async (): Promise<NewLogin | undefined> => {
     setLoading(true);
     const credential = await signInAnonymously(auth);
     const additionalInfo = getAdditionalUserInfo(credential);
-    setUser({ ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } });
-    setLoading(false);
-    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
-    return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
-  };
 
-  const refreshUser = async (): Promise<void> => {
+    setUser({ ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } });
+
+    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+
+    setLoading(false);
+    return { isFirstLogin: Boolean(additionalInfo?.isNewUser), uuid: credential.user.uid };
+  }, []);
+
+  const refreshUser = useCallback(async (): Promise<void> => {
     setLoading(true);
     const user = auth.currentUser;
     if (!user) return;
@@ -386,23 +412,20 @@ export function AuthContextProvider({ children }: any) {
     if (memberInfo) {
       setUser({ ...user, memberInfo });
     }
-  };
+    setLoading(false);
+  }, []);
 
-  const logOut = async () => {
+  const logOut = useCallback(async () => {
     await signOut(auth);
     setUser(undefined);
     Router.replace('/onboarding');
-  };
+  }, []);
 
-  const fetchSafe = async () => {
+  const fetchSafe = useCallback(() => {
     if (organizationId) {
       fetchSafeByQuery('org_id', '==', organizationId).then((res) => setSafe(res));
     }
-  };
-
-  // Remove after implementing context to show/hide the sidebar
-  const toggleSideBar = () => setShowSideBar((prev) => !prev);
-  const expandSidebar = () => setSidebarIsExpanded((prev) => !prev);
+  }, [organizationId]);
 
   const memoedValue = useMemo(
     () => ({
@@ -429,9 +452,9 @@ export function AuthContextProvider({ children }: any) {
       // Remove after implementing context to show/hide the sidebar
       showSideBar,
       sidebarIsExpanded,
-      toggleSideBar,
-      expandSidebar,
-      forceCollapseSidebar: () => setSidebarIsExpanded(false),
+      toggleSideBar: setShowSideBar,
+      expandSidebar: setSidebarIsExpanded,
+      forceCollapseSidebar,
       fetchSafe,
       setSafe,
       agreedOnConsent,

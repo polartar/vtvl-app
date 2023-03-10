@@ -160,9 +160,10 @@ export function DashboardContextProvider({ children }: any) {
       // Initialize the recipients for the cap table
       const recipientsTokenDetails: TCapTableRecipientTokenDetails[] = [];
 
-      // Call the multicall feature
-      const multicallResponse = await multicall.call(contractCallContext);
       try {
+        // Call the multicall feature
+        const multicallResponse = await multicall.call(contractCallContext);
+
         if (multicallResponse) {
           const res = multicallResponse;
           // Set constants for referencing the calls based on the multicall setup above
