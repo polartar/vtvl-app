@@ -72,6 +72,14 @@
   --danger-200: #fecaca;
   --danger-100: #fee2e2;
   --danger-50: #fef2f2;
+
+  /* Other colors */
+
+  /* Metamask */
+  --metamask: #F6851B;
+
+  /* Wallet Connect */
+  --walletconnect: #3B99FC;
 }
 
 .loader-dot1,
