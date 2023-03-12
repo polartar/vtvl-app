@@ -117,7 +117,7 @@ export function AuthContextProvider({ children }: any) {
   const [showSideBar, setShowSideBar] = useToggle(false);
   const [sidebarIsExpanded, setSidebarIsExpanded, , , forceCollapseSidebar] = useToggle(true);
   const {
-    website: { organizationId: currentOrganizationId }
+    website: { organizationId: websiteOrganizationId }
   } = useGlobalContext();
 
   const [recipient, setRecipient] = useState<IRecipientDoc>();
@@ -202,6 +202,16 @@ export function AuthContextProvider({ children }: any) {
     setOrganizationId(user?.memberInfo?.org_id);
     setUser(user);
     setIsAuthenticated(true);
+  };
+
+  const allowSignIn = (userOrganizationId?: string) => {
+    // Allow sign in when:
+    // - Website is white-labelled + userOrganizationId = websiteOrganizationId
+    // - Website is not white-labelled
+    return (
+      userOrganizationId &&
+      (!IS_ENABLED_AUTH_BY_ORG || !websiteOrganizationId || websiteOrganizationId === userOrganizationId)
+    );
   };
 
   const updateAuthState = useCallback(
@@ -302,8 +312,8 @@ export function AuthContextProvider({ children }: any) {
     // const memberInfo = await fetchMember(credential.user.uid);
     // const additionalInfo = getAdditionalUserInfo(credential);
 
-    // // If logged in user is not the member of organization
-    // if (!IS_ENABLED_AUTH_BY_ORG || !currentOrganizationId || currentOrganizationId === memberInfo?.org_id) {
+    // If logged in user is not the member of organization
+    // if (allowSignIn(memberInfo?.org_id)) {
     //   setOrganizationId(memberInfo?.org_id);
     //   setUser({ ...credential.user, memberInfo });
     //   setIsNewUser(additionalInfo?.isNewUser || false);
@@ -321,7 +331,7 @@ export function AuthContextProvider({ children }: any) {
     // const memberInfo = await fetchMember(credential.user.uid);
 
     // // If logged in user is not the member of organization
-    // if (!IS_ENABLED_AUTH_BY_ORG || !currentOrganizationId || currentOrganizationId === memberInfo?.org_id) {
+    // if (allowSignIn(memberInfo?.org_id)) {
     //   const additionalInfo = getAdditionalUserInfo(credential);
     //   if (additionalInfo?.isNewUser) {
     //     const updatedMemberInfo: IMember = {
@@ -358,7 +368,7 @@ export function AuthContextProvider({ children }: any) {
     const org_id = existingOrg?.id || orgId;
 
     // If logged in user is not the member of organization
-    if (!IS_ENABLED_AUTH_BY_ORG || !currentOrganizationId || currentOrganizationId === org_id) {
+    if (allowSignIn(org_id)) {
       const memberInfo: IMember = {
         email: member.email || '',
         companyEmail: member.email || user.email || '',
@@ -391,7 +401,7 @@ export function AuthContextProvider({ children }: any) {
     const credential = await signInWithEmailLink(auth, newSignUp.email, url);
 
     // If logged in user is not the member of organization
-    if (!IS_ENABLED_AUTH_BY_ORG || !currentOrganizationId || currentOrganizationId === newSignUp.org_id) {
+    if (allowSignIn(newSignUp.org_id)) {
       const additionalInfo = getAdditionalUserInfo(credential);
       if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
@@ -423,7 +433,7 @@ export function AuthContextProvider({ children }: any) {
 
   const signUpWithToken = async (newSignUp: IMember, token: string) => {
     // If logged in user is not the member of organization
-    if (!IS_ENABLED_AUTH_BY_ORG || !currentOrganizationId || currentOrganizationId === newSignUp.org_id) {
+    if (allowSignIn(newSignUp.org_id)) {
       setLoading(true);
       await setPersistence(auth, browserSessionPersistence);
       const credential = await signInWithCustomToken(auth, token);
@@ -475,7 +485,7 @@ export function AuthContextProvider({ children }: any) {
     if (!org) throw new Error('invalid sign url, no organization');
 
     // If logged in user is not the member of organization
-    if (!IS_ENABLED_AUTH_BY_ORG || !currentOrganizationId || currentOrganizationId === orgId) {
+    if (allowSignIn(orgId)) {
       console.log('user type is ', type);
       const credential = await signInWithEmailLink(auth, email, url);
       const additionalInfo = getAdditionalUserInfo(credential);
