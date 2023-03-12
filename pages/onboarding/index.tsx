@@ -72,7 +72,7 @@ const carouselItems = [
 const SelectLoginTypePage: NextPage = () => {
   const { startOnboarding } = useOnboardingContext();
   const {
-    website: { styles, name }
+    website: { assets, name }
   } = useGlobalContext();
 
   useEffect(() => {
@@ -111,7 +111,9 @@ const SelectLoginTypePage: NextPage = () => {
             </div>
           </WalletContainer>
         </Signing>
-        <Vesting className="flex flex-col items-center justify-center pt-12 pb-10" background={styles.loginBgImage}>
+        <Vesting
+          className="flex flex-col items-center justify-center pt-12 pb-10"
+          background={assets?.loginBgImage?.src}>
           <Carousel variant="dark" items={carouselItems} />
         </Vesting>
       </OnboardingContainer>
