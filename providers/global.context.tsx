@@ -3,19 +3,12 @@ import Lottie from 'lottie-react';
 import VTVLLoaderData from 'public/VTVL_Loader.json';
 import React, { PropsWithChildren, createContext, useCallback, useContext, useEffect } from 'react';
 import { fetchWebsiteByDomain } from 'services/db/website';
-import { IWebsiteStyles } from 'types/models';
+import { IWebsite } from 'types/models';
 import { IS_ENABLED_AUTH_BY_ORG } from 'utils/constants';
 
 export interface GlobalContextState {
   isLoading: boolean;
-  website: IWebsiteData;
-}
-
-export interface IWebsiteData {
-  domain?: string;
-  name?: string;
-  organizationId: string;
-  styles: IWebsiteStyles;
+  website: IWebsite;
 }
 
 const initialState: GlobalContextState = {
@@ -77,10 +70,12 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
   // When the root element is present, as well as the theme, update the colors
   // we are doing this because nextjs does not detect the `document` object on ssr
   useEffect(() => {
-    const { theme } = state.website.styles;
-    const elem = document.querySelector(':root');
-    if (elem && theme) {
-      applyTheme(theme, elem);
+    if (state.website && state.website.styles) {
+      const { theme } = state.website.styles;
+      const elem = document.querySelector(':root');
+      if (elem && theme) {
+        applyTheme(theme, elem);
+      }
     }
   }, [state]);
 

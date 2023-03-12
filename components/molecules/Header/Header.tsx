@@ -1,4 +1,5 @@
 import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
+import MediaAsset from '@components/atoms/MediaAsset/MediaAsset';
 import NetworkSelector from '@components/atoms/NetworkSelector/NetworkSelector';
 import SafeSelector from '@components/atoms/SafeSelector/SafeSelector';
 import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
@@ -23,7 +24,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
   const { active, account } = useWeb3React();
   const { asPath } = useRouter();
   const {
-    website: { styles }
+    website: { assets }
   } = useGlobalContext();
 
   // Redirects the user to the right URL depending on the user's login state eg., /onboarding for non-logged in, /dashboard for logged-in users
@@ -52,8 +53,8 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
     return (
       <div className={`flex flex-row items-center`}>
         <img src="/icons/vtvl-icon.svg" className="h-10 sm:hidden md:h-12" onClick={redirectToHome} />
-        <img
-          src={styles.logoImage ?? '/logo.svg'}
+        <MediaAsset
+          src={assets?.logoImage?.src ?? '/logo.svg'}
           className="hidden sm:block w-48 h-12 cursor-pointer"
           alt="VTVL"
           onClick={redirectToHome}
