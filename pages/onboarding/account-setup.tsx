@@ -4,6 +4,7 @@ import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import AuthContext from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import PlusIcon from 'public/icons/plus.svg';
@@ -31,6 +32,9 @@ type AccountForm = {
 const AccountSetupPage: NextPage = () => {
   const { sendTeammateInvite, user, registerNewMember } = useContext(AuthContext);
   const { onPrevious, onNext, info, inProgress, startOnboarding } = useContext(OnboardingContext);
+  const {
+    website: { name }
+  } = useGlobalContext();
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -171,7 +175,7 @@ const AccountSetupPage: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
       <Typography size="title" variant="sora" className="font-medium text-neutral-900">
-        Hey there, Welcome to VTVL
+        Hey there, Welcome to {name || 'VTVL'}
       </Typography>
       <p className="text-sm max-w-xl text-center text-neutral-500">
         Let's get to know you so you can start setting up your account.

@@ -72,14 +72,14 @@ const DashboardVestingSummary = () => {
             <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Contracts</div>
             <div className="text-[32px] font-medium text-black group-hover:text-white">{vestingContracts.length}</div>
           </div>
-          <img src="/icons/caret-right-border.svg" alt="VTVL" />
+          <img src="/icons/caret-right-border.svg" alt="VTVL" aria-hidden="true" />
         </div>
         <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
           <div>
             <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Schedules</div>
             <div className="text-[32px] font-medium text-black group-hover:text-white">{vestings.length}</div>
           </div>
-          <img src="/icons/caret-right-border.svg" alt="VTVL" />
+          <img src="/icons/caret-right-border.svg" alt="VTVL" aria-hidden="true" />
         </div>
         <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
           <div>
@@ -88,14 +88,14 @@ const DashboardVestingSummary = () => {
               {recipientTokenDetails.length}
             </div>
           </div>
-          <img src="/icons/caret-right-border.svg" alt="VTVL" />
+          <img src="/icons/caret-right-border.svg" alt="VTVL" aria-hidden="true" />
         </div>
         <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
           <div>
             <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Withdrawn</div>
             <div className="text-[32px] font-medium text-black group-hover:text-white">{claims}</div>
           </div>
-          <img src="/icons/caret-right-border.svg" alt="VTVL" />
+          <img src="/icons/caret-right-border.svg" alt="VTVL" aria-hidden="true" />
         </div>
       </div>
     </div>

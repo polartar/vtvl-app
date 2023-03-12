@@ -59,7 +59,7 @@ export default function StandardCard({
             </Typography>
           </>
         )}
-        {isCaret && <img src="/icons/caret-right-border.svg" alt="VTVL" />}
+        {isCaret && <img src="/icons/caret-right-border.svg" alt="VTVL" aria-hidden="true" />}
       </div>
     </div>
   );

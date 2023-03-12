@@ -17,6 +17,7 @@ export interface IWebsiteAssets {
   loginBgImage?: IWebsiteAsset;
   logoImage?: IWebsiteAsset;
   logoIcon?: IWebsiteAsset;
+  logoFavicon?: IWebsiteAsset;
   selectUserFounder?: IWebsiteAsset;
   selectUserRecipient?: IWebsiteAsset;
 }
@@ -24,6 +25,7 @@ export interface IWebsiteAssets {
 export interface IWebsite {
   domain: string;
   name?: string;
+  email?: string;
   organizationId: string;
   styles?: IWebsiteStyles;
   assets?: IWebsiteAssets;
