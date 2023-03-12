@@ -37,7 +37,9 @@ module.exports = {
       colors: {
         ...colors,
         label: '#667085',
-        info: '#101828'
+        info: '#101828',
+        metamask: 'var(--metamask)',
+        walletconnect: 'var(--walletconnect)'
       },
       borderColor: {
         info: '#e8ebf5'

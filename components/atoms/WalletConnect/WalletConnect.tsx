@@ -3,6 +3,8 @@ import { injected } from 'connectors';
 import Image from 'next/image';
 import Router from 'next/router';
 import React, { useContext, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
+import { connectionAssets } from 'types/constants/shared';
 import { truncateAddress } from 'utils/web3';
 
 import AuthContext from '../../../providers/auth.context';
@@ -15,7 +17,7 @@ interface Props {
 
 const WalletConnect = ({ account, connected }: Props) => {
   const { activate, deactivate } = useWeb3React();
-  const { logOut } = useContext(AuthContext);
+  const { logOut, connection } = useContext(AuthContext);
   const [expanded, setExpanded] = useState(false);
 
   // Function intended for the overall clickable area of the connect wallet button
@@ -51,12 +53,26 @@ const WalletConnect = ({ account, connected }: Props) => {
 
   return (
     <div className="h-10 transition-all" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
-      <div className="h-10 shrink-0 flex flex-row items-center gap-2 bg-primary-900 rounded-3xl px-2 sm:px-3 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125">
-        <img src="/icons/wallet.svg" className={`w-5 ${connected ? 'hidden md:block' : ''}`} alt="e-wallet" />
+      <div
+        className={twMerge(
+          'h-10 shrink-0 flex flex-row items-center gap-2 rounded-3xl px-2 sm:px-3 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
+          connection === 'metamask'
+            ? 'bg-metamask'
+            : connection === 'walletconnect'
+            ? 'bg-walletconnect'
+            : 'bg-primary-900'
+        )}>
+        <img src="/icons/wallet.svg" className={twMerge('w-5', connected ? 'hidden md:block' : '')} alt="e-wallet" />
         {connected && account ? (
           <>
             <p className="hidden lg:inline">{truncateAddress(account)}</p>
-            <img className="w-6" src="/icons/avatar.svg" alt="More" />
+            <div className="p-1 bg-white rounded-full">
+              <img
+                className="w-5"
+                src={connection ? connectionAssets[connection].walletIcon : '/icons/avatar.svg'}
+                alt="More"
+              />
+            </div>
           </>
         ) : (
           <p className="hidden md:inline">Connect Wallet</p>
