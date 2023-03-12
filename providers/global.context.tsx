@@ -1,3 +1,4 @@
+import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import { useShallowState } from 'hooks/useShallowState';
 import Lottie from 'lottie-react';
 import VTVLLoaderData from 'public/VTVL_Loader.json';
@@ -85,5 +86,9 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
   }, [initialization]);
 
   // TODO improve loading state
-  return state.isLoading ? <></> : <GlobalContext.Provider value={state}>{children}</GlobalContext.Provider>;
+  return state.isLoading ? (
+    <PageLoader loader="global" />
+  ) : (
+    <GlobalContext.Provider value={state}>{children}</GlobalContext.Provider>
+  );
 };
