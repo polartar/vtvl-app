@@ -15,7 +15,7 @@
 
 .dots_custom li button {
   border: none;
-  background: #d9d9d9;
+  background: #fff;
   color: transparent;
   cursor: pointer;
   display: block;
@@ -23,9 +23,11 @@
   width: 8px;
   border-radius: 4px;
   padding: 0;
+  opacity: 0.3
 }
 
 .dots_custom :global(li.slick-active) button {
-  background: var(--secondary-700);
+  background: #fff;
   width: 27px !important;
+  opacity: 1;
 }
