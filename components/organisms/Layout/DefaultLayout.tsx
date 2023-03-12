@@ -7,6 +7,7 @@ import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
@@ -63,6 +64,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   } = useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
   const { loading } = useLoaderContext();
+  const {
+    website: { name, assets }
+  } = useGlobalContext();
   const { active, account } = useWeb3React();
   const [sidebarProperties, setSidebarProperties] = useState({
     roleTitle: 'Anonymous',
@@ -459,7 +463,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     <>
       <Container>
         <Head>
-          <title>VTVL</title>
+          <title>{name ?? 'VTVL'}</title>
+          <link rel="icon" href={assets?.logoFavicon?.src ?? '/favicon.ico'} />
         </Head>
         <Header
           connected={active}

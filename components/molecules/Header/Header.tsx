@@ -24,7 +24,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
   const { active, account } = useWeb3React();
   const { asPath } = useRouter();
   const {
-    website: { assets }
+    website: { assets, name }
   } = useGlobalContext();
 
   // Redirects the user to the right URL depending on the user's login state eg., /onboarding for non-logged in, /dashboard for logged-in users
@@ -56,7 +56,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
         <MediaAsset
           src={assets?.logoImage?.src ?? '/logo.svg'}
           className="hidden sm:block w-48 h-12 cursor-pointer"
-          alt="VTVL"
+          alt={name ?? 'VTVL'}
           onClick={redirectToHome}
         />
       </div>

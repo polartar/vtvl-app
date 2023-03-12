@@ -1,14 +1,18 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
+import { useGlobalContext } from '@providers/global.context';
 import { useTokenContext } from '@providers/token.context';
 import { NextPage } from 'next';
 import Router from 'next/router';
 
 const TeamWelcome: NextPage = () => {
   const { mintFormState } = useTokenContext();
+  const {
+    website: { name }
+  } = useGlobalContext();
   return (
     <>
-      <h1 className="h2 font-medium text-center mb-10">Welcome to VTVL, Satoshi</h1>
+      <h1 className="h2 font-medium text-center mb-10">Welcome to {name ?? 'VTVL'}, Satoshi</h1>
       <p className="paragraphy-small neutral-text mb-3">You have been invited by</p>
       <TokenProfile {...mintFormState} burnable={false} />
       <EmptyState

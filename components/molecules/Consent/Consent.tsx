@@ -1,3 +1,4 @@
+import { useGlobalContext } from '@providers/global.context';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -9,6 +10,9 @@ interface ConsentProps {
 }
 
 const Consent = ({ variant = 'default', className = '', onAgree = (e) => {} }: ConsentProps) => {
+  const {
+    website: { name }
+  } = useGlobalContext();
   const [agree, setAgree] = useState(false);
   useEffect(() => {
     onAgree(agree);
@@ -31,7 +35,7 @@ const Consent = ({ variant = 'default', className = '', onAgree = (e) => {} }: C
             />
           </label>
           <div>
-            I agree to VTVL{' '}
+            I agree to {name ?? 'VTVL'}{' '}
             <a href="https://vtvl.io/terms" target="_blank" title="Terms and Conditions">
               <span className="cursor-pointer font-bold text-primary-900 no-underline">Terms of Service</span>
             </a>{' '}
@@ -44,7 +48,7 @@ const Consent = ({ variant = 'default', className = '', onAgree = (e) => {} }: C
         </div>
       ) : (
         <span>
-          By connecting a wallet, you agree to VTVL{' '}
+          By connecting a wallet, you agree to {name ?? 'VTVL'}{' '}
           <a href="https://vtvl.io/terms" target="_blank" title="Terms and Conditions">
             <span className="cursor-pointer font-bold text-primary-900 no-underline">Terms of Service</span>
           </a>{' '}
