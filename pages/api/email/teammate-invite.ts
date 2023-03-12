@@ -12,7 +12,7 @@ type Data = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { memberId, email, type, orgId, orgName, name } = req.body;
+  const { memberId, email, type, orgId, orgName, name, websiteName, websiteEmail } = req.body;
 
   if (!process.env.CUSTOM_TOKEN_PRIVATE_KEY) {
     return res.status(400).send({ message: 'Private key not exist' });
@@ -27,7 +27,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   await SendMail({
     to: email,
     data: { emailLink, orgName, name },
-    subject: 'Join VTVL',
+    subject: `Join ${websiteName ?? 'VTVL'}`,
+    websiteName,
+    websiteEmail,
     templateId: MailTemplates.TeammateInvite
   });
   res.status(200).json({ message: 'Success!' });

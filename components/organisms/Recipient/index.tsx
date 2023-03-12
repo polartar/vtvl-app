@@ -1,6 +1,7 @@
 import Button from '@components/atoms/Button/Button';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useGlobalContext } from '@providers/global.context';
 import { useRecipientContext } from '@providers/recipient.context';
 import { useTokenContext } from '@providers/token.context';
 import axios from 'axios';
@@ -28,10 +29,15 @@ export const sendRecipientInvite = async (
   }[],
   symbol: string
 ): Promise<void> => {
+  const {
+    website: { name: websiteName, email: websiteEmail }
+  } = useGlobalContext();
   //TODO: extract api calls
   await axios.post('/api/email/recipient-invite', {
     recipients: recipients,
-    symbol: symbol
+    symbol: symbol,
+    websiteName,
+    websiteEmail
   });
 };
 export const isExpired = (timestamp: number | undefined) =>
