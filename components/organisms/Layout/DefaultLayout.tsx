@@ -65,6 +65,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const { inProgress } = useContext(OnboardingContext);
   const { loading } = useLoaderContext();
   const {
+    isLoading,
     website: { name, assets }
   } = useGlobalContext();
   const { active, account } = useWeb3React();
@@ -459,12 +460,27 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     }
   }, [account, active, router]);
 
+  const renderFavicons = (icon: string) => (
+    <>
+      <link rel="apple-touch-icon" sizes="180x180" href={icon} />
+      <link rel="icon" type="image/png" sizes="32x32" href={icon} />
+      <link rel="icon" type="image/png" sizes="16x16" href={icon} />
+      <link rel="mask-icon" href={icon} color="#fefefe" />
+      <meta name="msapplication-TileColor" content="#fff" />
+      <meta name="theme-color" content="#ffffff" />
+    </>
+  );
+
   return (
     <>
       <Container>
         <Head>
           <title>{name ?? 'VTVL'}</title>
-          <link rel="icon" href={assets?.logoFavicon?.src ?? '/favicon.ico'} />
+          {isLoading
+            ? renderFavicons('/default-loader-icon.png')
+            : assets?.logoFavicon
+            ? renderFavicons(assets.logoFavicon.src)
+            : renderFavicons('/favicon.ico')}
         </Head>
         <Header
           connected={active}

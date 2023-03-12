@@ -86,9 +86,9 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
   }, [initialization]);
 
   // TODO improve loading state
-  return state.isLoading ? (
-    <PageLoader loader="global" />
-  ) : (
-    <GlobalContext.Provider value={state}>{children}</GlobalContext.Provider>
+  return (
+    <GlobalContext.Provider value={state}>
+      {state.isLoading ? <PageLoader loader="global" /> : children}
+    </GlobalContext.Provider>
   );
 };
