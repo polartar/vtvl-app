@@ -2,6 +2,7 @@ import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import { Typography } from '@components/atoms/Typography/Typography';
 import styled from '@emotion/styled';
 import AuthContext from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
@@ -9,6 +10,7 @@ import Router from 'next/router';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { newMember } from 'services/db/member';
+import { twMerge } from 'tailwind-merge';
 import { IMember } from 'types/models';
 import { IUserType } from 'types/models/member';
 
@@ -18,36 +20,41 @@ const Container = styled.div`
   text-align: center;
 `;
 
-const userTypes = {
-  options: [
-    {
-      image: '/images/onboarding-user-type-founder.svg',
-      value: 'founder',
-      label: (
-        <>
-          I'm a <span className="text-secondary-900">founder</span> of a web3 project
-        </>
-      )
-    },
-    {
-      image: '/images/onboarding-user-type-investor.svg',
-      value: 'investor',
-      label: (
-        <>
-          I’m a <span className="text-secondary-900">token recipient</span> looking to claim my tokens
-        </>
-      )
-    }
-  ],
-  name: 'userType'
-};
-
 const SelectUserTypePage: NextPage = () => {
   const { onNext, startOnboarding, completeOnboarding, inProgress } = useContext(OnboardingContext);
   const { emailSignUp, user } = useContext(AuthContext);
   const { active, account, chainId } = useWeb3React();
   const [selected, setSelected] = React.useState('');
   const [member, setMember] = React.useState<IMember>();
+  const {
+    website: { assets, organizationId: webOrgId }
+  } = useGlobalContext();
+
+  const userTypes = {
+    options: [
+      {
+        image: { src: assets?.selectUserFounder?.src ?? '/images/onboarding-user-type-founder.svg' },
+        value: 'founder',
+        label: (
+          <>
+            I'm a <span className={twMerge(webOrgId ? 'text-primary-900' : 'text-secondary-900')}>founder</span> of a
+            web3 project
+          </>
+        )
+      },
+      {
+        image: { src: assets?.selectUserRecipient?.src ?? '/images/onboarding-user-type-investor.svg' },
+        value: 'investor',
+        label: (
+          <>
+            I’m a <span className={twMerge(webOrgId ? 'text-primary-900' : 'text-secondary-900')}>token recipient</span>{' '}
+            looking to claim my tokens
+          </>
+        )
+      }
+    ],
+    name: 'userType'
+  };
 
   useEffect(() => {
     startOnboarding(Step.UserTypeSetup);
@@ -128,7 +135,7 @@ const SelectUserTypePage: NextPage = () => {
           ))}
         </div>
       </div>
-      <button className="secondary" onClick={() => handleContinue()}>
+      <button className={twMerge(webOrgId ? 'primary' : 'secondary')} onClick={() => handleContinue()}>
         Continue
       </button>
     </Container>

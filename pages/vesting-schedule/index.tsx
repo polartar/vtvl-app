@@ -159,12 +159,12 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const userAction = {
     options: [
       {
-        image: '/images/vesting-manual.svg',
+        image: { src: '/images/vesting-manual.svg' },
         value: 'manual',
         label: <>I want to manually input the details</>
       },
       {
-        image: '/images/vesting-import.svg',
+        image: { src: '/images/vesting-import.svg' },
         value: 'import',
         label: (
           <>
