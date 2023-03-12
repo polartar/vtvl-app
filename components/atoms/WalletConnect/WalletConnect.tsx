@@ -52,10 +52,10 @@ const WalletConnect = ({ account, connected }: Props) => {
   ];
 
   return (
-    <div className="h-10 transition-all" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
+    <div className="h-10 transition-all relative" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
       <div
         className={twMerge(
-          'h-10 shrink-0 flex flex-row items-center gap-2 rounded-3xl px-2 sm:px-2.5 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
+          'h-10 w-auto shrink-0 flex flex-row items-center justify-between gap-2 rounded-3xl px-1.5 sm:px-2 lg:w-40 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
           connection === 'metamask'
             ? 'bg-metamask'
             : connection === 'walletconnect'
@@ -66,9 +66,9 @@ const WalletConnect = ({ account, connected }: Props) => {
         {connected && account ? (
           <>
             <p className="hidden lg:inline">{truncateAddress(account)}</p>
-            <div className="p-0.5 bg-white rounded-full h-6 w-6 flex items-center justify-center">
+            <div className="p-0.5 bg-white rounded-full h-7 w-7 flex items-center justify-center">
               <img
-                className="h-5 flex-shrink-0"
+                className={twMerge(connection === 'metamask' ? 'h-4' : 'h-5', 'flex-shrink-0')}
                 src={connection ? connectionAssets[connection].walletIcon : '/icons/avatar.svg'}
                 alt="More"
               />
@@ -79,11 +79,11 @@ const WalletConnect = ({ account, connected }: Props) => {
         )}
       </div>
       {expanded && (
-        <div className="mt-2 text-sm bg-neutral-50 border border-primary-900 rounded-xl overflow-hidden">
+        <div className="absolute right-0 w-40 mt-2 text-sm bg-neutral-50 border border-primary-900 rounded-xl overflow-hidden">
           {menuItems.map((menu, menuIndex) => (
             <div
               key={`menu-${menuIndex}`}
-              className="py-2 px-3 cursor-pointer transition-all hover:bg-primary-700 hover:text-white"
+              className="py-3 px-4 cursor-pointer transition-all hover:bg-primary-700 hover:text-white"
               onClick={menu.action}>
               {menu.label}
             </div>
