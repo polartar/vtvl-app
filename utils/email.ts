@@ -23,10 +23,19 @@ export interface SendMailProps {
   to: string;
   subject: string;
   templateId: MailTemplates;
+  websiteName?: string;
+  websiteEmail?: string;
   data: any;
 }
 
-export default async function SendMail({ to, templateId, subject, data }: SendMailProps) {
+export default async function SendMail({
+  to,
+  templateId,
+  subject,
+  websiteName = 'VTVL',
+  websiteEmail = 'no-reply@vtvl.io',
+  data
+}: SendMailProps) {
   try {
     if (!to) return "Reciever's email is needed";
     if (!templateId) return ' Email template is needed';
@@ -34,7 +43,8 @@ export default async function SendMail({ to, templateId, subject, data }: SendMa
     const dynamicTemplateData = { ...data, subject };
     await mail.send({
       to,
-      from: { name: 'VTVL', email: 'no-reply@vtvl.io' },
+      // Update the email value into websiteEmail after whitelisting on SendGrid and on confirmation with Limewire
+      from: { name: websiteName, email: 'no-reply@vtvl.io' },
       templateId,
       dynamicTemplateData,
       subject

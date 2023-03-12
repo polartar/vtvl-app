@@ -117,7 +117,7 @@ export function AuthContextProvider({ children }: any) {
   const [showSideBar, setShowSideBar] = useToggle(false);
   const [sidebarIsExpanded, setSidebarIsExpanded, , , forceCollapseSidebar] = useToggle(true);
   const {
-    website: { organizationId: websiteOrganizationId }
+    website: { organizationId: websiteOrganizationId, name: websiteName, email: websiteEmail }
   } = useGlobalContext();
 
   const [recipient, setRecipient] = useState<IRecipientDoc>();
@@ -521,7 +521,9 @@ export function AuthContextProvider({ children }: any) {
     //TODO: abstract api calls
     await axios.post('/api/email/login', {
       email,
-      newUser: member ? false : true
+      newUser: member ? false : true,
+      websiteEmail,
+      websiteName
     });
     setLoading(false);
   };
@@ -542,7 +544,9 @@ export function AuthContextProvider({ children }: any) {
       orgId,
       orgName,
       name,
-      memberId
+      memberId,
+      websiteEmail,
+      websiteName
     });
     setLoading(false);
   };

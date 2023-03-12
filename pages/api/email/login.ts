@@ -11,7 +11,7 @@ type Data = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { email, newUser } = req.body;
+  const { email, newUser, websiteName, websiteEmail } = req.body;
   const url = `${PUBLIC_DOMAIN_NAME}/${
     newUser === true ? `onboarding/select-user-type?email=${email}&newUser=${newUser}` : `dashboard?email=${email}`
   }`;
@@ -25,7 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   await SendMail({
     to: email,
     data: { emailLink },
-    subject: 'Login to VTVL',
+    subject: `Login to ${websiteName ?? 'VTVL'}`,
+    websiteName,
+    websiteEmail,
     templateId: MailTemplates.Login
   });
   res.status(200).json({ message: 'Success!' });

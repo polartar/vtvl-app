@@ -14,8 +14,7 @@ type Data = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const recipients = req.body.recipients;
-  const symbol = req.body.symbol;
+  const { recipients, symbol, websiteName, websiteEmail } = req.body;
   const orgId = recipients[0]?.orgId;
   let organization: IOrganization | undefined;
   if (orgId) {
@@ -39,8 +38,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       try {
         await SendMail({
           to: email,
-          data: { emailLink, tokenSymbol: symbol, name },
-          subject: 'Join VTVL',
+          data: { emailLink, tokenSymbol: symbol, orgName: websiteName || 'VTVL', name },
+          subject: `Join ${websiteName || 'VTVL'}`,
+          websiteName,
+          websiteEmail,
           templateId: MailTemplates.RecipientInvite
         });
         updateRecipient(recipient.memberId, {
