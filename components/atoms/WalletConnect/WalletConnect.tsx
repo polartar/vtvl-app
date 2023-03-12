@@ -55,7 +55,7 @@ const WalletConnect = ({ account, connected }: Props) => {
     <div className="h-10 transition-all" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
       <div
         className={twMerge(
-          'h-10 shrink-0 flex flex-row items-center gap-2 rounded-3xl px-2 sm:px-3 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
+          'h-10 shrink-0 flex flex-row items-center gap-2 rounded-3xl px-2 sm:px-2.5 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
           connection === 'metamask'
             ? 'bg-metamask'
             : connection === 'walletconnect'
@@ -66,9 +66,9 @@ const WalletConnect = ({ account, connected }: Props) => {
         {connected && account ? (
           <>
             <p className="hidden lg:inline">{truncateAddress(account)}</p>
-            <div className="p-1 bg-white rounded-full">
+            <div className="p-0.5 bg-white rounded-full h-6 w-6 flex items-center justify-center">
               <img
-                className="w-5"
+                className="h-5 flex-shrink-0"
                 src={connection ? connectionAssets[connection].walletIcon : '/icons/avatar.svg'}
                 alt="More"
               />

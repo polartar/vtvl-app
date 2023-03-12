@@ -3,6 +3,7 @@
 export interface IWebsiteAsset {
   src: string;
   animated?: boolean;
+  animateOnHover?: boolean;
 }
 
 // Website styling should contain only specific styling for the white-label.
@@ -15,6 +16,8 @@ export interface IWebsiteStyles {
 export interface IWebsiteAssets {
   loginBgImage?: IWebsiteAsset;
   logoImage?: IWebsiteAsset;
+  selectUserFounder?: IWebsiteAsset;
+  selectUserRecipient?: IWebsiteAsset;
 }
 
 export interface IWebsite {
