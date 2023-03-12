@@ -16,6 +16,7 @@ export interface IWebsiteStyles {
 export interface IWebsiteAssets {
   loginBgImage?: IWebsiteAsset;
   logoImage?: IWebsiteAsset;
+  logoIcon?: IWebsiteAsset;
   selectUserFounder?: IWebsiteAsset;
   selectUserRecipient?: IWebsiteAsset;
 }

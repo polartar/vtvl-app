@@ -6,7 +6,7 @@ import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
 import { useGlobalContext } from '@providers/global.context';
 import { useWeb3React } from '@web3-react/core';
 import Router, { useRouter } from 'next/router';
-import React from 'react';
+import React, { useState } from 'react';
 import Fade from 'react-reveal/Fade';
 import { IUser } from 'types/models';
 import { IS_ENABLED_AUTH_BY_ORG } from 'utils/constants';
@@ -52,7 +52,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
   const renderVTVLLogo = () => {
     return (
       <div className={`flex flex-row items-center`}>
-        <img src="/icons/vtvl-icon.svg" className="h-10 sm:hidden md:h-12" onClick={redirectToHome} />
+        <MediaAsset src={assets?.logoIcon?.src} className="h-10 sm:hidden md:h-12" onClick={redirectToHome} />
         <MediaAsset
           src={assets?.logoImage?.src ?? '/logo.svg'}
           className="hidden sm:block w-48 h-12 cursor-pointer"
