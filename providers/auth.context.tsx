@@ -98,6 +98,7 @@ export type AuthContextData = {
   setOrganizationId: (orgId: string) => void;
   recipient: IRecipientDoc | undefined;
   setRecipient: (data: any) => void;
+  allowSignIn: (userOrgId: string) => boolean;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -208,9 +209,9 @@ export function AuthContextProvider({ children }: any) {
     // Allow sign in when:
     // - Website is white-labelled + userOrganizationId = websiteOrganizationId
     // - Website is not white-labelled
-    return (
+    return Boolean(
       userOrganizationId &&
-      (!IS_ENABLED_AUTH_BY_ORG || !websiteOrganizationId || websiteOrganizationId === userOrganizationId)
+        (!IS_ENABLED_AUTH_BY_ORG || !websiteOrganizationId || websiteOrganizationId === userOrganizationId)
     );
   };
 
@@ -643,7 +644,8 @@ export function AuthContextProvider({ children }: any) {
       setUser,
       setOrganizationId,
       recipient,
-      setRecipient
+      setRecipient,
+      allowSignIn
     }),
     [
       isAuthenticated,
