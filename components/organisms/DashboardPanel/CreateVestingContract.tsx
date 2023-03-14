@@ -8,33 +8,20 @@ import { useWeb3React } from '@web3-react/core';
 import Chip from 'components/atoms/Chip/Chip';
 import StepWizard from 'components/atoms/StepWizard/StepWizard';
 import ContractOverview from 'components/molecules/ContractOverview/ContractOverview';
-import FundContract from 'components/molecules/FundCotract/FundContract';
-import ScheduleOverview from 'components/molecules/ScheduleOverview/ScheduleOverview';
 import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
-import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
+import { ethers } from 'ethers';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
 import SuccessIcon from 'public/icons/success.svg';
 import WarningIcon from 'public/icons/warning.svg';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
-import { fetchOrgByQuery } from 'services/db/organization';
-import { createTransaction, fetchTransaction, updateTransaction } from 'services/db/transaction';
+import React from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
-import { createVestingContract, fetchVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
+import { createVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
-import { IScheduleOverviewProps, IVesting, IVestingContractProps } from 'types/models/vesting';
-import { parseTokenAmount } from 'utils/token';
-import {
-  getChartData,
-  getCliffAmount,
-  getCliffDateTime,
-  getNumberOfReleases,
-  getReleaseFrequencyTimestamp
-} from 'utils/vesting';
 
 interface AddVestingSchedulesProps {
   className?: string;
@@ -53,13 +40,6 @@ interface AddVestingSchedulesProps {
   // onPrimaryClick?: () => void;
   // onSecondaryClick?: () => void;
   type: string;
-}
-
-interface AddVestingSchedulesPagination {
-  total: number;
-  page: number;
-  onPrevious: () => void;
-  onNext: () => void;
 }
 
 interface AddVestingSchedulesStatuses {
@@ -88,35 +68,13 @@ interface AddVestingSchedulesStatuses {
  *
  */
 
-const AddVestingSchedules = ({
-  className = '',
-  type
-}: // status,
-// schedule,
-// contract,
-// className,
-// step = 0,
-// onPrimaryClick = () => {},
-// onSecondaryClick = () => {},
-// ...props
-AddVestingSchedulesProps) => {
+const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps) => {
   // Color is not included in the statuses object because of typescript -- converts the value into a type string which will not be accepted by Chip
 
   const { account, library, activate, chainId } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   const { mintFormState } = useTokenContext();
-  const {
-    vestings,
-    transactions,
-    ownershipTransfered,
-    // fetchDashboardVestingContract,
-    fetchDashboardVestings,
-    fetchDashboardTransactions,
-    setOwnershipTransfered,
-    removeOwnership,
-    depositAmount,
-    setRemoveOwnership
-  } = useDashboardContext();
+  const { vestings, setOwnershipTransfered, setRemoveOwnership } = useDashboardContext();
   const { pendingTransactions, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
@@ -124,8 +82,6 @@ AddVestingSchedulesProps) => {
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [transaction, setTransaction] = useState<ITransaction | undefined>();
-  const [approved, setApproved] = useState(false);
-  const [executable, setExecutable] = useState(false);
 
   const isCreateAvailable = useCallback(() => {
     const vestingTransaction = pendingTransactions.find(
@@ -354,12 +310,6 @@ AddVestingSchedulesProps) => {
       label: 'Success'
     }
   };
-
-  const steps = [
-    { title: '', desc: '' },
-    { title: '', desc: '' },
-    { title: '', desc: '' }
-  ];
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
     if (safe?.address && chainId) {

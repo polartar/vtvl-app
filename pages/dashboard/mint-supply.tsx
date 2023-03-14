@@ -5,7 +5,6 @@ import Copy from '@components/atoms/Copy/Copy';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
-import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
@@ -13,9 +12,7 @@ import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
-import FullPremintERC20Token from 'contracts/abi/FullPremintERC20Token.json';
 import VariableSupplyERC20Token from 'contracts/abi/VariableSupplyERC20Token.json';
-import Decimal from 'decimal.js';
 import { ethers } from 'ethers';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -23,7 +20,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { updateToken } from 'services/db/token';
-import { formatNumber, parseTokenAmount } from 'utils/token';
+import { formatNumber } from 'utils/token';
 
 interface IAdditionalSupply {
   additionalTokens: number | '';

@@ -23,7 +23,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
   const { chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
   const router = useRouter();
-  const { mintFormState, updateMintFormState } = useTokenContext();
+  const { updateMintFormState } = useTokenContext();
 
   const defaultValues: IImportToken = {
     tokenAddress: ''
@@ -33,14 +33,13 @@ const DashboardImportToken: NextPageWithLayout = () => {
     getFieldState,
     watch,
     handleSubmit,
-    reset,
     formState: { isSubmitting }
   } = useForm({ defaultValues });
 
   const tokenAddress = { value: watch('tokenAddress'), state: getFieldState('tokenAddress') };
 
   const [error, setError] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [success] = useState(false);
   const [message, setMessage] = useState('');
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
@@ -57,13 +56,13 @@ const DashboardImportToken: NextPageWithLayout = () => {
       setMessage('Token address is invalid');
     } else if (tokenName && chainId) {
       setLoading(true);
-      const tokenRefId = await createToken({
+      await createToken({
         name: tokenName,
         symbol: tokenSymbol,
         decimals: tokenDecimals,
         address: tokenAddress.value,
         logo: '',
-        organizationId: organizationId!,
+        organizationId: String(organizationId),
         imported: true,
         createdAt: Math.floor(new Date().getTime() / 1000),
         updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -77,7 +76,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
         decimals: tokenDecimals,
         address: tokenAddress.value,
         logo: '',
-        organizationId: organizationId!,
+        organizationId: String(organizationId),
         imported: true,
         createdAt: Math.floor(new Date().getTime() / 1000),
         updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -88,12 +87,6 @@ const DashboardImportToken: NextPageWithLayout = () => {
       setLoading(false);
       router.push('/dashboard');
     }
-  };
-
-  const resetFormStates = () => {
-    setError(false);
-    setSuccess(false);
-    setMessage('');
   };
 
   const fetchTokenDetails = async () => {

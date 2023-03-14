@@ -1,12 +1,6 @@
-import Copy from '@components/atoms/Copy/Copy';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
-import PageLoader from '@components/atoms/PageLoader/PageLoader';
-import ActivityFeed from '@components/molecules/ActivityFeed/ActivityFeed';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
-import ClaimPortal from '@components/organisms/ClaimPortal';
 import CreateVestingContractModal from '@components/organisms/CreateVestingContractModal';
-import DashboardInfoCard from '@components/organisms/DashboardInfoCard/DashboardInfoCard';
-import AddVestingSchedules from '@components/organisms/DashboardPanel/AddVestingSchedules';
 import DashboardPendingActions from '@components/organisms/DashboardPendingActions';
 import DashboardVestingSummary from '@components/organisms/DashboardVestingSummary';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
@@ -15,9 +9,6 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
-import { useVestingContext } from '@providers/vesting.context';
-import { useWeb3React } from '@web3-react/core';
-import CreateVestingContract from 'components/organisms/DashboardPanel/CreateVestingContract';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import ImportIcon from 'public/icons/import-icon.svg';
@@ -27,68 +18,37 @@ import { ReactElement, useCallback, useEffect, useMemo } from 'react';
 import { NextPageWithLayout } from '../_app';
 
 const Dashboard: NextPageWithLayout = () => {
-  const { library, account, activate } = useWeb3React();
-  const { organizationId, safe, emailSignUp, user } = useAuthContext();
-  const { mintFormState, isTokenLoading } = useTokenContext();
-  const { scheduleFormState } = useVestingContext();
+  const { organizationId, emailSignUp } = useAuthContext();
+  const { mintFormState } = useTokenContext();
   const { fetchDashboardData } = useDashboardContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { pendingTransactions } = useTransactionLoaderContext();
-  const { ModalWrapper, open, showModal, hideModal } = useModal({});
+  const { ModalWrapper, showModal, hideModal } = useModal({});
 
   const router = useRouter();
-
-  const isFounder = useMemo(() => user?.memberInfo?.type === 'founder', [user?.memberInfo?.type]);
 
   useEffect(() => {
     const params: any = new URL(window.location.toString());
     const email = params.searchParams.get('email');
-    if (email) loginWithUrl(email);
+    if (email) loginFromURL(email);
     fetchDashboardData();
   }, []);
 
-  const isMintAvailabe = useCallback(() => {
+  const isMintAvailabe = useMemo(() => {
     const mintingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'TOKEN_DEPLOYMENT');
     return !mintingTransaction;
   }, [pendingTransactions]);
 
-  const loginWithUrl = async (email: string) => {
+  const loginFromURL = useCallback(async (email: string) => {
     try {
       await emailSignUp({ email }, window.location.toString());
     } catch (error) {
-      console.log('error ', error);
+      console.error('Login with URL error: ', error);
     }
-  };
-
-  // const activities = [
-  //   {
-  //     icon: 'success',
-  //     text: 'Gnosis Safe integrated successfully',
-  //     date: new Date(2022, 9, 21, 10, 30)
-  //   },
-  //   {
-  //     icon: 'warning',
-  //     text: '3 vesting schedule needs approval',
-  //     date: new Date(2022, 9, 14, 9, 22)
-  //   },
-  //   {
-  //     icon: 'warning',
-  //     text: 'Vesting contract not yet created',
-  //     date: new Date(2022, 9, 12, 21, 16)
-  //   },
-  //   {
-  //     icon: 'success',
-  //     text: 'Beneficiaries added',
-  //     date: new Date(2022, 8, 28, 11, 32)
-  //   }
-  // ];
+  }, []);
 
   useEffect(() => {
-    // console.log('user obj in auth context', user);
-    console.log('retesting org_id', organizationId);
-
     if (!organizationId) {
-      // if (!user?.memberInfo?.org_id) {
       showLoading();
     } else {
       hideLoading();
@@ -114,7 +74,7 @@ const Dashboard: NextPageWithLayout = () => {
             <button
               type="button"
               className="line flex flex-row gap-2 items-center"
-              disabled={!isMintAvailabe()}
+              disabled={!isMintAvailabe}
               onClick={() => router.push('/minting-token')}>
               <PlusIcon className="w-5 h-5" />
               Mint a new token

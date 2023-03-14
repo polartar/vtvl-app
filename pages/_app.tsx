@@ -40,8 +40,6 @@ function getLibrary(provider: any): Web3Provider {
   return library;
 }
 
-// const Web3ReactProviderReloaded = createWeb3ReactRoot('network')
-
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   Modal.setAppElement('#react-modal');
   // Use the layout defined at the page level, if available
@@ -51,8 +49,6 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <>
       <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
-        {/* <Web3ReactProviderReloaded getLibrary={getLibrary}> */}
-
         <AuthContextProvider>
           <LoaderContextProvider>
             <TokenContextProvider>
@@ -75,7 +71,6 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
             </TokenContextProvider>
           </LoaderContextProvider>
         </AuthContextProvider>
-        {/* </Web3ReactProviderReloaded> */}
       </Web3ReactProvider>
       <div id="react-modal"></div>
     </>

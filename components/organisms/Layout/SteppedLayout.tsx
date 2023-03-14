@@ -1,5 +1,6 @@
 import Breadcrumb from '@components/atoms/Breadcrumb/Breadcrumb';
 import StepWizard from '@components/atoms/StepWizard/StepWizard';
+import React from 'react';
 
 interface Crumbs {
   title: string;

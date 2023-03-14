@@ -1,5 +1,6 @@
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
+import React from 'react';
 
 interface TokenProfileProps extends React.BaseHTMLAttributes<HTMLDivElement> {
   logo?: string;

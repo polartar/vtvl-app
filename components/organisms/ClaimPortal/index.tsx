@@ -1,3 +1,4 @@
+import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import { VestingCalendarIcon, VestingScheduleIcon } from '@components/atoms/Icons';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
@@ -49,6 +50,10 @@ export default function ClaimPortal() {
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [selectedProject, setSelectedProject] = useShallowState<ProjectOption>();
+
+  const hasVestings = !!vestings?.length;
+
+  const isLoading = isLoadingVestings || (isLoadingChainVesting && hasVestings);
 
   /**
    * Project Tabs data
@@ -124,6 +129,8 @@ export default function ClaimPortal() {
    */
   const isLoadingDetails = useMemo(() => !token || !vestingDetail, [token, vestingDetail]);
 
+  console.log('DEBUG-isLoadingDetails', { isLoadingDetails, token });
+
   const getTokenSymbol = useCallback(
     (tokenId: string) => {
       return tokens.find((token) => token.id === tokenId)?.data.symbol;
@@ -189,7 +196,13 @@ export default function ClaimPortal() {
     setSelectedProject(projects?.[0]);
   }, [projects]);
 
-  return (
+  return !isLoadingVestings && !hasVestings ? (
+    <EmptyState
+      image="/images/cryptocurrency-trading-bot.gif"
+      title="No claimable tokens"
+      description={<>Come back again next time.</>}
+    />
+  ) : (
     <div className="w-full">
       <div className="mb-6 px-6 flex items-center gap-6">
         <div className="w-323 h-323 relative">
@@ -290,7 +303,7 @@ export default function ClaimPortal() {
         </div>
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6 px-6">
-        {isLoadingVestings || isLoadingChainVesting
+        {isLoading
           ? Array.from(new Array(3)).map((_, index) => (
               <div key={index} className="animate-pulse w-full">
                 <div className="w-full h-368 bg-neutral-100 rounded-10"></div>
