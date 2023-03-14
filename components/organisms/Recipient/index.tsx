@@ -49,7 +49,7 @@ export default function VestingContract() {
   const [allChecked, setAllChecked] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const { mintFormState } = useTokenContext();
-  console.log({ initialRecipients });
+
   useEffect(() => {
     setRecipients(initialRecipients);
   }, [initialRecipients]);

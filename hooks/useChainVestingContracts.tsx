@@ -52,7 +52,6 @@ export default function useChainVestingContracts(
 
     const contractCallContext: ContractCallContext[] = vestingContracts.reduce((res, vestingContract) => {
       const partialVestings = vestings.filter((vesting) => vesting.data.vestingContractId === vestingContract.id);
-
       let allRecipients: IRecipientForm[] = [];
       partialVestings.forEach((vesting) => {
         allRecipients = allRecipients.concat(vesting.data.recipients);
@@ -71,28 +70,31 @@ export default function useChainVestingContracts(
           }
         ]
       });
-      allRecipients.forEach((recipient) => {
-        result = result.concat([
-          {
-            reference: `withdrawn-${vestingContract.data.address}-${recipient.walletAddress}`,
-            contractAddress: vestingContract.data.address,
-            abi: VTVL_VESTING_ABI.abi,
-            calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }]
-          },
-          {
-            reference: `unclaimed-${vestingContract.data.address}-${recipient.walletAddress}`,
-            contractAddress: vestingContract.data.address,
-            abi: VTVL_VESTING_ABI.abi,
-            calls: [
-              {
-                reference: 'claimableAmount',
-                methodName: 'claimableAmount',
-                methodParameters: [recipient.walletAddress]
-              }
-            ]
-          }
-        ]);
-      });
+
+      allRecipients
+        .filter((recipient) => !!recipient.walletAddress)
+        .forEach((recipient) => {
+          result = result.concat([
+            {
+              reference: `withdrawn-${vestingContract.data.address}-${recipient.walletAddress}`,
+              contractAddress: vestingContract.data.address,
+              abi: VTVL_VESTING_ABI.abi,
+              calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }]
+            },
+            {
+              reference: `unclaimed-${vestingContract.data.address}-${recipient.walletAddress}`,
+              contractAddress: vestingContract.data.address,
+              abi: VTVL_VESTING_ABI.abi,
+              calls: [
+                {
+                  reference: 'claimableAmount',
+                  methodName: 'claimableAmount',
+                  methodParameters: [recipient.walletAddress]
+                }
+              ]
+            }
+          ]);
+        });
 
       return [...res, ...result];
     }, [] as ContractCallContext[]);

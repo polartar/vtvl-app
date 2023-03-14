@@ -109,7 +109,7 @@ export function DashboardContextProvider({ children }: any) {
         return res;
       }, [] as string[]);
       recipientAddresses = recipientAddresses.filter(
-        (address, index) => recipientAddresses.findIndex((addr) => addr === address) === index
+        (address, index) => !!address && recipientAddresses.findIndex((addr) => addr === address) === index
       );
 
       const multicall = new Multicall({
