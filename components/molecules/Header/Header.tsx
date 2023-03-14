@@ -29,7 +29,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
 
   // Redirects the user to the right URL depending on the user's login state eg., /onboarding for non-logged in, /dashboard for logged-in users
   const redirectToHome = () => {
-    let url = `/onboarding${IS_ENABLED_AUTH_BY_ORG ? '/connect-wallet' : ''}`;
+    let url = '/onboarding';
     if (user) {
       if (user?.memberInfo?.type === 'employee') {
         url = '/onboarding/member';
