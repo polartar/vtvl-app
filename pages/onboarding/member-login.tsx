@@ -10,13 +10,14 @@ import { useContext, useEffect } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { emailPattern } from 'types/constants/validation-patterns';
+import { MESSAGES } from 'utils/messages';
 
 type LoginForm = {
   memberEmail: string;
 };
 
 const MemberLoginPage: NextPage = () => {
-  const { teammateSignIn, sendLoginLink, signInWithGoogle } = useContext(AuthContext);
+  const { teammateSignIn, sendLoginLink, signInWithGoogle, allowSignIn } = useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const router = useRouter();
 
@@ -52,14 +53,21 @@ const MemberLoginPage: NextPage = () => {
       const orgId = params.searchParams.get('orgId');
 
       if (type && orgId) {
-        // invited member
-        await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
-        router.push('/onboarding/member');
+        if (allowSignIn(orgId)) {
+          // invited member
+          await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
+          router.push('/onboarding/member');
+        }
         return;
       }
 
-      await sendLoginLink(values.memberEmail);
-      toast.success('Please check your email for the link to login');
+      if (allowSignIn(orgId)) {
+        await sendLoginLink(values.memberEmail);
+        toast.success('Please check your email for the link to login');
+      } else {
+        toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+      }
+
       return;
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
@@ -81,8 +89,8 @@ const MemberLoginPage: NextPage = () => {
         className="w-full my-6 flex flex-col items-center">
         <button
           type="button"
-          onClick={googleSignIn}
-          className="line flex flex-row items-center justify-center gap-2.5 w-full">
+          onClick={async () => await googleSignIn()}
+          className="line flex flex-row items-center justify-center gap-2.5 w-full rounded-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign in with Google
         </button>

@@ -11,13 +11,14 @@ import { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { emailPattern } from 'types/constants/validation-patterns';
+import { MESSAGES } from 'utils/messages';
 
 type LoginForm = {
   memberEmail: string;
 };
 
 const SignUpPage: NextPage = () => {
-  const { teammateSignIn, sendLoginLink, signInWithGoogle, agreedOnConsent, setAgreedOnConsent } =
+  const { teammateSignIn, sendLoginLink, signInWithGoogle, agreedOnConsent, setAgreedOnConsent, allowSignIn } =
     useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const router = useRouter();
@@ -79,10 +80,14 @@ const SignUpPage: NextPage = () => {
       }
 
       if (type && orgId) {
-        // invited member
-        await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
-        router.push('/onboarding/member');
-        return;
+        if (allowSignIn(orgId)) {
+          // invited member
+          await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
+          router.push('/onboarding/member');
+          return;
+        } else {
+          toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+        }
       }
 
       await sendLoginLink(values.memberEmail);
@@ -125,7 +130,7 @@ const SignUpPage: NextPage = () => {
         <button
           type="button"
           onClick={onGoogleSignUp}
-          className="line flex flex-row items-center justify-center gap-2.5 w-full">
+          className="line flex flex-row items-center justify-center gap-2.5 w-full rounded-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign up with Google
         </button>
