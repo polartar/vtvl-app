@@ -31,7 +31,7 @@ const nextConfig = {
       {
         source: '/',
         // If the website is white-labelled, we directly go to the connect wallet page
-        destination: `/onboarding${process.env.NEXT_PUBLIC_ENABLE_LOGIN_BY_ORGANIZATION ? '/connect-wallet' : ''}`,
+        destination: '/onboarding',
         permanent: true
       },
       {
