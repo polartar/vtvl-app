@@ -39,12 +39,10 @@ const RecipientRow: React.FC<{
   };
 
   const getStatusLabel = () => {
-    if (newRecipient.data.status === 'accepted') {
-      if (newRecipient.data.email && newRecipient.data.walletAddress) {
-        return '';
-      } else {
-        return 'Accepted';
-      }
+    if (newRecipient.data.email && newRecipient.data.walletAddress) {
+      return '';
+    } else if (newRecipient.data.status === 'accepted') {
+      return 'Accepted';
     } else if (newRecipient.data.status === 'delivered') {
       if (isExpired(newRecipient.data.updatedAt)) {
         return 'Expired';
@@ -52,11 +50,7 @@ const RecipientRow: React.FC<{
         return 'Delivered';
       }
     } else {
-      if (newRecipient.data.email && newRecipient.data.walletAddress) {
-        return '';
-      } else {
-        return 'Delivered';
-      }
+      return 'Delivered';
     }
   };
 

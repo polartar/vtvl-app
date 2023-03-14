@@ -27,7 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   editRecipient(recipientId, {
     ...recipient,
-    walletAddress: address
+    walletAddress: address,
+    status: 'accepted'
   });
 
   res.status(200).json({ message: 'Success!' });

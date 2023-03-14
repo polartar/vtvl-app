@@ -66,7 +66,8 @@ const RecipientCreate: NextPage = () => {
         id: recipient?.id,
         data: {
           ...recipient?.data,
-          walletAddress: account
+          walletAddress: account,
+          status: 'accepted'
         }
       });
       router.push('/claim-portal');
