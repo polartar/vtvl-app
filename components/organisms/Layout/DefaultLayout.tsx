@@ -88,7 +88,7 @@ const FounderRoutes = {
       available: true
     },
     {
-      title: 'Recipient',
+      title: 'Recipients',
       icon: '/icons/recipient.svg',
       hoverIcon: '/icons/recipient-hover.svg',
       route: '/recipient',

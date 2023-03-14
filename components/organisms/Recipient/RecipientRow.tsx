@@ -52,7 +52,11 @@ const RecipientRow: React.FC<{
         return 'Delivered';
       }
     } else {
-      return undefined;
+      if (newRecipient.data.email && newRecipient.data.walletAddress) {
+        return '';
+      } else {
+        return 'Delivered';
+      }
     }
   };
 

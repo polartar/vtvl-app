@@ -102,7 +102,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
           email: recipient.email,
           allocations: String(recipient.allocations ?? 0),
           walletAddress: String(recipient.walletAddress),
-          recipientType: String(recipient.recipientType)
+          recipientType: String(recipient.recipientType),
+          status: recipient.walletAddress ? 'accepted' : 'delivered'
         })
       );
 

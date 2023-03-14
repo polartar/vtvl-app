@@ -1117,7 +1117,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           email: recipient.email,
           allocations: String(recipient.allocations ?? 0),
           walletAddress: recipient.walletAddress ?? '',
-          recipientType: String(recipient.recipientType)
+          recipientType: String(recipient.recipientType),
+          status: recipient.walletAddress ? 'accepted' : 'delivered'
         })
       );
       const noWalletRecipients = recipients

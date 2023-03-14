@@ -15,7 +15,10 @@ import { IRecipient, IRecipientDoc } from 'types/models';
 import { recipientCollection } from './firestore';
 
 export const createRecipient = async (recipient: IRecipient): Promise<string> => {
-  const recipientRef = await addDoc(recipientCollection, recipient);
+  const recipientRef = await addDoc(recipientCollection, {
+    ...recipient,
+    updatedAt: Math.floor(new Date().getTime() / 1000)
+  });
   return recipientRef.id;
 };
 
