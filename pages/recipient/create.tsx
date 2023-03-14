@@ -3,15 +3,13 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
 import axios from 'axios';
-import { signInWithCustomToken } from 'firebase/auth';
 import { NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { auth } from 'services/auth/firebase';
-import { editRecipient, fetchRecipientByQuery, updateRecipient } from 'services/db/recipient';
+import { fetchRecipientByQuery, updateRecipient } from 'services/db/recipient';
 import { IRecipientDoc } from 'types/models';
 
 const RecipientCreate: NextPage = () => {

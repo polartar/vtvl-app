@@ -62,8 +62,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
     fetchContract();
   };
 
-  // Handle the continuous frequency data point updates
-  const handleContinuousData = () => {};
+  console.log('DEBUG-selectedToken', { selectedToken });
 
   // When the claim button is clicked
   const handleClaim = async () => {
@@ -398,7 +397,10 @@ const MyTokenSchedule: NextPageWithLayout = () => {
               <div className="panel p-0 grid sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
                 <div className="p-6 flex flex-row items-center gap-6 border-b border-gray-200 sm:col-span-2 md:col-span-1 lg:col-span-2">
                   <div className="text-center">
-                    <img src={mintFormState.logo} className="w-12 h-12 rounded-full overflow-hidden mx-auto" />
+                    <img
+                      src={selectedToken?.logo ?? mintFormState.logo}
+                      className="w-12 h-12 rounded-full overflow-hidden mx-auto"
+                    />
                     <p className="font-bold text-neutral-900">{mintFormState.name}</p>
                   </div>
                   <div>

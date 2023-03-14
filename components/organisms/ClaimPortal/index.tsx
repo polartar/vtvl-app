@@ -129,8 +129,6 @@ export default function ClaimPortal() {
    */
   const isLoadingDetails = useMemo(() => !token || !vestingDetail, [token, vestingDetail]);
 
-  console.log('DEBUG-isLoadingDetails', { isLoadingDetails, token });
-
   const getTokenSymbol = useCallback(
     (tokenId: string) => {
       return tokens.find((token) => token.id === tokenId)?.data.symbol;
