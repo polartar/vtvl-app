@@ -123,7 +123,7 @@ const RecipientCreate: NextPage = () => {
               render={({ field }) => (
                 <Input
                   label="Company name"
-                  placeholder="ACME"
+                  placeholder=""
                   error={Boolean(errors.companyName)}
                   message={errors.companyName ? 'Please enter your company name' : ''}
                   {...field}

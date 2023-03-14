@@ -96,8 +96,11 @@ const RecipientCreate: NextPage = () => {
         <Chip
           label={
             <div className="flex flex-row items-center gap-2">
-              <WarningIcon className="w-4 h-4" />
-              Please note that once you sign & approve your wallet address receiving tokens cannot be changed
+              <WarningIcon className="w-4 h-4 flex-shrink-0" />
+              <span className=" whitespace-pre-line">
+                Please note that upon signing and approving, your tokens will be distributed to this wallet address and
+                cannot be changed
+              </span>
             </div>
           }
           color="warningAlt"
