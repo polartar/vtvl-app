@@ -1,18 +1,16 @@
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import { useShallowState } from 'hooks/useShallowState';
-import Lottie from 'lottie-react';
-import VTVLLoaderData from 'public/VTVL_Loader.json';
-import React, { PropsWithChildren, createContext, useCallback, useContext, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect } from 'react';
 import { fetchWebsiteByDomain } from 'services/db/website';
 import { IWebsite } from 'types/models';
 import { IS_ENABLED_AUTH_BY_ORG } from 'utils/constants';
 
-export interface GlobalContextState {
+export interface IGlobalContextState {
   isLoading: boolean;
   website: IWebsite;
 }
 
-const initialState: GlobalContextState = {
+const initialState: IGlobalContextState = {
   isLoading: true,
   website: {
     name: '',
@@ -22,18 +20,17 @@ const initialState: GlobalContextState = {
   }
 };
 
-export const GlobalContext = createContext<GlobalContextState>(initialState);
+const GlobalContext = createContext({} as IGlobalContextState);
 
-export const useGlobalContext = () => useContext(GlobalContext);
-
-export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
-  const [state, setState] = useShallowState<GlobalContextState>(initialState);
+export function GlobalContextProvider({ children }: any) {
+  const [state, setState] = useShallowState<IGlobalContextState>(initialState);
 
   /**
    * initialization() function is used to initially pick up if the current hostname has an existing record in our firebase database.
    * Styles are then assigned if a match has been found.
    */
   const initialization = useCallback(() => {
+    console.log('INITIALIZE GLOBAL CONTEXT');
     // Only check for hostname and firebase matching when the website is hosted differently.
     if (IS_ENABLED_AUTH_BY_ORG) {
       const hostname = window.location.hostname;
@@ -83,12 +80,15 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
   // Initialize global context
   useEffect(() => {
     initialization();
-  }, [initialization]);
+  }, []);
 
-  // TODO improve loading state
   return (
     <GlobalContext.Provider value={state}>
       {state.isLoading ? <PageLoader loader="global" /> : children}
     </GlobalContext.Provider>
   );
-};
+}
+
+export const useGlobalContext = () => ({
+  ...useContext(GlobalContext)
+});
