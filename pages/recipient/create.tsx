@@ -120,7 +120,13 @@ const RecipientCreate: NextPage = () => {
               name="projectName"
               control={control}
               render={({ field }) => (
-                <Input label="Project Name" placeholder="" error={Boolean(errors.projectName)} {...field} disabled />
+                <Input
+                  label="Project Name"
+                  placeholder="Project Name"
+                  error={Boolean(errors.projectName)}
+                  {...field}
+                  disabled
+                />
               )}
             />
           </div>
