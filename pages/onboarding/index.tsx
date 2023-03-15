@@ -44,44 +44,25 @@ const WalletContainer = styled.div`
 
 const carouselItems = [
   {
-    title: (
-      <>
-        100% <strong key="title-strong-1">no-code</strong>
-        <br key="title-break-1" />
-        ready in minutes
-      </>
-    ),
+    title: ['100% ', <strong>no-code</strong>, <br />, 'ready in minutes'],
     image: '/images/how-it-works/1.png',
     subtitle: 'Mint or bring your own token',
     description: 'Variable or fixed supply? No problem, you have options.'
   },
   {
-    title: (
-      <>
-        Create multiple <strong key="title-strong-2">vesting smart contracts</strong> in just a few clicks
-      </>
-    ),
+    title: ['Create multiple ', <strong>vesting smart contracts</strong>, ' in just a few clicks'],
     image: '/images/how-it-works/2.png',
     subtitle: 'Generate smart contracts for investors & employees',
     description: 'We get it, have your engineers build YOUR product and let us take care of the custom vesting systems'
   },
   {
-    title: (
-      <>
-        Automate <strong key="title-strong-3">custom token</strong> distributions to your holders
-      </>
-    ),
+    title: ['Automate ', <strong>custom token</strong>, ' distributions to your holders'],
     image: '/images/how-it-works/3.png',
     subtitle: 'Track your own tokens',
     description: 'Say goodbye to managing via spreadsheet.'
   },
   {
-    title: (
-      <>
-        Token vesting analytics <br key="title-break-4" />
-        <strong key="title-strong-4">coming soon!</strong>
-      </>
-    ),
+    title: ['Token vesting analytics ', <br />, <strong>coming soon!</strong>],
     image: '/images/how-it-works/4.png',
     subtitle: 'Token analytics coming soon',
     description: 'What you really want to know about your tokenomics.'
