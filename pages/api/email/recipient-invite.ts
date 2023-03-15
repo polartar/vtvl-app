@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { fetchOrg } from 'services/db/organization';
 import { updateRecipient } from 'services/db/recipient';
+import { IOrganization } from 'types/models';
 import SendMail, { MailTemplates } from 'utils/email';
 
 dotenv.config();
@@ -13,6 +15,11 @@ type Data = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const recipients = req.body.recipients;
   const symbol = req.body.symbol;
+  const orgId = recipients[0]?.orgId;
+  let organization: IOrganization | undefined;
+  if (orgId) {
+    organization = await fetchOrg(orgId);
+  }
   await Promise.all(
     recipients.map(async (recipient: IRecipientToken) => {
       const { email, orgId, name, memberId } = recipient;
@@ -22,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       }
       let token;
       try {
-        token = GetRecipientToken(email, orgId, name, memberId);
+        token = GetRecipientToken(email, orgId, name, memberId, organization?.name || '');
       } catch (err: any) {
         return res.status(200).json({ message: err.message });
       }
@@ -53,9 +60,16 @@ export interface IRecipientToken extends JwtPayload {
   name: string;
   domain?: string;
   memberId: string;
+  orgName: string;
 }
 
-const GetRecipientToken = (email: string, orgId: string, name: string, recipientId: string): string => {
+const GetRecipientToken = (
+  email: string,
+  orgId: string,
+  name: string,
+  recipientId: string,
+  orgName: string
+): string => {
   const signInToken: IRecipientToken = {
     email,
     orgId,
@@ -63,7 +77,8 @@ const GetRecipientToken = (email: string, orgId: string, name: string, recipient
     name,
     aud: 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit',
     iat: Math.floor(Date.now() / 1000),
-    memberId: recipientId
+    memberId: recipientId,
+    orgName
   };
 
   const privateKey = process.env.CUSTOM_TOKEN_PRIVATE_KEY?.replace(/\\n/g, '\n');

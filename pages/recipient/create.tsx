@@ -26,7 +26,7 @@ const RecipientCreate: NextPage = () => {
   } = useForm({
     defaultValues: {
       name: '',
-      companyName: '',
+      projectName: '',
       companyEmail: ''
     }
   });
@@ -41,7 +41,6 @@ const RecipientCreate: NextPage = () => {
         })
         .then((res) => {
           setToken(res.data.token);
-
           fetchRecipientByQuery('email', '==', res.data.email).then((response) => {
             setRecipient(response);
             if (response) updateRecipient(response.id, { status: 'accepted' });
@@ -49,8 +48,8 @@ const RecipientCreate: NextPage = () => {
             if (response?.data.name) {
               setValue('name', response?.data.name);
             }
-            if (response?.data.company) {
-              setValue('companyName', response?.data.company);
+            if (res?.data.orgName) {
+              setValue('projectName', res?.data.orgName);
             }
             if (response?.data.email) {
               setValue('companyEmail', response.data.email);
@@ -118,17 +117,10 @@ const RecipientCreate: NextPage = () => {
               )}
             />
             <Controller
-              name="companyName"
+              name="projectName"
               control={control}
               render={({ field }) => (
-                <Input
-                  label="Company name"
-                  placeholder=""
-                  error={Boolean(errors.companyName)}
-                  message={errors.companyName ? 'Please enter your company name' : ''}
-                  {...field}
-                  disabled
-                />
+                <Input label="Project Name" placeholder="" error={Boolean(errors.projectName)} {...field} disabled />
               )}
             />
           </div>
@@ -144,7 +136,6 @@ const RecipientCreate: NextPage = () => {
                   placeholder="satoshi.s@acme.io"
                   type="email"
                   error={Boolean(errors.companyEmail)}
-                  message={errors.companyEmail ? 'Please enter your company email' : ''}
                   {...field}
                   disabled
                 />
