@@ -150,7 +150,11 @@ const RecipientRow: React.FC<{
             </Copy>
           </div>
           <div className="flex items-center w-40 py-3">
-            {newRecipient.data.updatedAt ? format(new Date(newRecipient.data.updatedAt * 1000), 'dd/MM/yyyy') : ''}
+            {getStatusLabel() === ''
+              ? ''
+              : newRecipient.data.updatedAt
+              ? format(new Date(newRecipient.data.updatedAt * 1000), 'dd/MM/yyyy')
+              : ''}
           </div>
           <div className={`flex items-center w-32 py-3 `}>
             <div className={` font-medium py-2 px-3 rounded-3xl ${getStatusStyle()}`}>{getStatusLabel()}</div>

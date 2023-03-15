@@ -149,7 +149,7 @@ export default function VestingContract() {
     <div className="w-full">
       <div className="mb-9">
         <Typography size="title" variant="inter" className=" font-semibold text-neutral-900 ">
-          Recipient
+          Recipients
         </Typography>
       </div>
 

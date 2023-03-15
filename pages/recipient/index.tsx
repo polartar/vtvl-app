@@ -8,9 +8,9 @@ const RecipientPage: NextPageWithLayout = () => {
 };
 
 RecipientPage.getLayout = function getLayout(page: React.ReactElement) {
-  const crumbSteps = [{ title: 'Recipient', route: `/recipient` }];
+  const crumbSteps = [{ title: 'Recipients', route: `/recipient` }];
   return (
-    <SteppedLayout title="Recipient" crumbs={crumbSteps}>
+    <SteppedLayout title="Recipients" crumbs={crumbSteps}>
       {page}
     </SteppedLayout>
   );
