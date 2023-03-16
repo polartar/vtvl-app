@@ -1109,20 +1109,27 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         chainId
       });
 
-      const newRecipients = recipients.map(({ data: recipient }) =>
-        createRecipient({
-          vestingId: String(vestingId),
-          organizationId: String(organizationId),
-          name: recipient.name,
-          email: recipient.email,
-          allocations: String(recipient.allocations ?? 0),
-          walletAddress: recipient.walletAddress ?? '',
-          recipientType: String(recipient.recipientType),
-          status: recipient.walletAddress ? 'accepted' : 'delivered'
+      const newRecipients = await Promise.all(
+        recipients.map(async ({ data: recipient }) => {
+          const id = await createRecipient({
+            vestingId: String(vestingId),
+            organizationId: String(organizationId),
+            name: recipient.name,
+            email: recipient.email,
+            allocations: String(recipient.allocations ?? 0),
+            walletAddress: recipient.walletAddress ?? '',
+            recipientType: String(recipient.recipientType),
+            status: recipient.walletAddress ? 'accepted' : 'delivered'
+          });
+          return {
+            id,
+            data: recipient
+          };
         })
       );
-      const noWalletRecipients = recipients
-        .filter(({ data: recipient }) => Boolean(recipient.walletAddress))
+
+      const noWalletRecipients = newRecipients
+        .filter((recipient) => !recipient.data.walletAddress)
         .map((recipient) => ({
           memberId: recipient.id,
           email: recipient.data.email,
