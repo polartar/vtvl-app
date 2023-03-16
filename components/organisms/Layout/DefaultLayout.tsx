@@ -353,6 +353,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     showDeleteModal,
     setShowDeleteModal
   } = useVestingContext();
+  const {
+    website: { organizationId: webOrgId }
+  } = useGlobalContext();
 
   // Hides the modal and sets the necessary states.
   const handleHideModal = () => {
@@ -493,7 +496,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         <Layout className="flex flex-row w-full">
           {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
           <div className="relative">
-            {loading && <PageLoader />}
+            {loading && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
             <Main
               sidebarIsExpanded={sidebarIsExpanded}
               sidebarIsShown={displaySideBar}
