@@ -57,16 +57,14 @@ const MemberLoginPage: NextPage = () => {
           // invited member
           await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
           router.push('/onboarding/member');
+        } else {
+          toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
         }
         return;
       }
 
-      if (allowSignIn(orgId)) {
-        await sendLoginLink(values.memberEmail);
-        toast.success('Please check your email for the link to login');
-      } else {
-        toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
-      }
+      await sendLoginLink(values.memberEmail);
+      toast.success('Please check your email for the link to login');
 
       return;
     } catch (error) {

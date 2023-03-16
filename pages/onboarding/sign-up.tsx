@@ -84,10 +84,10 @@ const SignUpPage: NextPage = () => {
           // invited member
           await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
           router.push('/onboarding/member');
-          return;
         } else {
           toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
         }
+        return;
       }
 
       await sendLoginLink(values.memberEmail);

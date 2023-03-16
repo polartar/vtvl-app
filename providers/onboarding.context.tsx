@@ -20,6 +20,7 @@ export type OnboardingContextData = {
   onNext: (info: OnboardingInfo) => void;
   startOnboarding: (step: Step) => void;
   completeOnboarding: () => void;
+  setInProgress: (state: boolean) => void;
   inProgress: boolean;
   loading: boolean;
   error: string;
@@ -84,9 +85,12 @@ export function OnboardingContextProvider({ children }: any) {
   };
 
   const completeOnboarding = () => {
+    const foundingMembers = ['founder', 'manager', 'manager2'];
     setInProgress(false);
     refreshUser();
-    router.replace(user?.memberInfo?.type === 'investor' ? '/claim-portal' : '/dashboard');
+    if (user?.memberInfo?.type) {
+      router.replace(!foundingMembers.includes(user?.memberInfo?.type) ? '/claim-portal' : '/dashboard');
+    }
   };
 
   const onPrevious = () => {
@@ -198,6 +202,7 @@ export function OnboardingContextProvider({ children }: any) {
       setInfo,
       startOnboarding,
       completeOnboarding,
+      setInProgress,
       loading,
       inProgress,
       error
