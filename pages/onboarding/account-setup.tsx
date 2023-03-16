@@ -15,6 +15,7 @@ import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 import { IUserType } from 'types/models/member';
 import { ITeamRole } from 'types/models/settings';
+import { WEBSITE_NAME } from 'utils/constants';
 
 interface Contributor {
   name: string;
@@ -175,7 +176,7 @@ const AccountSetupPage: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
       <Typography size="title" variant="sora" className="font-medium text-neutral-900">
-        Hey there, Welcome to {name || 'VTVL'}
+        Hey there, Welcome to {name || WEBSITE_NAME}
       </Typography>
       <p className="text-sm max-w-xl text-center text-neutral-500">
         Let's get to know you so you can start setting up your account.

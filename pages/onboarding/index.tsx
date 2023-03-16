@@ -8,6 +8,7 @@ import { NextPage } from 'next';
 import Router from 'next/router';
 import AstroHelmet from 'public/icons/astronaut-helmet.svg';
 import { useEffect } from 'react';
+import { WEBSITE_NAME } from 'utils/constants';
 
 const OnboardingContainer = styled.div`
   display: grid;
@@ -72,7 +73,7 @@ const SelectLoginTypePage: NextPage = () => {
       <OnboardingContainer>
         <Signing>
           <div className="max-w-[397px]">
-            <h1 className="font-medium">Access {name ?? 'VTVL'} as</h1>
+            <h1 className="font-medium">Access {name || WEBSITE_NAME} as</h1>
             <p className="text-sm font-medium text-neutral-500">
               Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
               <strong>Guest</strong> to test our platform.

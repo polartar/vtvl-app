@@ -210,13 +210,20 @@ export function AuthContextProvider({ children }: any) {
   };
 
   const allowSignIn = (userOrganizationId?: string) => {
+    // Used this kind of conditions for readability
     // Allow sign in when:
-    // - Website is white-labelled + userOrganizationId = websiteOrganizationId
-    // - Website is not white-labelled
-    return Boolean(
-      userOrganizationId &&
-        (!IS_ENABLED_AUTH_BY_ORG || !websiteOrganizationId || websiteOrganizationId === userOrganizationId)
-    );
+    if (IS_ENABLED_AUTH_BY_ORG) {
+      // - Website is white-labelled + (user is member of organization OR user is currently registering)
+      if (
+        !websiteOrganizationId ||
+        (websiteOrganizationId && (websiteOrganizationId === userOrganizationId || !userOrganizationId))
+      )
+        return true;
+      // - white-labelled but user is not a member
+      return false;
+    }
+    // - Website is not white-labelled, allow all forms of sign in email sending
+    return true;
   };
 
   const updateAuthState = useCallback(

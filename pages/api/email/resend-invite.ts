@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
 import { fetchInviteeByEmail, fetchMemberByEmail } from 'services/db/member';
-import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
+import { PUBLIC_DOMAIN_NAME, WEBSITE_EMAIL, WEBSITE_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 import { GetSignInToken, SignInToken } from '../token/getCustomToken';
@@ -55,9 +55,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     await SendMail({
       to: payload.email,
       data: { emailLink, orgName: payload.orgName, name: payload.name },
-      subject: `Join ${websiteName ?? 'VTVL'}`,
-      websiteName,
-      websiteEmail,
+      subject: `Join ${websiteName || WEBSITE_NAME}`,
+      websiteName: websiteName || WEBSITE_NAME,
+      websiteEmail: websiteEmail || WEBSITE_EMAIL,
       templateId: MailTemplates.TeammateInvite
     });
     res.status(200).json({ message: 'Success!' });

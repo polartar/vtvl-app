@@ -4,6 +4,7 @@ import { useGlobalContext } from '@providers/global.context';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement } from 'react';
+import { WEBSITE_NAME } from 'utils/constants';
 
 const UploadCSVConfiguration: NextPageWithLayout = () => {
   const {
@@ -15,7 +16,7 @@ const UploadCSVConfiguration: NextPageWithLayout = () => {
     step1: {
       title: 'Import details from a CSV file',
       description: 'Speed up the process by uploading a CSV file containing all your vesting requirements.',
-      templateLabel: `${name ?? 'VTVL'} vesting schedule template`,
+      templateLabel: `${name || WEBSITE_NAME} vesting schedule template`,
       templateUrl: '/',
       cancelButtonLabel: 'Back',
       confirmButtonLabel: 'Continue'

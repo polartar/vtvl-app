@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { IRecipientDoc, IVesting } from 'types/models';
+import { WEBSITE_NAME } from 'utils/constants';
 import { getRecipient } from 'utils/recipients';
 import { isEmptyArray } from 'utils/regex';
 
@@ -85,7 +86,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
       step1: {
         title: 'Import from CSV file',
         description: "Speed up the process by uploading a CSV file containing all your recipients' details.",
-        templateLabel: `${name ?? 'VTVL'} recipient template`,
+        templateLabel: `${name || WEBSITE_NAME} recipient template`,
         templateUrl: templateUrl,
         cancelButtonLabel: 'Cancel',
         confirmButtonLabel: 'Upload file'
