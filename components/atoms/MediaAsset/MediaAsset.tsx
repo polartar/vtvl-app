@@ -1,8 +1,10 @@
-import Lottie from 'lottie-react';
-import React from 'react';
+import Lottie, { LottieRefCurrentProps } from 'lottie-react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface IMediaAsset extends React.ImgHTMLAttributes<HTMLImageElement> {
   animated?: boolean;
+  animateOnHover?: boolean;
+  active?: boolean;
 }
 
 /**
@@ -13,8 +15,58 @@ interface IMediaAsset extends React.ImgHTMLAttributes<HTMLImageElement> {
  * This will render an animated lottie file with same controls as using <Lottie />
  */
 
-const MediaAsset = ({ animated = false, ...props }: IMediaAsset) => {
-  return animated ? <Lottie animationData={props.src} {...props} /> : <img {...props} />;
+const MediaAsset = ({ animated = false, animateOnHover = false, active = false, ...props }: IMediaAsset) => {
+  const [animationData, setAnimationData] = useState(null);
+  const lottieRef = useRef<LottieRefCurrentProps>(null);
+
+  // When hovering in to the asset, play the animation
+  // continues to play on the last frame
+  const handleHoverIn = () => {
+    if (!active) {
+      lottieRef?.current?.play();
+    }
+  };
+
+  // When hovering out from the asset, pause the animation
+  // which brings seamless UI animation as it stops on the last frame
+  const handleHoverOut = () => {
+    if (!active) {
+      lottieRef?.current?.pause();
+    }
+  };
+
+  // Load the animation file dynamically by getting the .src prop
+  useEffect(() => {
+    if (props.src && animated) {
+      const loadAnimationData = async () => {
+        const response = await fetch(props.src!);
+        const data = await response.json();
+        setAnimationData(data);
+      };
+      loadAnimationData();
+    }
+  }, [props.src]);
+
+  // Checks for the active state
+  useEffect(() => {
+    if (active) lottieRef?.current?.play();
+    else lottieRef?.current?.pause();
+  }, [active]);
+
+  // Render the lottie animation if needed,
+  // render the static image by default
+  return animated ? (
+    <Lottie
+      lottieRef={lottieRef}
+      animationData={animationData}
+      autoplay={active}
+      {...props}
+      onMouseMove={handleHoverIn}
+      onMouseOut={handleHoverOut}
+    />
+  ) : (
+    <img {...props} />
+  );
 };
 
 export default MediaAsset;

@@ -19,7 +19,7 @@ import {
 } from 'firebase/auth';
 import useRoleGuard from 'hooks/useRoleGuard';
 import useToggle from 'hooks/useToggle';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { auth } from 'services/auth/firebase';
@@ -38,6 +38,7 @@ import { MESSAGES } from 'utils/messages';
 import { platformRoutes } from 'utils/routes';
 
 import { useGlobalContext } from './global.context';
+import { useOnboardingContext } from './onboarding.context';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -130,6 +131,9 @@ export function AuthContextProvider({ children }: any) {
 
   // Adds the auth and role guard here
   const { updateRoleGuardState } = useRoleGuard({ routes: platformRoutes, fallbackPath: '/404' });
+
+  const { inProgress } = useOnboardingContext();
+  const router = useRouter();
 
   // Sets the recipient if it is found
   useEffect(() => {
@@ -520,12 +524,16 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const member = await fetchMemberByEmail(email);
     //TODO: abstract api calls
-    await axios.post('/api/email/login', {
-      email,
-      newUser: member ? false : true,
-      websiteEmail,
-      websiteName
-    });
+    if (allowSignIn(member?.org_id)) {
+      await axios.post('/api/email/login', {
+        email,
+        newUser: member ? false : true,
+        websiteEmail,
+        websiteName
+      });
+    } else {
+      toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+    }
     setLoading(false);
   };
 
@@ -673,7 +681,9 @@ export function AuthContextProvider({ children }: any) {
       user.memberInfo.type &&
       user.memberInfo.type !== 'founder' &&
       user.memberInfo.type !== 'manager' &&
-      user.memberInfo.type !== 'manager2'
+      user.memberInfo.type !== 'manager2' &&
+      !inProgress &&
+      !router.asPath.includes('welcome')
     ) {
       if (user.memberInfo.type === 'investor' && (!recipient || (recipient && !recipient.data.walletAddress))) {
         Router.push('/recipient/schedule');

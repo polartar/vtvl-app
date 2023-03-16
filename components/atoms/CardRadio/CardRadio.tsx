@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
-import React from 'react';
+import React, { useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 import { IWebsiteAsset } from 'types/models';
 
 import MediaAsset from '../MediaAsset/MediaAsset';
@@ -14,7 +15,6 @@ const Label = styled.label<{ disabled?: boolean }>`
   gap: 30px;
 
   width: 275px;
-  padding: 60px 25px 25px 25px;
   border-radius: 26px;
   border: 2px solid transparent;
 
@@ -57,11 +57,23 @@ interface CardRadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
  * UI component for a radio group's single item
  */
 const CardRadio = ({ image, label, value, name, ...props }: CardRadioProps) => {
-  // const [selected, setSelected] = useState('');
+  const [hover, setHover] = useState(false);
   return (
-    <Label disabled={props.disabled} className={`card-radio ${props.checked ? 'selected' : ''}`}>
-      <MediaAsset {...image} style={{ height: '156px' }} />
-      <p className="font-semibold h-11">{label}</p>
+    <Label
+      disabled={props.disabled}
+      className={twMerge(
+        'card-radio pt-16 pb-6 overflow-hidden',
+        props.checked ? 'selected' : '',
+        image.animated ? 'px-0' : 'px-6'
+      )}
+      onMouseOver={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}>
+      <MediaAsset
+        {...image}
+        active={props.checked || hover}
+        className={twMerge(image.animated ? 'w-full scale-125' : 'h-40')}
+      />
+      <p className={twMerge('font-semibold h-11', image.animated ? 'px-6' : 'px-0')}>{label}</p>
       <Check className={props.checked ? 'selected' : ''}>
         {props.checked ? <img src="/icons/check.svg" alt={`${value} selected`} /> : null}
       </Check>
