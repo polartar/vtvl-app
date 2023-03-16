@@ -10,7 +10,6 @@ import { useContext, useEffect } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { emailPattern } from 'types/constants/validation-patterns';
-import { MESSAGES } from 'utils/messages';
 
 type LoginForm = {
   memberEmail: string;
@@ -53,13 +52,9 @@ const MemberLoginPage: NextPage = () => {
       const orgId = params.searchParams.get('orgId');
 
       if (type && orgId) {
-        if (allowSignIn(orgId)) {
-          // invited member
-          await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
-          router.push('/onboarding/member');
-        } else {
-          toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
-        }
+        // invited member
+        await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
+        router.push('/onboarding/member');
         return;
       }
 

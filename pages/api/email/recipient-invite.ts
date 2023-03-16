@@ -5,6 +5,7 @@ import { fetchOrg } from 'services/db/organization';
 import { updateRecipient } from 'services/db/recipient';
 import { IOrganization } from 'types/models';
 import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
+import { INVITEE_EXPIRED_TIME, WEBSITE_EMAIL, WEBSITE_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 dotenv.config();
@@ -38,10 +39,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       try {
         await SendMail({
           to: email,
-          data: { emailLink, tokenSymbol: symbol, orgName: websiteName || 'VTVL', name },
-          subject: `Join ${websiteName || 'VTVL'}`,
-          websiteName,
-          websiteEmail,
+          data: { emailLink, tokenSymbol: symbol, orgName: websiteName || WEBSITE_NAME, name },
+          subject: `Join ${websiteName || WEBSITE_NAME}`,
+          websiteName: websiteName || WEBSITE_NAME,
+          websiteEmail: websiteEmail || WEBSITE_EMAIL,
           templateId: MailTemplates.RecipientInvite
         });
         updateRecipient(recipient.memberId, {

@@ -51,8 +51,8 @@ const TeamWelcome: NextPage = () => {
   return (
     <div className="max-w-2xl mx-auto flex flex-col items-center text-center p-10">
       <Chip label="Organization" rounded color="gray" />
-      <MediaAsset src={assets?.logoImage?.src} className="h-10 md:h-12 mt-7 mb-8" />
-      <MediaAsset src="/limewire-one.json" animated={true} active={true} className="h-80" />
+      <MediaAsset src={assets?.logoImage?.src || '/logo.svg'} className="h-10 md:h-12 mt-7 mb-8" />
+      <MediaAsset src="/animation-welcome.json" animated={true} active={true} className="h-80" />
       <h1 className="h2 font-medium text-center mt-3">
         Hello, {user?.memberInfo?.name || user?.memberInfo?.email || 'you'}!
       </h1>

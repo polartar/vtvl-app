@@ -9,7 +9,7 @@ import Router, { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import Fade from 'react-reveal/Fade';
 import { IUser } from 'types/models';
-import { IS_ENABLED_AUTH_BY_ORG } from 'utils/constants';
+import { IS_ENABLED_AUTH_BY_ORG, WEBSITE_NAME } from 'utils/constants';
 
 interface HeaderProps {
   user: IUser | undefined;
@@ -56,7 +56,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
         <MediaAsset
           src={assets?.logoImage?.src ?? '/logo.svg'}
           className="hidden sm:block w-48 h-12 cursor-pointer"
-          alt={name ?? 'VTVL'}
+          alt={name || WEBSITE_NAME}
           onClick={redirectToHome}
         />
       </div>

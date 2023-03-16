@@ -17,6 +17,7 @@ import { useLoaderContext } from 'providers/loader.context';
 import React, { useContext, useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { toast } from 'react-toastify';
+import { WEBSITE_NAME } from 'utils/constants';
 
 import AuthContext from '../../../providers/auth.context';
 
@@ -478,7 +479,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     <>
       <Container>
         <Head>
-          <title>{name ?? 'VTVL'}</title>
+          <title>{name || WEBSITE_NAME}</title>
           {isLoading
             ? renderFavicons('/default-loader-icon.png')
             : assets?.logoFavicon

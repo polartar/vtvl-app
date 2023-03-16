@@ -34,9 +34,9 @@ const SelectUserTypePage: NextPage = () => {
     options: [
       {
         image: {
-          src: assets?.selectUserFounder?.src ?? '/images/onboarding-user-type-founder.svg',
-          animated: assets?.selectUserFounder?.animated,
-          animateOnHover: assets?.selectUserFounder?.animateOnHover
+          src: assets?.selectUserFounder?.src ?? '/animation-founder.json',
+          animated: assets?.selectUserFounder?.animated ?? true,
+          animateOnHover: assets?.selectUserFounder?.animateOnHover ?? true
         },
         value: 'founder',
         label: (
@@ -48,9 +48,9 @@ const SelectUserTypePage: NextPage = () => {
       },
       {
         image: {
-          src: assets?.selectUserRecipient?.src ?? '/images/onboarding-user-type-investor.svg',
-          animated: assets?.selectUserRecipient?.animated,
-          animateOnHover: assets?.selectUserRecipient?.animateOnHover
+          src: assets?.selectUserRecipient?.src ?? '/animation-recipient.json',
+          animated: assets?.selectUserRecipient?.animated ?? true,
+          animateOnHover: assets?.selectUserRecipient?.animateOnHover ?? true
         },
         value: 'investor',
         label: (
@@ -110,10 +110,10 @@ const SelectUserTypePage: NextPage = () => {
           companyEmail: user.email || member?.email,
           name: user.displayName || member?.name,
           type: selected as IUserType,
-          org_id: member?.org_id,
+          org_id: webOrgId || member?.org_id,
           wallets: [{ walletAddress: account, chainId: chainId! }]
         });
-        active ? completeOnboarding() : Router.push('/member');
+        Router.push('/welcome');
         return;
       }
       // invalid email sign up link

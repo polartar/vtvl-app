@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
-import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
+import { PUBLIC_DOMAIN_NAME, WEBSITE_EMAIL, WEBSITE_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 dotenv.config();
@@ -25,9 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   await SendMail({
     to: email,
     data: { emailLink },
-    subject: `Login to ${websiteName ?? 'VTVL'}`,
-    websiteName,
-    websiteEmail,
+    subject: `Login to ${websiteName || WEBSITE_NAME}`,
+    websiteName: websiteName || WEBSITE_NAME,
+    websiteEmail: websiteEmail || WEBSITE_EMAIL,
     templateId: MailTemplates.Login
   });
   res.status(200).json({ message: 'Success!' });

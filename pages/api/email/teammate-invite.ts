@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
+import { PUBLIC_DOMAIN_NAME, WEBSITE_EMAIL, WEBSITE_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 import { GetSignInToken } from '../token/getCustomToken';
@@ -27,9 +27,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   await SendMail({
     to: email,
     data: { emailLink, orgName, name },
-    subject: `Join ${websiteName ?? 'VTVL'}`,
-    websiteName,
-    websiteEmail,
+    subject: `Join ${websiteName || WEBSITE_NAME}`,
+    websiteName: websiteName || WEBSITE_NAME,
+    websiteEmail: websiteEmail || WEBSITE_EMAIL,
     templateId: MailTemplates.TeammateInvite
   });
   res.status(200).json({ message: 'Success!' });

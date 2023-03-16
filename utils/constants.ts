@@ -28,3 +28,7 @@ declare global {
 }
 
 export const CACHE_KEY = 'vtvl_cache';
+
+// Email related data
+export const WEBSITE_NAME = 'VTVL';
+export const WEBSITE_EMAIL = 'no-reply@vtvl.io';
