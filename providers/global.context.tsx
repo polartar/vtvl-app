@@ -33,20 +33,23 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
    * initialization() function is used to initially pick up if the current hostname has an existing record in our firebase database.
    * Styles are then assigned if a match has been found.
    */
-  const initialization = useCallback(() => {
+  const initialization = useCallback(async () => {
     // Only check for hostname and firebase matching when the website is hosted differently.
     if (IS_ENABLED_AUTH_BY_ORG) {
       const hostname = window.location.hostname;
-      fetchWebsiteByDomain(hostname)
-        .then((website) => {
-          setState({ website });
-        })
-        .catch((error) => {
-          console.error('Fetching website by domain is error: ', error);
-        })
-        .finally(() => {
+      // Handle error using try catch to gracefully display the default VTVL UI
+      // if there is no match found in the website collection.
+      // This avoids the client-side error in nextjs
+      try {
+        const website = await fetchWebsiteByDomain(hostname);
+        if (website) {
+          await setState({ website });
           setState({ isLoading: false });
-        });
+        } else throw website;
+      } catch (error) {
+        setState({ isLoading: false });
+        console.error('Fetching website by domain error: ', error);
+      }
     } else {
       setState({ isLoading: false });
     }
