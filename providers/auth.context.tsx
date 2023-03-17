@@ -119,7 +119,8 @@ export function AuthContextProvider({ children }: any) {
   const [showSideBar, setShowSideBar] = useToggle(false);
   const [sidebarIsExpanded, setSidebarIsExpanded, , , forceCollapseSidebar] = useToggle(true);
   const {
-    website: { organizationId: websiteOrganizationId, name: websiteName, email: websiteEmail }
+    website: { organizationId: websiteOrganizationId, name: websiteName, email: websiteEmail },
+    emailTemplate
   } = useGlobalContext();
 
   const [recipient, setRecipient] = useState<IRecipientDoc>();
@@ -541,7 +542,8 @@ export function AuthContextProvider({ children }: any) {
         email,
         newUser: member ? false : true,
         websiteEmail,
-        websiteName
+        websiteName,
+        emailTemplate
       });
     } else {
       toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
@@ -567,7 +569,8 @@ export function AuthContextProvider({ children }: any) {
       name,
       memberId,
       websiteEmail,
-      websiteName
+      websiteName,
+      emailTemplate
     });
     setLoading(false);
   };

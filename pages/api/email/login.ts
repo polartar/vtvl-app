@@ -11,7 +11,7 @@ type Data = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { email, newUser, websiteName, websiteEmail } = req.body;
+  const { email, newUser, websiteName, websiteEmail, emailTemplate } = req.body;
   const url = `${PUBLIC_DOMAIN_NAME}/${
     newUser === true ? `onboarding/select-user-type?email=${email}&newUser=${newUser}` : `dashboard?email=${email}`
   }`;
@@ -24,11 +24,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const emailLink = await firebaseAdmin?.auth().generateSignInWithEmailLink(email, actionCodeSettings);
   await SendMail({
     to: email,
-    data: { emailLink },
+    data: {
+      emailLink,
+      ...emailTemplate
+    },
     subject: `Login to ${websiteName || WEBSITE_NAME}`,
     websiteName: websiteName || WEBSITE_NAME,
     websiteEmail: websiteEmail || WEBSITE_EMAIL,
-    templateId: MailTemplates.Login
+    templateId: MailTemplates.ThemedLogin
   });
   res.status(200).json({ message: 'Success!' });
 }

@@ -12,7 +12,7 @@ type Data = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { memberId, email, type, orgId, orgName, name, websiteName, websiteEmail } = req.body;
+  const { memberId, email, type, orgId, orgName, name, websiteName, websiteEmail, emailTemplate } = req.body;
 
   if (!process.env.CUSTOM_TOKEN_PRIVATE_KEY) {
     return res.status(400).send({ message: 'Private key not exist' });
@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const emailLink = PUBLIC_DOMAIN_NAME + '/member?token=' + token;
   await SendMail({
     to: email,
-    data: { emailLink, orgName, name },
+    data: { emailLink, orgName, name, ...emailTemplate },
     subject: `Join ${websiteName || WEBSITE_NAME}`,
     websiteName: websiteName || WEBSITE_NAME,
     websiteEmail: websiteEmail || WEBSITE_EMAIL,

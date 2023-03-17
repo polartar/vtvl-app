@@ -7,19 +7,51 @@ import { fetchWebsiteByDomain } from 'services/db/website';
 import { IWebsite } from 'types/models';
 import { IS_ENABLED_AUTH_BY_ORG } from 'utils/constants';
 
+export interface IEmailTemplate {
+  websiteName: string;
+  theme: {
+    primaryColor: string;
+    secondaryColor: string;
+    logoImage: string;
+  };
+  links: {
+    twitter: string;
+    linkedin: string;
+    terms: string;
+    privacy: string;
+  };
+}
+
 export interface GlobalContextState {
   isLoading: boolean;
   website: IWebsite;
+  emailTemplate: any;
 }
+
+const defaultEmailTemplate: IEmailTemplate = {
+  websiteName: 'VTVL',
+  theme: {
+    primaryColor: '',
+    secondaryColor: '',
+    logoImage:
+      'https://firebasestorage.googleapis.com/v0/b/vtvl-v2-dev.appspot.com/o/email-template-assets%2Fvtvl-email-template-logo.png?alt=media&token=2b5bac6e-d595-4a85-b926-6d928e2e8764'
+  },
+  links: {
+    twitter: 'https://twitter.com/vtvlco',
+    linkedin: 'https://www.linkedin.com/company/vtvl/',
+    terms: 'https://www.vtvl.io/terms',
+    privacy: 'https://www.vtvl.io/privacypolicy'
+  }
+};
 
 const initialState: GlobalContextState = {
   isLoading: true,
   website: {
     name: '',
     domain: '',
-    organizationId: '',
-    styles: {}
-  }
+    organizationId: ''
+  },
+  emailTemplate: defaultEmailTemplate
 };
 
 export const GlobalContext = createContext<GlobalContextState>(initialState);
@@ -80,8 +112,26 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
       if (elem && theme) {
         applyTheme(theme, elem);
       }
+
+      // Update the emailTemplate
+      setState({
+        emailTemplate: {
+          websiteName: state.website.name,
+          theme: {
+            primaryColor: theme['--primary-900'],
+            secondaryColor: theme['--secondary-900'],
+            logoImage: state?.website?.assets?.emailLogoImage || state.emailTemplate.theme.logoImage
+          },
+          links: {
+            twitter: state?.website?.links?.twitter || state.emailTemplate.links.twitter,
+            linkedin: state?.website?.links?.linkedin || state.emailTemplate.links.linkedin,
+            terms: state?.website?.links?.terms || state.emailTemplate.links.terms,
+            privacy: state?.website?.links?.privacy || state.emailTemplate.links.privacy
+          }
+        }
+      });
     }
-  }, [state]);
+  }, [state.website]);
 
   // Initialize global context
   useEffect(() => {

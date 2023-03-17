@@ -32,7 +32,7 @@ const checkMemberExist = async (email: string) => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { encryptToken, email, websiteName, websiteEmail } = req.body;
+  const { encryptToken, email, websiteName, websiteEmail, emailTemplate } = req.body;
 
   let token;
 
@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const emailLink = PUBLIC_DOMAIN_NAME + '/member?token=' + token;
     await SendMail({
       to: payload.email,
-      data: { emailLink, orgName: payload.orgName, name: payload.name },
+      data: { emailLink, orgName: payload.orgName, name: payload.name, ...emailTemplate },
       subject: `Join ${websiteName || WEBSITE_NAME}`,
       websiteName: websiteName || WEBSITE_NAME,
       websiteEmail: websiteEmail || WEBSITE_EMAIL,
