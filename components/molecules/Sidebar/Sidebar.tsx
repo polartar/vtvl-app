@@ -152,7 +152,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
               </SidebarItem>
             ))
           : null}
-        <UserContainer>
+        <div className="h-16 border-t border-gray-200 flex row justify-between align-center pt-6 mx-auto">
           <User
             userName={user?.memberInfo?.name || user?.displayName || 'John Doe'}
             profilePhoto={user?.photoURL || ''}
@@ -160,7 +160,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
             compact={!sidebarIsExpanded}
           />
           {sidebarIsExpanded ? <LogoutImg src="/icons/logout.svg" alt="logoutImg" onClick={() => logOut()} /> : null}
-        </UserContainer>
+        </div>
       </div>
     </SidebarContainer>
   );
@@ -189,16 +189,6 @@ const RoleTitle = styled.span`
   flex-direction: row;
   align-items: center;
   margin-bottom: 12px;
-`;
-const UserContainer = styled.div`
-  height: 64px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 24px;
-  border-top: 1px solid ${Colors.border};
-  margin: 0 auto;
 `;
 const LogoutImg = styled.img`
   width: 20px;
