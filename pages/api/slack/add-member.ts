@@ -14,8 +14,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (member && member.createdAt && member.type === 'founder' && member.createdAt + 3 >= now) {
-    const env = process.env.VERCEL_ENV || process.env.NODE_ENV;
-
     let organization: IOrganization | undefined;
     if (member.org_id) {
       organization = await fetchOrg(member.org_id);
@@ -30,11 +28,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           {
             color: '#eed140', // color of the attachments sidebar.
             fields: [
-              {
-                title: 'Environment', // Custom field
-                value: env === 'production' ? 'PROD' : 'QA', // Custom value
-                short: true // long fields will be full width
-              },
               {
                 title: 'User Email',
                 value: member.email,
