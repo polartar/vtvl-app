@@ -30,14 +30,16 @@ export const sendRecipientInvite = async (
   symbol: string
 ): Promise<void> => {
   const {
-    website: { name: websiteName, email: websiteEmail }
+    website: { name: websiteName, email: websiteEmail },
+    emailTemplate
   } = useGlobalContext();
   //TODO: extract api calls
   await axios.post('/api/email/recipient-invite', {
     recipients: recipients,
     symbol: symbol,
     websiteName,
-    websiteEmail
+    websiteEmail,
+    emailTemplate
   });
 };
 export const isExpired = (timestamp: number | undefined) =>

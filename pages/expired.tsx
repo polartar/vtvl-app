@@ -14,7 +14,8 @@ import { emailPattern } from 'types/constants/validation-patterns';
 const Expired = () => {
   const router = useRouter();
   const {
-    website: { name: websiteName, email: websiteEmail }
+    website: { name: websiteName, email: websiteEmail },
+    emailTemplate
   } = useGlobalContext();
 
   const loginToken = useMemo(() => {
@@ -37,7 +38,8 @@ const Expired = () => {
           encryptToken: loginToken,
           email: data.email,
           websiteEmail,
-          websiteName
+          websiteName,
+          emailTemplate
         });
         if (res.data.message === 'Success!') {
           toast.success('A new invitation link has been sent to your email');

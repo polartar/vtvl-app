@@ -14,12 +14,20 @@ export interface IWebsiteStyles {
 
 // List of assets available through out the platform
 export interface IWebsiteAssets {
+  emailLogoImage?: string;
   loginBgImage?: IWebsiteAsset;
   logoImage?: IWebsiteAsset;
   logoIcon?: IWebsiteAsset;
   logoFavicon?: IWebsiteAsset;
   selectUserFounder?: IWebsiteAsset;
   selectUserRecipient?: IWebsiteAsset;
+}
+
+export interface IWebsiteLinks {
+  twitter?: string;
+  linkedin?: string;
+  terms?: string;
+  privacy?: string;
 }
 
 export interface IWebsite {
@@ -29,4 +37,5 @@ export interface IWebsite {
   organizationId: string;
   styles?: IWebsiteStyles;
   assets?: IWebsiteAssets;
+  links?: IWebsiteLinks;
 }
