@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       await axios.post(process.env.SLACK_NEW_MEMBER_WEBHOOK_URL, {
         username: member.name, // This will appear as user name who posts the message
-        text: `${member.name} was added`,
+        text: `${member.name} just joined our platform`,
         icon_emoji: ':new:', // User icon, you can also use custom icons here
         attachments: [
           {
