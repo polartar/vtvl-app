@@ -372,9 +372,14 @@ export function AuthContextProvider({ children }: any) {
 
     const existingOrg = await fetchOrgByQuery('email', '==', user?.email || '');
     let orgId;
-    if (existingOrg?.id) {
+    if (IS_ENABLED_AUTH_BY_ORG && websiteOrganizationId) {
+      // If the website is white-labelled and has enabled login by organization, use it as the organizationId.
+      orgId = websiteOrganizationId;
+    } else if (existingOrg?.id) {
+      // for existing VTVL organizations, just use and update the organization details.
       await updateOrg({ name: org.name, email: org.email, user_id: user?.uid }, existingOrg.id);
     } else {
+      // for new VTVL organizations
       orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
     }
     const org_id = existingOrg?.id || orgId;
