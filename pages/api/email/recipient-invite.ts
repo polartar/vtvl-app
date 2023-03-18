@@ -4,6 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { fetchOrg } from 'services/db/organization';
 import { updateRecipient } from 'services/db/recipient';
 import { IOrganization } from 'types/models';
+import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 dotenv.config();
@@ -34,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         return res.status(200).json({ message: err.message });
       }
 
-      const emailLink = process.env.NEXT_PUBLIC_DOMAIN_NAME + '/recipient/create?token=' + token;
+      const emailLink = PUBLIC_DOMAIN_NAME + '/recipient/create?token=' + token;
       try {
         await SendMail({
           to: email,
@@ -73,7 +74,7 @@ const GetRecipientToken = (
   const signInToken: IRecipientToken = {
     email,
     orgId,
-    domain: process.env.NEXT_PUBLIC_DOMAIN_NAME || '',
+    domain: PUBLIC_DOMAIN_NAME || '',
     name,
     aud: 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit',
     iat: Math.floor(Date.now() / 1000),

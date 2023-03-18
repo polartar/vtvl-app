@@ -14,6 +14,7 @@ import { generateMessage } from 'pages/api/recipient/add-address';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
 
 const RecipientCreate: NextPage = () => {
   const { account, library } = useWeb3React();
@@ -57,7 +58,7 @@ const RecipientCreate: NextPage = () => {
       return;
     }
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/recipient/add-address`, {
+      await axios.post(`${PUBLIC_DOMAIN_NAME}/api/recipient/add-address`, {
         signature,
         recipientId: recipient?.id,
         address: account
