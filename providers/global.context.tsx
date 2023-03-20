@@ -31,8 +31,8 @@ export interface GlobalContextState {
 const defaultEmailTemplate: IEmailTemplate = {
   websiteName: 'VTVL',
   theme: {
-    primaryColor: '',
-    secondaryColor: '',
+    primaryColor: '#1b369a',
+    secondaryColor: '#f9623b',
     logoImage:
       'https://firebasestorage.googleapis.com/v0/b/vtvl-v2-dev.appspot.com/o/email-template-assets%2Fvtvl-email-template-logo.png?alt=media&token=2b5bac6e-d595-4a85-b926-6d928e2e8764'
   },

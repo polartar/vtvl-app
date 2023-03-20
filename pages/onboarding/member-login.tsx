@@ -59,8 +59,6 @@ const MemberLoginPage: NextPage = () => {
       }
 
       await sendLoginLink(values.memberEmail);
-      toast.success('Please check your email for the link to login');
-
       return;
     } catch (error) {
       toast.error('Oh no! Something went wrong!');

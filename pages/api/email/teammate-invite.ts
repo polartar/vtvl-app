@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     subject: `Join ${websiteName || WEBSITE_NAME}`,
     websiteName: websiteName || WEBSITE_NAME,
     websiteEmail: websiteEmail || WEBSITE_EMAIL,
-    templateId: MailTemplates.TeammateInvite
+    templateId: MailTemplates.ThemedTeamInvite
   });
   res.status(200).json({ message: 'Success!' });
 }

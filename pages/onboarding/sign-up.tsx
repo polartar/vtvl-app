@@ -86,7 +86,6 @@ const SignUpPage: NextPage = () => {
       }
 
       await sendLoginLink(values.memberEmail);
-      toast.success('Please check your email for the link to login');
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);
