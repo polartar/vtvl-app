@@ -896,3 +896,10 @@ body {
   color: var(--primary-700) !important;
   background-color: var(--primary-50) !important;
 }
+
+/* react-toastify overrides */
+.Toastify__toast-container {
+  max-width: 480px;
+  min-width: 320px;
+  width: auto;
+}

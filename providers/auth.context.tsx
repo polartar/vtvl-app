@@ -545,6 +545,8 @@ export function AuthContextProvider({ children }: any) {
         websiteName,
         emailTemplate
       });
+      setLoading(false);
+      toast.success('Please check your email for the link to login');
     } else {
       toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
     }
