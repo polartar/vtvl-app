@@ -56,7 +56,7 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
   // send slack message
 
   if (member.type === 'founder' && (!existingMember || (existingMember && existingMember.data().type !== 'founder'))) {
-    await axios.post(`${process.env.NEXT_PUBLIC_DOMAIN_NAME}/api/slack/add-member`, {
+    await axios.post(`/api/slack/add-member`, {
       email: member.email
     });
   }
