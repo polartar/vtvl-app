@@ -27,7 +27,6 @@ import { fetchRecipientByQuery } from 'services/db/recipient';
 import { fetchSafeByQuery } from 'services/db/safe';
 import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
 import { compareAddresses } from 'utils';
-import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -358,7 +357,7 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const member = await fetchMemberByEmail(email);
     //TODO: abstract api calls
-    await axios.post(`${window.location.origin || PUBLIC_DOMAIN_NAME}/api/email/login`, {
+    await axios.post('/api/email/login', {
       email,
       newUser: member ? false : true
     });
@@ -375,7 +374,7 @@ export function AuthContextProvider({ children }: any) {
   ): Promise<void> => {
     setLoading(true);
     //TODO: extract api calls
-    await axios.post(`${PUBLIC_DOMAIN_NAME}/api/email/teammate-invite`, {
+    await axios.post('/api/email/teammate-invite', {
       email,
       type,
       orgId,

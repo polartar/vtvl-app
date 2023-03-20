@@ -9,7 +9,6 @@ import Image from 'next/image';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { IRecipientData } from 'types/models/recipient';
-import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
 
 import RecipientRow from './RecipientRow';
 
@@ -30,7 +29,7 @@ export const sendRecipientInvite = async (
   symbol: string
 ): Promise<void> => {
   //TODO: extract api calls
-  await axios.post(`${PUBLIC_DOMAIN_NAME}/api/email/recipient-invite`, {
+  await axios.post('/api/email/recipient-invite', {
     recipients: recipients,
     symbol: symbol
   });
