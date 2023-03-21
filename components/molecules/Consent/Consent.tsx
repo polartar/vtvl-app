@@ -1,5 +1,4 @@
 import { useGlobalContext } from '@providers/global.context';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { WEBSITE_NAME } from 'utils/constants';
 
@@ -12,7 +11,7 @@ interface ConsentProps {
 
 const Consent = ({ variant = 'default', className = '', onAgree = (e) => {} }: ConsentProps) => {
   const {
-    website: { name }
+    website: { name, links }
   } = useGlobalContext();
   const [agree, setAgree] = useState(false);
   useEffect(() => {
@@ -37,11 +36,11 @@ const Consent = ({ variant = 'default', className = '', onAgree = (e) => {} }: C
           </label>
           <div>
             I agree to {name || WEBSITE_NAME}{' '}
-            <a href="https://vtvl.io/terms" target="_blank" title="Terms and Conditions">
+            <a href={links?.terms || 'https://vtvl.io/terms'} target="_blank" title="Terms and Conditions">
               <span className="cursor-pointer font-bold text-primary-900 no-underline">Terms of Service</span>
             </a>{' '}
             and acknowledge that I have read and understand the{' '}
-            <a href="https://vtvl.io/privacypolicy" target="_blank" title="Privacy Policy">
+            <a href={links?.privacy || 'https://vtvl.io/privacypolicy'} target="_blank" title="Privacy Policy">
               <span className="cursor-pointer font-bold text-primary-900 no-underline">Privacy Policy</span>
             </a>
             .
@@ -50,11 +49,11 @@ const Consent = ({ variant = 'default', className = '', onAgree = (e) => {} }: C
       ) : (
         <span>
           By connecting a wallet, you agree to {name || WEBSITE_NAME}{' '}
-          <a href="https://vtvl.io/terms" target="_blank" title="Terms and Conditions">
+          <a href={links?.terms || 'https://vtvl.io/terms'} target="_blank" title="Terms and Conditions">
             <span className="cursor-pointer font-bold text-primary-900 no-underline">Terms of Service</span>
           </a>{' '}
           and acknowledge that you have read and understand the{' '}
-          <a href="https://vtvl.io/privacypolicy" target="_blank" title="Privacy Policy">
+          <a href={links.privacy || 'https://vtvl.io/privacypolicy'} target="_blank" title="Privacy Policy">
             <span className="cursor-pointer font-bold text-primary-900 no-underline">Privacy Policy</span>
           </a>
           .

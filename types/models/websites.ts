@@ -8,6 +8,7 @@ export interface IWebsiteAsset {
 
 // Website styling should contain only specific styling for the white-label.
 export interface IWebsiteStyles {
+  emailTheme?: any;
   theme?: any;
   // May contain special styles aside from theme
 }
@@ -25,7 +26,7 @@ export interface IWebsiteAssets {
 
 export interface IWebsiteLinks {
   twitter?: string;
-  linkedin?: string;
+  linkedIn?: string;
   terms?: string;
   privacy?: string;
 }

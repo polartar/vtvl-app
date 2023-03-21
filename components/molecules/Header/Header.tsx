@@ -52,9 +52,14 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
   const renderVTVLLogo = () => {
     return (
       <div className={`flex flex-row items-center`}>
-        <MediaAsset src={assets?.logoIcon?.src} className="h-10 sm:hidden md:h-12" onClick={redirectToHome} />
         <MediaAsset
-          src={assets?.logoImage?.src ?? '/logo.svg'}
+          src={assets?.logoIcon?.src || '/icons/vtvl-icon.svg'}
+          className="h-10 sm:hidden md:h-12"
+          alt={name || WEBSITE_NAME}
+          onClick={redirectToHome}
+        />
+        <MediaAsset
+          src={assets?.logoImage?.src || '/logo.svg'}
           className="hidden sm:block w-48 h-12 cursor-pointer"
           alt={name || WEBSITE_NAME}
           onClick={redirectToHome}

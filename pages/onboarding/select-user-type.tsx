@@ -34,8 +34,8 @@ const SelectUserTypePage: NextPage = () => {
     options: [
       {
         image: {
-          src: assets?.selectUserFounder?.src || '/animation-founder.json',
-          animated: assets?.selectUserFounder?.animated || true,
+          src: assets?.selectUserFounder?.src || '/images/onboarding-user-type-founder.svg',
+          animated: assets?.selectUserFounder?.animated || false,
           animateOnHover: assets?.selectUserFounder?.animateOnHover || true
         },
         value: 'founder',
@@ -48,8 +48,8 @@ const SelectUserTypePage: NextPage = () => {
       },
       {
         image: {
-          src: assets?.selectUserRecipient?.src || '/animation-recipient.json',
-          animated: assets?.selectUserRecipient?.animated || true,
+          src: assets?.selectUserRecipient?.src || '/images/onboarding-user-type-investor.svg',
+          animated: assets?.selectUserRecipient?.animated || false,
           animateOnHover: assets?.selectUserRecipient?.animateOnHover || true
         },
         value: 'investor',
