@@ -9,8 +9,8 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { fetchRecipientByQuery, updateRecipient } from 'services/db/recipient';
-import { IRecipientDoc } from 'types/models';
+import { fetchRecipient, fetchRecipientByQuery, updateRecipient } from 'services/db/recipient';
+import { IRecipient, IRecipientDoc } from 'types/models';
 
 const RecipientCreate: NextPage = () => {
   const { setOrganizationId, loading, setRecipient: setCurrentRecipient, signUpWithToken } = useAuthContext();
@@ -41,18 +41,18 @@ const RecipientCreate: NextPage = () => {
         })
         .then((res) => {
           setToken(res.data.token);
-          fetchRecipientByQuery('email', '==', res.data.email).then((response) => {
-            setRecipient(response);
-            if (response) updateRecipient(response.id, { status: 'accepted' });
+          fetchRecipient(res.data.memberId).then((response) => {
+            setRecipient({ id: res.data.memberId, data: response as IRecipient });
+            if (response) updateRecipient(res.data.memberId, { status: 'accepted' });
 
-            if (response?.data.name) {
-              setValue('name', response?.data.name);
+            if (response?.name) {
+              setValue('name', response?.name);
             }
             if (res?.data.orgName) {
               setValue('projectName', res?.data.orgName);
             }
-            if (response?.data.email) {
-              setValue('companyEmail', response.data.email);
+            if (response?.email) {
+              setValue('companyEmail', response.email);
             }
           });
         })
