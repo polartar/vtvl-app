@@ -53,7 +53,7 @@ const Consent = ({ variant = 'default', className = '', onAgree = (e) => {} }: C
             <span className="cursor-pointer font-bold text-primary-900 no-underline">Terms of Service</span>
           </a>{' '}
           and acknowledge that you have read and understand the{' '}
-          <a href={links.privacy || 'https://vtvl.io/privacypolicy'} target="_blank" title="Privacy Policy">
+          <a href={links?.privacy || 'https://vtvl.io/privacypolicy'} target="_blank" title="Privacy Policy">
             <span className="cursor-pointer font-bold text-primary-900 no-underline">Privacy Policy</span>
           </a>
           .
