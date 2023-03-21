@@ -1,11 +1,8 @@
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import { useShallowState } from 'hooks/useShallowState';
-import Lottie from 'lottie-react';
-import VTVLLoaderData from 'public/VTVL_Loader.json';
 import React, { PropsWithChildren, createContext, useCallback, useContext, useEffect } from 'react';
 import { fetchWebsiteByDomain } from 'services/db/website';
 import { IWebsite } from 'types/models';
-import { IS_ENABLED_AUTH_BY_ORG } from 'utils/constants';
 
 export interface IEmailTemplate {
   websiteName: string;
@@ -16,7 +13,7 @@ export interface IEmailTemplate {
   };
   links: {
     twitter: string;
-    linkedin: string;
+    linkedIn: string;
     terms: string;
     privacy: string;
   };
@@ -38,7 +35,7 @@ const defaultEmailTemplate: IEmailTemplate = {
   },
   links: {
     twitter: 'https://twitter.com/vtvlco',
-    linkedin: 'https://www.linkedin.com/company/vtvl/',
+    linkedIn: 'https://www.linkedin.com/company/vtvl/',
     terms: 'https://www.vtvl.io/terms',
     privacy: 'https://www.vtvl.io/privacypolicy'
   }
@@ -67,23 +64,19 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
    */
   const initialization = useCallback(async () => {
     // Only check for hostname and firebase matching when the website is hosted differently.
-    if (IS_ENABLED_AUTH_BY_ORG) {
-      const hostname = window.location.hostname;
-      // Handle error using try catch to gracefully display the default VTVL UI
-      // if there is no match found in the website collection.
-      // This avoids the client-side error in nextjs
-      try {
-        const website = await fetchWebsiteByDomain(hostname);
-        if (website) {
-          await setState({ website });
-          setState({ isLoading: false });
-        } else throw website;
-      } catch (error) {
+    const hostname = window.location.hostname;
+    // Handle error using try catch to gracefully display the default VTVL UI
+    // if there is no match found in the website collection.
+    // This avoids the client-side error in nextjs
+    try {
+      const website = await fetchWebsiteByDomain(hostname);
+      if (website) {
+        await setState({ website });
         setState({ isLoading: false });
-        console.error('Fetching website by domain error: ', error);
-      }
-    } else {
+      } else throw website;
+    } catch (error) {
       setState({ isLoading: false });
+      console.error('Fetching website by domain error: ', error);
     }
   }, []);
 
@@ -97,7 +90,7 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
       // #123456 is a value
       // This will therefore override --primary-900 and apply the style to all affected elements.
       for (const key in theme) {
-        console.log('Updating', key, theme[key as keyof typeof theme]);
+        // console.log('Updating', key, theme[key as keyof typeof theme]);
         rootElement.style.setProperty(key, theme[key as keyof typeof theme]);
       }
     }
@@ -118,13 +111,19 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
         emailTemplate: {
           websiteName: state.website.name,
           theme: {
-            primaryColor: theme['--primary-900'],
-            secondaryColor: theme['--secondary-900'],
+            primaryColor:
+              state.website.styles?.emailTheme?.primary ||
+              theme['--primary-900'] ||
+              state.emailTemplate.theme.primaryColor,
+            secondaryColor:
+              state.website.styles?.emailTheme?.secondary ||
+              theme['--secondary-900'] ||
+              state.emailTemplate.theme.secondaryColor,
             logoImage: state?.website?.assets?.emailLogoImage || state.emailTemplate.theme.logoImage
           },
           links: {
             twitter: state?.website?.links?.twitter || state.emailTemplate.links.twitter,
-            linkedin: state?.website?.links?.linkedin || state.emailTemplate.links.linkedin,
+            linkedIn: state?.website?.links?.linkedIn || state.emailTemplate.links.linkedIn,
             terms: state?.website?.links?.terms || state.emailTemplate.links.terms,
             privacy: state?.website?.links?.privacy || state.emailTemplate.links.privacy
           }
