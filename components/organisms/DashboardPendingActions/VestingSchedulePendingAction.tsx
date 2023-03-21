@@ -57,13 +57,12 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   const { account, chainId, activate, library } = useWeb3React();
   const { safe, organizationId } = useAuthContext();
   const {
-    // fetchDashboardVestingContract,
     vestingContracts,
     transactions,
-    // fetchDashboardTransactions,
     fetchDashboardData,
     vestings,
     vestingsStatus,
+    recipients,
     setVestingsStatus
   } = useDashboardContext();
   const { editSchedule, deleteSchedulePrompt, setShowDeleteModal } = useVestingContext();
@@ -91,6 +90,11 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
+
+  const vestingRecipients = useMemo(
+    () => recipients?.filter((recipient) => recipient.data.vestingId === id) ?? [],
+    [recipients, id]
+  );
 
   const isVisible =
     status !== 'SUCCESS' &&
@@ -422,6 +426,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         activate(injected);
         return;
       }
+      const totalRecipients = vestingRecipients.length;
       const vesting = data;
       const vestingId = id;
       const cliffAmountPerUser =
@@ -429,9 +434,15 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           vesting.details.cliffDuration,
           +vesting.details.lumpSumReleaseAfterCliff,
           +vesting.details.amountToBeVested
-        ) / vesting.recipients.length;
-      const vestingAmountPerUser = +vesting.details.amountToBeVested / vesting.recipients.length - cliffAmountPerUser;
-      const addresses = vesting.recipients.map((recipient) => recipient.walletAddress);
+        ) / totalRecipients;
+      const vestingAmountPerUser = +vesting.details.amountToBeVested / totalRecipients - cliffAmountPerUser;
+      const addresses = vestingRecipients.map(({ data: recipient }) => recipient.walletAddress);
+      const hasNoWalletAddress = addresses.filter((address) => !address).length > 0;
+
+      if (hasNoWalletAddress) {
+        toast.error("Some recipients don't have wallet address.");
+        return;
+      }
 
       const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
 
@@ -459,40 +470,29 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               frequency: vesting.details.releaseFrequency,
               vestedAmount: vestingAmountPerUser
             }).projectedEndDateTime
-          : // getProjectedEndDateTime(
-            //     actualStartDateTime,
-            //     new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
-            //     numberOfReleases,
-            //     vesting.details.releaseFrequency
-            //   )
-            null;
-      const vestingStartTimestamps = new Array(vesting.recipients.length).fill(
+          : null;
+      const vestingStartTimestamps = new Array(totalRecipients).fill(
         cliffReleaseTimestamp
           ? cliffReleaseTimestamp
           : Math.floor((vesting.details.startDateTime as unknown as Timestamp).seconds)
       );
-      const vestingEndTimestamps = new Array(vesting.recipients.length).fill(
-        Math.floor(vestingEndTimestamp!.getTime() / 1000)
-      );
-      const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
+      const vestingEndTimestamps = new Array(totalRecipients).fill(Math.floor(vestingEndTimestamp!.getTime() / 1000));
+      const vestingCliffTimestamps = new Array(totalRecipients).fill(cliffReleaseTimestamp);
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
         vestingEndTimestamp!,
         vesting.details.releaseFrequency,
         vesting.details.cliffDuration
       );
-      const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
-      // const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
-      //   parseTokenAmount(vestingAmountPerUser, 18)
-      // );
-      const vestingLinearVestAmounts = vesting.recipients.map((recipient) => {
+      const vestingReleaseIntervals = new Array(totalRecipients).fill(releaseFrequencyTimestamp);
+      const vestingLinearVestAmounts = vestingRecipients.map(({ data: recipient }) => {
         const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
         // Computes how many tokens are left after cliff based on percentage
         const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
         return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
       });
 
-      const vestingCliffAmounts = new Array(vesting.recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
+      const vestingCliffAmounts = new Array(totalRecipients).fill(parseTokenAmount(cliffAmountPerUser, 18));
 
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';

@@ -82,6 +82,7 @@ export function OnboardingContextProvider({ children }: any) {
     setInProgress(true);
     setCurrentStep(step);
   };
+
   const completeOnboarding = () => {
     setInProgress(false);
     refreshUser();

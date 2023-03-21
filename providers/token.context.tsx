@@ -1,14 +1,11 @@
 import ERC20 from '@contracts/abi/ERC20.json';
 import { useWeb3React } from '@web3-react/core';
-import Decimal from 'decimal.js';
 import { ethers } from 'ethers';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { fetchTokenByQuery, fetchTokensByQuery } from 'services/db/token';
-import { fetchVestingContractByQuery } from 'services/db/vestingContract';
+import { fetchTokensByQuery } from 'services/db/token';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 import { useAuthContext } from './auth.context';
-import { useSharedContext } from './shared.context';
 
 export interface IMintFormState {
   name: string;
@@ -53,7 +50,7 @@ const INITIAL_STATE: IMintFormState = {
 const TokenContext = createContext({} as ITokenContextData);
 
 export function TokenContextProvider({ children }: any) {
-  const { library, chainId } = useWeb3React();
+  const { chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
 
   const [isTokenLoading, setIsTokenLoading] = useState(true);

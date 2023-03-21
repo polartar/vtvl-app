@@ -1,22 +1,10 @@
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { NetworkConnector } from '@web3-react/network-connector';
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
-import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
+import { SUPPORTED_CHAIN_IDS, SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 export const injected = new InjectedConnector({
-  supportedChainIds: [
-    SupportedChainId.MAINNET,
-    SupportedChainId.ROPSTEN,
-    SupportedChainId.GOERLI,
-    SupportedChainId.KOVAN,
-    SupportedChainId.BINANCE,
-    SupportedChainId.POLYGON,
-    SupportedChainId.AVALANCHE,
-    SupportedChainId.FANTOM,
-    SupportedChainId.CRONOS,
-    SupportedChainId.MUMBAI,
-    SupportedChainId.BASE_GOERLI
-  ]
+  supportedChainIds: SUPPORTED_CHAIN_IDS
 });
 
 export const walletconnect = new WalletConnectConnector({

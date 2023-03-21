@@ -60,7 +60,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
-  const { vestings: vestingSchedules, vestingContracts, fetchDashboardData } = useDashboardContext();
+  const { vestings: vestingSchedules, recipients, vestingContracts, fetchDashboardData } = useDashboardContext();
   const { editSchedule, setShowDeleteModal, deleteSchedulePrompt } = useVestingContext();
 
   const [selected, setSelected] = useState('manual');
@@ -79,28 +79,40 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   const filteredVestingSchedules = useMemo(() => {
     return vestingSchedules && vestingSchedules.length > 0
-      ? vestingSchedules.filter((vesting) => {
-          if (filter.keyword && !vesting.data.name?.toLowerCase().includes(filter.keyword.toLowerCase())) {
-            return false;
-          }
-          if (filter.status === 'ALL') {
-            return true;
-          }
-          if (filter.status === 'FUND') {
-            return vesting.data.status === 'WAITING_FUNDS';
-          }
-          if (filter.status === 'INITIALIZED') {
-            return vesting.data.status === 'INITIALIZED';
-          }
-          if (filter.status === 'LIVE') {
-            return vesting.data.status === 'LIVE';
-          }
-          if (filter.status === 'PENDING') {
-            return vesting.data.status === 'WAITING_APPROVAL' || vesting.data.status === 'APPROVED';
-          }
-        })
+      ? vestingSchedules
+          .filter((vesting) => {
+            if (filter.keyword && !vesting.data.name?.toLowerCase().includes(filter.keyword.toLowerCase())) {
+              return false;
+            }
+            if (filter.status === 'ALL') {
+              return true;
+            }
+            if (filter.status === 'FUND') {
+              return vesting.data.status === 'WAITING_FUNDS';
+            }
+            if (filter.status === 'INITIALIZED') {
+              return vesting.data.status === 'INITIALIZED';
+            }
+            if (filter.status === 'LIVE') {
+              return vesting.data.status === 'LIVE';
+            }
+            if (filter.status === 'PENDING') {
+              return vesting.data.status === 'WAITING_APPROVAL' || vesting.data.status === 'APPROVED';
+            }
+          })
+          .map((vesting) => {
+            return {
+              ...vesting,
+              data: {
+                ...vesting.data,
+                recipients: recipients
+                  .filter((recipient) => recipient.data.vestingId === vesting.id)
+                  .map((recipient) => recipient.data)
+              }
+            };
+          })
       : [];
-  }, [vestingSchedules, filter]);
+  }, [vestingSchedules, recipients, filter]);
 
   useEffect(() => {
     // Manually count all necessary data since we're fetching all of the schedules for this particular organization
@@ -115,7 +127,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         pendingSchedules += sched.data.status === 'WAITING_FUNDS' || sched.data.status === 'INITIALIZED' ? 1 : 0;
         pendingDeployments += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
         pendingApprovals += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
-        totalRecipients += sched.data.recipients.length;
+        totalRecipients += recipients.filter((recipient) => recipient.data.vestingId === sched.id).length;
       });
 
       setVestingScheduleDataCounts({
@@ -256,16 +268,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // Renderer for more action items
   const CellActions = (props: any) => {
     const { data, id } = props.row.original;
-    // const menuItems =
-    //   (data as IVesting).status === 'COMPLETED' || (data as IVesting).status === 'LIVE'
-    //     ? [{ label: 'Revoke', onClick: () => handleRevoke(id, data) }]
-    //     : [
-    //         {
-    //           label: `${data.archive ? 'Unarchive' : 'Archive'}`,
-    //           onClick: () => handleArchiving(id, data)
-    //         }
-    //       ];
-
     // This function will help to consolidate the actions that are available in the actions column.
     const actionItems = (recordIndex: number) => {
       const items = [];
@@ -337,8 +339,12 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                   <div className="w-20 py-2">{recipient.name ? recipient.name : '(Anonymous)'}</div>
                 </td>
                 <td className="group-last:border-b-0">
-                  <div className="w-full py-2">
-                    <Copy text={recipient.walletAddress}>{minifyAddress(recipient.walletAddress)}</Copy>
+                  <div className="w-full py-2 text-center">
+                    {recipient.walletAddress ? (
+                      <Copy text={recipient.walletAddress}>{minifyAddress(recipient.walletAddress)}</Copy>
+                    ) : (
+                      <span>No Wallet</span>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -379,7 +385,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     const vestingAddress = vestingContracts.find((v) => v.id === data.vestingContractId)?.data.address;
     if (!signer || !account || !chainId || !vestingAddress) return;
 
-    const recipient = data.recipients[rIndex].walletAddress;
+    const recipient = recipients.filter((recipient) => recipient.data.vestingId === id)[rIndex].data.walletAddress;
     if (data.status === 'COMPLETED' || data.status === 'LIVE') {
       setIsCloseAvailable(false);
       try {

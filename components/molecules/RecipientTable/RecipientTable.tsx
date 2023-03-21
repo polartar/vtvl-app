@@ -136,7 +136,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
                     id={`${row.id}-email`}
                     initialValue={row.email}
                     autoFocus
-                    type="text"
+                    type="email"
                     placeholder="eg. vitalik@vtvl.io"
                     validations={['required', 'email']}
                     onChange={handleChange(index, 'email')}

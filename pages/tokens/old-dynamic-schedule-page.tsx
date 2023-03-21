@@ -1,10 +1,8 @@
 import Button from '@components/atoms/Button/Button';
-import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Form from '@components/atoms/FormControls/Form/Form';
 import VestingProgress from '@components/atoms/VestingProgress/VestingProgress';
 import AdditionalInformation from '@components/molecules/AdditionalInformation/AdditionalInformation';
 import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
-import MyTokenDetails from '@components/molecules/MyTokenDetails/MyTokenDetails';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';

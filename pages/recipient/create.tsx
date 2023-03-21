@@ -60,7 +60,7 @@ const RecipientCreate: NextPage = () => {
           if (err.response.data.message === 'jwt expired') {
             router.push({ pathname: '/expired', query: { loginToken: token } });
           } else {
-            await toast.error('The toke is invalid');
+            await toast.error('The token is invalid');
           }
         });
     }

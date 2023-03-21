@@ -6,7 +6,7 @@ import { BigNumber } from 'ethers/lib/ethers';
 import { useEffect } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting, IVestingContract } from 'types/models';
-import { IRecipientForm } from 'types/models/recipient';
+import { IRecipientDoc } from 'types/models/recipient';
 import { compareAddresses } from 'utils';
 
 import { useShallowState } from './useShallowState';
@@ -30,7 +30,8 @@ export type VestingContractInfo = {
  */
 export default function useChainVestingContracts(
   vestingContracts: { id: string; data: IVestingContract }[],
-  vestings: { id: string; data: IVesting }[]
+  vestings: { id: string; data: IVesting }[],
+  recipients: IRecipientDoc[]
 ) {
   const { chainId } = useWeb3React();
   const [state, setState] = useShallowState<{
@@ -51,11 +52,12 @@ export default function useChainVestingContracts(
     });
 
     const contractCallContext: ContractCallContext[] = vestingContracts.reduce((res, vestingContract) => {
-      const partialVestings = vestings.filter((vesting) => vesting.data.vestingContractId === vestingContract.id);
-      let allRecipients: IRecipientForm[] = [];
-      partialVestings.forEach((vesting) => {
-        allRecipients = allRecipients.concat(vesting.data.recipients);
-      });
+      const partialVestings = vestings
+        .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
+        .map((vesting) => vesting.id);
+      const partialRecipients = recipients.filter(({ data: recipient }) =>
+        partialVestings.includes(recipient.vestingId)
+      );
 
       let result: ContractCallContext[] = [];
       result = result.concat({
@@ -71,9 +73,9 @@ export default function useChainVestingContracts(
         ]
       });
 
-      allRecipients
-        .filter((recipient) => !!recipient.walletAddress)
-        .forEach((recipient) => {
+      partialRecipients
+        .filter(({ data: recipient }) => !!recipient.walletAddress)
+        .forEach(({ data: recipient }) => {
           result = result.concat([
             {
               reference: `withdrawn-${vestingContract.data.address}-${recipient.walletAddress}`,

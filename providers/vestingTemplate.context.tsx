@@ -1,7 +1,5 @@
 import { useWeb3React } from '@web3-react/core';
-import { Timestamp } from 'firebase/firestore';
-import React, { SetStateAction, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { IVestingTemplate } from 'types/models';
 
 import { useAuthContext } from './auth.context';

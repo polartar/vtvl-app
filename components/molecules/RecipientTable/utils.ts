@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react';
 import type { Validation, ValidationResponse } from 'utils/validator';
 
-export type EditableTypographyType = 'text' | 'address' | 'number' | 'select';
+export type EditableTypographyType = 'text' | 'address' | 'number' | 'select' | 'email';
 
 export type Recipient = { label: string; value: string };
 

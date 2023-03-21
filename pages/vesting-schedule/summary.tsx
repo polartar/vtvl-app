@@ -65,7 +65,6 @@ const ScheduleSummary: NextPageWithLayout = () => {
           ...scheduleMode.data,
           name: scheduleState.name,
           details: { ...scheduleFormState },
-          recipients: formatRecipientsDocToForm(recipients),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           transactionId: '',
           vestingContractId
@@ -82,7 +81,6 @@ const ScheduleSummary: NextPageWithLayout = () => {
       const vestingId = await createVesting({
         name: scheduleState.name,
         details: { ...scheduleFormState },
-        recipients: formatRecipientsDocToForm(recipients),
         organizationId: organizationId!,
         status: 'INITIALIZED',
         createdAt: Math.floor(new Date().getTime() / 1000),

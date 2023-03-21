@@ -3,6 +3,7 @@ import { RecipientTable, RecipientTableRow } from '@components/molecules/Recipie
 import { VestingSetupPanel } from '@components/molecules/VestingSetupPanel';
 import ImportCSVFlow from '@components/organisms/Forms/ImportCSVFlow';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { getDownloadURL, getStorage, ref } from 'firebase/storage';
 import { useShallowState } from 'hooks/useShallowState';
@@ -47,6 +48,7 @@ const crumbSteps = [
 
 const CreateVestingSchedule: NextPageWithLayout = () => {
   const { updateRecipients, setScheduleState, scheduleState, scheduleMode, recipients } = useVestingContext();
+  const { vestings, recipients: allRecipients } = useDashboardContext();
   const [rows, setRows] = useState<Array<RecipientTableRow>>([]);
   const [state, setState] = useShallowState({ step: 0 });
   const [duplicatedUsers, setDuplicatedUsers] = useState<Array<RecipientTableRow>>([]);
@@ -150,21 +152,13 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
   const handleContinue = useCallback(
     async (data: RecipientTableRow[], newErrors: string[]) => {
       if (scheduleState.vestingContractId) {
-        // const vestings = await fetchVestingContractsByQuery(['vestingContractId'], ['=='], [scheduleState.vestingContractId])
-        const vestings: { id: string; data: IVesting }[] = await fetchVestingsByQuery(
-          ['vestingContractId'],
-          ['=='],
-          [scheduleState.vestingContractId]
-        );
-        let prevRecipients: string[] = [];
-        vestings.forEach((vesting) => {
-          const addresses =
-            vesting.data.recipients
-              .filter(({ walletAddress }) => !!walletAddress)
-              .map(({ walletAddress }) => String(walletAddress?.toLowerCase())) ?? [];
+        const existingVestings = vestings
+          .filter((vesting) => vesting.data.vestingContractId === scheduleState.vestingContractId)
+          .map((vesting) => vesting.id);
 
-          prevRecipients = prevRecipients.concat(addresses);
-        });
+        const prevRecipients = allRecipients
+          .filter((recipient) => existingVestings.includes(recipient.data.vestingId))
+          .map((recipient) => recipient.data.walletAddress);
 
         // To optimize later
         // Apply validation of this only on add form
@@ -186,8 +180,6 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
         return;
       }
 
-      console.log('DEBUG-add-recipient', data);
-
       updateRecipients?.(
         data.map((row: RecipientTableRow) => ({
           id: String(''),
@@ -205,7 +197,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
       // Route to the next page and check if the current route is edit or add.
       Router.push(`/vesting-schedule/configure${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`);
     },
-    [scheduleState, rows, updateRecipients]
+    [scheduleState, rows, vestings, allRecipients, updateRecipients]
   );
 
   // Get download url

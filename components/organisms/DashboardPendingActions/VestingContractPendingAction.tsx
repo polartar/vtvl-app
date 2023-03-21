@@ -1,23 +1,16 @@
 import { injected } from '@connectors/index';
 import { useAuthContext } from '@providers/auth.context';
-import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
-import {
-  IStatus,
-  ITransactionStatus,
-  STATUS_MAPPING,
-  TRANSACTION_STATUS_MAPPING
-} from 'components/organisms/DashboardPendingActions';
+import { IStatus, STATUS_MAPPING } from 'components/organisms/DashboardPendingActions';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
-import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
+import { updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVesting, IVestingContract } from 'types/models';
-import { formatNumber, parseTokenAmount } from 'utils/token';
+import { IVestingContract } from 'types/models';
 
 interface IVestingContractPendingActionProps {
   id: string;

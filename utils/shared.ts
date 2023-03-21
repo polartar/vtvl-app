@@ -246,3 +246,14 @@ export const getUserTokenDetails = async (
 export const scrollIntoView = (element: any) => {
   window.scrollTo({ top: element.offsetTop, behavior: 'smooth' });
 };
+
+/**
+ * Remove duplicated item in string or number array data
+ *
+ * @example
+ * Input => [2, 3, 4, 3, 6, 2]
+ * Output => [2, 3, 4, 6]
+ */
+export const removeDuplication = <T extends string>(data: Array<T> = []) => {
+  return Object.keys(data.reduce((res, item) => ({ ...res, [item]: true }), {}));
+};

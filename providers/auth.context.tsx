@@ -30,6 +30,7 @@ import { compareAddresses } from 'utils';
 
 export type NewLogin = {
   isFirstLogin: boolean;
+  isOnboarding: boolean;
   uuid: string;
 };
 
@@ -138,9 +139,12 @@ export function AuthContextProvider({ children }: any) {
   }, [library]);
 
   const updateAuthState = useCallback(
-    async (credential: UserCredential) => {
+    async (credential: UserCredential, isGuestMode = false) => {
       const additionalInfo = getAdditionalUserInfo(credential);
-      const recipientInfo = await fetchRecipientByQuery('email', '==', String(credential.user.email));
+      let recipientInfo = await fetchRecipientByQuery('email', '==', String(credential.user.email));
+      if (!recipientInfo) {
+        recipientInfo = await fetchRecipientByQuery('walletAddress', '==', String(account));
+      }
 
       setIsNewUser(Boolean(additionalInfo?.isNewUser));
       if (additionalInfo?.isNewUser) {
@@ -150,7 +154,8 @@ export function AuthContextProvider({ children }: any) {
           // TODO why companyEmail field is needed?
           companyEmail: credential.user.email ?? '',
           name: credential.user.displayName ?? '',
-          wallets: []
+          wallets: [],
+          type: recipientInfo?.data.recipientType ?? isGuestMode ? 'anonymous' : 'founder'
         };
 
         if (account) {
@@ -175,7 +180,10 @@ export function AuthContextProvider({ children }: any) {
       setOrganizationId(memberInfo?.org_id);
       setUser({ ...credential.user, memberInfo });
 
-      return Boolean(additionalInfo?.isNewUser);
+      return {
+        isNewUser: Boolean(additionalInfo?.isNewUser),
+        isOnboarding: Boolean(recipientInfo)
+      };
     },
     [account, chainId]
   );
@@ -185,10 +193,10 @@ export function AuthContextProvider({ children }: any) {
     await setPersistence(auth, browserSessionPersistence);
 
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
-    const isFirstLogin = await updateAuthState(credential);
+    const { isNewUser: isFirstLogin, isOnboarding } = await updateAuthState(credential);
 
     setLoading(false);
-    return { isFirstLogin, uuid: credential.user.uid };
+    return { isFirstLogin, isOnboarding, uuid: credential.user.uid };
   };
 
   const signInWithEmail = async (email: string, password: string) => {
@@ -400,7 +408,7 @@ export function AuthContextProvider({ children }: any) {
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
     setLoading(false);
-    return { isFirstLogin: Boolean(additionalInfo?.isNewUser), uuid: credential.user.uid };
+    return { isFirstLogin: Boolean(additionalInfo?.isNewUser), isOnboarding: false, uuid: credential.user.uid };
   }, []);
 
   const refreshUser = useCallback(async (): Promise<void> => {

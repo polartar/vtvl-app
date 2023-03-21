@@ -2,7 +2,7 @@ import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import AuthContext from '@providers/auth.context';
-import OnboardingContext, { Step } from '@providers/onboarding.context';
+import OnboardingContext, { States, Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useContext, useEffect } from 'react';
@@ -36,6 +36,10 @@ const MemberLoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
+    if (newLogin?.isOnboarding) {
+      startOnboarding(Step.UserTypeSetup);
+    }
+
     onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 

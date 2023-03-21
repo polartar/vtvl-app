@@ -1064,7 +1064,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           ...scheduleMode.data,
           name: scheduleState.name,
           details: { ...scheduleFormState },
-          recipients: formatRecipientsDocToForm(recipients),
           updatedAt: Math.floor(new Date().getTime() / 1000),
           transactionId: '',
           vestingContractId
@@ -1078,26 +1077,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           .map((recipient) => editRecipient(recipient.id, recipient.data))
       );
     } else {
-      const data = formatRecipientsDocToForm(recipients);
-      console.log('DEBUG-data', { data });
-      console.log('DEBUG-vesting', {
-        name: scheduleState.name,
-        details: { ...scheduleFormState },
-        recipients: formatRecipientsDocToForm(recipients),
-        organizationId: organizationId!,
-        status: 'INITIALIZED',
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000),
-        transactionId: '',
-        vestingContractId,
-        tokenAddress: mintFormState.address,
-        tokenId,
-        chainId
-      });
       const vestingId = await createVesting({
         name: scheduleState.name,
         details: { ...scheduleFormState },
-        recipients: formatRecipientsDocToForm(recipients),
         organizationId: organizationId!,
         status: 'INITIALIZED',
         createdAt: Math.floor(new Date().getTime() / 1000),
@@ -1119,7 +1101,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             allocations: String(recipient.allocations ?? 0),
             walletAddress: recipient.walletAddress ?? '',
             recipientType: String(recipient.recipientType),
-            status: recipient.walletAddress ? 'accepted' : 'delivered'
+            status: recipient.walletAddress ? 'accepted' : 'delivered',
+            chainId
           });
           return {
             id,

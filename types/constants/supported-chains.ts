@@ -1,18 +1,44 @@
+const env = process.env.VERCEL_ENV || process.env.NODE_ENV;
+
 export enum SupportedChainId {
   MAINNET = 1,
-  ROPSTEN = 3,
   GOERLI = 5,
-  KOVAN = 42,
   BINANCE = 56,
   POLYGON = 137,
-  AVALANCHE = 43114,
-  FANTOM = 250 || 4002,
-  CRONOS = 25 || 338,
   MUMBAI = 80001,
+  AVALANCHE = 43113,
+  FANTOM = 250,
+  FANTOM_TESTNET = 4002,
+  CRONOS = 25,
+  CRONOS_TESTNET = 338,
   OKC_MAINNET = 66,
   OKC_TESTNET = 65,
   BASE_GOERLI = 84531
 }
+
+export const PROD_SUPPORTED_CHAIN_IDS = [
+  SupportedChainId.MAINNET,
+  SupportedChainId.BINANCE,
+  SupportedChainId.POLYGON,
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.FANTOM,
+  SupportedChainId.CRONOS,
+  SupportedChainId.OKC_MAINNET
+];
+
+export const DEV_SUPPORTED_CHAIN_IDS = [
+  SupportedChainId.GOERLI,
+  SupportedChainId.MUMBAI,
+  SupportedChainId.OKC_TESTNET,
+  SupportedChainId.BASE_GOERLI,
+  SupportedChainId.FANTOM_TESTNET,
+  SupportedChainId.CRONOS_TESTNET
+];
+
+export const SUPPORTED_CHAIN_IDS = env === 'production' ? PROD_SUPPORTED_CHAIN_IDS : DEV_SUPPORTED_CHAIN_IDS;
+
+type ProdSupportedChainIds = typeof PROD_SUPPORTED_CHAIN_IDS[number];
+type DevSupportedChainIds = typeof DEV_SUPPORTED_CHAIN_IDS[number];
 
 interface Network {
   id: number;
@@ -23,9 +49,16 @@ interface Network {
   explorer: string;
   multisigTxUrl: string;
 }
-type SupportedChainsType = {
-  [P in SupportedChainId]: Network;
+
+type ProdSupportedChainsType = {
+  [P in ProdSupportedChainIds]: Network;
 };
+
+type DevSupportedChainsType = {
+  [P in DevSupportedChainIds]: Network;
+};
+
+type SupportedChainsType = OnlyOne<ProdSupportedChainsType, DevSupportedChainsType>;
 
 export const prodSupportedChains: SupportedChainsType = {
   [SupportedChainId.MAINNET]: {
@@ -36,33 +69,6 @@ export const prodSupportedChains: SupportedChainsType = {
     rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     explorer: 'https://etherscan.io',
     multisigTxUrl: 'https://safe-transaction.mainnet.gnosis.io'
-  },
-  [SupportedChainId.ROPSTEN]: {
-    id: 3,
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Ropsten',
-    code: 'ETH',
-    rpc: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://ropsten.etherscan.io',
-    multisigTxUrl: ''
-  },
-  [SupportedChainId.GOERLI]: {
-    id: 5,
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Goerli',
-    code: 'ETH',
-    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://goerli.etherscan.io',
-    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
-  },
-  [SupportedChainId.KOVAN]: {
-    id: 42,
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Kovan',
-    code: 'ETH',
-    rpc: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://kovan.etherscan.io',
-    multisigTxUrl: ''
   },
   [SupportedChainId.BINANCE]: {
     id: 56,
@@ -129,7 +135,7 @@ export const prodSupportedChains: SupportedChainsType = {
   }
 };
 
-const devSupportedChains: SupportedChainsType = {
+export const devSupportedChains: SupportedChainsType = {
   [SupportedChainId.MAINNET]: {
     id: 5,
     icon: '/icons/chains/ethereum.svg',
@@ -139,15 +145,6 @@ const devSupportedChains: SupportedChainsType = {
     explorer: 'https://goerli.etherscan.io',
     multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
   },
-  [SupportedChainId.ROPSTEN]: {
-    id: 3,
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Ropsten',
-    code: 'ETH',
-    rpc: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://ropsten.etherscan.io',
-    multisigTxUrl: ''
-  },
   [SupportedChainId.GOERLI]: {
     id: 5,
     icon: '/icons/chains/ethereum.svg',
@@ -156,15 +153,6 @@ const devSupportedChains: SupportedChainsType = {
     rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     explorer: 'https://goerli.etherscan.io',
     multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
-  },
-  [SupportedChainId.KOVAN]: {
-    id: 42,
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Kovan',
-    code: 'ETH',
-    rpc: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://kovan.etherscan.io',
-    multisigTxUrl: ''
   },
   [SupportedChainId.BINANCE]: {
     id: 97,
@@ -249,5 +237,4 @@ const devSupportedChains: SupportedChainsType = {
   }
 };
 
-const env = process.env.VERCEL_ENV || process.env.NODE_ENV;
 export const SupportedChains = env === 'production' ? prodSupportedChains : devSupportedChains;

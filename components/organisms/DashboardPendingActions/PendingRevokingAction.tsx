@@ -1,4 +1,3 @@
-import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
@@ -7,48 +6,22 @@ import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
-import {
-  IStatus,
-  ITransactionStatus,
-  STATUS_MAPPING,
-  TRANSACTION_STATUS_MAPPING
-} from 'components/organisms/DashboardPendingActions';
-import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
-import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
-import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
-import { useTokenContext } from 'providers/token.context';
+import { IStatus, ITransactionStatus, STATUS_MAPPING } from 'components/organisms/DashboardPendingActions';
+import { ethers } from 'ethers';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { updateRevoking } from 'services/db/revoking';
-import { createTransaction, updateTransaction } from 'services/db/transaction';
-import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
-import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
+import { updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
-import { formatNumber, parseTokenAmount } from 'utils/token';
-import {
-  getChartData,
-  getCliffAmount,
-  getCliffDateTime,
-  getNumberOfReleases,
-  getReleaseFrequencyTimestamp
-} from 'utils/vesting';
+import { IRevoking } from 'types/models';
+import { compareAddresses } from 'utils';
 
 const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, data }) => {
-  const { account, chainId, activate, library } = useWeb3React();
-  const { safe, organizationId } = useAuthContext();
-  const {
-    // fetchDashboardVestingContract,
-    vestingContracts,
-    transactions,
-    fetchDashboardTransactions,
-    vestings,
-    fetchDashboardData
-  } = useDashboardContext();
+  const { account, chainId, library } = useWeb3React();
+  const { safe } = useAuthContext();
+  const { vestingContracts, transactions, vestings, recipients, fetchDashboardData } = useDashboardContext();
   const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
-  const { mintFormState } = useTokenContext();
 
   const transaction = useMemo(
     () => transactions.find((t) => t.id === data.transactionId && t.data.status === 'PENDING'),
@@ -56,8 +29,8 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
   );
   const vesting = useMemo(() => vestings.find((v) => v.id === data.vestingId), [vestings, data]);
   const recipient = useMemo(
-    () => vesting?.data.recipients.find((r) => r.walletAddress.toLowerCase() === data.recipient.toLowerCase()),
-    [data, vesting]
+    () => recipients.find(({ data: r }) => compareAddresses(r.walletAddress, data.recipient))?.data,
+    [data, recipients]
   );
   const vestingContract = useMemo(
     () => vestingContracts.find((v) => v.id === vesting?.data.vestingContractId),

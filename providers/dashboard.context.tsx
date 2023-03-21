@@ -5,8 +5,7 @@ import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
 import { onSnapshot, query, where } from 'firebase/firestore';
 import { useRouter } from 'next/router';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { MultiValue } from 'react-select';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
 import { fetchRecipientsByQuery } from 'services/db/recipient';
@@ -15,7 +14,7 @@ import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
-import { IRecipientForm } from 'types/models/recipient';
+import { IRecipientDoc, IRecipientForm } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { compareAddresses } from 'utils';
 import { getRecipient } from 'utils/recipients';
@@ -29,7 +28,7 @@ type IVestingStatus = 'FUNDING_REQUIRED' | 'PENDING' | 'EXECUTABLE' | 'LIVE';
 interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
   revokings: { id: string; data: IRevoking }[];
-  recipients: MultiValue<IRecipientForm>;
+  recipients: IRecipientDoc[];
   vestingContracts: { id: string; data: IVestingContract }[];
   transactions: { id: string; data: ITransaction }[];
   ownershipTransfered: boolean;
@@ -63,18 +62,22 @@ export function DashboardContextProvider({ children }: any) {
   const { showLoading, hideLoading } = useLoaderContext();
   const router = useRouter();
 
+  /* Vesting state */
+  const [vestingsLoading, setVestingsLoading] = useState(false);
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
-  const [revokings, setRevokings] = useState<{ id: string; data: IRevoking }[]>([]);
+
+  /* Vesting Contract state */
+  const [vestingContractLoading, setVestingContractLoading] = useState(false);
   const [vestingContracts, setVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
+
+  const [revokings, setRevokings] = useState<{ id: string; data: IRevoking }[]>([]);
   const [transactions, setTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
   const [removeOwnership, setRemoveOwnership] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
-  const [vestingsLoading, setVestingsLoading] = useState(false);
-  const [vestingContractLoading, setVestingContractLoading] = useState(false);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
-  const [recipients, setRecipients] = useState<MultiValue<IRecipientForm>>([]);
+  const [recipients, setRecipients] = useState<IRecipientDoc[]>([]);
   const [vestingsStatus, setVestingsStatus] = useState<{ [key: string]: IVestingStatus }>({});
 
   // Stores everything about the user token details
@@ -85,6 +88,88 @@ export function DashboardContextProvider({ children }: any) {
   const [claims, setClaims] = useState(0);
   const [recipientTokenDetails, setRecipientTokenDetails] = useState<TCapTableRecipientTokenDetails[]>([]);
 
+  /* Fetch all vestings by organizationId and chainId */
+  const fetchDashboardVestings = useCallback(async () => {
+    setVestingsLoading(true);
+
+    try {
+      const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]);
+      // Filter out without the archived records
+      const filteredVestingSchedules = res.filter(
+        (v) => !v.data.archive && v.data.status !== 'REVOKED' && v.data.chainId === chainId
+      );
+      setVestings(filteredVestingSchedules);
+    } catch (err) {
+      console.log('fetchDashboardVestings - ', err);
+    }
+
+    setVestingsLoading(false);
+  }, [organizationId, chainId]);
+
+  /* Fetch all pending revokings by organizationId and chainId */
+  const fetchDashboardRevokings = useCallback(async () => {
+    try {
+      const res = await fetchRevokingsByQuery(
+        ['organizationId', 'chainId', 'status'],
+        ['==', '==', '=='],
+        [organizationId, chainId, 'PENDING']
+      );
+      setRevokings(res);
+    } catch (err) {
+      console.log('fetchDashboardRevokings - ', err);
+    }
+  }, [organizationId, chainId]);
+
+  /* Fetch all transactions by organizationId and chainId */
+  const fetchDashboardTransactions = useCallback(async () => {
+    setTransactionsLoading(true);
+    try {
+      const res = await fetchTransactionsByQuery(
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [organizationId, chainId]
+      );
+      setTransactions(res);
+    } catch (err) {
+      console.log('fetchDashboardTransactions - ', err);
+    }
+    setTransactionsLoading(false);
+  }, [organizationId, chainId]);
+
+  /* Fetch all recipients by organizationId and chainId */
+  const fetchDashboardRecipients = useCallback(async () => {
+    try {
+      const res = await fetchRecipientsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]);
+      setRecipients(res);
+    } catch (err) {
+      console.error('Fetching recipients data error in DashboardContext: ', err);
+    }
+  }, [organizationId, chainId]);
+
+  /* Fetch vestings & pending revoking & transactions & recipients data by organizationId and chainId */
+  const fetchDashboardData = useCallback(async () => {
+    if (organizationId && chainId) {
+      showLoading();
+      try {
+        await Promise.all([
+          fetchDashboardVestings(),
+          fetchDashboardTransactions(),
+          fetchDashboardRevokings(),
+          fetchDashboardRecipients()
+        ]);
+      } catch (err) {
+        console.log('fetchDashboardData - ', err);
+        setVestings([]);
+        setTransactions([]);
+      }
+      hideLoading();
+    } else {
+      setVestings([]);
+      setTransactions([]);
+      setRevokings([]);
+    }
+  }, [organizationId, chainId]);
+
   /**
    * This function is intended to initialize the multicall function
    * Will compute all the total amounts for
@@ -93,7 +178,7 @@ export function DashboardContextProvider({ children }: any) {
    * - Total allocation
    * This will also map out all the recipients that has allocations and all their token details
    */
-  const initializeMulticall = async () => {
+  const initializeMulticall = useCallback(async () => {
     // Start to check for all the required states before doing anything
     if (
       vestingContracts.length &&
@@ -103,14 +188,12 @@ export function DashboardContextProvider({ children }: any) {
       vestings.length &&
       recipients.length
     ) {
-      // Get the list of wallet addresses
-      let recipientAddresses = vestings.reduce((res, vesting) => {
-        res = [...res, ...vesting.data.recipients.map((recipient) => recipient.walletAddress)];
-        return res;
-      }, [] as string[]);
-      recipientAddresses = recipientAddresses.filter(
-        (address, index) => !!address && recipientAddresses.findIndex((addr) => addr === address) === index
-      );
+      const recipientAddresses = recipients
+        .map(({ data: { walletAddress: address } }) => address)
+        .filter(
+          (address, index) =>
+            !!address && recipients.findIndex(({ data: { walletAddress } }) => walletAddress === address) === index
+        );
 
       const multicall = new Multicall({
         ethersProvider: ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc),
@@ -118,7 +201,7 @@ export function DashboardContextProvider({ children }: any) {
       });
 
       // Setup multicall
-      const contractCallContext: ContractCallContext[] = vestingContracts.reduce((res, vestingContract, index) => {
+      const contractCallContext: ContractCallContext[] = vestingContracts.reduce((res, vestingContract) => {
         // Ensure that what we add in the call has vesting contract address
         if (vestingContract && vestingContract.data && vestingContract.data.address) {
           const vestingSchedule = vestings.find((schedule) => schedule.data.vestingContractId === vestingContract.id);
@@ -204,20 +287,19 @@ export function DashboardContextProvider({ children }: any) {
             const wallet = key.split('-')[2]; // contains the wallet address from `multicall-[0xContractAddress]-[0xWalletAddress]`
             const scheduleId = key.split('-')[3]; // contains the schedule id from multicall reference
             // Get the recipient details
-            const currentRecipient = recipients.find((recipient) => recipient.walletAddress === wallet);
+            const currentRecipient = recipients.find(({ data: { walletAddress } }) =>
+              compareAddresses(walletAddress, wallet)
+            );
             // Only add it in if the recipient on a particular vesting contract and schedule has vested allocation.
             if (currentRecipient && ethers.BigNumber.from(finalVestedAmount).gt(0)) {
               recipientsTokenDetails.push({
                 scheduleId,
-                name: currentRecipient.name,
-                company: currentRecipient.company ?? '',
+                name: currentRecipient.data.name,
+                company: currentRecipient.data.company ?? '',
                 // Some data especially on the recipients collection saves the recipientType as string ie., 'employee', 'founder', etc.
                 // while in the old one, it uses the select components values ie [{ label: 'Employee', value: 'employee' }] etc.
-                recipientType:
-                  typeof currentRecipient.recipientType === 'string'
-                    ? currentRecipient.recipientType
-                    : String(currentRecipient.recipientType[0]?.label),
-                address: currentRecipient.walletAddress,
+                recipientType: currentRecipient.data.recipientType,
+                address: currentRecipient.data.walletAddress,
                 // Ensure that the totalAllocation for each recipient is divided by the number of recipients
                 totalAllocation: finalVestedAmount,
                 // Set recipient's claimed and unclaimed datas
@@ -241,7 +323,7 @@ export function DashboardContextProvider({ children }: any) {
 
       setRecipientTokenDetails([...recipientsTokenDetails]);
     }
-  };
+  }, []);
 
   useEffect(() => {
     initializeMulticall();
@@ -249,12 +331,14 @@ export function DashboardContextProvider({ children }: any) {
 
   useEffect(() => {
     if (!organizationId || !chainId) return;
+
     let tmpVestingContracts: { id: string; data: IVestingContract }[] = [];
     const q = query(
       vestingContractCollection,
       where('organizationId', '==', organizationId),
       where('chainId', '==', chainId)
     );
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         const vestingContractInfo = change.doc.data();
@@ -285,120 +369,6 @@ export function DashboardContextProvider({ children }: any) {
     };
   }, [organizationId, chainId]);
 
-  const fetchDashboardVestings = async () => {
-    setVestingsLoading(true);
-    try {
-      const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId!, chainId!]);
-      // Filter out without the archived records
-      const filteredVestingSchedules = res.filter(
-        (v) => !v.data.archive && v.data.status !== 'REVOKED' && v.data.chainId === chainId
-      );
-      setVestings(filteredVestingSchedules);
-    } catch (err) {
-      console.log('fetchDashboardVestings - ', err);
-    }
-    setVestingsLoading(false);
-  };
-
-  const fetchDashboardRevokings = async () => {
-    try {
-      const res = await fetchRevokingsByQuery(
-        ['organizationId', 'chainId', 'status'],
-        ['==', '==', '=='],
-        [organizationId!, chainId!, 'PENDING']
-      );
-      setRevokings(res);
-    } catch (err) {
-      console.log('fetchDashboardRevokings - ', err);
-    }
-  };
-
-  const fetchDashboardTransactions = async () => {
-    setTransactionsLoading(true);
-    try {
-      const res = await fetchTransactionsByQuery(
-        ['organizationId', 'chainId'],
-        ['==', '=='],
-        [organizationId!, chainId!]
-      );
-      setTransactions(res);
-    } catch (err) {
-      console.log('fetchDashboardTransactions - ', err);
-    }
-    setTransactionsLoading(false);
-  };
-
-  const fetchDashboardData = async () => {
-    if (organizationId && chainId) {
-      showLoading();
-      try {
-        await fetchDashboardVestings();
-        // await fetchDashboardVestingContract();
-        await fetchDashboardTransactions();
-        await fetchDashboardRevokings();
-      } catch (err) {
-        console.log('fetchDashboardData - ', err);
-        setVestings([]);
-        setTransactions([]);
-      }
-      hideLoading();
-    } else {
-      setVestings([]);
-      setTransactions([]);
-      setRevokings([]);
-    }
-  };
-
-  const value = useMemo(
-    () => ({
-      vestings,
-      revokings,
-      recipients,
-      vestingContracts,
-      transactions,
-      ownershipTransfered,
-      insufficientBalance,
-      depositAmount,
-      vestingsLoading,
-      vestingContractLoading,
-      transactionsLoading,
-      removeOwnership,
-      vestingsStatus,
-      totalAllocation,
-      totalWithdrawn,
-      totalClaimable,
-      claims,
-      recipientTokenDetails,
-      // fetchDashboardVestingContract,
-      fetchDashboardVestings,
-      fetchDashboardTransactions,
-      setOwnershipTransfered,
-      fetchDashboardData,
-      setRemoveOwnership,
-      setVestingsStatus
-    }),
-    [
-      vestings,
-      recipients,
-      transactions,
-      ownershipTransfered,
-      insufficientBalance,
-      depositAmount,
-      vestingsLoading,
-      vestingContractLoading,
-      transactionsLoading,
-      removeOwnership,
-      vestingContracts,
-      revokings,
-      vestingsStatus,
-      totalAllocation,
-      totalWithdrawn,
-      totalClaimable,
-      claims,
-      recipientTokenDetails
-    ]
-  );
-
   useEffect(() => {
     if (chainId && (organizationId || (router && router.pathname === '/dashboard'))) fetchDashboardData();
   }, [organizationId, router, chainId]);
@@ -412,59 +382,6 @@ export function DashboardContextProvider({ children }: any) {
     vestings.forEach((vesting) => {
       vestingIds.push(vesting.id);
     });
-
-    // Run only when there are vestingIds present
-    if (vestingIds && vestingIds.length) {
-      console.log('DASHBOARD LOADING?');
-      showLoading();
-      // Firebase limits the IN operator into 10, so we have to batch it by 10s
-      const splicedVestingIds = [...vestingIds];
-      const batches = [];
-
-      // We loop as long as the new array for the vestingIds has items
-      while (splicedVestingIds.length) {
-        // Get only the first 10 of the remaining spliced vestingIds
-        const batch = splicedVestingIds.splice(0, 10);
-        // Add the 10 items into the query for the batch
-        batches.push(
-          fetchRecipientsByQuery(['vestingId'], ['in'], [[...batch]])
-            .then((allRecipients) => {
-              const recipientsData = allRecipients
-                .filter(
-                  (recipient, i) =>
-                    i ===
-                    allRecipients.findIndex((r) => compareAddresses(r.data.walletAddress, recipient.data.walletAddress))
-                )
-                .map(
-                  (recipient) =>
-                    ({
-                      walletAddress: recipient.data.walletAddress,
-                      name: recipient.data.name,
-                      email: recipient.data.email,
-                      company: recipient.data.company ?? '',
-                      allocations: Number(recipient.data.allocations),
-                      recipientType: [getRecipient(recipient.data.recipientType)]
-                    } as IRecipientForm)
-                );
-              return recipientsData;
-            })
-            .catch((error) => {
-              console.error('Fetching recipients data error', error);
-            })
-        );
-      }
-
-      // Execute all the batches and update the recipients state
-      Promise.all(batches)
-        .then((result) => {
-          // Gets the sublist of the batch list and flat them out into a single array
-          const allRecipientsData = result.flat() as IRecipientForm[];
-          setRecipients(allRecipientsData);
-        })
-        .finally(() => {
-          hideLoading();
-        });
-    }
 
     if (!organizationId || !chainId) return;
     const q = query(vestingCollection, where('organizationId', '==', organizationId), where('chainId', '==', chainId));
@@ -508,6 +425,56 @@ export function DashboardContextProvider({ children }: any) {
       });
     }
   }, [vestings]);
+
+  /* Global states */
+  const value = useMemo(
+    () => ({
+      vestings,
+      revokings,
+      recipients,
+      vestingContracts,
+      transactions,
+      ownershipTransfered,
+      insufficientBalance,
+      depositAmount,
+      vestingsLoading,
+      vestingContractLoading,
+      transactionsLoading,
+      removeOwnership,
+      vestingsStatus,
+      totalAllocation,
+      totalWithdrawn,
+      totalClaimable,
+      claims,
+      recipientTokenDetails,
+      fetchDashboardVestings,
+      fetchDashboardTransactions,
+      setOwnershipTransfered,
+      fetchDashboardData,
+      setRemoveOwnership,
+      setVestingsStatus
+    }),
+    [
+      vestings,
+      recipients,
+      transactions,
+      ownershipTransfered,
+      insufficientBalance,
+      depositAmount,
+      vestingsLoading,
+      vestingContractLoading,
+      transactionsLoading,
+      removeOwnership,
+      vestingContracts,
+      revokings,
+      vestingsStatus,
+      totalAllocation,
+      totalWithdrawn,
+      totalClaimable,
+      claims,
+      recipientTokenDetails
+    ]
+  );
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 }

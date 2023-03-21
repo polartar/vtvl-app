@@ -44,8 +44,12 @@ export default function VestingContract() {
   }>({ keyword: '', status: IStatus.ALL });
   const { recipients: initialRecipients } = useRecipientContext();
   const [recipients, setRecipients] = useState<IRecipientData[]>(initialRecipients);
-  const { vestingContracts, vestings } = useDashboardContext();
-  const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(vestingContracts, vestings);
+  const { vestingContracts, vestings, recipients: allRecipients } = useDashboardContext();
+  const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
+    vestingContracts,
+    vestings,
+    allRecipients
+  );
   const [allChecked, setAllChecked] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const { mintFormState } = useTokenContext();
@@ -184,9 +188,7 @@ export default function VestingContract() {
                 }}>
                 {status}
                 {status !== IStatus.ALL && (
-                  <div
-                    className={`avatar  bg-primary-50 text-primary-500 ml-3
-                 w-5 h-5`}>
+                  <div className="avatar bg-primary-50 text-primary-500 ml-3 w-5 h-5">
                     {filteredCounts && filteredCounts[status]}
                   </div>
                 )}

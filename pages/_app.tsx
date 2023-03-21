@@ -9,6 +9,8 @@ import { RecipientContextProvider } from '@providers/recipient.context';
 import { TeammateContextProvider } from '@providers/teammate.context';
 import { TokenContextProvider } from '@providers/token.context';
 import { VestingContextProvider } from '@providers/vesting.context';
+// react-query imports
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Web3ReactProvider } from '@web3-react/core';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
@@ -24,6 +26,9 @@ import { ToastContainer } from 'react-toastify';
 // Toast initial styling.
 import 'react-toastify/dist/ReactToastify.css';
 import 'styles/globals.css';
+
+// Create a client
+const queryClient = new QueryClient();
 
 // Exporting a layout type for nested layouts
 export type NextPageWithLayout<P = Record<string, never>, IP = P> = NextPage<P, IP> & {
@@ -49,28 +54,30 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <>
       <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
-        <AuthContextProvider>
-          <LoaderContextProvider>
-            <TokenContextProvider>
-              <OnboardingContextProvider>
-                <VestingContextProvider>
-                  <DashboardContextProvider>
-                    <TransactionLoaderContextProvider>
-                      <TeammateContextProvider>
-                        <ClaimTokensContextProvider>
-                          <RecipientContextProvider>
-                            <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                            <ToastContainer />
-                          </RecipientContextProvider>
-                        </ClaimTokensContextProvider>
-                      </TeammateContextProvider>
-                    </TransactionLoaderContextProvider>
-                  </DashboardContextProvider>
-                </VestingContextProvider>
-              </OnboardingContextProvider>
-            </TokenContextProvider>
-          </LoaderContextProvider>
-        </AuthContextProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthContextProvider>
+            <LoaderContextProvider>
+              <TokenContextProvider>
+                <OnboardingContextProvider>
+                  <VestingContextProvider>
+                    <DashboardContextProvider>
+                      <TransactionLoaderContextProvider>
+                        <TeammateContextProvider>
+                          <ClaimTokensContextProvider>
+                            <RecipientContextProvider>
+                              <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                              <ToastContainer />
+                            </RecipientContextProvider>
+                          </ClaimTokensContextProvider>
+                        </TeammateContextProvider>
+                      </TransactionLoaderContextProvider>
+                    </DashboardContextProvider>
+                  </VestingContextProvider>
+                </OnboardingContextProvider>
+              </TokenContextProvider>
+            </LoaderContextProvider>
+          </AuthContextProvider>
+        </QueryClientProvider>
       </Web3ReactProvider>
       <div id="react-modal"></div>
     </>

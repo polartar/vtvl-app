@@ -6,12 +6,13 @@ import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import { ethers } from 'ethers';
-import useChainVestings from 'hooks/useChainVestings';
-import useOrganizations from 'hooks/useOrganizations';
+import { useChainVestingsFromAddresses } from 'hooks/useChainVestings';
+import { useOrganizationsFromIds } from 'hooks/useOrganizations';
+import { useMyRecipes } from 'hooks/useRecipients';
 import { useShallowState } from 'hooks/useShallowState';
-import useTokens from 'hooks/useTokens';
-import useVestingContracts from 'hooks/useVestingContracts';
-import useVestings from 'hooks/useVestings';
+import { useTokensFromIds } from 'hooks/useTokens';
+import { useVestingContractsFromIds } from 'hooks/useVestingContracts';
+import { useVestingsFromIds } from 'hooks/useVestings';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { compareAddresses } from 'utils';
@@ -29,31 +30,27 @@ const formatDateTime = (dateTime: any) => {
 };
 
 export default function ClaimPortal() {
-  const {
-    isLoading: isLoadingVestings,
-    organizationIds,
-    vestings,
-    tokenIds,
-    recipes,
-    vestingContractIds
-  } = useVestings();
-
-  const { isLoading: isLoadingOrganizations, organizations } = useOrganizations(organizationIds);
-  const { tokens } = useTokens(tokenIds);
   const { library } = useWeb3React();
-  const { contracts, vestingContracts } = useVestingContracts(vestingContractIds);
+
+  const { isLoadingMyRecipes, myRecipes, myVestingIds, myOrganizationIds, schedulesByOrganization } = useMyRecipes();
+  const { isLoadingOrganizations, organizations } = useOrganizationsFromIds(myOrganizationIds);
+  const { isLoadingVestings, vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);
+  const { isLoadingTokens, tokens } = useTokensFromIds(vestingTokenIds);
+  const { isLoadingVestingContracts, vestingContracts, vestingContractAddresses } =
+    useVestingContractsFromIds(vestingContractIds);
   const {
-    isLoading: isLoadingChainVesting,
+    isLoadingVestings: isLoadingChainVesting,
     vestings: vestingInfos,
-    onUpdate: onUpdateChainVestings
-  } = useChainVestings(vestingContracts);
+    refetchVestings: refetchChainVestings
+  } = useChainVestingsFromAddresses(vestingContractAddresses);
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [selectedProject, setSelectedProject] = useShallowState<ProjectOption>();
 
-  const hasVestings = !!vestings?.length;
+  const hasVestings = !!myRecipes?.length;
+  const hasContracts = !!vestingContractAddresses?.length;
 
-  const isLoading = isLoadingVestings || (isLoadingChainVesting && hasVestings);
+  const isLoading = isLoadingMyRecipes || (isLoadingChainVesting && hasVestings && hasContracts);
 
   /**
    * Project Tabs data
@@ -68,26 +65,16 @@ export default function ClaimPortal() {
   );
 
   /**
-   * My recipes data from current(selected) organization
-   *
-   * User can have multiple vestings in 1 organization
-   */
-  const myRecipes = useMemo(
-    () => recipes.filter((recipe) => recipe?.organizationId === selectedProject.value),
-    [selectedProject.value, recipes]
-  );
-
-  /**
    * Sum of total allocations from current(selected) organization
    */
   const totalAllocations = useMemo(() => {
-    return myRecipes.reduce((val, recipe) => val + Number(recipe?.allocations ?? 0), 0);
+    return myRecipes?.reduce((val, { data: recipe }) => val + Number(recipe?.allocations), 0) ?? 0;
   }, [myRecipes]);
 
   const vestingDetails = useMemo(
     () =>
       vestingInfos.map((vestingInfo) => {
-        const contract = contracts.find((c) => compareAddresses(c.data.address, vestingInfo.address));
+        const contract = vestingContracts.find((c) => compareAddresses(c.data.address, vestingInfo.address));
         const singleVesting = vestings.find((v) => v.data.vestingContractId === contract?.id);
         return {
           id: contract?.id,
@@ -97,7 +84,7 @@ export default function ClaimPortal() {
           ...vestingInfo
         };
       }),
-    [vestingInfos, contracts, vestings]
+    [vestingInfos, vestingContracts, vestings]
   );
 
   const vestingDetail = useMemo(() => {
@@ -120,7 +107,7 @@ export default function ClaimPortal() {
    * Current organization's governance token
    */
   const token = useMemo(
-    () => tokens.find((token) => token.data.organizationId === selectedProject?.value),
+    () => tokens?.find((token) => token.data.organizationId === selectedProject?.value),
     [selectedProject?.value, tokens]
   );
 
@@ -173,12 +160,14 @@ export default function ClaimPortal() {
           setTransactionStatus('IN_PROGRESS');
           await withdrawTx.wait();
 
+          refetchChainVestings();
+
           // Update ChainVestings data
-          onUpdateChainVestings(
-            vestingInfo.address,
-            ['unclaimed', 'withdrawn'],
-            ['0', String(Number(vestingInfo.withdrawn) + Number(vestingInfo.unclaimed))]
-          );
+          // onUpdateChainVestings(
+          //   vestingInfo.address,
+          //   ['unclaimed', 'withdrawn'],
+          //   ['0', String(Number(vestingInfo.withdrawn) + Number(vestingInfo.unclaimed))]
+          // );
 
           setTransactionStatus('SUCCESS');
         } catch (err) {
@@ -194,7 +183,7 @@ export default function ClaimPortal() {
     setSelectedProject(projects?.[0]);
   }, [projects]);
 
-  return !isLoadingVestings && !hasVestings ? (
+  return !isLoadingMyRecipes && !hasVestings ? (
     <EmptyState
       image="/images/cryptocurrency-trading-bot.gif"
       title="No claimable tokens"
@@ -273,7 +262,7 @@ export default function ClaimPortal() {
               isLoading={isLoadingDetails}
               icon={<VestingCalendarIcon className="w-6 h-6" />}
               title="Schedule"
-              content={String(myRecipes?.length ?? 0)}
+              content={String(Number(schedulesByOrganization?.[selectedProject.value] ?? 0))}
               contentType="text"
             />
             <StandardCard
@@ -308,7 +297,7 @@ export default function ClaimPortal() {
               </div>
             ))
           : vestings.map((singleVesting) => {
-              const contract = contracts.find((c) => c.id === singleVesting.data.vestingContractId);
+              const contract = vestingContracts.find((c) => c.id === singleVesting.data.vestingContractId);
               const vestingInfo = getVestingInfoByContract(String(contract?.data.address));
               const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = singleVesting.data.details;
               const computeCliffDateTime = getCliffDateTime(startDateTime!, cliffDuration);

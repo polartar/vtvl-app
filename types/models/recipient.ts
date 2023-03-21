@@ -1,3 +1,5 @@
+import { SupportedChainId } from 'types/constants/supported-chains';
+
 export interface IRecipient {
   vestingId: string;
   organizationId: string;
@@ -7,6 +9,7 @@ export interface IRecipient {
   allocations: string;
   walletAddress: string;
   recipientType: IRecipientTypeValue;
+  chainId?: SupportedChainId;
   status?: 'accepted' | 'delivered' | '';
   updatedAt?: number;
 }
@@ -21,8 +24,8 @@ export interface IRecipientForm {
 }
 
 export interface IRecipientType {
-  label: string | number;
-  value: string | number;
+  label: string;
+  value: string;
 }
 
 export interface IRecipientFormState {

@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { truncateComma } from 'utils';
 import { formatNumber } from 'utils/token';
 import { validate } from 'utils/validator';
-import { truncateAddress } from 'utils/web3';
+import { truncateAddress, truncateEmail } from 'utils/web3';
 
 import { EditableTypographyProps, EditableTypographyType, tdTypographyProps } from './utils';
 
@@ -12,6 +12,8 @@ const formatOutput = (value: string | number, type: EditableTypographyType) => {
   switch (type) {
     case 'address':
       return truncateAddress(String(value));
+    case 'email':
+      return truncateEmail(String(value));
     case 'number':
       return formatNumber(Number(truncateComma(String(value))));
     default:

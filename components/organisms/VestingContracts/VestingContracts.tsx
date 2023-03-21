@@ -18,13 +18,17 @@ import CreateVestingContractModal from '../CreateVestingContractModal';
 import ContractsProfile from './VestingContractsProfile';
 
 export default function VestingContracts() {
-  const { vestingContracts, vestings: allVestings } = useDashboardContext();
+  const { vestingContracts, vestings: allVestings, recipients: allRecipients } = useDashboardContext();
   const { mintFormState: token } = useTokenContext();
   const { ModalWrapper, showModal, hideModal } = useModal({});
 
   const router = useRouter();
 
-  const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(vestingContracts, allVestings);
+  const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
+    vestingContracts,
+    allVestings,
+    allRecipients
+  );
 
   const getVestingInfoByContract = useCallback(
     (contractAddress: string) => {

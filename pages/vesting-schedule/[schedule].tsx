@@ -20,10 +20,11 @@ import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import WarningIcon from 'public/icons/warning.svg';
 import { ReactElement, useEffect, useState } from 'react';
+import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { fetchTransaction } from 'services/db/transaction';
 import { fetchVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { ITransaction, IVesting } from 'types/models';
+import { IRecipientDoc, ITransaction, IVesting } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import { getDuration } from 'utils/vesting';
@@ -33,6 +34,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
   const router = useRouter();
   const { schedule } = router.query;
   const [vestingSchedule, setVestingSchedule] = useState<IVesting | undefined>(undefined);
+  const [recipients, setRecipients] = useState<IRecipientDoc[]>([]);
   const { mintFormState } = useTokenContext();
   const { safe, organizationId } = useAuthContext();
   const { loading, hideLoading, showLoading } = useLoaderContext();
@@ -43,6 +45,9 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     // Get the schedule details
     try {
       const getVestingSchedule = await fetchVesting(schedule as string);
+      const recipientsData = await fetchRecipientsByQuery(['vestingId'], ['=='], [schedule]);
+      setRecipients(recipientsData);
+
       console.log('Vesting Schedule UI', getVestingSchedule);
       if (getVestingSchedule) {
         const actualDateTime = getActualDateTime(getVestingSchedule.details);
@@ -206,7 +211,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
                 <p className="paragraphy-small-medium text-neutral-900">
                   {formatNumber(
                     new Decimal(vestingSchedule.details.amountToBeVested)
-                      .div(new Decimal(vestingSchedule.recipients.length))
+                      .div(new Decimal(recipients.length))
                       .toDP(6, Decimal.ROUND_UP)
                   )}{' '}
                   {mintFormState.symbol || 'Token'}
@@ -220,7 +225,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Beneficiaries</span>
-                <p className="paragraphy-small-medium text-neutral-900">{vestingSchedule.recipients.length}</p>
+                <p className="paragraphy-small-medium text-neutral-900">{recipients.length}</p>
               </div>
               <div>
                 <span className="paragraphy-tiny-medium text-neutral-500">Total Period</span>

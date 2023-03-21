@@ -53,6 +53,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     fetchDashboardData,
     vestings,
     vestingsStatus,
+    recipients,
     setVestingsStatus
   } = useDashboardContext();
   const {
@@ -69,6 +70,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const transaction = useMemo(
     () => transactions.find((t) => t.id === data.transactionId && t.data.status === 'PENDING'),
     [data, transactions]
+  );
+  const vestingRecipients = useMemo(
+    () => recipients?.filter((recipient) => recipient.id === id) ?? [],
+    [recipients, id]
   );
 
   const [status, setStatus] = useState<IStatus>('');
@@ -392,6 +397,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         activate(injected);
         return;
       }
+      const totalRecipients = vestingRecipients.length;
       const vesting = data;
       const vestingId = id;
       const cliffAmountPerUser =
@@ -399,9 +405,9 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           vesting.details.cliffDuration,
           +vesting.details.lumpSumReleaseAfterCliff,
           +vesting.details.amountToBeVested
-        ) / vesting.recipients.length;
-      const vestingAmountPerUser = +vesting.details.amountToBeVested / vesting.recipients.length - cliffAmountPerUser;
-      const addresses = vesting.recipients.map((recipient) => recipient.walletAddress);
+        ) / totalRecipients;
+      const vestingAmountPerUser = +vesting.details.amountToBeVested / totalRecipients - cliffAmountPerUser;
+      const addresses = vestingRecipients.map(({ data: recipient }) => recipient.walletAddress);
 
       const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
 
@@ -436,32 +442,27 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             //     vesting.details.releaseFrequency
             //   )
             null;
-      const vestingStartTimestamps = new Array(vesting.recipients.length).fill(
+      const vestingStartTimestamps = new Array(totalRecipients).fill(
         cliffReleaseTimestamp
           ? cliffReleaseTimestamp
           : Math.floor((vesting.details.startDateTime as unknown as Timestamp).seconds)
       );
-      const vestingEndTimestamps = new Array(vesting.recipients.length).fill(
-        Math.floor(vestingEndTimestamp!.getTime() / 1000)
-      );
-      const vestingCliffTimestamps = new Array(vesting.recipients.length).fill(cliffReleaseTimestamp);
+      const vestingEndTimestamps = new Array(totalRecipients).fill(Math.floor(vestingEndTimestamp!.getTime() / 1000));
+      const vestingCliffTimestamps = new Array(totalRecipients).fill(cliffReleaseTimestamp);
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
         vestingEndTimestamp!,
         vesting.details.releaseFrequency,
         vesting.details.cliffDuration
       );
-      const vestingReleaseIntervals = new Array(vesting.recipients.length).fill(releaseFrequencyTimestamp);
-      // const vestingLinearVestAmounts = new Array(vesting.recipients.length).fill(
-      //   parseTokenAmount(vestingAmountPerUser, 18)
-      // );
-      const vestingLinearVestAmounts = vesting.recipients.map((recipient) => {
+      const vestingReleaseIntervals = new Array(totalRecipients).fill(releaseFrequencyTimestamp);
+      const vestingLinearVestAmounts = vestingRecipients.map(({ data: recipient }) => {
         const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
         // Computes how many tokens are left after cliff based on percentage
         const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
         return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
       });
-      const vestingCliffAmounts = new Array(vesting.recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
+      const vestingCliffAmounts = new Array(totalRecipients).fill(parseTokenAmount(cliffAmountPerUser, 18));
 
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
@@ -840,7 +841,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           <div
             className="avatar 
                    bg-gray-500 text-gray-100  w-5 h-5 ml-3">
-            {data.recipients.length}
+            {vestingRecipients.length}
           </div>
         </div>
         <div className="flex items-center w-52 py-3">Address</div>
@@ -849,7 +850,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         <div className="flex items-center w-32 py-3">Total locked</div>
         <div className="flex items-center w-40 py-3">Allocation</div>
       </div>
-      {data.recipients.map((recipient, index) => {
+      {vestingRecipients.map(({ data: recipient }, index) => {
         if (index < 3 || isRecipientExpand) {
           return (
             <div
@@ -883,7 +884,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           return null;
         }
       })}
-      {data.recipients.length > 3 && (
+      {vestingRecipients.length > 3 && (
         <div className="flex  bg-[#eaecf0] text-[#667085] text-xs border-t border-[#d0d5dd]">
           <div className="flex items-center w-16 py-3"></div>
           <div

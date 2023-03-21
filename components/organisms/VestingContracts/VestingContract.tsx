@@ -27,7 +27,11 @@ import VestingFilter from './Vestings';
 
 export default function VestingContract({ vestingContractId }: { vestingContractId: string }) {
   const { chainId, library, account } = useWeb3React();
-  const { vestings: allVestings, vestingContracts: allVestingContracts } = useDashboardContext();
+  const {
+    vestings: allVestings,
+    vestingContracts: allVestingContracts,
+    recipients: allRecipients
+  } = useDashboardContext();
   const { safe, organizationId } = useAuthContext();
   const { mintFormState } = useTokenContext();
   const {
@@ -49,7 +53,11 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     return selectedVestingContract ? [selectedVestingContract] : [];
   }, [allVestingContracts]);
 
-  const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(vestingContracts, allVestings);
+  const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
+    vestingContracts,
+    allVestings,
+    allRecipients
+  );
   const vestingContractsInfo = useMemo(() => {
     if (!vestingSchedulesInfo || !vestingSchedulesInfo.length || !vestingContracts.length) return undefined;
     let allocation = ethers.BigNumber.from(0),
