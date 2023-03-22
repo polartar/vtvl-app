@@ -23,7 +23,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
-import { fetchRecipientByQuery } from 'services/db/recipient';
+import { fetchRecipientByQuery, fetchRecipientsByQuery } from 'services/db/recipient';
 import { fetchSafeByQuery } from 'services/db/safe';
 import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
 import { compareAddresses } from 'utils';
@@ -101,10 +101,18 @@ export function AuthContextProvider({ children }: any) {
   const [connection, setConnection] = useState<TConnections | undefined>();
 
   useEffect(() => {
-    if (recipient && recipient.data && recipient.data.walletAddress) {
-      Router.push('/claim-portal');
+    if (chainId && user?.memberInfo?.email && user.memberInfo?.type == 'investor') {
+      fetchRecipientsByQuery(
+        ['email', 'organizationId', 'chainId'],
+        ['==', '==', '=='],
+        [user.email, user.memberInfo.org_id, chainId]
+      ).then((response) => {
+        if (response && response.length > 0) {
+          setRecipient(response[0]);
+        }
+      });
     }
-  }, [recipient]);
+  }, [chainId, user]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -494,7 +502,7 @@ export function AuthContextProvider({ children }: any) {
     if (user && user.email && user.uid) {
       setOrganizationId(user?.memberInfo?.org_id);
     }
-  }, [user]);
+  }, [user, recipient]);
 
   useEffect(() => {
     fetchSafe();

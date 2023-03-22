@@ -9,7 +9,7 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { fetchRecipient, fetchRecipientByQuery, updateRecipient } from 'services/db/recipient';
+import { fetchRecipient, updateRecipient } from 'services/db/recipient';
 import { IRecipient, IRecipientDoc } from 'types/models';
 
 const RecipientCreate: NextPage = () => {
@@ -43,6 +43,7 @@ const RecipientCreate: NextPage = () => {
           setToken(res.data.token);
           fetchRecipient(res.data.memberId).then((response) => {
             setRecipient({ id: res.data.memberId, data: response as IRecipient });
+
             if (response) updateRecipient(res.data.memberId, { status: 'accepted' });
 
             if (response?.name) {
