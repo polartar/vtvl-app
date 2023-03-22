@@ -112,11 +112,11 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
           websiteName: state.website.name,
           theme: {
             primaryColor:
-              state.website.styles?.emailTheme?.primary ||
+              state.website.styles?.emailTheme?.bgColorPrimary ||
               theme['--primary-900'] ||
               state.emailTemplate.theme.primaryColor,
             secondaryColor:
-              state.website.styles?.emailTheme?.secondary ||
+              state.website.styles?.emailTheme?.bgColorSecondary ||
               theme['--secondary-900'] ||
               state.emailTemplate.theme.secondaryColor,
             logoImage: state?.website?.assets?.emailLogoImage || state.emailTemplate.theme.logoImage
