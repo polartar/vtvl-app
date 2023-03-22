@@ -14,7 +14,7 @@ const DashboardVestingSummary = () => {
 
   return (
     <div className="border-b border-info pb-8">
-      <div className="px-8 py-6 flex justify-between border-t border-b border-info">
+      <div className="p-6 flex justify-between border-t border-b border-info">
         <div>
           <div className="text-label text-sm font-medium flex items-center gap-1.5">
             <img src="/icons/total-allocation.svg" />
@@ -66,7 +66,7 @@ const DashboardVestingSummary = () => {
           withdrawn={totalWithdrawn}
         />
       )}
-      <div className="mt-4 grid grid-cols-4 gap-6 px-8">
+      <div className="mt-4 grid grid-cols-4 gap-6 px-6">
         <div className="w-full px-6 py-3 flex items-end justify-between border border-[#e8ebf5] rounded-xl hover:bg-[#324aa4] group">
           <div>
             <div className="text-[#667085] text-xs leading-[1.6] font-medium group-hover:text-white">Contracts</div>

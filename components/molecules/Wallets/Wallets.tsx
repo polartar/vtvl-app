@@ -24,7 +24,7 @@ const Wallets = ({ wallets }: IWalletsProps) => {
             image={wallet.image}
             subLabel={
               wallet.subLabel ? (
-                <Chip size="small" color="primary" rounded={true} label={wallet.subLabel as string} />
+                <Chip size="tiny" color="primary" rounded={true} label={wallet.subLabel as string} />
               ) : (
                 ''
               )

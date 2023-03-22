@@ -301,7 +301,7 @@
 
   button[disabled]:not(.wallet-button):not(.loading),
   button:disabled:not(.wallet-button):not(.loading) {
-    @apply bg-primary-50 border border-primary-400 text-primary-300 !important;
+    @apply bg-primary-50 border border-primary-400 text-primary-300;
   }
 
   /* Typography */

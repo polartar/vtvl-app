@@ -23,12 +23,12 @@ interface SteppedLayoutProps extends React.AllHTMLAttributes<HTMLAllCollection> 
 const SteppedLayout = ({ steps = [], currentStep = -1, padded = true, ...props }: SteppedLayoutProps) => {
   return (
     <div className="w-full h-full">
-      <div className="text-left mb-5 px-8">
+      <div className="text-left mb-5 px-6">
         <Breadcrumb steps={props.crumbs} />
       </div>
       <div
         className={`flex flex-col items-center justify-center gap-4 mx-auto w-full h-full ${
-          padded ? 'px-8 pb-8' : ''
+          padded ? 'px-6 pb-8' : ''
         }`}>
         {steps?.length && currentStep > -1 ? (
           <>

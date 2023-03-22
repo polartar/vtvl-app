@@ -48,7 +48,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
     <header className={`sticky top-0 z-40 w-full h-20 bg-gray-50 flex flex-col items-center border-b border-gray-300`}>
       {/* Header with wallet and network selection section */}
       <Fade top when={displayWalletConnect}>
-        <div className="w-full flex flex-row gap-3 md:gap-5 justify-between h-20 absolute z-10 px-3 md:px-6 lg:px-8 ">
+        <div className="w-full flex flex-row gap-3 md:gap-5 justify-between h-20 absolute z-10 px-3 md:px-6 ">
           {renderVTVLLogo()}
           <div
             className={`flex flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5 flex-shrink-0 transition-all delay-300 ${
@@ -65,7 +65,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
       </Fade>
       {/* Header with logo only */}
       <Fade top when={!displayWalletConnect}>
-        <div className="w-full flex flex-row gap-3 md:gap-5 justify-center h-20 absolute px-3 md:px-6 lg:px-8 ">
+        <div className="w-full flex flex-row gap-3 md:gap-5 justify-center h-20 absolute px-3 md:px-6 ">
           {renderVTVLLogo()}
         </div>
       </Fade>
