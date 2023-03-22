@@ -1,6 +1,7 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import { VestingCalendarIcon, VestingScheduleIcon } from '@components/atoms/Icons';
 import { Typography } from '@components/atoms/Typography/Typography';
+import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
@@ -31,7 +32,7 @@ const formatDateTime = (dateTime: any) => {
 
 export default function ClaimPortal() {
   const { library } = useWeb3React();
-
+  const { user, recipient } = useAuthContext();
   const { isLoadingMyRecipes, myRecipes, myVestingIds, myOrganizationIds, schedulesByOrganization } = useMyRecipes();
   const { isLoadingOrganizations, organizations } = useOrganizationsFromIds(myOrganizationIds);
   const { isLoadingVestings, vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);

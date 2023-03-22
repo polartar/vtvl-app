@@ -88,14 +88,4 @@ const RecipientSchedule = () => {
   );
 };
 
-const crumbSteps = [{ title: 'Claims Portal', route: '/claim-portal' }];
-
-RecipientSchedule.getLayout = function getLayout(page: React.ReactElement) {
-  return (
-    <SteppedLayout title="Claims Portal" crumbs={crumbSteps}>
-      {page}
-    </SteppedLayout>
-  );
-};
-
 export default RecipientSchedule;

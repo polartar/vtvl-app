@@ -108,11 +108,14 @@ export function AuthContextProvider({ children }: any) {
         [user.email, user.memberInfo.org_id, chainId]
       ).then((response) => {
         if (response && response.length > 0) {
-          setRecipient(response[0]);
+          const currRecipient = response.find((rec) => rec.data.walletAddress === account);
+          if (currRecipient) {
+            setRecipient(currRecipient);
+          }
         }
       });
     }
-  }, [chainId, user]);
+  }, [chainId, user, account]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -491,7 +494,7 @@ export function AuthContextProvider({ children }: any) {
       user.memberInfo.type !== 'manager' &&
       user.memberInfo.type !== 'manager2'
     ) {
-      if (user.memberInfo.type === 'investor' && recipient && !recipient.data.walletAddress) {
+      if (user.memberInfo.type === 'investor' && (!recipient || (recipient && !recipient.data.walletAddress))) {
         Router.push('/recipient/schedule');
       } else {
         Router.push('/claim-portal');
