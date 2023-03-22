@@ -32,7 +32,6 @@ const formatDateTime = (dateTime: any) => {
 
 export default function ClaimPortal() {
   const { library } = useWeb3React();
-  const { user, recipient } = useAuthContext();
   const { isLoadingMyRecipes, myRecipes, myVestingIds, myOrganizationIds, schedulesByOrganization } = useMyRecipes();
   const { isLoadingOrganizations, organizations } = useOrganizationsFromIds(myOrganizationIds);
   const { isLoadingVestings, vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);
