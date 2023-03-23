@@ -16,7 +16,8 @@ export const walletconnect = new WalletConnectConnector({
     [SupportedChainId.FANTOM]: SupportedChains[SupportedChainId.FANTOM].rpc,
     [SupportedChainId.CRONOS]: SupportedChains[SupportedChainId.CRONOS].rpc,
     [SupportedChainId.MUMBAI]: SupportedChains[SupportedChainId.MUMBAI].rpc,
-    [SupportedChainId.GOERLI]: SupportedChains[SupportedChainId.GOERLI].rpc
+    [SupportedChainId.GOERLI]: SupportedChains[SupportedChainId.GOERLI].rpc,
+    [SupportedChainId.OKC_MAINNET]: SupportedChains[SupportedChainId.OKC_MAINNET].rpc
   },
   bridge: 'https://bridge.walletconnect.org',
   qrcode: true
@@ -29,7 +30,9 @@ export const network = new NetworkConnector({
     [SupportedChainId.AVALANCHE]: SupportedChains[SupportedChainId.AVALANCHE].rpc,
     [SupportedChainId.FANTOM]: SupportedChains[SupportedChainId.FANTOM].rpc,
     [SupportedChainId.CRONOS]: SupportedChains[SupportedChainId.CRONOS].rpc,
-    [SupportedChainId.MUMBAI]: SupportedChains[SupportedChainId.MUMBAI].rpc
+    [SupportedChainId.MUMBAI]: SupportedChains[SupportedChainId.MUMBAI].rpc,
+    [SupportedChainId.OKC_MAINNET]: SupportedChains[SupportedChainId.OKC_MAINNET].rpc,
+    [SupportedChainId.OKC_TESTNET]: SupportedChains[SupportedChainId.OKC_TESTNET].rpc
   },
   defaultChainId: 1
 });

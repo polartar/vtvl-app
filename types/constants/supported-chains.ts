@@ -23,7 +23,8 @@ export const PROD_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.AVALANCHE,
   SupportedChainId.FANTOM,
   SupportedChainId.CRONOS,
-  SupportedChainId.OKC_MAINNET
+  SupportedChainId.OKC_MAINNET,
+  SupportedChainId.OKC_TESTNET
 ];
 
 export const DEV_SUPPORTED_CHAIN_IDS = [
@@ -32,7 +33,9 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
   SupportedChainId.FANTOM_TESTNET,
-  SupportedChainId.CRONOS_TESTNET
+  SupportedChainId.CRONOS_TESTNET,
+  SupportedChainId.OKC_MAINNET,
+  SupportedChainId.OKC_TESTNET
 ];
 
 export const SUPPORTED_CHAIN_IDS = env === 'production' ? PROD_SUPPORTED_CHAIN_IDS : DEV_SUPPORTED_CHAIN_IDS;
@@ -132,6 +135,15 @@ export const prodSupportedChains: SupportedChainsType = {
     rpc: 'https://exchainrpc.okex.org',
     explorer: 'https://www.oklink.com/en/okc',
     multisigTxUrl: ''
+  },
+  [SupportedChainId.OKC_TESTNET]: {
+    id: 65,
+    icon: '/icons/chains/okc.png',
+    title: 'OKC Testnet',
+    code: 'OKT',
+    rpc: 'https://exchaintestrpc.okex.org/',
+    explorer: 'https://www.oklink.com/en/okc-test',
+    multisigTxUrl: ''
   }
 };
 
@@ -216,6 +228,15 @@ export const devSupportedChains: SupportedChainsType = {
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
     multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
+  },
+  [SupportedChainId.OKC_MAINNET]: {
+    id: 66,
+    icon: '/icons/chains/okc.png',
+    title: 'OKC Mainnet',
+    code: 'OKT',
+    rpc: 'https://exchainrpc.okex.org',
+    explorer: 'https://www.oklink.com/en/okc',
+    multisigTxUrl: ''
   },
   [SupportedChainId.OKC_TESTNET]: {
     id: 65,

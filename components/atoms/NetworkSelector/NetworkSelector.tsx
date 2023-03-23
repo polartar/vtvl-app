@@ -63,7 +63,7 @@ const NetworkSelector = () => {
         className="flex flex-row items-center justify-between sm:gap-1 md:gap-3 bg-gray-50 border border-gray-200 rounded-3xl px-2 sm:px-3"
         onClick={() => setShowNetworks(!showNetworks)}>
         <div className="h-10 shrink-0 grow flex flex-row items-center sm:gap-2 cursor-pointer">
-          <img src={selectedNetwork.icon} className="shrink-0" alt={selectedNetwork.title} />
+          <img src={selectedNetwork.icon} className="shrink-0 w-6 h-6 rounded-full" alt={selectedNetwork.title} />
           <p className="text-sm text-primary-900 font-medium">
             <span className="hidden sm:block lg:hidden">{selectedNetwork.code}</span>
             <span className="hidden lg:block">{selectedNetwork.title}</span>
