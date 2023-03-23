@@ -102,20 +102,13 @@ export function AuthContextProvider({ children }: any) {
 
   useEffect(() => {
     if (chainId && user?.memberInfo?.email && user.memberInfo?.type == 'investor') {
-      fetchRecipientsByQuery(
-        ['email', 'organizationId', 'chainId'],
-        ['==', '==', '=='],
-        [user.email, user.memberInfo.org_id, chainId]
-      ).then((response) => {
+      fetchRecipientsByQuery(['email', 'chainId'], ['==', '=='], [user.email, chainId]).then((response) => {
         if (response && response.length > 0) {
-          const currRecipient = response.find((rec) => rec.data.walletAddress === account);
-          if (currRecipient) {
-            setRecipient(currRecipient);
-          }
+          setRecipient(response[0]);
         }
       });
     }
-  }, [chainId, user, account]);
+  }, [chainId, user]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {

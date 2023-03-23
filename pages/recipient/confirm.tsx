@@ -3,7 +3,6 @@ import Chip from '@components/atoms/Chip/Chip';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
-import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
@@ -14,11 +13,11 @@ import { generateMessage } from 'pages/api/recipient/add-address';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { fetchVesting } from 'services/db/vesting';
 
 const RecipientCreate: NextPage = () => {
   const { account, library } = useWeb3React();
   const { recipient, setRecipient } = useAuthContext();
-  const { vestings } = useDashboardContext();
 
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,9 +39,10 @@ const RecipientCreate: NextPage = () => {
     // const message = 'You are going to update the uri for ' + account + new Date().toString();
 
     let message;
-    const vesting = vestings.find((vesting) => vesting.id === recipient?.data.vestingId);
 
-    if (vesting) message = generateMessage(vesting.data, account);
+    const vesting = await fetchVesting(recipient?.data.vestingId || ''); //vestings.find((vesting) => vesting.id === recipient?.data.vestingId);
+
+    if (vesting) message = generateMessage(vesting, account);
 
     let signature;
     try {
@@ -70,7 +70,6 @@ const RecipientCreate: NextPage = () => {
           status: 'accepted'
         }
       });
-      router.push('/claim-portal');
     } catch (err) {
       toast.error('The signature is invalid');
     }

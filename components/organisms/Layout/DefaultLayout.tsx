@@ -354,8 +354,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       user &&
       user?.memberInfo &&
       user.memberInfo.type &&
-      (user.memberInfo.type !== 'investor' ||
-        (user.memberInfo.type === 'investor' && recipient && recipient.data.walletAddress)) &&
+      !['/recipient/schedule', '/recipient/confirm'].includes(router.pathname) &&
       SidebarProps[user?.memberInfo?.type]
   );
 

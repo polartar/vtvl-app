@@ -12,11 +12,11 @@ import { removeDuplication } from 'utils/shared';
  */
 export const useMyRecipes = () => {
   const { chainId, account } = useWeb3React();
-  const { user } = useAuthContext();
+  const { user, recipient } = useAuthContext();
   const email = user?.memberInfo?.email;
 
   const { isLoading: isLoadingMyRecipes, data: myRecipes } = useQuery<IRecipientDoc[]>(
-    [QUERY_KEYS.RECIPIENT.MINE, chainId, account, email],
+    [QUERY_KEYS.RECIPIENT.MINE, chainId, account, email, recipient?.data.walletAddress],
     () =>
       email
         ? fetchRecipientsByQuery(['chainId', 'walletAddress', 'email'], ['==', '==', '=='], [chainId, account, email])
