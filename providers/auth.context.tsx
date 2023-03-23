@@ -382,7 +382,7 @@ export function AuthContextProvider({ children }: any) {
   ): Promise<void> => {
     setLoading(true);
     //TODO: extract api calls
-    await axios.post('/api/email/teammate-invite', {
+    await axios.post(`/api/email/teammate-invite`, {
       email,
       type,
       orgId,

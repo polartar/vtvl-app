@@ -1,4 +1,5 @@
 import { addDoc, deleteDoc, doc, getDoc, getDocs, limit, query, setDoc, where } from '@firebase/firestore';
+import axios from 'axios';
 import { inviteeCollection, memberCollection } from 'services/db/firestore';
 import { IInvitee, IMember } from 'types/models';
 
@@ -51,6 +52,14 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
   };
   if (member.wallets) memberInfo.wallets = member.wallets;
   await setDoc(memberRef, memberInfo);
+
+  // send slack message
+
+  if (member.type === 'founder' && (!existingMember || (existingMember && existingMember.data().type !== 'founder'))) {
+    await axios.post(`/api/slack/add-member`, {
+      email: member.email
+    });
+  }
 };
 
 export const addInvitee = async (invitee: IInvitee): Promise<void> => {
