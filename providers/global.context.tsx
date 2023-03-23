@@ -107,6 +107,8 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
       }
 
       // Update the emailTemplate
+      // Updates the colors in order of priority first by using the bgColorPrimary in the emailTheme object,
+      // then uses the app's theme, and lastly the default vtvl theme colors.
       setState({
         emailTemplate: {
           websiteName: state.website.name,

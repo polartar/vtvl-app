@@ -7,7 +7,7 @@ import { Step, useOnboardingContext } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import AstroHelmet from 'public/icons/astronaut-helmet.svg';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { WEBSITE_NAME } from 'utils/constants';
 
 const OnboardingContainer = styled.div`
@@ -46,14 +46,10 @@ const WalletContainer = styled.div`
 const SelectLoginTypePage: NextPage = () => {
   const { startOnboarding } = useOnboardingContext();
   const {
-    website: { assets, name }
+    website: { assets, name, organizationId: webOrgId }
   } = useGlobalContext();
 
-  useEffect(() => {
-    startOnboarding(Step.ChainSetup);
-  }, []);
-
-  const wallets = [
+  const [wallets, setWallets] = useState([
     {
       name: 'Member',
       image: <AstroHelmet className="w-10 h-10 text-primary-900 mb-3" />,
@@ -66,7 +62,17 @@ const SelectLoginTypePage: NextPage = () => {
       // Change this based on where the flow it should be
       onClick: () => Router.push('/onboarding/connect-wallet')
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    startOnboarding(Step.ChainSetup);
+  }, []);
+
+  useEffect(() => {
+    if (webOrgId) {
+      setWallets([...wallets.slice(0, 1)]);
+    }
+  }, [webOrgId]);
 
   return (
     <PaddedLayout>
@@ -75,8 +81,14 @@ const SelectLoginTypePage: NextPage = () => {
           <div className="max-w-[397px]">
             <h1 className="font-medium">Access {name || WEBSITE_NAME} as</h1>
             <p className="text-sm font-medium text-neutral-500">
-              Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
-              <strong>Guest</strong> to test our platform.
+              Select <strong>Member</strong> if you&apos;re an existing user or signing up
+              {webOrgId ? (
+                '.'
+              ) : (
+                <>
+                  , else select <strong>Guest</strong> to test our platform.
+                </>
+              )}
             </p>
           </div>
           <WalletContainer>
