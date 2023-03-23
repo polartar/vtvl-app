@@ -24,7 +24,7 @@ import differenceInSeconds from 'date-fns/differenceInSeconds';
 import toDate from 'date-fns/toDate';
 import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
@@ -55,6 +55,7 @@ import {
  * This page should have an async fetch feature that gets the vesting schedule details from the database.
  */
 const VestingScheduleProject: NextPageWithLayout = () => {
+  const router = useRouter();
   const { account, library, activate, chainId } = useWeb3React();
   const { organizationId, safe } = useAuthContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
@@ -187,7 +188,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // Renderer for schedule name -- with scenario for COMPLETED status
   const CellScheduleName = ({ value, row, ...props }: any) => {
     return (
-      <div className="row-center">
+      <div className="row-center cursor-pointer" onClick={() => router.push(`/vesting-schedule/${row.original.id}`)}>
         {row.original.data.status === 'COMPLETED' ? <StatusIndicator size="small" color="success" /> : null}
         {value}
       </div>

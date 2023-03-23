@@ -12,6 +12,6 @@ export const formatNumber = (number: number | Decimal | ethers.BigNumber, decima
     minimumFractionDigits: 0,
     maximumFractionDigits: decimalPlaces
   });
-  if (formattedNumber === 'NaN' || number <= 0) return 0;
+  if (formattedNumber === 'NaN' || number <= 0) return '0';
   return formattedNumber;
 };
