@@ -251,6 +251,8 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
             <Select
               options={vestingContractOptions}
               value={form.vestingContract}
+              classNamePrefix="select"
+              menuPlacement="top"
               onChange={handleChangeVesting}
               onFocus={() => setActiveStep(2)}
             />

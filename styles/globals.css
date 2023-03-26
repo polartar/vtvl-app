@@ -640,9 +640,6 @@
     @apply border-primary-400 !important;
   }
 
-  .select__value-container {
-    @apply p-0 gap-1 !important;
-  }
   .select__input-container,
   .select__multi-value {
     @apply my-0 !important;
@@ -658,13 +655,6 @@
   }
   .select__indicator {
     @apply py-0 pr-1 pl-2 !important;
-  }
-  .select__option {
-    @apply text-neutral-600 text-sm !important;
-  }
-  .select__option--is-focused,
-  .select__option--is-selected {
-    @apply text-neutral-800 bg-neutral-50 !important;
   }
 
   /* Progress bar customization */
@@ -862,4 +852,35 @@ body {
 .recharts-cartesian-axis-tick-value {
   font-size: 12px;
   color: var(--neutral-800);
+}
+
+
+/* Select from react-select style overrides */
+.select__control {
+  padding-right: 10px !important;
+}
+.select__value-container {
+  padding: 0 !important;
+  gap: 4px;
+}
+
+.select__menu {
+  padding: 0.125rem 0.375rem !important;
+  border-radius: 0.75rem !important;
+}
+
+.select__option {
+  color: var(--neutral-600) !important;
+  font-size: 1rem !important;
+  border-radius: 0.5rem !important;
+}
+
+.select__option:not(:first-child) {
+  margin-top: 0.5rem !important;
+}
+
+.select__option--is-focused,
+.select__option--is-selected {
+  color: var(--primary-700) !important;
+  background-color: var(--primary-50) !important;
 }
