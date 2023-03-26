@@ -7,7 +7,7 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({ value = false, class
     () =>
       [
         'rounded-3xl overflow-hidden relative',
-        'w-[40px] h-[22px]',
+        'w-[32px] h-5 p-0',
         value ? 'bg-primary-900' : 'bg-neutral-200',
         className
       ].join(' '),
@@ -17,10 +17,10 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({ value = false, class
   const spanClassNames = useMemo(
     () =>
       [
-        'bg-white w-[18px] h-[18px] rounded-full',
-        'ease-in duration-300',
-        'absolute top-[1px]',
-        value ? 'right-[2px]' : 'left-[2px]'
+        'bg-white w-[14px] h-[14px] rounded-full',
+        'ease-out duration-300',
+        'absolute top-[2px]',
+        value ? 'left-[14px]' : 'left-[2px]'
       ].join(' '),
     [value]
   );
