@@ -854,6 +854,10 @@ body {
   transition: opacity 0.2s, color 0.2s;
 }
 
+.Mui-selected {
+  background-color: var(--primary-900) !important;
+}
+
 /* Recharts override */
 .recharts-cartesian-axis-tick-value {
   font-size: 12px;
