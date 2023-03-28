@@ -383,6 +383,11 @@
     @apply flex items-center gap-2 relative border rounded-3xl py-1.5 px-6 h-12 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all !important;
   }
 
+  /* Alternate variant for the select input */
+  label > div > select.alt {
+    @apply border-none bg-transparent shadow-none text-xs text-primary-900 p-3 h-auto !important;
+  }
+
   /* Other disabled styles */
   :disabled:not(fieldset):not(.card-radio),
   [disabled]:not(fieldset):not(.card-radio) {

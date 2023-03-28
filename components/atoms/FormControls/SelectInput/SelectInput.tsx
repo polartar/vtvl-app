@@ -3,7 +3,7 @@ import React from 'react';
 
 const SelectInputStyled = styled.select`
   background-image: url('/chevron-down.svg');
-  background-position: 96% 50%;
+  background-position: 90% 51%;
   background-repeat: no-repeat;
 `;
 
@@ -20,6 +20,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   error?: boolean;
   success?: boolean;
   options: Options[];
+  variant?: 'default' | 'alt';
 }
 
 /**
@@ -47,13 +48,14 @@ const SelectInput = ({
   success = false,
   options,
   color = '',
+  variant = 'default',
   ...props
 }: SelectProps) => {
   return (
-    <label className={`${required ? 'required' : ''} ${className}`}>
+    <label className={`${required ? 'required' : ''} ${className} min-w-[96px]`}>
       {label ? <span>{label}</span> : null}
       <div className={`${success && 'success'} ${error && 'error'}`}>
-        <SelectInputStyled {...props} className={`appearance-none ${color}`}>
+        <SelectInputStyled {...props} className={`appearance-none ${variant} ${color}`}>
           {options.map((option, idx) => (
             <option value={option.value} key={idx}>
               {option.label}
