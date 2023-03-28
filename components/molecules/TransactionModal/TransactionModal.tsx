@@ -100,19 +100,17 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
     REVOKE_SUCCESS: {
       image: <Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />,
       title: (
-        <div className="">
-          <div className="flex justify-center flex-row items-center gap-2 text-center">
-            <img src="/images/tx-success.png" className="w-7 h-7" />
-            Woo hoo! Transaction was successful
-          </div>
-          <p className="text-base font-normal">
-            {' '}
-            You can now transfer the remaining locked tokens from the revoked schedule to your projects' wallet by
-            selecting the vesting contract in the Contracts' tab.
-          </p>
+        <div className="flex justify-center flex-row items-center gap-2 text-center">
+          <img src="/images/tx-success.png" className="w-7 h-7" />
+          Woo hoo! Transaction was successful
         </div>
       ),
-      description: <>Well done! Now we can go further. Phew!</>
+      description: (
+        <>
+          You can now transfer the remaining locked tokens from the revoked schedule to your projects' wallet by
+          selecting the vesting contract in the <b>Contracts tab.</b>
+        </>
+      )
     }
   };
 
