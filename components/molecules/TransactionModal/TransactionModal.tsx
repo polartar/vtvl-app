@@ -10,7 +10,7 @@ import WalletConnectAnimation from 'public/walletconnect_loader.json';
 import { useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 
-export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'ERROR';
+export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'ERROR' | 'REVOKE_SUCCESS';
 export interface TransactionModalProps {
   status: TransactionStatuses;
   isCloseAvailable: boolean;
@@ -96,6 +96,20 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
         </div>
       ),
       description: <>No worries! Just try again later.</>
+    },
+    REVOKE_SUCCESS: {
+      image: <Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />,
+      title: (
+        <div className="flex flex-row items-center gap-2">
+          <img src="/images/tx-success.png" className="w-7 h-7" />
+          Woo hoo! Transaction was successful
+          <p>
+            You can now transfer the remaining locked tokens from the revoked schedule to your projects' wallet by
+            selecting the vesting contract in the Contracts' tab.
+          </p>
+        </div>
+      ),
+      description: <>Well done! Now we can go further. Phew!</>
     }
   };
 

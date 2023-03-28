@@ -444,7 +444,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           await revokeTransaction.wait();
           toast.success('Revoking is done successfully.');
         }
-        setTransactionStatus('SUCCESS');
+        setTransactionStatus('REVOKE_SUCCESS');
       } catch (err) {
         console.log('handleRevoke - ', err);
         toast.error('Something went wrong. Try agaiin later.');
