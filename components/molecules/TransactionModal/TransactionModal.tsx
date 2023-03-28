@@ -122,7 +122,7 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
   const progressAdditionBasedOnSeconds = 100 / ((3 * 1000) / 100);
 
   useEffect(() => {
-    if (status === 'SUCCESS' || status === 'ERROR') {
+    if (status === 'SUCCESS' || status === 'ERROR' || status === 'REVOKE_SUCCESS') {
       setProgress(1);
       setIsOpen(true);
     } else if (status) {
@@ -144,7 +144,7 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
     <>
       {status ? (
         <Modal isOpen={isOpen} style={modalStyles}>
-          {status === 'SUCCESS' || status === 'ERROR' ? (
+          {status === 'SUCCESS' || status === 'ERROR' || status === 'REVOKE_SUCCESS' ? (
             <Loader progress={progress} onComplete={() => setIsOpen(false)} />
           ) : null}
           {txTypes[status].image}
@@ -164,7 +164,7 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
           ) : (
             <>
               {' '}
-              {status !== 'SUCCESS' && status !== 'ERROR' && (
+              {status !== 'SUCCESS' && status !== 'REVOKE_SUCCESS' && status !== 'ERROR' && (
                 <Chip
                   label={
                     <div className="flex flex-row items-center gap-2">
