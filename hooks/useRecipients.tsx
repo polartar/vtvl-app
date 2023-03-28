@@ -1,3 +1,4 @@
+import { useAuthContext } from '@providers/auth.context';
 import { useQuery } from '@tanstack/react-query';
 import { useWeb3React } from '@web3-react/core';
 import { useMemo } from 'react';
@@ -11,10 +12,15 @@ import { removeDuplication } from 'utils/shared';
  */
 export const useMyRecipes = () => {
   const { chainId, account } = useWeb3React();
+  const { user, recipient } = useAuthContext();
+  const email = user?.memberInfo?.email;
 
   const { isLoading: isLoadingMyRecipes, data: myRecipes } = useQuery<IRecipientDoc[]>(
-    [QUERY_KEYS.RECIPIENT.MINE, chainId, account],
-    () => fetchRecipientsByQuery(['chainId', 'walletAddress'], ['==', '=='], [chainId, account]),
+    [QUERY_KEYS.RECIPIENT.MINE, chainId, account, email, recipient?.data.walletAddress],
+    () =>
+      email
+        ? fetchRecipientsByQuery(['chainId', 'walletAddress', 'email'], ['==', '==', '=='], [chainId, account, email])
+        : fetchRecipientsByQuery(['chainId', 'walletAddress'], ['==', '=='], [chainId, account]),
     {
       enabled: !!chainId && !!account
     }

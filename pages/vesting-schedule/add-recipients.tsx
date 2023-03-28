@@ -163,7 +163,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
         // To optimize later
         // Apply validation of this only on add form
         if (!scheduleMode.edit) {
-          const res = data.filter((row: any) => prevRecipients.includes(row.address.toLowerCase()));
+          const res = data.filter((row: any) => row.address && prevRecipients.includes(row.address.toLowerCase()));
           setDuplicatedUsers(res);
 
           if (res.length > 0) {

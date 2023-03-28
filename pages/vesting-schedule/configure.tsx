@@ -1090,6 +1090,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         tokenId,
         chainId
       });
+      console.log({ recipients });
 
       const newRecipients = await Promise.all(
         recipients.map(async ({ data: recipient }) => {

@@ -1,7 +1,6 @@
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
-import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useAuthContext } from '@providers/auth.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
@@ -85,16 +84,6 @@ const RecipientSchedule = () => {
         </div>
       </div>
     </div>
-  );
-};
-
-const crumbSteps = [{ title: 'Claims Portal', route: '/claim-portal' }];
-
-RecipientSchedule.getLayout = function getLayout(page: React.ReactElement) {
-  return (
-    <SteppedLayout title="Claims Portal" crumbs={crumbSteps}>
-      {page}
-    </SteppedLayout>
   );
 };
 
