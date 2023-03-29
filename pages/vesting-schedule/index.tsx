@@ -190,7 +190,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     return (
       <div className="row-center cursor-pointer" onClick={() => router.push(`/vesting-schedule/${row.original.id}`)}>
         {row.original.data.status === 'COMPLETED' ? <StatusIndicator size="small" color="success" /> : null}
-        {value}
+        <span className="font-medium text-neutral-800">{value}</span>
       </div>
     );
   };
