@@ -62,8 +62,6 @@ const MyTokenSchedule: NextPageWithLayout = () => {
     fetchContract();
   };
 
-  console.log('DEBUG-selectedToken', { selectedToken });
-
   // When the claim button is clicked
   const handleClaim = async () => {
     setIsClaiming(true);

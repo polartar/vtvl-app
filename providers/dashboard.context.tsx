@@ -179,6 +179,8 @@ export function DashboardContextProvider({ children }: any) {
    * This will also map out all the recipients that has allocations and all their token details
    */
   const initializeMulticall = useCallback(async () => {
+    showLoading();
+
     // Start to check for all the required states before doing anything
     if (
       vestingContracts.length &&
@@ -323,7 +325,9 @@ export function DashboardContextProvider({ children }: any) {
 
       setRecipientTokenDetails([...recipientsTokenDetails]);
     }
-  }, []);
+
+    hideLoading();
+  }, [vestingContracts, mintFormState, vestings, recipients, chainId, mintFormState]);
 
   useEffect(() => {
     initializeMulticall();

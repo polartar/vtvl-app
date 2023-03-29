@@ -156,10 +156,10 @@ const AccountSetupPage: NextPage = () => {
       }
       setFormSuccess(true);
       return onNext({ orgId: user.memberInfo?.org_id });
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
       setFormError(true);
-      setFormMessage(error.message);
+      setFormMessage((error as any).message);
     }
   };
 

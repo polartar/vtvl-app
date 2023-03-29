@@ -330,7 +330,7 @@ export default function ClaimPortal() {
                   withdrawnAmount={Number(String(vestingInfo?.withdrawn)).toFixed(2)}
                   unclaimedAmount={Number(String(vestingInfo?.unclaimed)).toFixed(2)}
                   totalLockedAmount={Number(String(vestingInfo?.locked)).toFixed(2)}
-                  buttonLabel={`CLAIM ${Number(String(vestingInfo?.unclaimed)).toFixed(2)} ${getTokenSymbol(
+                  buttonLabel={`CLAIM ${Number(String(vestingInfo?.unclaimed ?? 0)).toFixed(2)} ${getTokenSymbol(
                     String(singleVesting.data.tokenId)
                   )}`}
                   buttonAction={() => vestingInfo && handleClaim(vestingInfo)}

@@ -169,7 +169,7 @@ export const getUserTokenDetails = async (
     const v = contractsFromDB.find((v) => v.id === selectedSchedule.data.vestingContractId);
 
     // We can now query via ethers
-    if (v) {
+    if (v && Boolean(v.data.address)) {
       // Update user token details for the contract address
       userTokenDetails.vestingContractAddress = v.data.address;
       console.log('Contract address', v.data);
