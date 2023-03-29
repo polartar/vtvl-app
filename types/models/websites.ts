@@ -31,6 +31,15 @@ export interface IWebsiteLinks {
   privacy?: string;
 }
 
+export interface IWebsiteAuthFeatures {
+  memberOnly?: boolean;
+  organisationOnly?: boolean;
+}
+
+export interface IWebsiteFeatures {
+  auth?: IWebsiteAuthFeatures;
+}
+
 export interface IWebsite {
   domain: string;
   name?: string;
@@ -39,4 +48,5 @@ export interface IWebsite {
   styles?: IWebsiteStyles;
   assets?: IWebsiteAssets;
   links?: IWebsiteLinks;
+  features?: IWebsiteFeatures;
 }

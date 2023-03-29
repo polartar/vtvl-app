@@ -9,7 +9,7 @@ import Router, { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import Fade from 'react-reveal/Fade';
 import { IUser } from 'types/models';
-import { IS_ENABLED_AUTH_BY_ORG, WEBSITE_NAME } from 'utils/constants';
+import { WEBSITE_NAME } from 'utils/constants';
 
 interface HeaderProps {
   user: IUser | undefined;
