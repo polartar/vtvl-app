@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import AuthContext from './auth.context';
+import { useGlobalContext } from './global.context';
 
 interface OnboardingInfo {
   isFirstTimeUser?: boolean;
@@ -60,6 +61,9 @@ export const States = {
 };
 
 export function OnboardingContextProvider({ children }: any) {
+  const {
+    website: { features }
+  } = useGlobalContext();
   const { user, refreshUser, isNewUser } = useContext(AuthContext);
   const [info, setInfo] = useState<OnboardingInfo | undefined>();
   const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
@@ -83,11 +87,10 @@ export function OnboardingContextProvider({ children }: any) {
     setInProgress(true);
     setCurrentStep(step);
   };
-
-  const completeOnboarding = () => {
+  const completeOnboarding = async () => {
     const foundingMembers = ['founder', 'manager', 'manager2'];
     setInProgress(false);
-    refreshUser();
+    await refreshUser();
     if (user?.memberInfo?.type) {
       router.replace(!foundingMembers.includes(user?.memberInfo?.type) ? '/claim-portal' : '/dashboard');
     }
@@ -153,7 +156,13 @@ export function OnboardingContextProvider({ children }: any) {
     // }
 
     console.log('onboarding context valid route aboutt to replace route ', States[nextstep as Step].route);
-    await router.push(States[nextstep as Step].route);
+
+    // When the website is set to members-only, users should be redirected to the login page after connecting their wallet.
+    if (nextstep === Step.SignUp && features?.auth?.memberOnly) {
+      await router.push('/onboarding/member-login');
+    } else {
+      await router.push(States[nextstep as Step].route);
+    }
   };
 
   // Identifies and manipulates data for each step

@@ -31,8 +31,6 @@ import { getSafeInfo } from 'services/gnosois';
 import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
 import { IUserType } from 'types/models/member';
 import { compareAddresses } from 'utils';
-import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
-import { IS_ENABLED_AUTH_BY_ORG } from 'utils/constants';
 import { getCache, setCache } from 'utils/localStorage';
 import { MESSAGES } from 'utils/messages';
 import { platformRoutes } from 'utils/routes';
@@ -119,7 +117,7 @@ export function AuthContextProvider({ children }: any) {
   const [showSideBar, setShowSideBar] = useToggle(false);
   const [sidebarIsExpanded, setSidebarIsExpanded, , , forceCollapseSidebar] = useToggle(true);
   const {
-    website: { organizationId: websiteOrganizationId, name: websiteName, email: websiteEmail },
+    website: { organizationId: websiteOrganizationId, name: websiteName, email: websiteEmail, features },
     emailTemplate
   } = useGlobalContext();
 
@@ -213,7 +211,7 @@ export function AuthContextProvider({ children }: any) {
   const allowSignIn = (userOrganizationId?: string) => {
     // Used this kind of conditions for readability
     // Allow sign in when:
-    if (IS_ENABLED_AUTH_BY_ORG) {
+    if (features?.auth?.organisationOnly) {
       // - Website is white-labelled + (user is member of organization OR user is currently registering)
       if (
         !websiteOrganizationId ||
@@ -373,7 +371,7 @@ export function AuthContextProvider({ children }: any) {
 
     const existingOrg = await fetchOrgByQuery('email', '==', user?.email || '');
     let orgId;
-    if (IS_ENABLED_AUTH_BY_ORG && websiteOrganizationId) {
+    if (features?.auth?.organisationOnly && websiteOrganizationId) {
       // If the website is white-labelled and has enabled login by organization, use it as the organizationId.
       orgId = websiteOrganizationId;
     } else if (existingOrg?.id) {

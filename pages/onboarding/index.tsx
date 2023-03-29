@@ -46,7 +46,7 @@ const WalletContainer = styled.div`
 const SelectLoginTypePage: NextPage = () => {
   const { startOnboarding } = useOnboardingContext();
   const {
-    website: { assets, name, organizationId: webOrgId }
+    website: { assets, name, organizationId: webOrgId, features }
   } = useGlobalContext();
 
   const [wallets, setWallets] = useState([
@@ -69,10 +69,10 @@ const SelectLoginTypePage: NextPage = () => {
   }, []);
 
   useEffect(() => {
-    if (webOrgId) {
+    if (webOrgId && features?.auth?.memberOnly) {
       setWallets([...wallets.slice(0, 1)]);
     }
-  }, [webOrgId]);
+  }, [webOrgId, features]);
 
   return (
     <PaddedLayout>
@@ -82,7 +82,7 @@ const SelectLoginTypePage: NextPage = () => {
             <h1 className="font-medium">Access {name || WEBSITE_NAME} as</h1>
             <p className="text-sm font-medium text-neutral-500">
               Select <strong>Member</strong> if you&apos;re an existing user or signing up
-              {webOrgId ? (
+              {webOrgId && features?.auth?.memberOnly ? (
                 '.'
               ) : (
                 <>

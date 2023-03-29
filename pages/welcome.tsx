@@ -14,12 +14,13 @@ const TeamWelcome: NextPage = () => {
   const {
     website: { assets }
   } = useGlobalContext();
-  const { user } = useAuthContext();
+  const { user, refreshUser } = useAuthContext();
   const { setInProgress, completeOnboarding } = useOnboardingContext();
 
   // Handles the importation of token
   // Prompts the user's wallet platform
   const handleImportToken = async () => {
+    console.log('IMPORTING TOKEN', library, mintFormState, user);
     try {
       if (!library || !mintFormState) return;
       await library.provider.request({
@@ -37,10 +38,12 @@ const TeamWelcome: NextPage = () => {
 
       // Check if successful or rejects
       // on success, redirect the user to /claim-portal page
-      completeOnboarding();
+      console.log('Import token successful');
+      // await refreshUser();
+      await completeOnboarding();
     } catch (error) {
       // on reject, just close the prompt and do nothing
-      console.error(error);
+      console.error('Error importing token', error);
     }
   };
 
@@ -56,6 +59,7 @@ const TeamWelcome: NextPage = () => {
       <h1 className="h2 font-medium text-center mt-3">
         Hello, {user?.memberInfo?.name || user?.memberInfo?.email || 'you'}!
       </h1>
+      {user?.memberInfo?.type}
       <p className="paragraphy-small neutral-text mt-4 mb-8">
         You're almost there! Let's start claiming your tokens. To get started, first let's add{' '}
         {mintFormState.symbol || mintFormState.name || 'Token'} to your wallet by clicking "

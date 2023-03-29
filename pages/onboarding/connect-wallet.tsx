@@ -44,7 +44,7 @@ const ConnectWalletPage: NextPage = () => {
   const { user, anonymousSignIn } = useContext(AuthContext);
   const [activated, setActivated] = useState(false);
   const {
-    website: { assets }
+    website: { assets, features }
   } = useGlobalContext();
 
   // When a wallet is connected
@@ -61,7 +61,7 @@ const ConnectWalletPage: NextPage = () => {
         (async () => {
           await activate(injected, undefined, true);
           if (user) completeOnboarding();
-          else if (!activated) Router.push('/onboarding/sign-up');
+          else if (!activated) Router.push(`/onboarding/${features?.auth?.memberOnly ? 'member-login' : 'sign-up'}`);
         })();
       }
     });
