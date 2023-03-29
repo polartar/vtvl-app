@@ -275,7 +275,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       // Check for the status of the vesting schedule if it is live or completed.
       if ((data as IVesting).status === 'COMPLETED' || (data as IVesting).status === 'LIVE') {
         // Completed or Live vesting schedules can be revoked.
-        items.push({ label: 'Revoke', onClick: () => handleRevoke(id, data, recordIndex) });
+        // items.push({ label: 'Revoke', onClick: () => handleRevoke(id, data, recordIndex) });
       } else {
         // Other statuses can be archived.
         items.push({

@@ -50,6 +50,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
   const [transaction, setTransaction] = useState<ITransaction>();
   const [confirmations, setConfirmations] = useState(0);
   const [threshold, setThreshold] = useState(0);
+  const [revoked, setRevoked] = useState(false);
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
     if (safe?.address && chainId) {
@@ -130,6 +131,29 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           const revokeTransaction = await vestingContractInstance.revokeClaim(recipient);
           setTransactionStatus('IN_PROGRESS');
           await revokeTransaction.wait();
+          const transactionID = await createTransaction({
+            hash: revokeTransaction.hash,
+            safeHash: '',
+            chainId: vesting.chainId,
+            organizationId: vesting.organizationId,
+            vestingIds: [vestingId],
+            to: vestingAddress,
+            status: 'SUCCESS',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            type: 'REVOKE_CLAIM'
+          });
+          await createRevoking({
+            vestingId: vestingId,
+            recipient,
+            transactionId: transactionID ?? '',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            chainId,
+            organizationId: organizationId!,
+            status: 'SUCCESS'
+          });
+          setRevoked(true);
           toast.success('Revoking is done successfully.');
         }
         setTransactionStatus('SUCCESS');
@@ -152,6 +176,8 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           const revoke = res[0];
           if (revoke.data.status === 'PENDING') {
             setRevoking({ ...res[0] });
+          } else if (revoke.data.status === 'SUCCESS') {
+            setRevoked(true);
           }
         }
       });
@@ -182,7 +208,9 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
         </Copy>
       </div>
       <div className="flex items-center w-32 py-3 flex-shrink-0 bg-[#f9fafb] border-t border-[#d0d5dd]">
-        {revoking ? (
+        {revoked ? (
+          <Chip rounded label="Revoked" color="danger" />
+        ) : revoking ? (
           <Chip rounded label="Revoking" color="dangerAlt" />
         ) : vesting.status === 'LIVE' ? (
           <Chip rounded label="Active" color="success" />
