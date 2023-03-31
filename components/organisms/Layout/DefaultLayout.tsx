@@ -277,7 +277,7 @@ interface DefaultLayoutProps {
  *  This has a sidebar prop to determine if the Sidebar component should be shown or not.
  */
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
-  const { user, safe, error, logOut, showSideBar, sidebarIsExpanded, toggleSideBar, refreshUser } =
+  const { user, recipient, safe, error, logOut, showSideBar, sidebarIsExpanded, toggleSideBar, refreshUser } =
     useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
   const { loading } = useLoaderContext();
@@ -350,7 +350,12 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const displaySideBar = Boolean(
     // MOCK DISPLAY
     // true
-    !inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type]
+    !inProgress &&
+      user &&
+      user?.memberInfo &&
+      user.memberInfo.type &&
+      !['/recipient/schedule', '/recipient/confirm'].includes(router.pathname) &&
+      SidebarProps[user?.memberInfo?.type]
   );
 
   const handleWalletConnection = () => {

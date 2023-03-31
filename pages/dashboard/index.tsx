@@ -29,7 +29,7 @@ const Dashboard: NextPageWithLayout = () => {
 
   useEffect(() => {
     const params: any = new URL(window.location.toString());
-    const email = params.searchParams.get('email');
+    const email = params.searchParams.get('email')?.replace(' ', '+');
     if (email) loginFromURL(email);
     fetchDashboardData();
   }, []);

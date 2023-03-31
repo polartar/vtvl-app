@@ -8,6 +8,7 @@ import { RECIPIENTS_TYPES } from 'utils/constants';
 import { getRecipient } from 'utils/recipients';
 import { validate, validateDuplication, validateEVMAddress } from 'utils/regex';
 import { formatNumber } from 'utils/token';
+import { validate as validateSingleField } from 'utils/validator';
 
 import { EditableTypography } from './EditableTypography';
 import {

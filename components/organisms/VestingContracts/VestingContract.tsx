@@ -236,11 +236,15 @@ export default function VestingContract({ vestingContractId }: { vestingContract
             </>
           )}
 
-          <Copy text={vestingContracts[0]?.data.address || ''}>
-            <p className="paragraphy-small ">
-              {vestingContracts[0]?.data.address.slice(0, 5)}...{vestingContracts[0]?.data.address.slice(-4)}
-            </p>
-          </Copy>
+          {vestingContracts[0]?.data.address ? (
+            <Copy text={vestingContracts[0]?.data.address || ''}>
+              <p className="paragraphy-small ">
+                {vestingContracts[0]?.data.address.slice(0, 5)}...{vestingContracts[0]?.data.address.slice(-4)}
+              </p>
+            </Copy>
+          ) : (
+            <Typography>Not deployed</Typography>
+          )}
         </div>
       </div>
 

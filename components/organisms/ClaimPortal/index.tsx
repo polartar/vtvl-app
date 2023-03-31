@@ -1,6 +1,7 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import { VestingCalendarIcon, VestingScheduleIcon } from '@components/atoms/Icons';
 import { Typography } from '@components/atoms/Typography/Typography';
+import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
@@ -31,7 +32,6 @@ const formatDateTime = (dateTime: any) => {
 
 export default function ClaimPortal() {
   const { library } = useWeb3React();
-
   const { isLoadingMyRecipes, myRecipes, myVestingIds, myOrganizationIds, schedulesByOrganization } = useMyRecipes();
   const { isLoadingOrganizations, organizations } = useOrganizationsFromIds(myOrganizationIds);
   const { isLoadingVestings, vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);
@@ -330,7 +330,7 @@ export default function ClaimPortal() {
                   withdrawnAmount={Number(String(vestingInfo?.withdrawn)).toFixed(2)}
                   unclaimedAmount={Number(String(vestingInfo?.unclaimed)).toFixed(2)}
                   totalLockedAmount={Number(String(vestingInfo?.locked)).toFixed(2)}
-                  buttonLabel={`CLAIM ${Number(String(vestingInfo?.unclaimed)).toFixed(2)} ${getTokenSymbol(
+                  buttonLabel={`CLAIM ${Number(String(vestingInfo?.unclaimed ?? 0)).toFixed(2)} ${getTokenSymbol(
                     String(singleVesting.data.tokenId)
                   )}`}
                   buttonAction={() => vestingInfo && handleClaim(vestingInfo)}

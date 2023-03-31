@@ -54,11 +54,15 @@ export default function VestingContractCard({
             {title}
           </Typography>
         </div>
-        <Copy text={address || ''}>
-          <p className="paragraphy-small ">
-            {address.slice(0, 5)}...{address.slice(-4)}
-          </p>
-        </Copy>
+        {address ? (
+          <Copy text={address || ''}>
+            <p className="paragraphy-small ">
+              {address.slice(0, 5)}...{address.slice(-4)}
+            </p>
+          </Copy>
+        ) : (
+          <Typography>Not deployed</Typography>
+        )}
       </div>
       <Typography size="caption" variant="inter" className=" font-medium text-neutral-500  mr-9">
         Total Allocation

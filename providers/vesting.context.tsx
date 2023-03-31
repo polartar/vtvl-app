@@ -3,7 +3,7 @@ import { useShallowState } from 'hooks/useShallowState';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
-import { fetchRecipientByQuery, fetchRecipientsByQuery } from 'services/db/recipient';
+import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { deleteVesting, fetchVesting, fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IRecipientDoc, IVesting } from 'types/models';
