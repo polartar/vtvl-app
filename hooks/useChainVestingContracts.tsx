@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting, IVestingContract } from 'types/models';
 import { IRecipientDoc } from 'types/models/recipient';
+import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
 
 import { useShallowState } from './useShallowState';
@@ -29,7 +30,7 @@ export type VestingContractInfo = {
  * Fetch on-chain vesting data
  */
 export default function useChainVestingContracts(
-  vestingContracts: { id: string; data: IVestingContract }[],
+  vestingContracts: IVestingContractDoc[] | IVestingContractDoc,
   vestings: { id: string; data: IVesting }[],
   recipients: IRecipientDoc[]
 ) {
@@ -43,63 +44,65 @@ export default function useChainVestingContracts(
   });
 
   useEffect(() => {
-    if (!chainId || !vestingContracts?.length) return;
+    const arrVestingContracts = Array.isArray(vestingContracts) ? vestingContracts : [vestingContracts];
+    if (!chainId || !arrVestingContracts?.length) return;
 
     setState({ isLoading: true });
     const multicall = new Multicall({
       ethersProvider: ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc),
       tryAggregate: true
     });
+    const contractCallContext: ContractCallContext[] = arrVestingContracts
+      .filter((contract) => !!contract.data.address)
+      .reduce((res, vestingContract) => {
+        const partialVestings = vestings
+          .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
+          .map((vesting) => vesting.id);
+        const partialRecipients = recipients.filter(({ data: recipient }) =>
+          partialVestings.includes(recipient.vestingId)
+        );
 
-    const contractCallContext: ContractCallContext[] = vestingContracts.reduce((res, vestingContract) => {
-      const partialVestings = vestings
-        .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
-        .map((vesting) => vesting.id);
-      const partialRecipients = recipients.filter(({ data: recipient }) =>
-        partialVestings.includes(recipient.vestingId)
-      );
-
-      let result: ContractCallContext[] = [];
-      result = result.concat({
-        reference: `numTokensReservedForVesting-${vestingContract.data.address}`,
-        contractAddress: vestingContract.data.address,
-        abi: VTVL_VESTING_ABI.abi,
-        calls: [
-          {
-            reference: 'numTokensReservedForVesting',
-            methodName: 'numTokensReservedForVesting',
-            methodParameters: []
-          }
-        ]
-      });
-
-      partialRecipients
-        .filter(({ data: recipient }) => !!recipient.walletAddress)
-        .forEach(({ data: recipient }) => {
-          result = result.concat([
+        let result: ContractCallContext[] = [];
+        result = result.concat({
+          reference: `numTokensReservedForVesting-${vestingContract.data.address}`,
+          contractAddress: vestingContract.data.address,
+          abi: VTVL_VESTING_ABI.abi,
+          calls: [
             {
-              reference: `withdrawn-${vestingContract.data.address}-${recipient.walletAddress}`,
-              contractAddress: vestingContract.data.address,
-              abi: VTVL_VESTING_ABI.abi,
-              calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }]
-            },
-            {
-              reference: `unclaimed-${vestingContract.data.address}-${recipient.walletAddress}`,
-              contractAddress: vestingContract.data.address,
-              abi: VTVL_VESTING_ABI.abi,
-              calls: [
-                {
-                  reference: 'claimableAmount',
-                  methodName: 'claimableAmount',
-                  methodParameters: [recipient.walletAddress]
-                }
-              ]
+              reference: 'numTokensReservedForVesting',
+              methodName: 'numTokensReservedForVesting',
+              methodParameters: []
             }
-          ]);
+          ]
         });
 
-      return [...res, ...result];
-    }, [] as ContractCallContext[]);
+        partialRecipients
+          .filter(({ data: recipient }) => !!recipient.walletAddress)
+          .forEach(({ data: recipient }) => {
+            result = result.concat([
+              {
+                reference: `withdrawn-${vestingContract.data.address}-${recipient.walletAddress}`,
+                contractAddress: vestingContract.data.address,
+                abi: VTVL_VESTING_ABI.abi,
+                calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }]
+              },
+              {
+                reference: `unclaimed-${vestingContract.data.address}-${recipient.walletAddress}`,
+                contractAddress: vestingContract.data.address,
+                abi: VTVL_VESTING_ABI.abi,
+                calls: [
+                  {
+                    reference: 'claimableAmount',
+                    methodName: 'claimableAmount',
+                    methodParameters: [recipient.walletAddress]
+                  }
+                ]
+              }
+            ]);
+          });
+
+        return [...res, ...result];
+      }, [] as ContractCallContext[]);
 
     multicall
       .call(contractCallContext)

@@ -1,15 +1,21 @@
+import BackButton from '@components/atoms/BackButton/BackButton';
+import Button from '@components/atoms/Button/Button';
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
 import ProgressCircle from '@components/atoms/ProgressCircle/ProgressCircle';
+import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import StatusIndicator from '@components/atoms/StatusIndicator/StatusIndicator';
 import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
+import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
+import ScheduleSummary from '@components/molecules/ScheduleSummary/ScheduleSummary';
 import Table from '@components/molecules/Table/Table';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import VestingOverview from '@components/molecules/VestingOverview/VestingOverview';
 import VestingScheduleFilter from '@components/molecules/VestingScheduleFilter';
 import FundingContractModalV2 from '@components/organisms/FundingContractModal/FundingContractModalV2';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import VestingSummary from '@components/organisms/VestingSchedule/VestingSummary';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
@@ -38,6 +44,7 @@ import { updateVesting } from 'services/db/vesting';
 import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, IToken, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IVestingDoc } from 'types/models/vesting';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
 import { convertAllToOptions, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
@@ -63,7 +70,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { vestings: vestingSchedules, recipients, vestingContracts, fetchDashboardData } = useDashboardContext();
   const { editSchedule, setShowDeleteModal, deleteSchedulePrompt } = useVestingContext();
-
+  const [selectedSchedule, setSelectedSchedule] = useState<IVestingDoc>();
   const [selected, setSelected] = useState('manual');
   const [vestingScheduleDataCounts, setVestingScheduleDataCounts] = useState({
     totalSchedules: 0,
@@ -302,6 +309,20 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       return items;
     };
 
+    const onScheduleSelect = () => {
+      const actualDateTime = getActualDateTime(data.details);
+      setSelectedSchedule({
+        id,
+        data: {
+          ...data,
+          details: {
+            ...data?.details,
+            startDateTime: actualDateTime.startDateTime,
+            endDateTime: actualDateTime.endDateTime
+          }
+        }
+      });
+    };
     return (
       <table className="-my-3.5 -mx-6">
         <tbody>
@@ -310,9 +331,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               <tr key={`recipient-${rIndex}`} className="group">
                 <td className="group-last:border-b-0">
                   <div className="py-2 flex items-center flex-nowrap">
-                    <button
-                      className="line small"
-                      onClick={() => Router.push(`/vesting-schedule/${props.row.original.id}`)}>
+                    <button className="line small" onClick={() => onScheduleSelect()}>
                       Details
                     </button>
                     <DropdownMenu items={actionItems(rIndex)} />
@@ -886,6 +905,21 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           </button>
         </>
       )}
+      <PromptModal isOpen={!!selectedSchedule} hideModal={() => setSelectedSchedule(undefined)}>
+        <div className="panel max-w-2xl w-full">
+          {selectedSchedule && (
+            <VestingSummary
+              vestingSchedule={selectedSchedule}
+              symbol={mintFormState.symbol}
+              safe={safe}
+              recipients={recipients}
+            />
+          )}
+          <div className="flex flex-row items-center ">
+            <BackButton label="Back" onClick={() => setSelectedSchedule(undefined)} />
+          </div>
+        </div>
+      </PromptModal>
     </>
   );
 };

@@ -54,3 +54,8 @@ export interface IVestingContractProps {
   maxSupply: number | Decimal;
   address: string;
 }
+
+export interface IVestingDoc {
+  id: string;
+  data: IVesting;
+}
