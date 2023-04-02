@@ -102,11 +102,11 @@ export default function VestingContracts() {
                 <div className="w-full h-368 bg-neutral-100 rounded-10"></div>
               </div>
             ))
-          : vestingContracts.map((vestingContractInfo) => {
+          : vestingContracts.map((vestingContractInfo, index) => {
               const vestingInfo = getVestingInfoByContract(String(vestingContractInfo?.data.address));
               return (
                 <VestingContractCard
-                  key={vestingContractInfo.data.address}
+                  key={`${vestingContractInfo.data.address}_${index}`}
                   title={String(vestingContractInfo.data.name)}
                   address={vestingContractInfo.data.address}
                   totalAllocation={formatEther(vestingInfo?.allocation.toString()) || ''}

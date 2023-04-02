@@ -51,55 +51,57 @@ export default function useChainVestingContracts(
       tryAggregate: true
     });
 
-    const contractCallContext: ContractCallContext[] = vestingContracts.reduce((res, vestingContract) => {
-      const partialVestings = vestings
-        .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
-        .map((vesting) => vesting.id);
-      const partialRecipients = recipients.filter(({ data: recipient }) =>
-        partialVestings.includes(recipient.vestingId)
-      );
+    const contractCallContext: ContractCallContext[] = vestingContracts
+      .filter((vestingContract) => !!vestingContract.data.address)
+      .reduce((res, vestingContract) => {
+        const partialVestings = vestings
+          .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
+          .map((vesting) => vesting.id);
+        const partialRecipients = recipients.filter(({ data: recipient }) =>
+          partialVestings.includes(recipient.vestingId)
+        );
 
-      let result: ContractCallContext[] = [];
-      result = result.concat({
-        reference: `numTokensReservedForVesting-${vestingContract.data.address}`,
-        contractAddress: vestingContract.data.address,
-        abi: VTVL_VESTING_ABI.abi,
-        calls: [
-          {
-            reference: 'numTokensReservedForVesting',
-            methodName: 'numTokensReservedForVesting',
-            methodParameters: []
-          }
-        ]
-      });
-
-      partialRecipients
-        .filter(({ data: recipient }) => !!recipient.walletAddress)
-        .forEach(({ data: recipient }) => {
-          result = result.concat([
+        let result: ContractCallContext[] = [];
+        result = result.concat({
+          reference: `numTokensReservedForVesting-${vestingContract.data.address}`,
+          contractAddress: vestingContract.data.address,
+          abi: VTVL_VESTING_ABI.abi,
+          calls: [
             {
-              reference: `withdrawn-${vestingContract.data.address}-${recipient.walletAddress}`,
-              contractAddress: vestingContract.data.address,
-              abi: VTVL_VESTING_ABI.abi,
-              calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }]
-            },
-            {
-              reference: `unclaimed-${vestingContract.data.address}-${recipient.walletAddress}`,
-              contractAddress: vestingContract.data.address,
-              abi: VTVL_VESTING_ABI.abi,
-              calls: [
-                {
-                  reference: 'claimableAmount',
-                  methodName: 'claimableAmount',
-                  methodParameters: [recipient.walletAddress]
-                }
-              ]
+              reference: 'numTokensReservedForVesting',
+              methodName: 'numTokensReservedForVesting',
+              methodParameters: []
             }
-          ]);
+          ]
         });
 
-      return [...res, ...result];
-    }, [] as ContractCallContext[]);
+        partialRecipients
+          .filter(({ data: recipient }) => !!recipient.walletAddress)
+          .forEach(({ data: recipient }) => {
+            result = result.concat([
+              {
+                reference: `withdrawn-${vestingContract.data.address}-${recipient.walletAddress}`,
+                contractAddress: vestingContract.data.address,
+                abi: VTVL_VESTING_ABI.abi,
+                calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }]
+              },
+              {
+                reference: `unclaimed-${vestingContract.data.address}-${recipient.walletAddress}`,
+                contractAddress: vestingContract.data.address,
+                abi: VTVL_VESTING_ABI.abi,
+                calls: [
+                  {
+                    reference: 'claimableAmount',
+                    methodName: 'claimableAmount',
+                    methodParameters: [recipient.walletAddress]
+                  }
+                ]
+              }
+            ]);
+          });
+
+        return [...res, ...result];
+      }, [] as ContractCallContext[]);
 
     multicall
       .call(contractCallContext)

@@ -77,3 +77,12 @@ export const removeMember = async (id: string): Promise<void> => {
 export const removeInvite = async (id: string): Promise<void> => {
   await deleteDoc(doc(inviteeCollection, id));
 };
+
+export const fetchAllMembers = async (): Promise<IMember[]> => {
+  const snapshot = await getDocs(memberCollection);
+  const documents: IMember[] = [];
+  snapshot.forEach((doc) => {
+    documents.push(doc.data());
+  });
+  return documents;
+};
