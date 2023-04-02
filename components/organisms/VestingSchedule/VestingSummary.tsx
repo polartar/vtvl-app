@@ -1,4 +1,5 @@
 import VestingScheduleIcon from '@assets/s_vestingSchedule.svg';
+import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import { useDashboardContext } from '@providers/dashboard.context';
 import intlFormatDistance from 'date-fns/intlFormatDistance';
@@ -54,8 +55,17 @@ const VestingSummary = ({
       return 0;
     }
   }, [vestingSchedulesInfo]);
+
   return (
     <>
+      <div className="flex flex-row items-center gap-1 justify-center mb-3">
+        <Chip
+          color={vestingSchedule.data.status === 'LIVE' ? 'successAlt' : 'grayAlt'}
+          label={vestingSchedule.data.status || ''}
+          size="small"
+          rounded
+        />
+      </div>
       <div className="flex justify-center text-center text-2xl font-semibold text-neutral-900">Schedule summary</div>
 
       <div className="grid grid-cols-3 mb-5 font-medium mt-10">
