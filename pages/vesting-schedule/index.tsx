@@ -331,10 +331,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               <tr key={`recipient-${rIndex}`} className="group">
                 <td className="group-last:border-b-0">
                   <div className="py-2 flex items-center flex-nowrap">
-                    <button className="line small" onClick={() => onScheduleSelect()}>
-                      Details
+                    <button className="primary" onClick={() => onScheduleSelect()}>
+                      Quick preview
                     </button>
-                    <DropdownMenu items={actionItems(rIndex)} />
+                    {data.status !== 'LIVE' && <DropdownMenu items={actionItems(rIndex)} />}
                   </div>
                 </td>
               </tr>
@@ -915,8 +915,14 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               recipients={recipients}
             />
           )}
-          <div className="flex flex-row items-center ">
+          <div className="flex justify-between ">
             <BackButton label="Back" onClick={() => setSelectedSchedule(undefined)} />
+
+            <Button
+              className="primary"
+              label="View all details"
+              onClick={() => router.push(`/vesting-schedule/${selectedSchedule?.id}`)}
+            />
           </div>
         </div>
       </PromptModal>

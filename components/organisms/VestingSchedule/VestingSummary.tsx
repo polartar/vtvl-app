@@ -4,12 +4,15 @@ import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetai
 import { useDashboardContext } from '@providers/dashboard.context';
 import intlFormatDistance from 'date-fns/intlFormatDistance';
 import { BigNumber } from 'ethers';
+import { formatEther } from 'ethers/lib/utils';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import ContractsIcon from 'public/icons/contracts-colored.svg';
 import { useMemo } from 'react';
 import { IRecipientDoc, ISafe } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { IVestingContractDoc } from 'types/models/vestingContract';
+
+import VestingSummaryTable from './VestingSummaryTable';
 
 const VestingSummary = ({
   vestingSchedule,
@@ -47,7 +50,7 @@ const VestingSummary = ({
     [vestingSchedule],
     recipients
   );
-
+  console.log({ vestingSchedulesInfo });
   const totalLocked = useMemo(() => {
     if (vestingSchedulesInfo && vestingSchedulesInfo.length > 0) {
       return vestingSchedulesInfo.reduce((total, schedule) => total.add(schedule.locked), BigNumber.from(0));
@@ -110,7 +113,7 @@ const VestingSummary = ({
           <label>
             <span className=" text-xs  neutral-text">Total locked tokens</span>
           </label>
-          <p className=" ">{totalLocked.toString()}</p>
+          <p className=" ">{formatEther(totalLocked)}</p>
         </div>
 
         <div>
@@ -141,6 +144,7 @@ const VestingSummary = ({
       </div>
 
       <hr className="my-6" />
+      <VestingSummaryTable recipients={vestingRecipients} />
 
       <div className="py-5 mb-5 border-b border-neutral-200">
         <ScheduleDetails {...vestingSchedule.data.details} token={symbol || 'Token'} />
