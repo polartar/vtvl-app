@@ -211,7 +211,7 @@ export function AuthContextProvider({ children }: any) {
   const allowSignIn = (userOrganizationId?: string) => {
     // Used this kind of conditions for readability
     // Allow sign in when:
-    if (features?.auth?.organisationOnly) {
+    if (features?.auth?.organizationOnly) {
       // - Website is white-labelled + (user is member of organization OR user is currently registering)
       if (
         !websiteOrganizationId ||
@@ -325,7 +325,7 @@ export function AuthContextProvider({ children }: any) {
 
     const existingOrg = await fetchOrgByQuery('email', '==', user?.email || '');
     let orgId;
-    if (features?.auth?.organisationOnly && websiteOrganizationId) {
+    if (features?.auth?.organizationOnly && websiteOrganizationId) {
       // If the website is white-labelled and has enabled login by organization, use it as the organizationId.
       orgId = websiteOrganizationId;
     } else if (existingOrg?.id) {
