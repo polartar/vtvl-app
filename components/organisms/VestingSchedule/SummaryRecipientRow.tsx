@@ -79,8 +79,8 @@ const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient })
   }, [transaction]);
 
   return (
-    <div className="flex text-[#667085] text-xs">
-      <div className="flex items-center w-52 p-3 flex-shrink-0 border-t border-[#d0d5dd] bg-[#f9fafb]">
+    <div className="flex text-[#667085] text-xs border-2">
+      <div className="flex items-center w-36 p-3 flex-shrink-0 border-t border-[#d0d5dd] bg-[#f9fafb]">
         {recipient.data.name}
       </div>
       <div className="flex items-center w-36 p-3 flex-shrink-0 bg-[#f9fafb] border-t border-[#d0d5dd]">
@@ -95,9 +95,7 @@ const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient })
         {revoking && revoking?.data.updatedAt && format(new Date(revoking?.data.updatedAt * 1000), 'dd/MM/yyyy')}
       </div>
       <div className="flex items-center w-full  p-3  border-t border-[#d0d5dd] bg-[#f9fafb]">
-        {confirmations > 0 && threshold > 0 && (
-          <StepWizard status={confirmations} steps={new Array(threshold).fill({ title: '', desc: '' })} size="tiny" />
-        )}
+        <StepWizard status={confirmations} steps={new Array(threshold).fill({ title: '', desc: '' })} size="tiny" />
       </div>
     </div>
   );
