@@ -33,7 +33,7 @@ export interface IWebsiteLinks {
 
 export interface IWebsiteAuthFeatures {
   memberOnly?: boolean;
-  organisationOnly?: boolean;
+  organizationOnly?: boolean;
 }
 
 export interface IWebsiteFeatures {

@@ -69,7 +69,7 @@ const SelectUserTypePage: NextPage = () => {
     startOnboarding(Step.UserTypeSetup);
     const params: any = new URL(window.location.toString());
     const name = params.searchParams.get('name');
-    const orgId = webOrgId && features?.auth?.organisationOnly ? webOrgId : params.searchParams.get('orgId');
+    const orgId = webOrgId && features?.auth?.organizationOnly ? webOrgId : params.searchParams.get('orgId');
     const email = params.searchParams.get('email')?.replace(' ', '+');
     const newUser: boolean = params.searchParams.get('newUser');
     setMember({
