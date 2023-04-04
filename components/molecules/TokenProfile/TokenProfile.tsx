@@ -1,5 +1,7 @@
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
+import TokenBurnModal from '@components/organisms/TokenBurnModal';
+import { useModal } from 'hooks/useModal';
 import React from 'react';
 
 interface TokenProfileProps extends React.BaseHTMLAttributes<HTMLDivElement> {
@@ -11,6 +13,8 @@ interface TokenProfileProps extends React.BaseHTMLAttributes<HTMLDivElement> {
 }
 
 const TokenProfile = ({ logo, name, symbol = '', size = 'default', address, ...props }: TokenProfileProps) => {
+  const { ModalWrapper, showModal, hideModal } = useModal({});
+
   const sizes = {
     small: {
       image: 'w-8 h-8',
@@ -21,6 +25,7 @@ const TokenProfile = ({ logo, name, symbol = '', size = 'default', address, ...p
       name: 'h2'
     }
   };
+
   return (
     <div className={`flex flex-row items-center gap-2.5 ${props.className}`}>
       {logo ? <img src={logo} className={`rounded-full ${sizes[size].image}`} alt={name} /> : null}
@@ -33,6 +38,10 @@ const TokenProfile = ({ logo, name, symbol = '', size = 'default', address, ...p
           </Copy>
         </span>
       </div>
+      <Chip className="cursor-pointer" label="Burn" color="danger" size="small" onClick={showModal} />
+      <ModalWrapper>
+        <TokenBurnModal />
+      </ModalWrapper>
     </div>
   );
 };
