@@ -10,6 +10,8 @@ export interface IToken {
   logo: string;
   organizationId: string;
   imported?: boolean;
+  burnable?: boolean;
+  burntAmount?: number;
   createdAt?: number;
   updatedAt?: number;
   supplyCap?: string;

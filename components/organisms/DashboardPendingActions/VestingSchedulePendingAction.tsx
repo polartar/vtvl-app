@@ -853,7 +853,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             Approve
           </button>
         )}
-        {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
+        {(status === 'AUTHORIZATION_REQUIRED' || status === 'EXECUTABLE') && transactionStatus === 'EXECUTABLE' && (
           <button
             className="secondary small whitespace-nowrap"
             onClick={handleExecuteTransaction}
