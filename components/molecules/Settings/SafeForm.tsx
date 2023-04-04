@@ -42,7 +42,7 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
     defaultValues: {
       safeName: '',
       owners: [{ name: '', address: '', email: '' }],
-      authorizedUsers: 0
+      authorizedUsers: 1
     }
   });
 
@@ -118,6 +118,7 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
       setTransactionStatus('SUCCESS');
       onBack();
     } catch (error) {
+      setTransactionStatus('ERROR');
       console.error(error);
     }
   };

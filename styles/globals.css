@@ -859,7 +859,6 @@ body {
   color: var(--neutral-800);
 }
 
-
 /* Select from react-select style overrides */
 .select__control {
   padding-right: 10px !important;
