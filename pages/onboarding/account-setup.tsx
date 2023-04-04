@@ -4,6 +4,7 @@ import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
+import { Typography } from '@components/atoms/Typography/Typography';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
@@ -170,7 +171,9 @@ const AccountSetupPage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
-      <h1 className="text-neutral-900">Hey there, Welcome to VTVL</h1>
+      <Typography size="title" variant="sora" className="font-medium text-neutral-900">
+        Hey there, Welcome to VTVL
+      </Typography>
       <p className="text-sm max-w-xl text-center text-neutral-500">
         Let's get to know you so you can start setting up your account.
       </p>

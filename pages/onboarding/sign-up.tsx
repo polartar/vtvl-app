@@ -1,6 +1,7 @@
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import { Typography } from '@components/atoms/Typography/Typography';
 import Consent from '@components/molecules/Consent/Consent';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -109,7 +110,9 @@ const SignUpPage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
-      <h1 className="text-neutral-900">Create your account</h1>
+      <Typography size="title" variant="sora" className="font-medium text-neutral-900">
+        Create your account
+      </Typography>
       <p className="text-sm text-center text-neutral-500">Please enter your email to create an account</p>
 
       <Form
@@ -142,7 +145,7 @@ const SignUpPage: NextPage = () => {
               render={({ field }) => (
                 <Input
                   label="Your company email"
-                  placeholder="Enter your company email address"
+                  placeholder="satoshi.s@vtvl.io"
                   className="md:col-span-2"
                   error={Boolean(errors.memberEmail)}
                   required

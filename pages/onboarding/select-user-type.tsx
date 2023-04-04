@@ -1,4 +1,5 @@
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
+import { Typography } from '@components/atoms/Typography/Typography';
 import styled from '@emotion/styled';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -109,7 +110,9 @@ const SelectUserTypePage: NextPage = () => {
 
   return (
     <Container>
-      <h1 className="text-neutral-900 mb-3">Tell us a little bit about yourself.</h1>
+      <Typography size="title" variant="sora" className="font-medium text-neutral-900">
+        Tell us a little bit about yourself.
+      </Typography>
       <p className="text-sm text-neutral-500">Select the profile that best describes your role</p>
       <div className="mt-10 mb-6">
         <div role="radiogroup" className="flex flex-row items-center justify-center gap-5">

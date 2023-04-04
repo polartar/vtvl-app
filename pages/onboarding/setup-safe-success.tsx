@@ -1,4 +1,5 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
+import { Typography } from '@components/atoms/Typography/Typography';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Lottie from 'lottie-react';
 import Router from 'next/router';
@@ -9,7 +10,9 @@ import { ReactElement } from 'react';
 const ConfirmationSuccess: NextPageWithLayout = () => {
   return (
     <>
-      <h1 className="h2 font-medium text-center mb-10 max-w-sm">Congratulations you've setup a Safe successfully</h1>
+      <Typography size="subtitle" variant="sora" className="font-medium text-neutral-900 text-center mb-10 max-w-sm">
+        Congratulations you've setup a Safe successfully
+      </Typography>
       <EmptyState
         image={<Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />}
         imageSize="small"
