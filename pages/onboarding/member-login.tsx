@@ -37,11 +37,12 @@ const MemberLoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    if (newLogin?.isOnboarding) {
-      startOnboarding(Step.UserTypeSetup);
+    if (newLogin) {
+      if (newLogin?.isOnboarding) {
+        startOnboarding(Step.UserTypeSetup);
+      }
+      onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
     }
-
-    onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   const onSubmit: SubmitHandler<LoginForm> = async () => {

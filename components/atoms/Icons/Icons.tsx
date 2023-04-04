@@ -1,5 +1,8 @@
-import PlusIconImage from 'assets/icons/plus-icon.png';
 import Image from 'next/image';
+import CalendarClockIcon from 'public/icons/calendar-clock.svg';
+import GraphLineIcon from 'public/icons/graph-line.svg';
+import StairCaseIcon from 'public/icons/graph-stairs.svg';
+import PlusIconImage from 'public/icons/plus.svg';
 import React from 'react';
 
 export interface IconProps {
@@ -48,11 +51,19 @@ export const ArrowLeftIcon: React.FC<IconProps> = ({ className = '', ...props })
 };
 
 export const PlusIcon: React.FC<IconProps> = ({ className = '' }) => {
-  return (
-    <span className={className}>
-      <Image src={PlusIconImage} alt="plus-icon" />
-    </span>
-  );
+  return <PlusIconImage className={`fill-current ${className}`} aria-hidden="true" />;
+};
+
+export const StairCase: React.FC<IconProps> = ({ className = '' }) => {
+  return <StairCaseIcon className={`fill-current ${className}`} aria-hidden="true" />;
+};
+
+export const GraphLine: React.FC<IconProps> = ({ className = '' }) => {
+  return <GraphLineIcon className={`fill-current ${className}`} aria-hidden="true" />;
+};
+
+export const CalendarClock: React.FC<IconProps> = ({ className = '' }) => {
+  return <CalendarClockIcon className={`fill-current ${className}`} aria-hidden="true" />;
 };
 
 export const VestingScheduleIcon: React.FC<IconProps> = ({ className = '' }) => {

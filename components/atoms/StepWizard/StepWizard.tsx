@@ -27,7 +27,7 @@ const StepWizard = ({ steps, status, size = 'default', className = '', showAllLa
               ) : (
                 <>
                   {size !== 'tiny' && size !== 'small' ? (
-                    <Tick fill={steps.length === stepIndex + 1 ? Colors.success : Colors.primary} />
+                    <Tick fill={steps.length === stepIndex + 1 ? 'var(--success-500)' : 'var(--primary-900)'} />
                   ) : (
                     <div className="text-success-500">
                       <SuccessIcon className="fill-current" />
@@ -74,21 +74,22 @@ const LeftBorder = styled.hr<{ cl: number; isActive: boolean; size: IStepWizardS
   width: ${({ size }) => (size === 'tiny' ? '8px' : size === 'small' ? '90px' : '112px')};
   border: none;
   border-top: 2px solid
-    ${({ cl, isActive, size }) => (cl ? (isActive && size !== 'tiny' ? Colors.primary : Colors.border) : 'transparent')};
+    ${({ cl, isActive, size }) =>
+      cl ? (isActive && size !== 'tiny' ? 'var(--primary-900)' : 'var(--neutral-200)') : 'transparent'};
 `;
 const RightBorder = styled(LeftBorder)`
   border-color: ${({ cl, isActive, size }) =>
-    cl ? (isActive && size !== 'tiny' ? Colors.primary : Colors.border) : 'transparent'};
+    cl ? (isActive && size !== 'tiny' ? 'var(--primary-900)' : 'var(--neutral-200)') : 'transparent'};
 `;
 const Circle = styled.div<{ isActive: boolean; isLast: boolean; size: IStepWizardSize }>`
   width: 24px;
   height: 24px;
   border-radius: 50%;
   background: ${({ isActive, isLast, size }) =>
-    isActive && size !== 'tiny' ? (isLast ? Colors.successBg : Colors.stepBg) : 'white'};
+    isActive && size !== 'tiny' ? (isLast ? 'var(--success-100)' : 'var(--neutral-100)') : 'white'};
   border: 1.5px solid
     ${({ isActive, isLast, size }) =>
-      isActive && size !== 'tiny' ? (isLast ? Colors.success : Colors.primary) : Colors.border};
+      isActive && size !== 'tiny' ? (isLast ? 'var(--success-500)' : 'var(--primary-900)') : 'var(--neutral-200)'};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,15 +98,15 @@ const Dot = styled.div<{ isActive: boolean }>`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: ${({ isActive }) => (isActive ? Colors.primary : Colors.border)};
+  background: ${({ isActive }) => (isActive ? 'var(--primary-900)' : 'var(--neutral-200)')};
 `;
 const Title = styled.div<{ isActive: boolean }>`
   font-weight: 500;
-  color: ${({ isActive }) => (isActive ? Colors.primary : Colors.secondary)};
+  color: ${({ isActive }) => (isActive ? 'var(--primary-900)' : 'var(--secondary-900)')};
 `;
 const Description = styled.div<{ isActive: boolean }>`
   font-weight: 400;
-  color: ${({ isActive }) => (isActive ? Colors.primary : Colors.grey)};
+  color: ${({ isActive }) => (isActive ? 'var(--primary-900)' : 'var(--gray-500)')};
 `;
 
 export default StepWizard;
