@@ -27,6 +27,7 @@ export interface IVesting {
   transactionId: string;
   archive?: boolean;
   chainId: number;
+  createdBy?: string;
 }
 
 export interface IScheduleOverviewProps {

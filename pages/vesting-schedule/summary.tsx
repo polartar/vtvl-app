@@ -19,7 +19,7 @@ import { formatNumber } from 'utils/token';
 
 const ScheduleSummary: NextPageWithLayout = () => {
   const { account, activate, chainId } = useWeb3React();
-  const { organizationId } = useAuthContext();
+  const { organizationId, user } = useAuthContext();
   const { recipients, scheduleFormState, scheduleState, scheduleMode, setScheduleState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
 
@@ -89,7 +89,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
         vestingContractId,
         tokenAddress: mintFormState.address,
         tokenId,
-        chainId
+        chainId,
+        createdBy: user?.uid
       });
 
       const newRecipients = recipients.map(({ data: recipient }) =>

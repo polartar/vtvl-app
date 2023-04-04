@@ -8,6 +8,8 @@ import { formatEther } from 'ethers/lib/utils';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import ContractsIcon from 'public/icons/contracts-colored.svg';
 import { useMemo } from 'react';
+import { fetchMember } from 'services/db/member';
+import useSWR from 'swr';
 import { IRecipientDoc, ISafe } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { IVestingContractDoc } from 'types/models/vestingContract';
@@ -32,6 +34,15 @@ const VestingSummary = ({
     [recipients, vestingSchedule.id]
   );
 
+  const { data: creator } = useSWR(['fetch-member', vestingSchedule.data.createdBy], async () => {
+    if (vestingSchedule.data.createdBy) {
+      const member = await fetchMember(vestingSchedule.data.createdBy);
+      return member?.name || '';
+    } else {
+      return '';
+    }
+  });
+
   const tokenPerUser = useMemo(() => {
     const recipientsNum = vestingRecipients.length;
     if (recipientsNum > 0) {
@@ -50,7 +61,7 @@ const VestingSummary = ({
     [vestingSchedule],
     recipients
   );
-  console.log({ vestingSchedulesInfo });
+
   const totalLocked = useMemo(() => {
     if (vestingSchedulesInfo && vestingSchedulesInfo.length > 0) {
       return vestingSchedulesInfo.reduce((total, schedule) => total.add(schedule.locked), BigNumber.from(0));
@@ -139,7 +150,7 @@ const VestingSummary = ({
           <label>
             <span className=" text-xs  neutral-text">Created by</span>
           </label>
-          <p>Vitalik</p>
+          <p>{creator}</p>
         </div>
       </div>
 

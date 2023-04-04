@@ -86,7 +86,7 @@ interface CustomActionBarProps {
 const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no-cliff';
 
 const ConfigureSchedule: NextPageWithLayout = () => {
-  const { organizationId, safe } = useAuthContext();
+  const { organizationId, safe, user } = useAuthContext();
   const { account, chainId, activate } = useWeb3React();
   const { recipients, scheduleFormState, scheduleMode, scheduleState, updateScheduleFormState, setScheduleState } =
     useVestingContext();
@@ -1088,9 +1088,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         vestingContractId,
         tokenAddress: mintFormState.address,
         tokenId,
-        chainId
+        chainId,
+        createdBy: user?.uid
       });
-      console.log({ recipients });
 
       const newRecipients = await Promise.all(
         recipients.map(async ({ data: recipient }) => {
