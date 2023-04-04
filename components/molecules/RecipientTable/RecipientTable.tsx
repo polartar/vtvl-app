@@ -225,7 +225,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
         className="flex items-center gap-2 mb-8 bg-transparent hover:bg-secondary-100"
         disabled={loading}
         onClick={handleAddNewRecipient}>
-        <PlusIcon className="w-6 h-6" />
+        <PlusIcon className="w-6 h-6 text-secondary-900" />
         <Typography variant="inter" size="body" className="text-secondary-900">
           Add recipient
         </Typography>

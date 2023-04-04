@@ -269,12 +269,16 @@ export function AuthContextProvider({ children }: any) {
       }
 
       const memberInfo = await fetchMember(credential.user.uid);
-      authenticateUser({ ...credential.user, memberInfo });
+      if (allowSignIn(memberInfo?.org_id)) {
+        authenticateUser({ ...credential.user, memberInfo });
 
-      return {
-        isNewUser: Boolean(additionalInfo?.isNewUser),
-        isOnboarding: Boolean(recipientInfo)
-      };
+        return {
+          isNewUser: Boolean(additionalInfo?.isNewUser),
+          isOnboarding: Boolean(recipientInfo)
+        };
+      }
+      toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+      return false;
     },
     [account, chainId]
   );
@@ -284,33 +288,14 @@ export function AuthContextProvider({ children }: any) {
     await setPersistence(auth, browserSessionPersistence);
 
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
-    const { isNewUser: isFirstLogin, isOnboarding } = await updateAuthState(credential);
+    const authState = await updateAuthState(credential);
 
     setLoading(false);
-    return { isFirstLogin, isOnboarding, uuid: credential.user.uid };
-    // const additionalInfo = getAdditionalUserInfo(credential);
-    // const memberInfo = await fetchMember(credential.user.uid);
-
-    // If logged in user is not the member of organization
-    // if (!IS_ENABLED_AUTH_BY_ORG || !currentOrganizationId || currentOrganizationId === memberInfo?.org_id) {
-    //   if (additionalInfo?.isNewUser) {
-    //     const updatedMemberInfo: IMember = {
-    //       email: credential.user.email || '',
-    //       companyEmail: credential.user.email || '',
-    //       name: credential.user.displayName || ''
-    //     };
-    //     if (account) updatedMemberInfo.wallets = [{ walletAddress: account!, chainId: chainId! }];
-    //     await newMember(credential.user.uid, { ...updatedMemberInfo });
-    //   }
-    //   setIsNewUser(additionalInfo?.isNewUser || false);
-    //   setOrganizationId(memberInfo?.org_id);
-    //   setUser({ ...credential.user, memberInfo });
-    //   setLoading(false);
-    //   return { isFirstLogin: additionalInfo?.isNewUser || false, uuid: credential.user.uid };
-    // }
-
-    // toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
-    // setLoading(false);
+    if (authState) {
+      const { isNewUser: isFirstLogin, isOnboarding } = authState;
+      return { isFirstLogin, isOnboarding, uuid: credential.user.uid };
+    }
+    return;
   };
 
   const signInWithEmail = async (email: string, password: string) => {
@@ -320,17 +305,6 @@ export function AuthContextProvider({ children }: any) {
     const credential = await signInWithEmailAndPassword(auth, email, password);
 
     await updateAuthState(credential);
-    // const memberInfo = await fetchMember(credential.user.uid);
-    // const additionalInfo = getAdditionalUserInfo(credential);
-
-    // If logged in user is not the member of organization
-    // if (allowSignIn(memberInfo?.org_id)) {
-    //   setOrganizationId(memberInfo?.org_id);
-    //   setUser({ ...credential.user, memberInfo });
-    //   setIsNewUser(additionalInfo?.isNewUser || false);
-    // } else {
-    //   toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
-    // }
     setLoading(false);
   };
 
@@ -339,26 +313,6 @@ export function AuthContextProvider({ children }: any) {
     await setPersistence(auth, browserSessionPersistence);
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     await updateAuthState(credential);
-    // const memberInfo = await fetchMember(credential.user.uid);
-
-    // // If logged in user is not the member of organization
-    // if (allowSignIn(memberInfo?.org_id)) {
-    //   const additionalInfo = getAdditionalUserInfo(credential);
-    //   if (additionalInfo?.isNewUser) {
-    //     const updatedMemberInfo: IMember = {
-    //       email: credential.user.email || '',
-    //       companyEmail: credential.user.email || '',
-    //       name: credential.user.displayName || ''
-    //     };
-    //     if (account) updatedMemberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
-    //     await newMember(credential.user.uid, { ...updatedMemberInfo });
-    //   }
-    //   setOrganizationId(memberInfo?.org_id);
-    //   setUser({ ...credential.user, memberInfo });
-    //   setIsNewUser(additionalInfo?.isNewUser || false);
-    // } else {
-    //   toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
-    // }
     setLoading(false);
   };
 
