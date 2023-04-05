@@ -192,6 +192,7 @@ export default function VestingContracts() {
         //   }
         // ]);
       } else {
+        console.log(vestingContractInfo);
         const withdrawTransaction = await vestingContract.withdrawAdmin(vestingContractInfo?.reserved);
         const transactionData: ITransaction = {
           hash: withdrawTransaction.hash,
@@ -229,12 +230,18 @@ export default function VestingContracts() {
       }
     }
   };
+
   return (
     <div className="w-full">
       <div className="mb-9">
         {uniqueVestings.map((vesting) => {
           const vestingContract = vestingContracts.find((contract) => contract.id === vesting.data.vestingContractId);
+
           if (!vestingContract) return;
+          const vestingContractInfo = vestingContractsInfo.find(
+            (contract) => contract.address === vestingContract?.data.address
+          );
+          if (vestingContractInfo?.reserved.toString() === '0') return;
           return (
             <div
               key={vesting.id}
