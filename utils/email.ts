@@ -7,6 +7,7 @@ mail.setApiKey(key || '');
 export enum MailTemplates {
   ThemedLogin = 'd-d7421e14f0f049e1a0e18488ff1b2f63',
   ThemedTeamInvite = 'd-82a9d1093c4f42bcaa53a93d6eb23815',
+  ThemedRecipientInvite = 'd-02355a5f1ee04a21b54952fc13e91923',
   Login = 'd-dbd24a1f6b69408bbdcff1b4130ecde4',
   TeammateInvite = 'd-bde77990c2394a1fba408a67285063b6',
   RecipientInvite = 'd-c7dcc8f33282470099ae8a0247710d20'

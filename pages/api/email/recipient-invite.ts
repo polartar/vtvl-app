@@ -43,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
           subject: `Join ${websiteName || WEBSITE_NAME}`,
           websiteName: websiteName || WEBSITE_NAME,
           websiteEmail: websiteEmail || WEBSITE_EMAIL,
-          templateId: MailTemplates.RecipientInvite
+          templateId: MailTemplates.ThemedRecipientInvite
         });
         updateRecipient(recipient.memberId, {
           status: 'delivered'
