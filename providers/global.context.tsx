@@ -3,6 +3,7 @@ import { useShallowState } from 'hooks/useShallowState';
 import React, { PropsWithChildren, createContext, useCallback, useContext, useEffect } from 'react';
 import { fetchWebsiteByDomain } from 'services/db/website';
 import { IWebsite } from 'types/models';
+import { WEBSITE_NAME } from 'utils/constants';
 
 export interface IEmailTemplate {
   websiteName: string;
@@ -22,7 +23,7 @@ export interface IEmailTemplate {
 export interface GlobalContextState {
   isLoading: boolean;
   website: IWebsite;
-  emailTemplate: any;
+  emailTemplate: IEmailTemplate;
 }
 
 const defaultEmailTemplate: IEmailTemplate = {
@@ -111,7 +112,7 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
       // then uses the app's theme, and lastly the default vtvl theme colors.
       setState({
         emailTemplate: {
-          websiteName: state.website.name,
+          websiteName: state.website.name || WEBSITE_NAME,
           theme: {
             primaryColor:
               state.website.styles?.emailTheme?.bgColorPrimary ||

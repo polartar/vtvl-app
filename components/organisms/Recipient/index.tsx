@@ -1,7 +1,7 @@
 import Button from '@components/atoms/Button/Button';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useDashboardContext } from '@providers/dashboard.context';
-import { useGlobalContext } from '@providers/global.context';
+import { IEmailTemplate, useGlobalContext } from '@providers/global.context';
 import { useRecipientContext } from '@providers/recipient.context';
 import { useTokenContext } from '@providers/token.context';
 import axios from 'axios';
@@ -27,12 +27,11 @@ export const sendRecipientInvite = async (
     orgId?: string;
     memberId: string;
   }[],
-  symbol: string
+  symbol: string,
+  websiteName?: string,
+  websiteEmail?: string,
+  emailTemplate?: IEmailTemplate
 ): Promise<void> => {
-  const {
-    website: { name: websiteName, email: websiteEmail },
-    emailTemplate
-  } = useGlobalContext();
   //TODO: extract api calls
   await axios.post('/api/email/recipient-invite', {
     recipients: recipients,
@@ -61,6 +60,10 @@ export default function VestingContract() {
   const [allChecked, setAllChecked] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const { mintFormState } = useTokenContext();
+  const {
+    website: { name: websiteName, email: websiteEmail },
+    emailTemplate
+  } = useGlobalContext();
 
   useEffect(() => {
     setRecipients(initialRecipients);
@@ -149,7 +152,7 @@ export default function VestingContract() {
         memberId: recipient.id
       }));
     try {
-      await sendRecipientInvite(inviteRecipients, mintFormState.symbol);
+      await sendRecipientInvite(inviteRecipients, mintFormState.symbol, websiteName, websiteEmail, emailTemplate);
       toast.success('Invited recipients successfully');
     } catch (err) {
       toast.error('Something went wrong');
