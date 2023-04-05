@@ -21,6 +21,7 @@ import React, { useCallback } from 'react';
 import { useMemo } from 'react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { updateRecipient } from 'services/db/recipient';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
@@ -129,6 +130,21 @@ export default function VestingContracts() {
     return vestingContracts.map((vestingContract) => getVestingInfoByContract(vestingContract.data.address));
   }, [vestingSchedulesInfo, getVestingInfoByContract, vestingContracts]);
 
+  const setRecipientRevoked = (vestingContractAddress: string) => {
+    const vestingContract = vestingContracts.find((contract) => contract.data.address === vestingContractAddress);
+    if (!vestingContract) return;
+    const vestingIds = allVestings
+      .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
+      .map((vesting) => vesting.id);
+    const availableRecipients = allRecipients.filter((recipient) => vestingIds.includes(recipient.data.vestingId));
+
+    availableRecipients.forEach((recipient) => {
+      updateRecipient(recipient.id, {
+        allocations: 0
+      });
+    });
+  };
+
   const handleTransfer = async (vestingContractAddress: string) => {
     if (vestingContracts && vestingContracts.length > 0 && organizationId && chainId && account) {
       const vestingContract = new ethers.Contract(vestingContractAddress, VestingABI.abi, library.getSigner());
@@ -192,7 +208,6 @@ export default function VestingContracts() {
         //   }
         // ]);
       } else {
-        console.log(vestingContractInfo);
         const withdrawTransaction = await vestingContract.withdrawAdmin(vestingContractInfo?.reserved);
         const transactionData: ITransaction = {
           hash: withdrawTransaction.hash,
@@ -228,6 +243,7 @@ export default function VestingContracts() {
         //   }
         // ]);
       }
+      setRecipientRevoked(vestingContractAddress);
     }
   };
 
@@ -238,10 +254,7 @@ export default function VestingContracts() {
           const vestingContract = vestingContracts.find((contract) => contract.id === vesting.data.vestingContractId);
 
           if (!vestingContract) return;
-          const vestingContractInfo = vestingContractsInfo.find(
-            (contract) => contract.address === vestingContract?.data.address
-          );
-          if (vestingContractInfo?.reserved.toString() === '0') return;
+
           return (
             <div
               key={vesting.id}

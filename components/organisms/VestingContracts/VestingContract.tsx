@@ -16,9 +16,12 @@ import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { createTransaction, fetchTransactionsByQuery, updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
+import { IRevokingDoc } from 'types/models/revoking';
+import { IVestingDoc } from 'types/models/vesting';
 import { formatNumber } from 'utils/token';
 import { string } from 'yup';
 
@@ -33,6 +36,16 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     recipients: allRecipients
   } = useDashboardContext();
   const { safe, organizationId } = useAuthContext();
+  const [revokings, setRevokings] = useState<IRevokingDoc[]>();
+  useEffect(() => {
+    if (chainId && organizationId) {
+      fetchRevokingsByQuery(['chainId', 'organizationId'], ['==', '=='], [chainId, organizationId]).then((res) => {
+        if (res) {
+          setRevokings(res);
+        }
+      });
+    }
+  }, [chainId, organizationId]);
   const { mintFormState } = useTokenContext();
   const {
     pendingTransactions,
@@ -58,6 +71,24 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     allVestings,
     allRecipients
   );
+
+  const availableRevokings = useMemo(() => {
+    if (revokings && vestings && allRecipients) {
+      return revokings.filter(
+        (revoking) =>
+          Number(
+            allRecipients.find(
+              (recipient) =>
+                recipient.data.vestingId === revoking.data.vestingId &&
+                recipient.data.walletAddress === revoking.data.recipient
+            )?.data.allocations
+          ) !== 0
+      );
+    } else {
+      return [];
+    }
+  }, [revokings, allRecipients, vestings]);
+
   const vestingContractsInfo = useMemo(() => {
     if (!vestingSchedulesInfo || !vestingSchedulesInfo.length || !vestingContracts.length) return undefined;
     let allocation = ethers.BigNumber.from(0),
@@ -213,6 +244,25 @@ export default function VestingContract({ vestingContractId }: { vestingContract
               </div>
               <button className="secondary small whitespace-nowrap" onClick={handleWithdraw}>
                 Withdraw
+              </button>
+            </div>
+          )}
+        {availableRevokings &&
+          availableRevokings.length > 0 &&
+          vestingContractsInfo &&
+          vestingContractsInfo.reserved.gt(ethers.BigNumber.from(0)) &&
+          (!withdrawTransactions || !withdrawTransactions.length) && (
+            <div className="mb-3 w-full px-6 py-3 bg-warning-100 border border-warning-500 rounded-lg flex items-center justify-between">
+              <div>
+                <div className="font-bold text-sm text-[#344054]">Unallocated tokens</div>
+                <div className="text-label text-sm">
+                  You can now transfer the locked tokens from <b>{availableRevokings.length}</b> revoked schedule under
+                  this contract, Another option is to check it under Schedule’s section <b>Revoke</b> tab or simply
+                  click <b>"Transfer All Tokens"</b> and transfer them back to your wallet.
+                </div>
+              </div>
+              <button className="secondary small whitespace-nowrap" onClick={handleWithdraw}>
+                Transfer All Tokens
               </button>
             </div>
           )}
