@@ -1,22 +1,30 @@
 import { useWeb3React } from '@web3-react/core';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Fade from 'react-reveal/Fade';
+import { toast } from 'react-toastify';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
+import { truncateLabel } from 'utils/shared';
 import { toHex } from 'utils/web3';
+
+import Button from '../Button/Button';
 
 const NetworkSelector = () => {
   const { library, account, active, chainId } = useWeb3React();
-  const [showNetworks, setShowNetworks] = React.useState(false);
-  const [selectedNetwork, setSelectedNetwork] = React.useState({
+  const [showNetworks, setShowNetworks] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState({
+    id: 1,
     icon: '/icons/chains/ethereum.svg',
     title: 'Ethereum',
     code: 'ETH'
   });
+  const promptToast = useRef(null);
 
+  // Detect and auto-select the selectedNetwork state
   useEffect(() => {
     if (!active) setShowNetworks(false);
     if (chainId) {
       setSelectedNetwork({
+        id: SupportedChains[chainId as SupportedChainId].id,
         icon: SupportedChains[chainId as SupportedChainId].icon,
         title: SupportedChains[chainId as SupportedChainId].title,
         code: SupportedChains[chainId as SupportedChainId].code
@@ -24,35 +32,63 @@ const NetworkSelector = () => {
     }
   }, [active, chainId]);
 
-  const selectNetwork = async (network: any) => {
+  const promptNetworkChange = async (network: any) => {
+    // By default closes the network options and existing prompt
     setShowNetworks(false);
+    toast.dismiss(promptToast.current!);
+
+    // Show warning prompt
+    toast.warning(
+      <div>
+        <p>Switch to {network.title} network?</p>
+        <div className="flex flex-row gap-1 items-center mt-2">
+          <Button danger outline size="small" onClick={() => toast.dismiss(promptToast.current!)}>
+            Nope!
+          </Button>
+          <Button primary size="small" onClick={() => selectNetwork(network)}>
+            Yeah
+          </Button>
+        </div>
+      </div>,
+      { autoClose: false, icon: false }
+    );
+  };
+
+  const selectNetwork = async (network: any) => {
+    // By default close prompt
+    toast.dismiss(promptToast.current!);
     console.log('we have network here ', network);
+    // Try and request initial changing of network
+    const { icon, title, code, id, rpc } = network;
     try {
+      // Do nothing and just return if selecting the same network
+      if (id === selectedNetwork.id) return;
+      // Attempt to request to change network
       await library.provider.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: toHex(network.id) }]
+        params: [{ chainId: toHex(id) }]
       });
-      console.log('switched success ');
-      setSelectedNetwork({
-        icon: network.icon,
-        title: network.title,
-        code: network.code
-      });
+      setSelectedNetwork({ id, icon, title, code });
+      toast.success(`You've switched to ${title} network.`);
     } catch (switchError: any) {
+      // Check for errors
       if (switchError.code === 4902) {
         try {
+          // Try to request to add the chain first
           await library.provider.request({
             method: 'wallet_addEthereumChain',
-            params: [{ chainId: toHex(network.id), chainName: network.title, rpcUrls: [network.rpc] }]
+            params: [{ chainId: toHex(id), chainName: title, rpcUrls: [rpc] }]
           });
-          setSelectedNetwork({
-            icon: network.icon,
-            title: network.title,
-            code: network.code
-          });
-        } catch (error) {
-          console.log(error);
+          setSelectedNetwork({ id, icon, title, code });
+          toast.success(`You've added and switched to ${title} network.`);
+        } catch (error: any) {
+          // If unsuccessful, display an error
+          console.log('ERROR trying to add', error);
+          toast.error(`Switching to ${title} network failed!`);
         }
+      } else {
+        // Just display a default message based on the thrown error
+        toast.error(`Switching to ${title} network failed!`);
       }
     }
   };
@@ -66,7 +102,7 @@ const NetworkSelector = () => {
           <img src={selectedNetwork.icon} className="shrink-0 w-6 h-6 rounded-full" alt={selectedNetwork.title} />
           <p className="text-sm text-primary-900 font-medium">
             <span className="hidden sm:block lg:hidden">{selectedNetwork.code}</span>
-            <span className="hidden lg:block">{selectedNetwork.title}</span>
+            <span className="hidden lg:block">{truncateLabel(selectedNetwork.title, 10)}</span>
           </p>
         </div>
         <img
@@ -80,13 +116,13 @@ const NetworkSelector = () => {
         />
       </div>
       {showNetworks && (
-        <Fade cascade bottom>
-          <div className="absolute z-10 top-12 flex flex-col bg-gray-50 border border-gray-200 rounded-3xl w-full py-1 px-2 sm:px-3">
+        <div className="absolute z-10 top-12 flex flex-col bg-gray-50 border border-gray-200 rounded-3xl w-full py-1 px-2 sm:px-3">
+          <Fade cascade bottom duration={300}>
             {Object.keys(SupportedChains).map((key: any, idx: number) => (
               <div
                 key={key}
                 className="h-10 flex flex-row items-center sm:gap-2 cursor-pointer transition-all hover:translate-x-1"
-                onClick={async () => await selectNetwork(SupportedChains[key as SupportedChainId])}>
+                onClick={async () => await promptNetworkChange(SupportedChains[key as SupportedChainId])}>
                 <img
                   className="w-6 h-6 rounded-full"
                   src={SupportedChains[key as SupportedChainId].icon}
@@ -94,12 +130,14 @@ const NetworkSelector = () => {
                 />
                 <p className="text-sm text-primary-900 font-medium">
                   <span className="hidden sm:block lg:hidden">{SupportedChains[key as SupportedChainId].code}</span>
-                  <span className="hidden lg:block">{SupportedChains[key as SupportedChainId].title}</span>
+                  <span className="hidden lg:block" title={SupportedChains[key as SupportedChainId].title}>
+                    {truncateLabel(SupportedChains[key as SupportedChainId].title, 12)}
+                  </span>
                 </p>
               </div>
             ))}
-          </div>
-        </Fade>
+          </Fade>
+        </div>
       )}
     </div>
   );

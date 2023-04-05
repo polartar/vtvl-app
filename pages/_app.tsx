@@ -66,7 +66,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                           <ClaimTokensContextProvider>
                             <RecipientContextProvider>
                               <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                              <ToastContainer />
+                              <ToastContainer autoClose={6000} style={{ top: '6rem', right: '1rem' }} />
                             </RecipientContextProvider>
                           </ClaimTokensContextProvider>
                         </TeammateContextProvider>

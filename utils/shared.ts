@@ -257,3 +257,8 @@ export const scrollIntoView = (element: any) => {
 export const removeDuplication = <T extends string>(data: Array<T> = []) => {
   return Object.keys(data.reduce((res, item) => ({ ...res, [item]: true }), {}));
 };
+
+/** Only displays n number of characters and add an ellipsis */
+export const truncateLabel = (label: string, length: number) => {
+  return `${label.substring(0, length)}${label.length > length ? '...' : ''}`;
+};

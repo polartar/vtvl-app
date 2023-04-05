@@ -220,15 +220,6 @@ export const devSupportedChains: SupportedChainsType = {
     explorer: 'https://cronos.crypto.org/explorer/testnet3/',
     multisigTxUrl: ''
   },
-  [SupportedChainId.MUMBAI]: {
-    id: 80001,
-    icon: '/icons/chains/polygon.svg',
-    title: 'Polygon Mumbai Testnet',
-    code: 'MATIC',
-    rpc: 'https://rpc-mumbai.maticvigil.com',
-    explorer: 'https://mumbai.polygonscan.com',
-    multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
-  },
   [SupportedChainId.OKC_MAINNET]: {
     id: 66,
     icon: '/icons/chains/okc.png',
@@ -249,7 +240,7 @@ export const devSupportedChains: SupportedChainsType = {
   },
   [SupportedChainId.BASE_GOERLI]: {
     id: 84531,
-    icon: '/icons/chains/base.svg',
+    icon: '/icons/chains/ethereum.svg',
     title: 'Base Goerli',
     code: 'BASE',
     rpc: 'https://goerli.base.org/',
