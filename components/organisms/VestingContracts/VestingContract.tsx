@@ -16,6 +16,7 @@ import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { updateRecipient } from 'services/db/recipient';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { createTransaction, fetchTransactionsByQuery, updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
@@ -116,6 +117,21 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     };
   }, [vestingSchedulesInfo, vestingContracts]);
 
+  const initRecipientAllocation = (vestingContractAddress: string) => {
+    const vestingContract = vestingContracts.find((contract) => contract.data.address === vestingContractAddress);
+    if (!vestingContract) return;
+    const vestingIds = allVestings
+      .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
+      .map((vesting) => vesting.id);
+    const availableRecipients = allRecipients.filter((recipient) => vestingIds.includes(recipient.data.vestingId));
+
+    availableRecipients.forEach((recipient) => {
+      updateRecipient(recipient.id, {
+        allocations: 0
+      });
+    });
+  };
+
   const handleWithdraw = async () => {
     if (vestingContracts && vestingContracts.length > 0 && organizationId && chainId && account) {
       const vestingContractAddress = vestingContracts[0].data.address;
@@ -214,6 +230,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           }
         ]);
       }
+      initRecipientAllocation(vestingContractAddress);
     }
   };
 

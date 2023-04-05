@@ -130,7 +130,7 @@ export default function VestingContracts() {
     return vestingContracts.map((vestingContract) => getVestingInfoByContract(vestingContract.data.address));
   }, [vestingSchedulesInfo, getVestingInfoByContract, vestingContracts]);
 
-  const setRecipientRevoked = (vestingContractAddress: string) => {
+  const initRecipientAllocation = (vestingContractAddress: string) => {
     const vestingContract = vestingContracts.find((contract) => contract.data.address === vestingContractAddress);
     if (!vestingContract) return;
     const vestingIds = allVestings
@@ -243,7 +243,7 @@ export default function VestingContracts() {
         //   }
         // ]);
       }
-      setRecipientRevoked(vestingContractAddress);
+      initRecipientAllocation(vestingContractAddress);
     }
   };
 

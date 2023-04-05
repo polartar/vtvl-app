@@ -72,7 +72,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     [data, transactions]
   );
   const vestingRecipients = useMemo(
-    () => recipients?.filter((recipient) => recipient.id === id) ?? [],
+    () => recipients?.filter((recipient) => recipient.data.vestingId === id) ?? [],
     [recipients, id]
   );
 
