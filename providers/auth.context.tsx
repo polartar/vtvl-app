@@ -656,6 +656,8 @@ export function AuthContextProvider({ children }: any) {
     ) {
       if (user.memberInfo.type === 'investor' && (!recipient || (recipient && !recipient.data.walletAddress))) {
         Router.push('/recipient/schedule');
+      } else if (isNewUser) {
+        Router.push('/welcome');
       } else {
         Router.push('/claim-portal');
       }
