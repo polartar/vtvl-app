@@ -44,8 +44,9 @@ export default function VestingContracts() {
   const [revokings, setRevokings] = useState<IRevokingDoc[]>();
   const router = useRouter();
   const { mintFormState } = useTokenContext();
-
+  const [revocableContracts, setRevocableContracts] = useState<IVestingContractDoc[]>([]);
   const { setTransactionStatus: setTransactionLoaderStatus } = useTransactionLoaderContext();
+  const [currentRevokingContract, setCurrentRevokingContract] = useState<string>();
 
   useEffect(() => {
     if (chainId && organizationId) {
@@ -67,7 +68,7 @@ export default function VestingContracts() {
     allRecipients
   );
 
-  const uniqueVestingContracts = useMemo(() => {
+  useEffect(() => {
     if (revokings && allVestings && allRecipients) {
       const availableRevokings = revokings.filter(
         (revoking) =>
@@ -83,15 +84,14 @@ export default function VestingContracts() {
 
       availableRevokings.forEach((revoke) => {
         const vesting = allVestings.find((vesting) => vesting.id === revoke.data.vestingId);
+        console.log(vesting?.id);
         if (!uniqueVestingContracts.map((contract) => contract.id).includes(vesting?.data.vestingContractId || '')) {
           const vestingContract = vestingContracts.find((contract) => contract.id === vesting?.data.vestingContractId);
           if (vestingContract) uniqueVestingContracts.push(vestingContract);
         }
       }, []);
 
-      return uniqueVestingContracts;
-    } else {
-      return [];
+      setRevocableContracts(uniqueVestingContracts);
     }
   }, [revokings, allRecipients, allVestings]);
 
@@ -149,110 +149,108 @@ export default function VestingContracts() {
 
   const handleTransfer = async (vestingContractAddress: string) => {
     if (vestingContracts && vestingContracts.length > 0 && organizationId && chainId && account) {
+      setCurrentRevokingContract(vestingContractAddress);
+
       const vestingContract = new ethers.Contract(vestingContractAddress, VestingABI.abi, library.getSigner());
       const vestingContractInfo = vestingContractsInfo.find((contract) => contract.address === vestingContractAddress);
-      if (safe?.address) {
-        const ADMIN_WITHDRAW_FUNCTION = 'function withdrawAdmin(uint112 _amountRequested)';
-        const ABI = [ADMIN_WITHDRAW_FUNCTION];
-        const vestingContractInterface = new ethers.utils.Interface(ABI);
-        const adminWithdrawEncoded = vestingContractInterface.encodeFunctionData('withdrawAdmin', [
-          vestingContractInfo?.reserved
-        ]);
-        const ethAdapter = new EthersAdapter({
-          ethers: ethers,
-          signer: library?.getSigner(0)
-        });
+      try {
+        if (safe?.address) {
+          const ADMIN_WITHDRAW_FUNCTION = 'function withdrawAdmin(uint112 _amountRequested)';
+          const ABI = [ADMIN_WITHDRAW_FUNCTION];
+          const vestingContractInterface = new ethers.utils.Interface(ABI);
+          const adminWithdrawEncoded = vestingContractInterface.encodeFunctionData('withdrawAdmin', [
+            vestingContractInfo?.reserved
+          ]);
+          const ethAdapter = new EthersAdapter({
+            ethers: ethers,
+            signer: library?.getSigner(0)
+          });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
-        const txData = {
-          to: vestingContractAddress,
-          data: adminWithdrawEncoded,
-          value: '0'
-        };
-        const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
-        const txHash = await safeSdk.getTransactionHash(safeTransaction);
-        const signature = await safeSdk.signTransactionHash(txHash);
-        setTransactionLoaderStatus('IN_PROGRESS');
-        safeTransaction.addSignature(signature);
-        const safeService = new SafeServiceClient({
-          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-          ethAdapter
-        });
-        await safeService.proposeTransaction({
-          safeAddress: safe.address,
-          senderAddress: account,
-          safeTransactionData: safeTransaction.data,
-          safeTxHash: txHash,
-          senderSignature: signature.data
-        });
-        const transactionData: ITransaction = {
-          hash: '',
-          safeHash: txHash,
-          status: 'PENDING',
-          to: vestingContractAddress,
-          type: 'ADMIN_WITHDRAW',
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
-          organizationId: organizationId,
-          chainId,
-          vestingIds: [],
-          withdrawAmount: ethers.utils.formatUnits(vestingContractInfo!.reserved, mintFormState?.decimals || 18),
-          vestingContractId: vestingContracts[0].id
-        };
-        const transactionId = await createTransaction(transactionData);
-        toast.success('Transaction has been created successfully.');
-        setTransactionLoaderStatus('SUCCESS');
-        // setWithdrawTransactions([
-        //   ...withdrawTransactions,
-        //   {
-        //     id: transactionId,
-        //     data: transactionData
-        //   }
-        // ]);
-      } else {
-        const withdrawTransaction = await vestingContract.withdrawAdmin(vestingContractInfo?.reserved);
-        const transactionData: ITransaction = {
-          hash: withdrawTransaction.hash,
-          safeHash: '',
-          status: 'PENDING',
-          to: vestingContractAddress,
-          type: 'ADMIN_WITHDRAW',
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
-          organizationId: organizationId,
-          chainId,
-          vestingIds: [],
-          withdrawAmount: ethers.utils.formatUnits(vestingContractInfo!.reserved, mintFormState?.decimals || 18),
-          vestingContractId: vestingContracts[0].id
-        };
-        const transactionId = await createTransaction(transactionData);
-        await withdrawTransaction.wait();
-        await updateTransaction(
-          {
-            ...transactionData,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          transactionId
+          const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+          const txData = {
+            to: vestingContractAddress,
+            data: adminWithdrawEncoded,
+            value: '0'
+          };
+          const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
+          const txHash = await safeSdk.getTransactionHash(safeTransaction);
+          const signature = await safeSdk.signTransactionHash(txHash);
+          setTransactionLoaderStatus('IN_PROGRESS');
+          safeTransaction.addSignature(signature);
+          const safeService = new SafeServiceClient({
+            txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+            ethAdapter
+          });
+          await safeService.proposeTransaction({
+            safeAddress: safe.address,
+            senderAddress: account,
+            safeTransactionData: safeTransaction.data,
+            safeTxHash: txHash,
+            senderSignature: signature.data
+          });
+          const transactionData: ITransaction = {
+            hash: '',
+            safeHash: txHash,
+            status: 'PENDING',
+            to: vestingContractAddress,
+            type: 'ADMIN_WITHDRAW',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            organizationId: organizationId,
+            chainId,
+            vestingIds: [],
+            withdrawAmount: ethers.utils.formatUnits(vestingContractInfo!.reserved, mintFormState?.decimals || 18),
+            vestingContractId: vestingContracts[0].id
+          };
+          const transactionId = await createTransaction(transactionData);
+          toast.success('Transaction has been created successfully.');
+          setTransactionLoaderStatus('SUCCESS');
+        } else {
+          const withdrawTransaction = await vestingContract.withdrawAdmin(vestingContractInfo?.reserved);
+          const transactionData: ITransaction = {
+            hash: withdrawTransaction.hash,
+            safeHash: '',
+            status: 'PENDING',
+            to: vestingContractAddress,
+            type: 'ADMIN_WITHDRAW',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            organizationId: organizationId,
+            chainId,
+            vestingIds: [],
+            withdrawAmount: ethers.utils.formatUnits(vestingContractInfo!.reserved, mintFormState?.decimals || 18),
+            vestingContractId: vestingContracts[0].id
+          };
+          const transactionId = await createTransaction(transactionData);
+          await withdrawTransaction.wait();
+          await updateTransaction(
+            {
+              ...transactionData,
+              status: 'SUCCESS',
+              updatedAt: Math.floor(new Date().getTime() / 1000)
+            },
+            transactionId
+          );
+          toast.success('Withdrew tokens successfully.');
+          setTransactionLoaderStatus('SUCCESS');
+        }
+        const updatedRevocableContracts = revocableContracts.filter(
+          (contract) => !compareAddresses(contract.data.address, vestingContractAddress)
         );
-        toast.success('Withdrew tokens successfully.');
-        setTransactionLoaderStatus('SUCCESS');
-        // setWithdrawTransactions([
-        //   ...withdrawTransactions,
-        //   {
-        //     id: transactionId,
-        //     data: { ...transactionData, status: 'SUCCESS', updatedAt: Math.floor(new Date().getTime() / 1000) }
-        //   }
-        // ]);
+        setRevocableContracts(updatedRevocableContracts.slice());
+        initRecipientAllocation(vestingContractAddress);
+      } catch (err) {
+        toast.error('Something went wrong');
+      } finally {
+        setCurrentRevokingContract(undefined);
       }
-      initRecipientAllocation(vestingContractAddress);
     }
   };
 
   return (
     <div className="w-full">
       <div className="mb-9">
-        {uniqueVestingContracts.map((vestingContract) => {
+        {revocableContracts.map((vestingContract) => {
           return (
             <div
               key={vestingContract.id}
@@ -265,7 +263,8 @@ export default function VestingContracts() {
                 </div>
               </div>
               <button
-                className="secondary small whitespace-nowrap"
+                className="secondary small whitespace-nowrap bg-gray-200 text-gray-500"
+                disabled={currentRevokingContract === vestingContract.data.address}
                 onClick={() => handleTransfer(vestingContract.data.address)}>
                 Transfer Tokens
               </button>
