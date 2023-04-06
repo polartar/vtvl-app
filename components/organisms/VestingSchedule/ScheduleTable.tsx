@@ -1,4 +1,3 @@
-import Copy from '@components/atoms/Copy/Copy';
 import RecipientRow from '@components/molecules/VestingSchedule/RecipientRow';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';

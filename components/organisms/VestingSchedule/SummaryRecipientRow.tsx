@@ -1,25 +1,17 @@
-import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
-import Copy from '@components/atoms/Copy/Copy';
 import StepWizard from '@components/atoms/StepWizard/StepWizard';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
 import { useAuthContext } from '@providers/auth.context';
-import { useDashboardContext } from '@providers/dashboard.context';
-import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
-import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import format from 'date-fns/format';
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-import { createRevoking, fetchRevokingsByQuery } from 'services/db/revoking';
-import { createTransaction, fetchTransaction } from 'services/db/transaction';
+import { fetchRevokingsByQuery } from 'services/db/revoking';
+import { fetchTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipientDoc, IRevoking, ITransaction, IVesting } from 'types/models';
-import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
-import { createSafeTransaction } from 'utils/safe';
+import { IRecipientDoc, IRevoking, ITransaction } from 'types/models';
 
 interface ISummaryRecipientRowProps {
   recipient: IRecipientDoc;
