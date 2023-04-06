@@ -318,7 +318,7 @@ export default function ClaimPortal() {
                       ? getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime)
                       : 60) *
                       1000
-                  : undefined;
+                  : 0;
 
               return (
                 <VestingCard

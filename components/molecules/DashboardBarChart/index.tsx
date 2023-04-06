@@ -24,7 +24,7 @@ const DashboardBarChart: React.FC<IDashboardBarChart> = ({ totalAllocation, tota
   const totalLockedPercentage = 100 - withdrawnPercentage - claimablePercecntage;
 
   return (
-    <div className="w-full px-8 py-4 pb-8 mt-10">
+    <div className="w-full py-10">
       <div className="flex rounded-xl relative">
         <div
           style={{ width: `${withdrawnPercentage}%`, backgroundColor: '#f9e597' }}

@@ -16,9 +16,9 @@ const PendingActionsFilter: React.FC<IPendingActionsFilterProps> = ({ filter, up
   return (
     <div className="w-full">
       <div className="mt-5 w-full">
-        <div className="inline-flex border border-[#d0d5dd] rounded-lg overflow-hidden">
+        <div className="inline-flex border border-[#d0d5dd] rounded-lg font-medium text-xs text-[#1d2939] overflow-hidden">
           <div
-            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] text-sm text-[#1d2939] cursor-pointer hover:bg-[#eaeaea] ${
+            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] transition-all cursor-pointer hover:bg-[#eaeaea] ${
               filter.status === 'ALL' ? 'bg-[#eaeaea]' : ''
             }`}
             onClick={() => {
@@ -30,7 +30,7 @@ const PendingActionsFilter: React.FC<IPendingActionsFilterProps> = ({ filter, up
             All
           </div>
           <div
-            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] text-sm text-[#1d2939] cursor-pointer hover:bg-[#eaeaea] ${
+            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] transition-all cursor-pointer hover:bg-[#eaeaea] ${
               filter.status === 'FUND' ? 'bg-[#eaeaea]' : ''
             }`}
             onClick={() => {
@@ -42,7 +42,7 @@ const PendingActionsFilter: React.FC<IPendingActionsFilterProps> = ({ filter, up
             Fund
           </div>
           <div
-            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] text-sm text-[#1d2939] cursor-pointer hover:bg-[#eaeaea] ${
+            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] transition-all cursor-pointer hover:bg-[#eaeaea] ${
               filter.status === 'DEPLOY_VESTING_CONTRACT' ? 'bg-[#eaeaea]' : ''
             }`}
             onClick={() => {
@@ -54,7 +54,7 @@ const PendingActionsFilter: React.FC<IPendingActionsFilterProps> = ({ filter, up
             Deploy Vesting Contract
           </div>
           <div
-            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] text-sm text-[#1d2939] cursor-pointer hover:bg-[#eaeaea] ${
+            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] transition-all cursor-pointer hover:bg-[#eaeaea] ${
               filter.status === 'TRANSFER_OWNERSHIP' ? 'bg-[#eaeaea]' : ''
             }`}
             onClick={() => {
@@ -66,7 +66,7 @@ const PendingActionsFilter: React.FC<IPendingActionsFilterProps> = ({ filter, up
             Transfer Ownership
           </div>
           <div
-            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] text-sm text-[#1d2939] cursor-pointer hover:bg-[#eaeaea] ${
+            className={`px-4 py-3 bg-white border-r border-[#d0d5dd] transition-all cursor-pointer hover:bg-[#eaeaea] ${
               filter.status === 'APPROVE' ? 'bg-[#eaeaea]' : ''
             }`}
             onClick={() => {
@@ -78,7 +78,7 @@ const PendingActionsFilter: React.FC<IPendingActionsFilterProps> = ({ filter, up
             Approve
           </div>
           <div
-            className={`px-4 py-3 bg-white border-[#d0d5dd] text-sm text-[#1d2939] cursor-pointer hover:bg-[#eaeaea] ${
+            className={`px-4 py-3 bg-white border-[#d0d5dd] transition-all cursor-pointer hover:bg-[#eaeaea] ${
               filter.status === 'EXECUTE' ? 'bg-[#eaeaea]' : ''
             }`}
             onClick={() => {

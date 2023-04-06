@@ -301,7 +301,7 @@
 
   button[disabled]:not(.wallet-button):not(.loading),
   button:disabled:not(.wallet-button):not(.loading) {
-    @apply bg-primary-50 border border-primary-400 text-primary-300 !important;
+    @apply bg-primary-50 border border-primary-400 text-primary-300;
   }
 
   /* Typography */
@@ -381,6 +381,11 @@
   /* Ant date or time picker override */
   .ant-picker {
     @apply flex items-center gap-2 relative border rounded-3xl py-1.5 px-6 h-12 bg-neutral-50 w-full border-neutral-300 text-sm text-neutral-700 shadow-sm transition-all !important;
+  }
+
+  /* Alternate variant for the select input */
+  label > div > select.alt {
+    @apply border-none bg-transparent shadow-none text-xs text-primary-900 p-3 h-auto !important;
   }
 
   /* Other disabled styles */
@@ -530,7 +535,7 @@
     @apply w-full whitespace-nowrap;
   }
   table thead {
-    @apply bg-neutral-50;
+    @apply bg-neutral-100;
   }
   table thead th {
     @apply text-left text-xs font-medium text-neutral-500;
@@ -640,9 +645,6 @@
     @apply border-primary-400 !important;
   }
 
-  .select__value-container {
-    @apply p-0 gap-1 !important;
-  }
   .select__input-container,
   .select__multi-value {
     @apply my-0 !important;
@@ -658,13 +660,6 @@
   }
   .select__indicator {
     @apply py-0 pr-1 pl-2 !important;
-  }
-  .select__option {
-    @apply text-neutral-600 text-sm !important;
-  }
-  .select__option--is-focused,
-  .select__option--is-selected {
-    @apply text-neutral-800 bg-neutral-50 !important;
   }
 
   /* Progress bar customization */
@@ -854,8 +849,42 @@ body {
   transition: opacity 0.2s, color 0.2s;
 }
 
+.Mui-selected {
+  background-color: var(--primary-900) !important;
+}
+
 /* Recharts override */
 .recharts-cartesian-axis-tick-value {
   font-size: 12px;
   color: var(--neutral-800);
+}
+
+/* Select from react-select style overrides */
+.select__control {
+  padding-right: 10px !important;
+}
+.select__value-container {
+  padding: 0 !important;
+  gap: 4px;
+}
+
+.select__menu {
+  padding: 0.125rem 0.375rem !important;
+  border-radius: 0.75rem !important;
+}
+
+.select__option {
+  color: var(--neutral-600) !important;
+  font-size: 1rem !important;
+  border-radius: 0.5rem !important;
+}
+
+.select__option:not(:first-child) {
+  margin-top: 0.5rem !important;
+}
+
+.select__option--is-focused,
+.select__option--is-selected {
+  color: var(--primary-700) !important;
+  background-color: var(--primary-50) !important;
 }

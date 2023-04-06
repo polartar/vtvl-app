@@ -92,19 +92,15 @@ export default function VestingCard({
         <VestingSection title="Start date" description={startDate} />
         <VestingSection title="End date" description={endDate} />
         <VestingSection title="Next unlock" description={unlockDate ? '' : 'N/A'}>
-          <>
-            {unlockDate && (
-              <Countdown
-                date={unlockDate}
-                renderer={({ days, hours, minutes, seconds }) => (
-                  <Typography className="text-neutral-500 font-medium" size="caption">
-                    {days}d {hours}h {minutes}m {seconds}s
-                  </Typography>
-                )}
-                onComplete={handleCountdownComplete}
-              />
+          <Countdown
+            date={unlockDate}
+            renderer={({ days, hours, minutes, seconds }) => (
+              <Typography className="text-neutral-500 font-medium" size="caption">
+                {days}d {hours}h {minutes}m {seconds}s
+              </Typography>
             )}
-          </>
+            onComplete={handleCountdownComplete}
+          />
         </VestingSection>
       </div>
       <hr className="my-3 bg-neutral-200" />

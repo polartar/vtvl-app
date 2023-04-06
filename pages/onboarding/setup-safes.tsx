@@ -2,6 +2,7 @@ import BackButton from '@components/atoms/BackButton/BackButton';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import Hint from '@components/atoms/Hint/Hint';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
+import { Typography } from '@components/atoms/Typography/Typography';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
@@ -44,7 +45,10 @@ const YourSafesPage: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
       <div className="text-center">
-        <h1 className="text-neutral-900 mb-1 flex flex-row items-center gap-1">
+        <Typography
+          size="title"
+          variant="sora"
+          className="font-medium text-neutral-900 mb-1 flex flex-row items-center gap-1">
           Setup your multi-sig{' '}
           <Hint
             tip={
@@ -55,7 +59,7 @@ const YourSafesPage: NextPage = () => {
             }>
             <img src="/images/safe.png" className="w-28" alt="Safe" />
           </Hint>
-        </h1>
+        </Typography>
         <p className="text-xs font-medium">
           Need help with what exactly is Safe?{' '}
           <a

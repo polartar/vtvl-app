@@ -103,8 +103,8 @@ const TeamTable = ({
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="border-primary-200 border-2 w-full">
+    <div className="overflow-x-auto border-primary-200 border-2">
+      <table className="w-full">
         <thead>
           <tr>
             <th>Team members</th>
@@ -137,6 +137,7 @@ const TeamTable = ({
                       options={roles}
                       value={row.type}
                       color="text-primary-800"
+                      variant="alt"
                       onChange={(e) => onChangeType(row.id, e.target.value as ITeamRole)}
                     />
                   </td>

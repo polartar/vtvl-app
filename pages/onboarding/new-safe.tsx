@@ -4,6 +4,7 @@ import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import Hint from '@components/atoms/Hint/Hint';
+import { Typography } from '@components/atoms/Typography/Typography';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import AuthContext, { useAuthContext } from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -312,7 +313,10 @@ const NewSafePage: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
       <div className="text-center">
-        <h1 className="text-neutral-900 mb-1 flex flex-row items-center gap-1">
+        <Typography
+          size="title"
+          variant="sora"
+          className="font-medium text-neutral-900 mb-1 flex flex-row items-center gap-1">
           Setup your multi-sig{' '}
           <Hint
             tip={
@@ -323,7 +327,7 @@ const NewSafePage: NextPage = () => {
             }>
             <img src="/images/safe.png" className="w-28" alt="Safe" />
           </Hint>
-        </h1>
+        </Typography>
         <p className="text-xs font-medium">
           Need help with what exactly is Safe?{' '}
           <a

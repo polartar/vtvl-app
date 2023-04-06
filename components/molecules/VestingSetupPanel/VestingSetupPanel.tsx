@@ -251,6 +251,8 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
             <Select
               options={vestingContractOptions}
               value={form.vestingContract}
+              classNamePrefix="select"
+              menuPlacement="top"
               onChange={handleChangeVesting}
               onFocus={() => setActiveStep(2)}
             />
@@ -321,7 +323,7 @@ export const VestingSetupOption: React.FC<{
 }> = ({ shortTitle, longTitle, selected, onClick, onFocus }) => {
   return (
     <button
-      className="px-6 py-4 rounded-3xl border border-neutral-300 text-left bg-transparent flex items-center justify-between"
+      className="px-6 py-4 rounded-full border border-neutral-300 text-left bg-neutral-50 flex items-center justify-between"
       onClick={onClick}
       onFocus={onFocus}>
       <span>

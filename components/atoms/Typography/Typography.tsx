@@ -8,7 +8,17 @@ export const Typography: React.FC<TypographyProps> = ({
   className = '',
   children
 }) => {
-  const classNames = [variant === 'inter' ? '.inter' : '.sora', getFontSize(size), className].join(' ');
+  const classNames = [variant, getFontSize(size), className].join(' ');
 
-  return <span className={classNames}>{children}</span>;
+  // Add a11y for the typography
+  switch (size) {
+    case 'title':
+      return <h1 className={className}>{children}</h1>;
+    case 'subtitle':
+      return <h2 className={className}>{children}</h2>;
+    case 'paragraph':
+      return <p className={className}>{children}</p>;
+    default:
+      return <span className={classNames}>{children}</span>;
+  }
 };

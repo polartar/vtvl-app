@@ -28,6 +28,7 @@ import { PickersActionBarProps } from '@mui/x-date-pickers/PickersActionBar';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
+import axios from 'axios';
 import { injected } from 'connectors';
 import add from 'date-fns/add';
 import differenceInHours from 'date-fns/differenceInHours';
@@ -1126,6 +1127,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       if (noWalletRecipients.length > 0) {
         await sendRecipientInvite(noWalletRecipients, mintFormState.symbol);
       }
+      await addNewMembers(
+        newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email)
+      );
     }
     console.log('creating vesting schedule');
     // Redirect to the success page to notify the user
@@ -1140,6 +1144,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       vestingContractId: ''
     });
     setSavingSchedule(false);
+  };
+
+  const addNewMembers = async (emails: string[]): Promise<void> => {
+    //TODO: extract api calls
+    await axios.post('/api/recipient/add-members', {
+      emails: emails
+    });
   };
 
   return (

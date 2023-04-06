@@ -297,18 +297,18 @@ export default function VestingContracts() {
 
       <ContractsProfile vestingContractsInfo={vestingContractsInfo} count={vestingContracts.length} title="Contract" />
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6 px-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6">
         {!vestingContracts
           ? Array.from(new Array(3)).map((_, index) => (
               <div key={index} className="animate-pulse w-full">
                 <div className="w-full h-368 bg-neutral-100 rounded-10"></div>
               </div>
             ))
-          : vestingContracts.map((vestingContractInfo) => {
+          : vestingContracts.map((vestingContractInfo, index) => {
               const vestingInfo = getVestingInfoByContract(String(vestingContractInfo?.data.address));
               return (
                 <VestingContractCard
-                  key={vestingContractInfo.id}
+                  key={`${vestingContractInfo.data.address}_${index}`}
                   title={String(vestingContractInfo.data.name)}
                   address={vestingContractInfo.data.address}
                   totalAllocation={formatEther(vestingInfo?.allocation.toString()) || ''}

@@ -10,9 +10,10 @@ const Hint = ({ tip, ...props }: HintProps) => {
         props.children ? '' : 'p-1 rounded-full border border-gray-200 bg-gray-50 w-4 h-4'
       }`}>
       {props.children ?? '?'}
-      <div className="hint-content absolute w-64 max-w-sm bg-primary-900 font-normal text-white text-xxs p-2 z-40 isolate top-7 -right-3 shadow-lg rounded-md">
-        {tip}
-        <div className="absolute w-4 h-4 bg-primary-900 transform rotate-45 -top-1 right-3"></div>
+      <div className="hint-content absolute w-64 max-w-sm font-normal text-white text-xxs p-3 z-40 isolate top-7 -right-3">
+        <p className="relative z-20 isolate">{tip}</p>
+        <div className="absolute top-0 left-0 w-full h-full bg-neutral-900 opacity-75 rounded-md isolate z-10"></div>
+        <div className="absolute w-0 h-0 border-l-8 border-l-transparent border-b-8 border-b-neutral-900 border-r-8 border-r-transparent opacity-75 -top-2 right-3"></div>
       </div>
     </span>
   );

@@ -31,7 +31,7 @@ interface ChipProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   /**
    * How large should the chip be?
    */
-  size?: 'small' | 'default' | 'large';
+  size?: 'tiny' | 'small' | 'default' | 'large';
   /**
    * How large should the chip be?
    */
@@ -45,6 +45,7 @@ interface ChipProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
  */
 const Chip = ({ size = 'default', color = 'default', label, rounded = false, className = '', ...props }: ChipProps) => {
   const sizes = {
+    tiny: 'py-0 px-2 text-xxs h-5',
     small: 'py-0 px-2 text-xs h-6',
     default: 'py-0.5 px-2 text-sm',
     large: 'text-base px-2 py-1'

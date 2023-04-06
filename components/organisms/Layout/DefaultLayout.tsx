@@ -33,7 +33,7 @@ const Layout = styled.div`
  */
 const Main = styled.main<{ sidebarIsExpanded: boolean; sidebarIsShown: boolean }>`
   width: ${({ sidebarIsShown, sidebarIsExpanded }) =>
-    sidebarIsShown ? 'calc(100vw - ' + (sidebarIsExpanded ? '294px' : '80px') + ');' : '100vw;'};
+    sidebarIsShown ? 'calc(100vw - ' + (sidebarIsExpanded ? '279px' : '80px') + ');' : '100vw;'};
 `;
 
 /**

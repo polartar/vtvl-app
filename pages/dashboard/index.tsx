@@ -85,7 +85,7 @@ const Dashboard: NextPageWithLayout = () => {
         <div className="w-full">
           <p className="text-neutral-500 text-sm font-medium mb-2 ml-8">Overview</p>
           {/* Token details section and CTAs */}
-          <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8 px-8">
+          <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8 px-6">
             <div>
               <TokenProfile
                 name={mintFormState.name}
@@ -113,16 +113,16 @@ const Dashboard: NextPageWithLayout = () => {
                   <PlusIcon className="w-5 h-5" />
                   <span className="whitespace-nowrap">Create</span>
                 </button>
-                <div className="hidden group-hover:block pt-4 absolute bottom-0 left-0 min-w-[200px] transform translate-y-full">
-                  <div className="bg-white border border-gray-100 py-2 rounded-2xl">
+                <div className="hidden group-hover:block pt-3 absolute bottom-0 right-0 min-w-[200px] transform translate-y-full">
+                  <div className="bg-white border border-gray-100 rounded-2xl shadow-lg">
                     <div
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-primary-50"
+                      className="flex items-center gap-2 px-3 pb-2 pt-3 rounded-t-2xl cursor-pointer hover:bg-primary-50 transition-all"
                       onClick={showModal}>
                       <img src="/icons/create-vesting-contract.svg" />
                       Create contract
                     </div>
                     <div
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-primary-50"
+                      className="flex items-center gap-2 px-3 pb-3 pt-2 rounded-b-2xl cursor-pointer hover:bg-primary-50 transition-all"
                       onClick={() => router.push('/vesting-schedule/add-recipients')}>
                       <img src="/icons/create-vesting-schedule.svg" />
                       Create schedule
@@ -141,7 +141,7 @@ const Dashboard: NextPageWithLayout = () => {
 
           <DashboardVestingSummary />
 
-          <div className="px-8 py-4">
+          <div className="px-6 py-3">
             <DashboardPendingActions />
           </div>
           <ModalWrapper>

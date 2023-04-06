@@ -1,6 +1,7 @@
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import { Typography } from '@components/atoms/Typography/Typography';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { States, Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
@@ -69,7 +70,9 @@ const MemberLoginPage: NextPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
-      <h1 className="text-neutral-900 sora font-semibold leading-tight">Let's get started</h1>
+      <Typography size="title" variant="sora" className="font-medium text-neutral-900">
+        Let's get started
+      </Typography>
       <p className="text-sm text-center text-neutral-500 font-medium">Sign in to access the platform</p>
 
       <Form
@@ -99,7 +102,7 @@ const MemberLoginPage: NextPage = () => {
               render={({ field }) => (
                 <Input
                   label="Your company email"
-                  placeholder="Enter your company email address"
+                  placeholder="satoshi.s@vtvl.io"
                   className="md:col-span-2"
                   error={Boolean(errors.memberEmail)}
                   required
