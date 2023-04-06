@@ -109,7 +109,7 @@ export function TokenContextProvider({ children }: any) {
     }
   };
 
-  const fetchToken = () => {
+  const fetchToken = async () => {
     if (organizationId && chainId) {
       fetchTokensByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId])
         .then((res) => {
@@ -146,10 +146,12 @@ export function TokenContextProvider({ children }: any) {
             } else {
               setMintFormState((prevState) => ({ ...INITIAL_STATE }));
             }
+            setIsTokenLoading(false);
+            return false;
           } else {
             setMintFormState((prevState) => ({ ...INITIAL_STATE }));
+            setIsTokenLoading(false);
           }
-          setIsTokenLoading(false);
         })
         .catch((err) => {
           setMintFormState((prevState) => ({ ...INITIAL_STATE }));
