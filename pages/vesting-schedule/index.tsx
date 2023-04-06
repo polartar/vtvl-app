@@ -1,4 +1,3 @@
-import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import Chip from '@components/atoms/Chip/Chip';
@@ -7,13 +6,10 @@ import ProgressCircle from '@components/atoms/ProgressCircle/ProgressCircle';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import StatusIndicator from '@components/atoms/StatusIndicator/StatusIndicator';
 import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
-import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
-import ScheduleSummary from '@components/molecules/ScheduleSummary/ScheduleSummary';
 import Table from '@components/molecules/Table/Table';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import VestingOverview from '@components/molecules/VestingOverview/VestingOverview';
 import VestingScheduleFilter from '@components/molecules/VestingScheduleFilter';
-import FundingContractModalV2 from '@components/organisms/FundingContractModal/FundingContractModalV2';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import VestingSummary from '@components/organisms/VestingSchedule/VestingSummary';
 import Safe from '@gnosis.pm/safe-core-sdk';
@@ -28,7 +24,6 @@ import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import toDate from 'date-fns/toDate';
-import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -38,16 +33,14 @@ import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { createRevoking } from 'services/db/revoking';
-import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
-import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, IToken, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IRecipient, ITransaction, IVesting } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
-import { convertAllToOptions, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
+import { formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -916,7 +909,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             />
           )}
           <div className="flex justify-between ">
-            <BackButton label="Back" onClick={() => setSelectedSchedule(undefined)} />
+            <Button label="Close" onClick={() => setSelectedSchedule(undefined)} />
 
             <Button
               className="primary"
