@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import CalendarClockIcon from 'public/icons/calendar-clock.svg';
+import CollapseIcon from 'public/icons/collapse-btn.svg';
 import GraphLineIcon from 'public/icons/graph-line.svg';
 import StairCaseIcon from 'public/icons/graph-stairs.svg';
 import PlusIconImage from 'public/icons/plus.svg';
@@ -50,34 +51,38 @@ export const ArrowLeftIcon: React.FC<IconProps> = ({ className = '', ...props })
   );
 };
 
-export const PlusIcon: React.FC<IconProps> = ({ className = '' }) => {
-  return <PlusIconImage className={`fill-current ${className}`} aria-hidden="true" />;
+export const PlusIcon: React.FC<IconProps> = ({ className = '', ...props }) => {
+  return <PlusIconImage className={`fill-current ${className}`} aria-hidden="true" {...props} />;
 };
 
-export const StairCase: React.FC<IconProps> = ({ className = '' }) => {
-  return <StairCaseIcon className={`fill-current ${className}`} aria-hidden="true" />;
+export const StairCase: React.FC<IconProps> = ({ className = '', ...props }) => {
+  return <StairCaseIcon className={`fill-current ${className}`} aria-hidden="true" {...props} />;
 };
 
-export const GraphLine: React.FC<IconProps> = ({ className = '' }) => {
-  return <GraphLineIcon className={`fill-current ${className}`} aria-hidden="true" />;
+export const GraphLine: React.FC<IconProps> = ({ className = '', ...props }) => {
+  return <GraphLineIcon className={`fill-current ${className}`} aria-hidden="true" {...props} />;
 };
 
-export const CalendarClock: React.FC<IconProps> = ({ className = '' }) => {
-  return <CalendarClockIcon className={`fill-current ${className}`} aria-hidden="true" />;
+export const CalendarClock: React.FC<IconProps> = ({ className = '', ...props }) => {
+  return <CalendarClockIcon className={`fill-current ${className}`} aria-hidden="true" {...props} />;
 };
 
-export const VestingScheduleIcon: React.FC<IconProps> = ({ className = '' }) => {
+export const SidebarCollapse: React.FC<IconProps> = ({ className = '', ...props }) => {
+  return <CollapseIcon className={`fill-current ${className}`} aria-hidden="true" {...props} />;
+};
+
+export const VestingScheduleIcon: React.FC<IconProps> = ({ className = '', ...props }) => {
   return (
     <span className={className}>
-      <Image src="/icons/vesting-schedule.svg" alt="vesting-schedule-icon" width={16} height={16} />
+      <Image src="/icons/vesting-schedule.svg" alt="vesting-schedule-icon" width={16} height={16} {...props} />
     </span>
   );
 };
 
-export const VestingCalendarIcon: React.FC<IconProps> = ({ className = '' }) => {
+export const VestingCalendarIcon: React.FC<IconProps> = ({ className = '', ...props }) => {
   return (
     <span className={className}>
-      <Image src="/icons/vesting-calendar.svg" alt="vesting-calendar-icon" width={16} height={16} />
+      <Image src="/icons/vesting-calendar.svg" alt="vesting-calendar-icon" width={16} height={16} {...props} />
     </span>
   );
 };

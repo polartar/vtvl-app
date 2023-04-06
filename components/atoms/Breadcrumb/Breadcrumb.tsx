@@ -1,4 +1,3 @@
-import { Colors } from '@components/CommonStyles';
 import styled from '@emotion/styled';
 import Router from 'next/router';
 import React, { Fragment } from 'react';
@@ -46,7 +45,7 @@ const StepLabel = styled.span<{ lastRoute: boolean }>`
   cursor: pointer;
   font-weight: 500;
   font-size: 14px;
-  color: ${({ lastRoute }) => (lastRoute ? Colors.orange : Colors.grey)};
+  color: ${({ lastRoute }) => (lastRoute ? 'var(--secondary-900)' : 'var(--neutral-500)')};
 `;
 
 export default Breadcrumb;

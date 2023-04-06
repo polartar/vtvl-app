@@ -2,6 +2,7 @@ import Button from '@components/atoms/Button/Button';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import axios from 'axios';
 import { NextPage } from 'next';
 import Image from 'next/image';
@@ -12,9 +13,13 @@ import { toast } from 'react-toastify';
 import { fetchRecipient, updateRecipient } from 'services/db/recipient';
 import { IRecipient, IRecipientDoc } from 'types/models';
 import { IUserType } from 'types/models/member';
+import { WEBSITE_NAME } from 'utils/constants';
 
 const RecipientCreate: NextPage = () => {
   const { setOrganizationId, loading, setRecipient: setCurrentRecipient, signUpWithToken } = useAuthContext();
+  const {
+    website: { name: websiteName, assets }
+  } = useGlobalContext();
 
   const router = useRouter();
   const [recipient, setRecipient] = useState<IRecipientDoc>();
@@ -89,15 +94,23 @@ const RecipientCreate: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-8 max-w-5xl px-9 py-10 text-center">
       <div>
-        <h1 className=" font-semibold mb-4">Hey there, welcome to VTVL</h1>
-        <p className="text-sm text-neutral-500">Let's get to know you so you can start setting up your account</p>
+        <Typography size="title" variant="sora" className="font-medium text-neutral-900">
+          Hey there, Welcome to {websiteName || WEBSITE_NAME}
+        </Typography>
+        <p className="text-sm text-neutral-500">Confirm your account details</p>
       </div>
       <div className="panel  text-left">
         <Typography variant="inter" size="title" className="font-semibold">
           {recipient?.data.name}
         </Typography>
         <div className="flex items-center gap-3">
-          <Image src={'/icons/company-logo.svg'} alt="company-logo" width={32} height={32} className="" />
+          <Image
+            src={assets?.logoIcon?.src || '/icons/vtvl-icon.svg'}
+            alt="company-logo"
+            width={32}
+            height={32}
+            className=""
+          />
           <span>{recipient?.data.company}</span>
         </div>
         <form className="w-full mb-6 border-0 border-t my-7" onSubmit={handleSubmit(onSubmit)}>
