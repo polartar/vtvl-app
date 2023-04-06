@@ -4,6 +4,7 @@ export interface IWebsiteAsset {
   src: string;
   animated?: boolean;
   animateOnHover?: boolean;
+  fallback?: string;
 }
 
 // Website styling should contain only specific styling for the white-label.

@@ -37,7 +37,8 @@ const SelectUserTypePage: NextPage = () => {
         image: {
           src: assets?.selectUserFounder?.src || '/images/onboarding-user-type-founder.svg',
           animated: assets?.selectUserFounder?.animated || false,
-          animateOnHover: assets?.selectUserFounder?.animateOnHover || true
+          animateOnHover: assets?.selectUserFounder?.animateOnHover || true,
+          fallback: '/images/onboarding-user-type-founder.svg'
         },
         value: 'founder',
         label: (
@@ -51,7 +52,8 @@ const SelectUserTypePage: NextPage = () => {
         image: {
           src: assets?.selectUserRecipient?.src || '/images/onboarding-user-type-investor.svg',
           animated: assets?.selectUserRecipient?.animated || false,
-          animateOnHover: assets?.selectUserRecipient?.animateOnHover || true
+          animateOnHover: assets?.selectUserRecipient?.animateOnHover || true,
+          fallback: '/images/onboarding-user-type-investor.svg'
         },
         value: 'investor',
         label: (
@@ -142,7 +144,7 @@ const SelectUserTypePage: NextPage = () => {
         Tell us a little bit about yourself.
       </Typography>
       <p className="text-sm text-neutral-500">Select the profile that best describes your role</p>
-      {user && user?.memberInfo?.id ? (
+      {user ? (
         <>
           <div className="mt-10 mb-6">
             <div role="radiogroup" className="flex flex-row items-center justify-center gap-5">

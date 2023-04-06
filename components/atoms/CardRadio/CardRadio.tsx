@@ -71,7 +71,7 @@ const CardRadio = ({ image, label, value, name, ...props }: CardRadioProps) => {
       <MediaAsset
         {...image}
         active={props.checked || hover}
-        className={twMerge(image.animated ? 'w-full scale-125' : 'h-40')}
+        classOnComplete={(condition: boolean) => twMerge(condition ? 'w-full scale-125' : 'h-40')}
       />
       <p className={twMerge('font-semibold h-11', image.animated ? 'px-6' : 'px-0')}>{label}</p>
       <Check className={props.checked ? 'selected' : ''}>
