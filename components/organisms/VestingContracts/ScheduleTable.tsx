@@ -1,3 +1,4 @@
+import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
@@ -14,6 +15,7 @@ import {
 } from 'components/organisms/DashboardPendingActions';
 import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import format from 'date-fns/format';
 import { BigNumber, ethers } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
@@ -22,11 +24,13 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 // import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction, IVesting } from 'types/models';
+import { IRevokingDoc } from 'types/models/revoking';
 import { compareAddresses } from 'utils';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -85,6 +89,25 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
   const [isRecipientExpand, setIsRecipientExpand] = useState(false);
+  const [revokings, setRevokings] = useState<IRevokingDoc[]>();
+
+  useEffect(() => {
+    if (chainId && organizationId) {
+      fetchRevokingsByQuery(
+        ['chainId', 'organizationId', 'vestingId', 'status'],
+        ['==', '==', '==', '=='],
+        [chainId, organizationId, id, 'SUCCESS']
+      ).then((res) => {
+        if (res) {
+          setRevokings(res);
+        }
+      });
+    }
+  }, [chainId, organizationId]);
+
+  const getRevoked = (address: string) => {
+    return revokings?.find((revoking) => compareAddresses(revoking.data.recipient, address));
+  };
 
   const isFundAvailable = useCallback(() => {
     const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
@@ -849,6 +872,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         <div className="flex items-center w-40 py-3">Unclaimed</div>
         <div className="flex items-center w-32 py-3">Total locked</div>
         <div className="flex items-center w-40 py-3">Allocation</div>
+        <div className="flex items-center w-40 py-3">Status</div>
       </div>
       {vestingRecipients.map(({ data: recipient }, index) => {
         if (index < 3 || isRecipientExpand) {
@@ -877,7 +901,18 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               <div className="flex items-center w-40 py-3">
                 {formatValue(getRecipientInfo(recipient.walletAddress)?.allocation)}
               </div>
-              <div className="flex items-center min-w-[200px] flex-grow py-3"></div>
+              <div className="flex items-center w-40 py-3">
+                {getRevoked(recipient.walletAddress) && (
+                  <Chip
+                    rounded
+                    label={`Revoked on ${format(
+                      new Date((getRevoked(recipient.walletAddress) as IRevokingDoc).data.updatedAt * 1000),
+                      'dd MMM yyyy'
+                    )}`}
+                    color="dangerAlt"
+                  />
+                )}
+              </div>
             </div>
           );
         } else {

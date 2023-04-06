@@ -38,22 +38,9 @@ export default function VestingContract({ vestingContractId }: { vestingContract
   } = useDashboardContext();
   const { safe, organizationId } = useAuthContext();
   const [revokings, setRevokings] = useState<IRevokingDoc[]>();
-  useEffect(() => {
-    if (chainId && organizationId) {
-      fetchRevokingsByQuery(['chainId', 'organizationId'], ['==', '=='], [chainId, organizationId]).then((res) => {
-        if (res) {
-          setRevokings(res);
-        }
-      });
-    }
-  }, [chainId, organizationId]);
+
   const { mintFormState } = useTokenContext();
-  const {
-    pendingTransactions,
-    transactionStatus: transactionLoaderStatus,
-    setTransactionStatus: setTransactionLoaderStatus,
-    setIsCloseAvailable
-  } = useTransactionLoaderContext();
+  const { setTransactionStatus: setTransactionLoaderStatus } = useTransactionLoaderContext();
 
   const [withdrawTransactions, setWithdrawTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
 
@@ -61,6 +48,20 @@ export default function VestingContract({ vestingContractId }: { vestingContract
   const vestings = useMemo(() => {
     return allVestings.filter((vesting) => vesting.data.vestingContractId === vestingContractId);
   }, [allVestings]);
+
+  useEffect(() => {
+    if (chainId && organizationId) {
+      fetchRevokingsByQuery(
+        ['chainId', 'organizationId', 'status'],
+        ['==', '==', '=='],
+        [chainId, organizationId, 'SUCCESS']
+      ).then((res) => {
+        if (res) {
+          setRevokings(res);
+        }
+      });
+    }
+  }, [chainId, organizationId]);
 
   const vestingContracts = useMemo(() => {
     const selectedVestingContract = allVestingContracts?.find((contract) => contract.id === vestingContractId);

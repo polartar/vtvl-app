@@ -44,15 +44,15 @@ export default function VestingContracts() {
   const router = useRouter();
   const { mintFormState } = useTokenContext();
 
-  const {
-    pendingTransactions,
-    transactionStatus: transactionLoaderStatus,
-    setTransactionStatus: setTransactionLoaderStatus,
-    setIsCloseAvailable
-  } = useTransactionLoaderContext();
+  const { setTransactionStatus: setTransactionLoaderStatus } = useTransactionLoaderContext();
+
   useEffect(() => {
     if (chainId && organizationId) {
-      fetchRevokingsByQuery(['chainId', 'organizationId'], ['==', '=='], [chainId, organizationId]).then((res) => {
+      fetchRevokingsByQuery(
+        ['chainId', 'organizationId', 'status'],
+        ['==', '==', '=='],
+        [chainId, organizationId, 'SUCCESS']
+      ).then((res) => {
         if (res) {
           setRevokings(res);
         }
