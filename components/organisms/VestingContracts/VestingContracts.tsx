@@ -28,6 +28,7 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { ITransaction } from 'types/models';
 import { IRevokingDoc } from 'types/models/revoking';
 import { IVestingDoc } from 'types/models/vesting';
+import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
 
 import VestingContractCard from '../Cards/VestingContractCard';
@@ -66,7 +67,7 @@ export default function VestingContracts() {
     allRecipients
   );
 
-  const uniqueVestings = useMemo(() => {
+  const uniqueVestingContracts = useMemo(() => {
     if (revokings && allVestings && allRecipients) {
       const availableRevokings = revokings.filter(
         (revoking) =>
@@ -78,16 +79,17 @@ export default function VestingContracts() {
             )?.data.allocations
           ) !== 0
       );
-      const uniqueVestings: IVestingDoc[] = [];
+      const uniqueVestingContracts: IVestingContractDoc[] = [];
 
       availableRevokings.forEach((revoke) => {
-        if (!uniqueVestings.find((vesting) => vesting.id === revoke.data.vestingId)) {
-          const vesting = allVestings.find((vesting) => vesting.id === revoke.data.vestingId);
-          if (vesting) uniqueVestings.push(vesting);
+        const vesting = allVestings.find((vesting) => vesting.id === revoke.data.vestingId);
+        if (!uniqueVestingContracts.map((contract) => contract.id).includes(vesting?.data.vestingContractId || '')) {
+          const vestingContract = vestingContracts.find((contract) => contract.id === vesting?.data.vestingContractId);
+          if (vestingContract) uniqueVestingContracts.push(vestingContract);
         }
       }, []);
 
-      return uniqueVestings;
+      return uniqueVestingContracts;
     } else {
       return [];
     }
@@ -250,25 +252,21 @@ export default function VestingContracts() {
   return (
     <div className="w-full">
       <div className="mb-9">
-        {uniqueVestings.map((vesting) => {
-          const vestingContract = vestingContracts.find((contract) => contract.id === vesting.data.vestingContractId);
-
-          if (!vestingContract) return;
-
+        {uniqueVestingContracts.map((vestingContract) => {
           return (
             <div
-              key={vesting.id}
+              key={vestingContract.id}
               className="mb-3 w-full px-6 py-3 bg-warning-100 border border-warning-500 rounded-lg flex items-center justify-between">
               <div>
                 <div className="font-bold text-sm text-[#344054]">Unallocated tokens</div>
                 <div className="text-label text-sm">
-                  You can now transfer the locked tokens from revoke schedule <b>{vesting.data.name}</b> under{' '}
-                  <b>{vestingContract?.data.name}'s</b> contract and transfer them back to your wallet.
+                  You can now transfer the locked tokens from revoke schedule under <b>{vestingContract.data.name}'s</b>{' '}
+                  contract and transfer them back to your wallet.
                 </div>
               </div>
               <button
                 className="secondary small whitespace-nowrap"
-                onClick={() => handleTransfer(vestingContract?.data.address)}>
+                onClick={() => handleTransfer(vestingContract.data.address)}>
                 Transfer Tokens
               </button>
             </div>
