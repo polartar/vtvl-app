@@ -24,6 +24,7 @@ import { injected } from 'connectors';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import toDate from 'date-fns/toDate';
+import { ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
