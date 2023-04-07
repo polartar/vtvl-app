@@ -23,6 +23,7 @@ export interface IWebsiteAssets {
   logoFavicon?: IWebsiteAsset;
   selectUserFounder?: IWebsiteAsset;
   selectUserRecipient?: IWebsiteAsset;
+  emptyState?: IWebsiteAsset;
 }
 
 export interface IWebsiteLinks {
