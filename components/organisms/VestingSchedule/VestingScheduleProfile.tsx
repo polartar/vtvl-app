@@ -111,7 +111,7 @@ const VestingScheduleProfile = ({
       return [];
     }
   }, [vestingScheduleInfo]);
-  console.log(cardsInfo);
+
   return (
     <div className="w-full">
       <div className="grid  2xl:grid-cols-5 xl:grid-cols-5 md:grid-cols-4 gap-6">

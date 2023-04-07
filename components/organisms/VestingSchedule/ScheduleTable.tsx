@@ -735,7 +735,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     },
     [vestingSchedulesInfo]
   );
-  console.log({ vestingSchedulesInfo });
+
   const formatValue = (value: BigNumber | undefined) => {
     return value ? Number(formatEther(value)).toFixed(2) : '0';
   };
