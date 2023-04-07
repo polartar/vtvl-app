@@ -1,11 +1,12 @@
 import { useWeb3React } from '@web3-react/core';
+import NEW_VTVL_VESTING_ABI from 'contracts/abi/NewVtvlVesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
 import { BigNumber } from 'ethers/lib/ethers';
 import { useEffect } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVesting, IVestingContract } from 'types/models';
+import { IVesting } from 'types/models';
 import { IRecipientDoc } from 'types/models/recipient';
 import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
@@ -83,7 +84,10 @@ export default function useChainVestingContracts(
               {
                 reference: `withdrawn-${vestingContract.data.address}-${recipient.walletAddress}`,
                 contractAddress: vestingContract.data.address,
-                abi: VTVL_VESTING_ABI.abi,
+                abi:
+                  vestingContract.data.updatedAt < Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT)
+                    ? VTVL_VESTING_ABI.abi
+                    : NEW_VTVL_VESTING_ABI.abi,
                 calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }]
               },
               {
