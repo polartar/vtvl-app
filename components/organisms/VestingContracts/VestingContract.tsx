@@ -76,16 +76,15 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
   const availableRevokings = useMemo(() => {
     if (revokings && vestings && allRecipients) {
-      return revokings.filter(
-        (revoking) =>
-          Number(
-            allRecipients.find(
-              (recipient) =>
-                recipient.data.vestingId === revoking.data.vestingId &&
-                recipient.data.walletAddress === revoking.data.recipient
-            )?.data.allocations
-          ) !== 0
-      );
+      return revokings.filter((revoking) => {
+        const rc = allRecipients.find(
+          (recipient) =>
+            recipient.data.vestingId === revoking.data.vestingId &&
+            recipient.data.walletAddress === revoking.data.recipient &&
+            vestings.map((vesting) => vesting.id).includes(recipient.data.vestingId)
+        );
+        return rc && Number(rc.data.allocations) !== 0;
+      });
     } else {
       return [];
     }
