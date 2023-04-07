@@ -55,7 +55,12 @@ const TeamWelcome: NextPage = () => {
     <div className="max-w-2xl mx-auto flex flex-col items-center text-center p-10">
       <Chip label="Organization" rounded color="gray" />
       <MediaAsset src={assets?.logoImage?.src || '/logo.svg'} className="h-10 md:h-12 mt-7 mb-8" />
-      <MediaAsset src="/animation-welcome.json" animated={true} active={true} className="h-80" />
+      <MediaAsset
+        src={assets?.emptyState?.src || '/images/cryptocurrency-trading-bot.gif'}
+        animated={assets?.emptyState?.animated || false}
+        active={true}
+        className="h-80"
+      />
       <h1 className="h2 font-medium text-center mt-3">
         Hello, {user?.memberInfo?.name || user?.memberInfo?.email || 'you'}!
       </h1>
