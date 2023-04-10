@@ -2,7 +2,6 @@ import VestingScheduleIcon from '@assets/s_vestingSchedule.svg';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import { useDashboardContext } from '@providers/dashboard.context';
-import intlFormatDistance from 'date-fns/intlFormatDistance';
 import { BigNumber } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
@@ -13,6 +12,7 @@ import useSWR from 'swr';
 import { IRecipientDoc, ISafe } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { IVestingContractDoc } from 'types/models/vestingContract';
+import { getDuration } from 'utils/vesting';
 
 import VestingSummaryTable from './VestingSummaryTable';
 
@@ -140,9 +140,9 @@ const VestingSummary = ({
             <span className=" text-xs  neutral-text">Total Period</span>
           </label>
           <p>
-            {intlFormatDistance(
-              vestingSchedule.data.details.startDateTime || 0,
-              vestingSchedule.data.details.endDateTime || 0
+            {getDuration(
+              vestingSchedule.data.details.startDateTime as Date,
+              vestingSchedule.data.details.endDateTime as Date
             )}
           </p>
         </div>
