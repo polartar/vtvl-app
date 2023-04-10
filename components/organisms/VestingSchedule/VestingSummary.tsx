@@ -37,6 +37,7 @@ const VestingSummary = ({
   const { data: creator } = useSWR(['fetch-member', vestingSchedule.data.createdBy], async () => {
     if (vestingSchedule.data.createdBy) {
       const member = await fetchMember(vestingSchedule.data.createdBy);
+      console.log({ member });
       return member?.name || '';
     } else {
       return '';
@@ -124,7 +125,7 @@ const VestingSummary = ({
           <label>
             <span className=" text-xs  neutral-text">Total locked tokens</span>
           </label>
-          <p className=" ">{formatEther(totalLocked)}</p>
+          <p className=" ">{Number(formatEther(totalLocked)).toFixed(2)}</p>
         </div>
 
         <div>
