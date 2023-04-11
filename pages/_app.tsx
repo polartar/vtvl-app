@@ -1,3 +1,4 @@
+import ThemeLoader from '@components/atoms/ThemeLoader/ThemeLoader';
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { Web3Provider } from '@ethersproject/providers';
 import { AuthContextProvider } from '@providers/auth.context';

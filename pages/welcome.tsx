@@ -20,7 +20,6 @@ const TeamWelcome: NextPage = () => {
   // Handles the importation of token
   // Prompts the user's wallet platform
   const handleImportToken = async () => {
-    console.log('IMPORTING TOKEN', library, mintFormState, user);
     try {
       if (!library || !mintFormState) return;
       await library.provider.request({
@@ -51,6 +50,8 @@ const TeamWelcome: NextPage = () => {
     setInProgress(true);
   }, []);
 
+  // console.log('IMPORTING TOKEN', library, mintFormState, user);
+
   return (
     <div className="max-w-2xl mx-auto flex flex-col items-center text-center p-10">
       <Chip label="Organization" rounded color="gray" />
@@ -64,11 +65,10 @@ const TeamWelcome: NextPage = () => {
       <h1 className="h2 font-medium text-center mt-3">
         Hello, {user?.memberInfo?.name || user?.memberInfo?.email || 'you'}!
       </h1>
-      {user?.memberInfo?.type}
       <p className="paragraphy-small neutral-text mt-4 mb-8">
         You're almost there! Let's start claiming your tokens. To get started, first let's add{' '}
         {mintFormState.symbol || mintFormState.name || 'Token'} to your wallet by clicking "
-        <strong>Import {mintFormState.symbol} to your wallet</strong>"
+        <strong>Import {mintFormState.symbol || mintFormState.name || 'Token'} to your wallet</strong>"
       </p>
       <button type="button" className="primary flex" onClick={handleImportToken}>
         <span>
