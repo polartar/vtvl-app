@@ -105,6 +105,7 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
       setTransactionStatus('PENDING');
       const safe = await deploySafe(library, owners, values.authorizedUsers);
       setTransactionStatus('IN_PROGRESS');
+      const safeNonce = await safe.getNonce();
       await createOrUpdateSafe({
         user_id: user?.uid,
         org_id: organizationId!,
@@ -113,7 +114,8 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
         address: safe.getAddress(),
         chainId: chainId || 0,
         owners: values.owners,
-        threshold: values.authorizedUsers
+        threshold: values.authorizedUsers,
+        safeNonce
       });
       setTransactionStatus('SUCCESS');
       onBack();

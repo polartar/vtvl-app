@@ -43,7 +43,7 @@ const FundingContractModal = ({
 }: IFundingContractModalProps) => {
   const { account, chainId } = useWeb3React();
   const { mintFormState } = useTokenContext();
-  const { safe, connection } = useAuthContext();
+  const { currentSafe, connection } = useAuthContext();
 
   // Make Modal styles scrollable when exceeding the device view height
   const modalStyles: Styles = {
@@ -148,8 +148,8 @@ const FundingContractModal = ({
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
       // const vestingContract = new ethers.Contract(vesting.vestingContract, VTVL_VESTING_ABI.abi, library.getSigner());
-      if (safe?.address) {
-        tokenContract.balanceOf(safe?.address).then((res: string) => {
+      if (currentSafe?.address) {
+        tokenContract.balanceOf(currentSafe?.address).then((res: string) => {
           setContractBalance(parseFloat(BigNumber.from(res).toString()) / 10 ** 18);
         });
       }
@@ -157,7 +157,7 @@ const FundingContractModal = ({
         setWalletBalance(parseFloat(BigNumber.from(res).toString()) / 10 ** 18);
       });
     }
-  }, [chainId, account, safe]);
+  }, [chainId, account, currentSafe]);
 
   return (
     <>
@@ -191,7 +191,7 @@ const FundingContractModal = ({
               render={({ field }) => (
                 <WalletRadioButton
                   icon={'/images/multi-sig.png'}
-                  address={safe?.address ?? ''}
+                  address={currentSafe?.address ?? ''}
                   balance={contractBalance}
                   symbol={mintFormState.symbol}
                   className="mb-3"

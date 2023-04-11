@@ -11,9 +11,11 @@ import { useTransactionLoaderContext } from '@providers/transaction-loader.conte
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ethers } from 'ethers';
+import useIsAdmin from 'hooks/useIsAdmin';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { createRevoking, fetchRevokingsByQuery } from 'services/db/revoking';
+import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, fetchTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevoking, ITransaction, IVesting } from 'types/models';
@@ -42,9 +44,14 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
   vestingId
 }) => {
   const { chainId, library, account } = useWeb3React();
-  const { safe, organizationId } = useAuthContext();
+  const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
   const { vestingContracts } = useDashboardContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+
+  const isAdmin = useIsAdmin(
+    currentSafe ? currentSafe.address : account ? account : '',
+    vestingContracts.find((v) => v.id === vesting.vestingContractId)?.data
+  );
 
   const [revoking, setRevoking] = useState<{ id: string; data: IRevoking }>();
   const [transaction, setTransaction] = useState<ITransaction>();
@@ -53,13 +60,13 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
   const [revoked, setRevoked] = useState(false);
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (safe?.address && chainId) {
+    if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
       });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const thres = await safeSdk.getThreshold();
       setThreshold(thres);
       const safeService = new SafeServiceClient({
@@ -80,20 +87,32 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
     if (vesting.status === 'COMPLETED' || vesting.status === 'LIVE') {
       try {
         setTransactionStatus('PENDING');
-        if (safe?.address) {
+        if (currentSafe?.address) {
+          if (!isAdmin) {
+            toast.error(
+              "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
+            );
+            return;
+          }
+
           const vestingContractInterface = new ethers.utils.Interface([REVOKE_CLAIM_FUNCTION_ABI]);
+
+          if (currentSafe.safeNonce === undefined) {
+            throw new Error('Nonce is not defined');
+          }
 
           setTransactionStatus('IN_PROGRESS');
           const { hash: safeHash } = await createSafeTransaction(
             signer,
             chainId as SupportedChainId,
             account,
-            safe.address,
-            safe?.owners?.map((owner) => owner.address) ?? [],
+            currentSafe.address,
+            currentSafe?.owners?.map((owner) => owner.address) ?? [],
             {
               to: vestingAddress,
               data: vestingContractInterface.encodeFunctionData('revokeClaim', [recipient]),
-              value: '0'
+              value: '0',
+              nonce: currentSafe.safeNonce + 1
             }
           );
 
@@ -120,6 +139,16 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             organizationId: organizationId!,
             status: 'PENDING'
           });
+
+          await createOrUpdateSafe(
+            {
+              ...currentSafe,
+              safeNonce: currentSafe.safeNonce + 1
+            },
+            currentSafeId
+          );
+          setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
+
           toast.success('Revoking transaction is created successfully.');
           console.info('Safe Transaction: ', safeHash);
         } else {

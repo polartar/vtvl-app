@@ -19,3 +19,5 @@ const RECIPIENTS_VALUES = RECIPIENTS_TYPES.map(({ value }) => value);
 declare global {
   type IRecipientTypeValue = typeof RECIPIENTS_VALUES[number];
 }
+
+export const CACHE_KEY = 'vtvl_cache';

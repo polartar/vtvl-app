@@ -42,7 +42,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
   const { account, library, chainId } = useWeb3React();
   const { vestings: allVestings, vestingContracts: allVestingContracts } = useDashboardContext();
   const { mintFormState } = useTokenContext();
-  const { safe, organizationId } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   const { loading, hideLoading, showLoading } = useLoaderContext();
 
   const [filter, setFilter] = useState<{
@@ -134,20 +134,20 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
       ? getDuration(vestingSchedule.details.startDateTime as Date, vestingSchedule.details.endDateTime)
       : '';
 
-  const approvers = new Array(safe?.threshold).fill({ title: '', desc: '' });
+  const approvers = new Array(currentSafe?.threshold).fill({ title: '', desc: '' });
   const [transaction, setTransaction] = useState<{ id: string; data: ITransaction | undefined }>();
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
 
   // Copy of the one from AddVestingSchedule.tsx
   // To do Arvin: Optimize this along with the existing one
   const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (safe?.address && chainId) {
+    if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
       });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const safeService = new SafeServiceClient({
         txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
         ethAdapter
