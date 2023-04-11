@@ -7,7 +7,7 @@ import { toHex } from 'utils/web3';
 
 const SafeSelector = () => {
   const { library, account, active, chainId } = useWeb3React();
-  const { currentSafe, setCurrentSafe, safes } = useAuthContext();
+  const { currentSafe, setCurrentSafe, safes, currentSafeId, setCurrentSafeId } = useAuthContext();
   const [showSafes, setShowSafes] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = React.useState({
     icon: '/icons/chains/ethereum.svg',
@@ -59,12 +59,11 @@ const SafeSelector = () => {
               <div
                 key={safe.id}
                 className={`h-10 px-2 flex flex-row items-center sm:gap-2 cursor-pointer transition-all hover:translate-x-1 ${
-                  safe.data.address === currentSafe?.address
-                    ? 'bg-primary-900 text-white rounded-8'
-                    : 'text-primary-900'
+                  safe.id === currentSafeId ? 'bg-primary-900 text-white rounded-8' : 'text-primary-900'
                 }`}
                 onClick={async () => {
                   setCurrentSafe({ ...safe.data });
+                  setCurrentSafeId(safe.id);
                   setShowSafes(false);
                 }}>
                 <img className="w-6 h-6 rounded-full" src="/icons/safe_wallet.svg" />
