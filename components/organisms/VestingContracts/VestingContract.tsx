@@ -11,11 +11,13 @@ import { useWeb3React } from '@web3-react/core';
 import VestingABI from 'contracts/abi/VtvlVesting.json';
 import { ethers } from 'ethers';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
+import useIsAdmin from 'hooks/useIsAdmin';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, fetchTransactionsByQuery, updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
@@ -32,7 +34,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     vestingContracts: allVestingContracts,
     recipients: allRecipients
   } = useDashboardContext();
-  const { safe, organizationId } = useAuthContext();
+  const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
   const { mintFormState } = useTokenContext();
   const {
     pendingTransactions,
@@ -52,6 +54,11 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     const selectedVestingContract = allVestingContracts?.find((contract) => contract.id === vestingContractId);
     return selectedVestingContract ? [selectedVestingContract] : [];
   }, [allVestingContracts]);
+
+  const isAdmin = useIsAdmin(
+    currentSafe ? currentSafe.address : account ? account : '',
+    vestingContracts && vestingContracts.length > 0 ? vestingContracts[0].data : undefined
+  );
 
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
     vestingContracts,
@@ -89,7 +96,14 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     if (vestingContracts && vestingContracts.length > 0 && organizationId && chainId && account) {
       const vestingContractAddress = vestingContracts[0].data.address;
       const vestingContract = new ethers.Contract(vestingContractAddress, VestingABI.abi, library.getSigner());
-      if (safe?.address) {
+      if (currentSafe?.address) {
+        if (!isAdmin) {
+          toast.error(
+            "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
+          );
+          return;
+        }
+
         const ADMIN_WITHDRAW_FUNCTION = 'function withdrawAdmin(uint112 _amountRequested)';
         const ABI = [ADMIN_WITHDRAW_FUNCTION];
         const vestingContractInterface = new ethers.utils.Interface(ABI);
@@ -101,11 +115,17 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           signer: library?.getSigner(0)
         });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+
+        if (currentSafe.safeNonce === undefined) {
+          throw new Error('Nonce is not defined');
+        }
+
         const txData = {
           to: vestingContractAddress,
           data: adminWithdrawEncoded,
-          value: '0'
+          value: '0',
+          nonce: currentSafe.safeNonce + 1
         };
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
@@ -117,7 +137,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           ethAdapter
         });
         await safeService.proposeTransaction({
-          safeAddress: safe.address,
+          safeAddress: currentSafe.address,
           senderAddress: account,
           safeTransactionData: safeTransaction.data,
           safeTxHash: txHash,
@@ -138,6 +158,16 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           vestingContractId: vestingContracts[0].id
         };
         const transactionId = await createTransaction(transactionData);
+
+        await createOrUpdateSafe(
+          {
+            ...currentSafe,
+            safeNonce: currentSafe.safeNonce + 1
+          },
+          currentSafeId
+        );
+        setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
+
         toast.success('Transaction has been created successfully.');
         setTransactionLoaderStatus('SUCCESS');
         setWithdrawTransactions([
@@ -227,11 +257,11 @@ export default function VestingContract({ vestingContractId }: { vestingContract
         </div>
 
         <div className="flex items-center mt-2">
-          {safe?.address && (
+          {currentSafe?.address && (
             <>
               <Image src={'/icons/safe.png'} alt="token-image" width={18} height={18} />
               <Typography size="base" variant="inter" className=" font-medium text-neutral-900 ml-2 mr-9">
-                {safe.org_name}
+                {currentSafe.org_name}
               </Typography>
             </>
           )}

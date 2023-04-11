@@ -50,3 +50,19 @@ export const fetchSafeByQuery = async (
     return querySnapshot.docs[0].data();
   }
 };
+
+export const fetchSafesByQuery = async (
+  fields: string[],
+  syntaxs: WhereFilterOp[],
+  values: any[]
+): Promise<{ id: string; data: ISafe }[] | []> => {
+  const q = query(safeCollection, ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index])));
+  const querySnapshot = await getDocs(q);
+
+  const result: any = [];
+
+  if (querySnapshot && !querySnapshot.empty) {
+    querySnapshot.forEach((doc) => result.push({ id: doc.id, data: doc.data() }));
+  }
+  return result;
+};

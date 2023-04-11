@@ -10,12 +10,14 @@ import { useTransactionLoaderContext } from '@providers/transaction-loader.conte
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
+import useIsAdmin from 'hooks/useIsAdmin';
 import BatchIcon from 'public/icons/batch-transactions.svg';
 import DownloadIcon from 'public/icons/download.svg';
 import PrintIcon from 'public/icons/print.svg';
 import React, { InputHTMLAttributes, MutableRefObject, Ref, forwardRef, useEffect, useRef, useState } from 'react';
 import { usePagination, useRowSelect, useTable } from 'react-table';
 import { toast } from 'react-toastify';
+import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
@@ -123,7 +125,7 @@ const Table = ({
   } = tableFeatures;
 
   const { chainId, library, account } = useWeb3React();
-  const { organizationId, safe } = useAuthContext();
+  const { organizationId, currentSafe, currentSafeId, setCurrentSafe } = useAuthContext();
   const { mintFormState } = useTokenContext();
   const { vestingContracts, fetchDashboardData } = useDashboardContext();
   const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
@@ -273,18 +275,24 @@ const Table = ({
           vestingContractForFunding?.data?.address,
           ethers.utils.parseEther(amount)
         ]);
-        if (safe?.address && account && chainId && organizationId) {
-          if (safe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())) {
+        if (currentSafe?.address && account && chainId && organizationId) {
+          if (currentSafe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())) {
             setTransactionLoaderStatus('PENDING');
             const ethAdapter = new EthersAdapter({
               ethers: ethers,
               signer: library?.getSigner(0)
             });
-            const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+            const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+
+            if (currentSafe.safeNonce === undefined) {
+              throw new Error('Nonce is not defined');
+            }
+
             const txData = {
               to: mintFormState.address,
               data: transferEncoded,
-              value: '0'
+              value: '0',
+              nonce: currentSafe.safeNonce + 1
             };
             const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
             const txHash = await safeSdk.getTransactionHash(safeTransaction);
@@ -296,7 +304,7 @@ const Table = ({
               ethAdapter
             });
             await safeService.proposeTransaction({
-              safeAddress: safe.address,
+              safeAddress: currentSafe.address,
               senderAddress: account,
               safeTransactionData: safeTransaction.data,
               safeTxHash: txHash,
@@ -326,6 +334,15 @@ const Table = ({
                 );
               })
             );
+
+            await createOrUpdateSafe(
+              {
+                ...currentSafe,
+                safeNonce: currentSafe.safeNonce + 1
+              },
+              currentSafeId
+            );
+            setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
 
             await fetchDashboardData();
             setTransactionLoaderStatus('SUCCESS');

@@ -18,15 +18,19 @@ import {
   updateEmail
 } from 'firebase/auth';
 import useToggle from 'hooks/useToggle';
+import { ILocalStorage } from 'interfaces/locaStorage';
 import Router from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
 import { fetchRecipientByQuery, fetchRecipientsByQuery } from 'services/db/recipient';
-import { fetchSafeByQuery } from 'services/db/safe';
+import { createOrUpdateSafe, fetchSafeByQuery, fetchSafesByQuery } from 'services/db/safe';
+import { getSafeInfo } from 'services/gnosois';
 import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
 import { compareAddresses } from 'utils';
+import { CACHE_KEY } from 'utils/constants';
+import { getCache, setCache } from 'utils/localStorage';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -38,7 +42,9 @@ export type TConnections = 'metamask' | 'walletconnect';
 
 export type AuthContextData = {
   user: IUser | undefined;
-  safe: ISafe | undefined;
+  currentSafe: ISafe | undefined;
+  currentSafeId: string;
+  safes: { id: string; data: ISafe }[];
   organizationId: string | undefined;
   connection?: TConnections;
   setConnection: (data?: TConnections) => void;
@@ -73,7 +79,8 @@ export type AuthContextData = {
   expandSidebar: () => void;
   forceCollapseSidebar: () => void;
   fetchSafe: () => void;
-  setSafe: (safe: ISafe) => void;
+  setCurrentSafe: (safe: ISafe | undefined) => void;
+  setCurrentSafeId: (v: string) => void;
   agreedOnConsent: boolean;
   setAgreedOnConsent: (data: any) => void;
   setUser: (data: any) => void;
@@ -88,7 +95,9 @@ export function AuthContextProvider({ children }: any) {
   const { chainId, account, library } = useWeb3React();
   const [user, setUser] = useState<IUser | undefined>();
   const [organizationId, setOrganizationId] = useState<string | undefined>();
-  const [safe, setSafe] = useState<ISafe | undefined>();
+  const [currentSafeId, setCurrentSafeId] = useState('');
+  const [currentSafe, setCurrentSafe] = useState<ISafe | undefined>();
+  const [safes, setSafes] = useState<{ id: string; data: ISafe }[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const [agreedOnConsent, setAgreedOnConsent] = useState<boolean>(false);
@@ -439,14 +448,16 @@ export function AuthContextProvider({ children }: any) {
 
   const fetchSafe = useCallback(() => {
     if (organizationId) {
-      fetchSafeByQuery('org_id', '==', organizationId).then((res) => setSafe(res));
+      fetchSafesByQuery(['org_id'], ['=='], [organizationId]).then((res) => setSafes(res));
     }
   }, [organizationId]);
 
   const memoedValue = useMemo(
     () => ({
       user,
-      safe,
+      currentSafe,
+      currentSafeId,
+      safes,
       organizationId,
       connection,
       setConnection,
@@ -472,7 +483,8 @@ export function AuthContextProvider({ children }: any) {
       expandSidebar: setSidebarIsExpanded,
       forceCollapseSidebar,
       fetchSafe,
-      setSafe,
+      setCurrentSafe,
+      setCurrentSafeId,
       agreedOnConsent,
       setAgreedOnConsent,
       setUser,
@@ -480,7 +492,20 @@ export function AuthContextProvider({ children }: any) {
       recipient,
       setRecipient
     }),
-    [user, loading, error, isNewUser, showSideBar, sidebarIsExpanded, organizationId, safe, agreedOnConsent, connection]
+    [
+      user,
+      loading,
+      error,
+      isNewUser,
+      showSideBar,
+      sidebarIsExpanded,
+      organizationId,
+      currentSafe,
+      agreedOnConsent,
+      connection,
+      currentSafeId,
+      safes
+    ]
   );
 
   useEffect(() => {
@@ -508,6 +533,44 @@ export function AuthContextProvider({ children }: any) {
   useEffect(() => {
     fetchSafe();
   }, [organizationId]);
+
+  useEffect(() => {
+    if (safes && safes.length > 0) {
+      const cache = getCache();
+      if (cache?.safeAddress) {
+        const safe = safes.find(
+          (s) => cache.safeAddress && s.data.address.toLowerCase() === cache.safeAddress.toLowerCase()
+        );
+        if (safe) {
+          setCurrentSafeId(safe.id);
+          setCurrentSafe(safe.data);
+          return;
+        }
+      }
+      setCurrentSafeId(safes[0].id);
+      setCurrentSafe(safes[0].data);
+    }
+  }, [safes]);
+
+  useEffect(() => {
+    if (currentSafe && library && currentSafeId) {
+      setCache({ safeAddress: currentSafe.address });
+      if (!currentSafe.safeNonce && currentSafe.safeNonce !== 0) {
+        getSafeInfo(library, currentSafe.address).then((safeWallet) => {
+          safeWallet?.getNonce().then((nonce) => {
+            createOrUpdateSafe(
+              {
+                ...currentSafe,
+                safeNonce: nonce
+              },
+              currentSafeId
+            );
+            setCurrentSafe((s) => (s ? { ...s, safeNonce: nonce } : undefined));
+          });
+        });
+      }
+    }
+  }, [currentSafe, library, currentSafeId]);
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;
 }

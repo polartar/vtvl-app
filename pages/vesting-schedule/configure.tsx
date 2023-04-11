@@ -69,7 +69,7 @@ interface CustomActionBarProps {
 const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no-cliff';
 
 const ConfigureSchedule: NextPageWithLayout = () => {
-  const { organizationId, safe } = useAuthContext();
+  const { organizationId, currentSafe } = useAuthContext();
   const { account, chainId, activate } = useWeb3React();
   const { recipients, scheduleFormState, scheduleMode, scheduleState, updateScheduleFormState, setScheduleState } =
     useVestingContext();
@@ -1667,13 +1667,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               </label>
               <p className="text-neutral-900">{scheduleState.contractName}</p>
             </div>
-            {safe && safe?.address ? (
+            {currentSafe && currentSafe.address ? (
               <div>
                 <label className="text-sm text-neutral-600 flex flex-row items-center gap-2 mb-2.5">
                   <img src="/icons/safe.png" className="w-4" />
                   Safe
                 </label>
-                <p className="text-neutral-900">{safe.org_name}</p>
+                <p className="text-neutral-900">{currentSafe.org_name}</p>
               </div>
             ) : null}
           </div>
