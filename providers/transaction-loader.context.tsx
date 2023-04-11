@@ -24,7 +24,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
   const [transactions, setTransactions] = useState<ITransactionData[]>([]);
   const [pendingTransactions, setPendingTransactions] = useState<ITransactionData[]>([]);
   const [isCloseAvailable, setIsCloseAvailable] = useState<boolean>(true);
-  const { safe, organizationId } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   const value = useMemo(
     () => ({
       transactionStatus,

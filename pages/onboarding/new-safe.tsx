@@ -281,7 +281,7 @@ const NewSafePage: NextPage = () => {
         setFormError(true);
         return;
       }
-
+      const safeNonce = await safe.getNonce();
       await createOrUpdateSafe(
         {
           user_id: user?.uid,
@@ -290,7 +290,8 @@ const NewSafePage: NextPage = () => {
           address: safe.getAddress(),
           chainId: chainId || 0,
           owners: values.owners,
-          threshold: values.authorizedUsers
+          threshold: values.authorizedUsers,
+          safeNonce
         },
         safeRef
       );

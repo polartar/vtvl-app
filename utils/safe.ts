@@ -8,6 +8,7 @@ export type SafeTransaction = {
   to: string;
   data: string;
   value: string;
+  nonce: number;
 };
 
 export const createSafeTransaction = async (

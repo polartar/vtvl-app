@@ -28,7 +28,7 @@ import { formatNumber } from 'utils/token';
 
 const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> = ({ id, data }) => {
   const { account, chainId, activate, library } = useWeb3React();
-  const { safe, organizationId } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   const {
     // fetchDashboardVestingContract,
     vestingContracts,
@@ -47,13 +47,13 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (safe?.address && chainId) {
+    if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
       });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const safeService = new SafeServiceClient({
         txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
         ethAdapter
@@ -70,11 +70,11 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
   };
 
   const initializeStatus = async () => {
-    if (data && data.safeHash && safe && account) {
+    if (data && data.safeHash && currentSafe && account) {
       const safeTx = await fetchSafeTransactionFromHash(data.safeHash);
       if (safeTx) {
         setSafeTransaction(safeTx);
-        if (safeTx.signatures.size >= safe?.threshold) {
+        if (safeTx.signatures.size >= currentSafe?.threshold) {
           setTransactionStatus('EXECUTABLE');
           setStatus('AUTHORIZATION_REQUIRED');
         } else if (safeTx.signatures.has(account.toLowerCase())) {
@@ -92,7 +92,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
     try {
       setIsCloseAvailable(false);
 
-      if (safe?.address && chainId && data) {
+      if (currentSafe?.address && chainId && data) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -101,7 +101,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
 
         const safeSdk: Safe = await Safe.create({
           ethAdapter: ethAdapter,
-          safeAddress: safe?.address
+          safeAddress: currentSafe?.address
         });
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
@@ -137,14 +137,14 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
   const handleExecuteTransaction = async () => {
     try {
       setIsCloseAvailable(false);
-      if (safe?.address && chainId && data) {
+      if (currentSafe?.address && chainId && data) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
         });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
@@ -184,7 +184,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
 
   useEffect(() => {
     initializeStatus();
-  }, [data, safe, account]);
+  }, [data, currentSafe, account]);
 
   return (
     <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">
