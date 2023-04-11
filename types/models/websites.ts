@@ -51,4 +51,5 @@ export interface IWebsite {
   assets?: IWebsiteAssets;
   links?: IWebsiteLinks;
   features?: IWebsiteFeatures;
+  theme?: string;
 }

@@ -2,6 +2,7 @@ import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
+import ThemeLoader from '@components/atoms/ThemeLoader/ThemeLoader';
 import ConnectWalletOptionsProps from '@components/molecules/ConnectWalletOptions/ConnectWalletOptions';
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
@@ -65,6 +66,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   } = useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
   const { loading } = useLoaderContext();
+  const {
+    website: { theme }
+  } = useGlobalContext();
   const {
     isLoading,
     website: { name, assets }
@@ -533,6 +537,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
           </div>
         </Form>
       </PromptModal>
+      {/* {theme ? <ThemeLoader url={theme} /> : null} */}
     </>
   );
 };
