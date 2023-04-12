@@ -2,8 +2,11 @@ import Button from '@components/atoms/Button/Button';
 import Input from '@components/atoms/FormControls/Input/Input';
 import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
 import { ArrowLeftIcon } from '@components/atoms/Icons';
+import ReactSelectDownChevron from '@components/atoms/ReactSelectDropdown/DownChevron';
+import ReactSelectOption from '@components/atoms/ReactSelectDropdown/Option';
 import { ToggleButton } from '@components/atoms/ToggleButton';
 import { Typography } from '@components/atoms/Typography/Typography';
+import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useShallowState } from 'hooks/useShallowState';
@@ -25,9 +28,16 @@ export interface VestingSetupPanelProps {
   }) => void;
 }
 
+const INITIAL_VESTING_CONTRACT: VestingContractOption = {
+  label: '',
+  value: '',
+  safe: ''
+};
+
 export type VestingContractOption = {
   label: string;
   value: string;
+  safe: string;
 };
 
 const ERROR_EMPTY_STATE = {
@@ -39,12 +49,13 @@ const ERROR_EMPTY_STATE = {
 export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialState, onReturn, onContinue }) => {
   const { vestingContracts } = useDashboardContext();
   const { scheduleMode } = useVestingContext();
+  const { safe } = useAuthContext();
 
   const [form, setForm] = useShallowState({
     scheduleName: '',
     contractName: '',
     createNewContract: true,
-    vestingContract: { label: '', value: '' }
+    vestingContract: { ...INITIAL_VESTING_CONTRACT }
   });
 
   const [errors, setErrors] = useShallowState(ERROR_EMPTY_STATE);
@@ -55,7 +66,8 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
         (contract) =>
           ({
             label: contract.data.name ?? contract.data.address,
-            value: contract.id
+            value: contract.id,
+            safe: safe || ''
           } as VestingContractOption)
       ) ?? [],
     [vestingContracts]
@@ -113,7 +125,8 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
       (option) => option.value === initialState?.vestingContractId
     ) ?? {
       label: '',
-      value: ''
+      value: '',
+      safe: ''
     };
     setForm({
       scheduleName: initialState?.name ?? '',
@@ -249,15 +262,20 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
           required>
           <>
             <Select
-              options={vestingContractOptions}
-              value={form.vestingContract}
+              components={{
+                Option: ReactSelectOption,
+                DropdownIndicator: ReactSelectDownChevron,
+                IndicatorSeparator: CustomIndicatorSeparator
+              }}
+              options={vestingContractOptions as VestingContractOption[]}
+              value={form.vestingContract as VestingContractOption}
               classNamePrefix="select"
               menuPlacement="top"
               onChange={handleChangeVesting}
               onFocus={() => setActiveStep(2)}
             />
 
-            {errors.vestingContract && <p className="input-component__message">{errors.vestingContract}</p>}
+            {errors.vestingContract && <span className="input-component__message">{errors.vestingContract}</span>}
           </>
         </StepLabel>
       )}
@@ -278,6 +296,11 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
       </div>
     </div>
   );
+};
+
+// Blank out the separator
+const CustomIndicatorSeparator = ({ ...props }) => {
+  return <div {...props}></div>;
 };
 
 export const VestingSetupStep: React.FC<{
