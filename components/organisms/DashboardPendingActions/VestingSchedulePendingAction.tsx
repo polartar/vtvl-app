@@ -424,6 +424,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               id
             );
             await fetchDashboardData();
+            toast.success(`Funding transaction with nonce ${currentSafe.safeNonce + 1} has been created successfully`);
             setTransactionLoaderStatus('SUCCESS');
           } else {
             toast.error('You are not a signer of this multisig wallet.');
@@ -601,6 +602,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             currentSafeId
           );
           setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
+
+          toast.success(`Created a transaction with nonce ${currentSafe.safeNonce + 1} successfully`);
 
           await fetchDashboardData();
         }
@@ -826,6 +829,9 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           <img className="w-4 h-4" src="icons/safe.png" />
           Founders
         </div>
+      </div>
+      <div className="flex items-center w-32 py-3">
+        <div className="flex gap-1.5 items-center">{safeTransaction?.data.nonce}</div>
       </div>
       <div className="flex items-center w-40 py-3">{formatNumber(data.details.amountToBeVested)}</div>
       <div className="flex items-center min-w-[200px] flex-grow py-3">

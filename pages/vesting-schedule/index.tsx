@@ -733,7 +733,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             currentSafeId
           );
           setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
-
+          toast.success(`Created a transaction with nonce ${currentSafe.safeNonce + 1} successfully`);
           await fetchDashboardData();
         }
         toast.success('Transaction has been created successfully.');

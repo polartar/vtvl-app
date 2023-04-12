@@ -149,7 +149,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           );
           setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
 
-          toast.success('Revoking transaction is created successfully.');
+          toast.success(`Revoking transaction with nonce ${currentSafe.safeNonce + 1} has been created successfully.`);
           console.info('Safe Transaction: ', safeHash);
         } else {
           const vestingContractInstance = new ethers.Contract(
