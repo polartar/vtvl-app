@@ -345,6 +345,7 @@ const Table = ({
             setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
 
             await fetchDashboardData();
+            toast.success(`Funding transaction with nonce ${currentSafe.safeNonce + 1} has been created successfully`);
             setTransactionLoaderStatus('SUCCESS');
           } else {
             toast.error('You are not a signer of this multisig wallet.');

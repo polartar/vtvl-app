@@ -393,6 +393,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               id
             );
             await fetchDashboardData();
+            toast.success(`Funding transaction with nonce ${currentSafe.safeNonce + 1} has been created successfully`);
             setTransactionLoaderStatus('SUCCESS');
           } else {
             toast.error('You are not a signer of this multisig wallet.');
@@ -572,7 +573,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             currentSafeId
           );
           setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
-
+          toast.success(`Created a transaction with nonce ${currentSafe.safeNonce + 1} successfully`);
           await fetchDashboardData();
         }
         toast.success('Transaction has been created successfully.');
