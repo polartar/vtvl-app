@@ -206,6 +206,9 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
           Founders
         </div>
       </div>
+      <div className="flex items-center w-32 py-3">
+        <div className="flex gap-1.5 items-center">{safeTransaction?.data.nonce}</div>
+      </div>
       <div className="flex items-center w-40 py-3">{formatNumber(+(data.withdrawAmount ?? 0))}</div>
       <div className="flex items-center min-w-[200px] flex-grow py-3">
         {transactionStatus === 'WAITING_APPROVAL' && (

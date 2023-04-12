@@ -168,7 +168,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
         );
         setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
 
-        toast.success('Transaction has been created successfully.');
+        toast.success(`Withdraw transaction with nonce ${currentSafe.safeNonce + 1} has been created successfully.`);
         setTransactionLoaderStatus('SUCCESS');
         setWithdrawTransactions([
           ...withdrawTransactions,

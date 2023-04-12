@@ -395,6 +395,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             );
             setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
 
+            toast.success(`Funding transaction with nonce ${currentSafe.safeNonce + 1} is created successfully`);
+
             await fetchDashboardData();
             setTransactionLoaderStatus('SUCCESS');
           } else {
@@ -572,7 +574,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             currentSafeId
           );
           setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
-
+          toast.success(`Created a transaction with nonce ${currentSafe.safeNonce + 1} successfully`);
           await fetchDashboardData();
         }
         toast.success('Transaction has been created successfully.');
