@@ -10,9 +10,18 @@ interface TokenProfileProps extends React.BaseHTMLAttributes<HTMLDivElement> {
   symbol?: string;
   size?: 'small' | 'default';
   address: string;
+  burnable?: boolean;
 }
 
-const TokenProfile = ({ logo, name, symbol = '', size = 'default', address, ...props }: TokenProfileProps) => {
+const TokenProfile = ({
+  logo,
+  name,
+  symbol = '',
+  size = 'default',
+  address,
+  burnable = false,
+  ...props
+}: TokenProfileProps) => {
   const { ModalWrapper, showModal, hideModal } = useModal({});
 
   const sizes = {
@@ -38,7 +47,9 @@ const TokenProfile = ({ logo, name, symbol = '', size = 'default', address, ...p
           </Copy>
         </span>
       </div>
-      <Chip className="cursor-pointer" label="Burn" color="danger" size="small" onClick={showModal} />
+      {burnable && address ? (
+        <Chip className="cursor-pointer" label="Burn" color="danger" size="small" onClick={showModal} />
+      ) : null}
       <ModalWrapper>
         <TokenBurnModal />
       </ModalWrapper>

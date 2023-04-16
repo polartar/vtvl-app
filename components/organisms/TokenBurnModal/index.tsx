@@ -1,11 +1,66 @@
 import Button from '@components/atoms/Button/Button';
 import { ArrowLeftIcon } from '@components/atoms/Icons';
-import React from 'react';
+import { useTokenContext } from '@providers/token.context';
+import { useWeb3React } from '@web3-react/core';
+import LimitedSupplyABI from 'contracts/abi/FullPremintERC20Token.json';
+import UnlimitedSupplyABI from 'contracts/abi/VariableSupplyERC20Token.json';
+import { ethers } from 'ethers';
+import useTokenBalance from 'hooks/useTokenBalance';
+import WarningIcon from 'public/icons/warning.svg';
+import React, { useEffect, useState } from 'react';
+import { formatNumber } from 'utils/token';
 
 const TokenBurnModal = () => {
+  const { account, chainId, library } = useWeb3React();
+  const { mintFormState } = useTokenContext();
+
+  const [loading, setLoading] = useState(true);
+  const [isEligible, setIsEligible] = useState(false);
+  const [burnableAmount, setBurnableAmount] = useState(ethers.BigNumber.from(0));
+
+  const checkEligibility = async () => {
+    try {
+      if (account && mintFormState.address && library) {
+        setLoading(true);
+        const TokenContract = new ethers.Contract(
+          mintFormState.address,
+          mintFormState.supplyCap === 'LIMITED' ? LimitedSupplyABI.abi : UnlimitedSupplyABI.abi,
+          library.getSigner()
+        );
+        const isAdmin =
+          mintFormState.supplyCap === 'LIMITED'
+            ? (await TokenContract.deployer()) === account
+            : await TokenContract.isAdmin(account);
+        setIsEligible(isAdmin);
+        if (isAdmin) {
+          const tokenBalance = await TokenContract.balanceOf(account);
+          setBurnableAmount(tokenBalance);
+        }
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      setLoading(false);
+      console.log('checkEligibility - ', err);
+    }
+  };
+
+  useEffect(() => {
+    checkEligibility();
+  }, [account, mintFormState.address, mintFormState.burnable, library]);
+
   return (
     <div className="w-[600px] px-5 mx-auto">
       <div className="w-full bg-white border border-[#d0d5dd] px-6 py-10 rounded-3xl">
+        {!loading && !isEligible ? (
+          <div className="flex justify-center mb-3">
+            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-8 bg-red-200 text-red-500 text-xs">
+              <WarningIcon className="w-4 h-4 fill-current text-warning-500" />
+              You are not eligible to burn {mintFormState.name} tokens.
+            </div>
+          </div>
+        ) : null}
         <h1 className="text-[#101828] text-xl font-semibold text-center">ACME Token Supply</h1>
         <h2 className="text-[#667085] text-xl text-center mt-3">Select amount of tokens to burn</h2>
         <div className="w-full h-[1px] bg-[#eaecf0] mt-5" />
@@ -15,21 +70,32 @@ const TokenBurnModal = () => {
               <div className="w-[10px] h-[10px] rounded-full bg-[#fecaca]" />
               <div className="text-[#667085] text-xs">Burnable Supply</div>
             </div>
-            <div className="text-[#101828] text-base font-medium">200,000</div>
+            <div className="text-[#101828] text-base font-medium">
+              {burnableAmount ? formatNumber(+ethers.utils.formatUnits(burnableAmount, mintFormState.decimals)) : 0}
+            </div>
           </div>
           <div className="inline-flex flex-col items-end gap-1.5">
             <div className="flex items-center gap-1.5">
               <div className="w-[10px] h-[10px] rounded-full bg-[#fecaca]" />
-              <div className="text-[#667085] text-xs">Burnable Supply</div>
+              <div className="text-[#667085] text-xs">After burn supply</div>
             </div>
-            <div className="text-[#101828] text-base font-medium">200,000</div>
+            <div className="text-[#101828] text-base font-medium">
+              {mintFormState.initialSupply
+                ? formatNumber(
+                    mintFormState.initialSupply -
+                      parseFloat(ethers.utils.formatUnits(burnableAmount, mintFormState.decimals))
+                  )
+                : 0}
+            </div>
           </div>
           <div className="inline-flex flex-col items-end gap-1.5">
             <div className="flex items-center gap-1.5">
               <div className="w-[10px] h-[10px] rounded-full bg-[#fecaca]" />
-              <div className="text-[#667085] text-xs">Burnable Supply</div>
+              <div className="text-[#667085] text-xs">Total Supply</div>
             </div>
-            <div className="text-[#101828] text-base font-medium">200,000</div>
+            <div className="text-[#101828] text-base font-medium">
+              {mintFormState.initialSupply ? formatNumber(mintFormState.initialSupply) : 0}
+            </div>
           </div>
         </div>
         <div className="w-full h-[1px] bg-[#eaecf0] mt-5" />

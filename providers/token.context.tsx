@@ -21,6 +21,8 @@ export interface IMintFormState {
   updatedAt: number;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
   chainId: number;
+  burnable?: boolean;
+  burntAmount?: number;
 }
 
 interface ITokenContextData {
@@ -44,7 +46,9 @@ const INITIAL_STATE: IMintFormState = {
   createdAt: Math.floor(new Date().getTime() / 1000),
   updatedAt: Math.floor(new Date().getTime() / 1000),
   status: 'PENDING',
-  chainId: 0
+  chainId: 0,
+  burnable: false,
+  burntAmount: 0
 };
 
 const TokenContext = createContext({} as ITokenContextData);
@@ -134,7 +138,9 @@ export function TokenContextProvider({ children }: any) {
                 updatedAt: data?.updatedAt ? data?.updatedAt : Math.floor(new Date().getTime() / 1000),
                 status: data?.status ? data?.status : 'PENDING',
                 tokenId: token.id,
-                chainId: data?.chainId || 0
+                chainId: data?.chainId || 0,
+                burnable: data.burnable || false,
+                burntAmount: data.burntAmount || 0
               }));
               setTokenId(token.id);
             } else {

@@ -10,7 +10,7 @@ const TeamWelcome: NextPage = () => {
     <>
       <h1 className="h2 font-medium text-center mb-10">Welcome to VTVL, Satoshi</h1>
       <p className="paragraphy-small neutral-text mb-3">You have been invited by</p>
-      <TokenProfile {...mintFormState} />
+      <TokenProfile {...mintFormState} burnable={false} />
       <EmptyState
         image="/images/cryptocurrency-management.gif"
         description={
