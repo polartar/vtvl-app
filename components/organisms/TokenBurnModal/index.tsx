@@ -1,6 +1,9 @@
 import Button from '@components/atoms/Button/Button';
+import Input from '@components/atoms/FormControls/Input/Input';
+import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
 import { ArrowLeftIcon } from '@components/atoms/Icons';
 import { useTokenContext } from '@providers/token.context';
+import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import LimitedSupplyABI from 'contracts/abi/FullPremintERC20Token.json';
 import UnlimitedSupplyABI from 'contracts/abi/VariableSupplyERC20Token.json';
@@ -8,15 +11,23 @@ import { ethers } from 'ethers';
 import useTokenBalance from 'hooks/useTokenBalance';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { formatNumber } from 'utils/token';
 
-const TokenBurnModal = () => {
+interface ITokenBurnModalProps {
+  hideModal: () => void;
+}
+
+const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
   const { account, chainId, library } = useWeb3React();
   const { mintFormState } = useTokenContext();
+  const { setTransactionStatus } = useTransactionLoaderContext();
 
   const [loading, setLoading] = useState(true);
   const [isEligible, setIsEligible] = useState(false);
   const [burnableAmount, setBurnableAmount] = useState(ethers.BigNumber.from(0));
+  const [burnAmount, setBurnAmount] = useState('');
+  const [error, setError] = useState('');
 
   const checkEligibility = async () => {
     try {
@@ -46,9 +57,49 @@ const TokenBurnModal = () => {
     }
   };
 
+  const handleBurn = async () => {
+    try {
+      setTransactionStatus('PENDING');
+      const TokenContract = new ethers.Contract(
+        mintFormState.address,
+        mintFormState.supplyCap === 'LIMITED' ? LimitedSupplyABI.abi : UnlimitedSupplyABI.abi,
+        library.getSigner()
+      );
+      const tokenAllowance = await TokenContract.allowance(account, mintFormState.address);
+      if (ethers.utils.parseUnits(burnAmount.replaceAll(',', ''), mintFormState.decimals).gt(tokenAllowance)) {
+        const approveTx = await TokenContract.approve(mintFormState.address, ethers.constants.MaxUint256);
+        await approveTx.wait();
+      }
+      const burnTx = await TokenContract.burn(
+        ethers.utils.parseUnits(burnAmount.replaceAll(',', ''), mintFormState.decimals)
+      );
+      setTransactionStatus('IN_PROGRESS');
+      await burnTx.wait();
+      setTransactionStatus('SUCCESS');
+      toast.success('Tokens are burnt successfully');
+      hideModal();
+    } catch (err) {
+      console.log('handleBurn - ', err);
+      setTransactionStatus('ERROR');
+    }
+  };
+
   useEffect(() => {
     checkEligibility();
   }, [account, mintFormState.address, mintFormState.burnable, library]);
+
+  useEffect(() => {
+    if (burnableAmount && burnAmount) {
+      if (
+        parseFloat(burnAmount.replaceAll(',', '')) >
+        parseFloat(ethers.utils.formatUnits(burnableAmount, mintFormState.decimals))
+      ) {
+        setError('Insufficient burn amount');
+        return;
+      }
+    }
+    setError('');
+  }, [burnableAmount, burnAmount, mintFormState]);
 
   return (
     <div className="w-[600px] px-5 mx-auto">
@@ -102,18 +153,45 @@ const TokenBurnModal = () => {
         <div className="w-full py-4 pb-8 mt-10">
           <div className="flex rounded-xl relative">
             <div
-              style={{ width: `20%`, backgroundColor: '#fecaca' }}
+              style={{
+                width:
+                  burnableAmount && mintFormState.initialSupply
+                    ? `${Math.floor(
+                        (+ethers.utils.formatUnits(burnableAmount, mintFormState.decimals) /
+                          mintFormState.initialSupply) *
+                          100
+                      )}%`
+                    : '0%',
+                backgroundColor: '#fecaca'
+              }}
               className={`h-5 border-t border-b border-[#d0d5dd] absolute left-0 top-0 bottom-0 rounded-l-lg`}
             />
             <div
-              style={{ width: `10%`, backgroundColor: '#ef4444' }}
+              style={{
+                width:
+                  burnAmount && mintFormState.initialSupply
+                    ? `${Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / mintFormState.initialSupply) * 100)}%`
+                    : '0%',
+                backgroundColor: '#ef4444'
+              }}
               className={`h-5 rounded-l-lg border-t border-l border-b border-[#d0d5dd] absolute left-0 top-0 bottom-0`}
             />
             <div
               style={{ width: `100%`, backgroundColor: '#98a2b3' }}
               className={`h-5 rounded-lg border-t border-r border-b border-[#d0d5dd]`}
             />
-            <div style={{ width: `40%` }} className="flex items-center absolute left-0 -top-5 text-xs font-medium">
+            <div
+              style={{
+                width:
+                  burnableAmount && mintFormState.initialSupply
+                    ? `${Math.floor(
+                        (+ethers.utils.formatUnits(burnableAmount, mintFormState.decimals) /
+                          mintFormState.initialSupply) *
+                          100
+                      )}%`
+                    : '0%'
+              }}
+              className="flex items-center absolute left-0 -top-5 text-xs font-medium">
               <div
                 style={{
                   width: '1px',
@@ -129,7 +207,10 @@ const TokenBurnModal = () => {
                 className="flex-grow mr-2"
               />
               <div className="mr-2">
-                Unlocked&nbsp;&nbsp; <span style={{ color: '#98a2b3' }}>123</span>
+                Burnable&nbsp;&nbsp;{' '}
+                <span style={{ color: '#98a2b3' }}>
+                  {burnableAmount ? formatNumber(+ethers.utils.formatUnits(burnableAmount, mintFormState.decimals)) : 0}
+                </span>
               </div>
               <div
                 style={{
@@ -162,7 +243,10 @@ const TokenBurnModal = () => {
                 className="flex-grow mr-2"
               />
               <div className="mr-2">
-                Total allocation&nbsp;&nbsp; <span style={{ color: '#98a2b3' }}>123</span>
+                Total allocation&nbsp;&nbsp;{' '}
+                <span style={{ color: '#98a2b3' }}>
+                  {mintFormState.initialSupply ? formatNumber(mintFormState.initialSupply) : 0}
+                </span>
               </div>
               <div
                 style={{
@@ -182,30 +266,46 @@ const TokenBurnModal = () => {
           </div>
         </div>
         <div className="mt-5">
-          <h2 className="text-[#344054 text-sm">
-            Amount you want to burn based on the burnable/locked tokens&nbsp;<span className="text-[#f9623b]">*</span>
-          </h2>
-          <input
-            className="mt-1.5 w-full px-6 py-3 border border-[#d0d5dd] rounded-xl text-sm text-[#101828]"
+          <Input
+            label={
+              <label className="required">
+                <span>Amount you want to burn based on the burnable tokens </span>
+              </label>
+            }
+            placeholder="Enter amount"
             type="number"
+            error={!!error}
+            message={error}
+            value={burnAmount}
+            onChange={(e) => setBurnAmount(formatNumber(parseFloat(e.target.value.replaceAll(',', ''))))}
           />
-          {/* <div className="mt-5 relative w-full h-2 rounded bg-[#eaecf0] cursor-pointer">
-            <div
-              style={{ width: '60%', background: 'linear-gradient(to right, #1b369a 19%, #f9623b 98%)' }}
-              className="absolute left-0 top-0 bottom-0 rounded"
+          <div className="mt-6">
+            <RangeSlider
+              max={burnableAmount ? +ethers.utils.formatUnits(burnableAmount, mintFormState.decimals) : 0}
+              value={burnAmount ? parseFloat(burnAmount.replaceAll(',', '')) : 0}
+              className="mt-5"
+              onChange={(e) => setBurnAmount(formatNumber(e.target.valueAsNumber))}
             />
-          </div> */}
+          </div>
         </div>
         <div className="w-full h-[1px] bg-[#eaecf0] mt-5" />
         <div className="mt-5 w-full px-4 py-3 bg-[#eaecf0] rounded-xl text-[#667085] text-xs">
           Please note that 🔥 burning a token once you proceed it is not reversible
         </div>
         <div className="w-full flex items-center justify-between mt-5">
-          <div className="flex gap-2 items-center p-3 font-medium text-[#667085] text-base cursor-pointer">
+          <div
+            className="flex gap-2 items-center p-3 font-medium text-[#667085] text-base cursor-pointer"
+            onClick={hideModal}>
             <ArrowLeftIcon />
             Back
           </div>
-          <Button primary label="Proceed" size="medium" disabled />
+          <Button
+            primary
+            label="Proceed"
+            size="medium"
+            disabled={!!error || loading || !burnAmount || parseFloat(burnAmount.replaceAll(',', '')) === 0}
+            onClick={handleBurn}
+          />
         </div>
       </div>
     </div>

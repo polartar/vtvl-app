@@ -51,7 +51,7 @@ const TokenProfile = ({
         <Chip className="cursor-pointer" label="Burn" color="danger" size="small" onClick={showModal} />
       ) : null}
       <ModalWrapper>
-        <TokenBurnModal />
+        <TokenBurnModal hideModal={hideModal} />
       </ModalWrapper>
     </div>
   );
