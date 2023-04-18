@@ -21,7 +21,7 @@ import { useWeb3React } from '@web3-react/core';
 import Decimal from 'decimal.js';
 import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
-import useChainVestingContracts from 'hooks/useChainVestingContracts';
+import useChainVestingContracts, { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import { IStatus } from 'interfaces/vesting';
 import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -184,11 +184,11 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     <>
       {!loading && vesting ? (
         <div className="w-full text-left">
-          <div className="flex items-center gap-3 text-3xl font-bold">
+          <div className="flex items-center gap-3 text-3xl font-bold mb-6">
             {vesting.data.name}
             {vesting.data.status === 'LIVE' && <Chip color="successAlt" label="Active" />}
           </div>
-          <TokenProfile {...mintFormState} className="mb-2" />
+          <TokenProfile {...mintFormState} className="mb-6" />
           {vestingScheduleDetails && vesting && (
             <VestingScheduleProfile
               vestingScheduleInfo={vestingScheduleDetails}

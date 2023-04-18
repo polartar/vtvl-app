@@ -39,6 +39,7 @@ import {
   getNumberOfReleases,
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
+import { BNToAmountString } from 'utils/web3';
 
 const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo: VestingContractInfo[] }> = ({
   id,
@@ -738,7 +739,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   );
   console.log({ vestingSchedulesInfo });
   const formatValue = (value: BigNumber | undefined) => {
-    return value ? Number(formatEther(value)).toFixed(2) : '0';
+    return value ? formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(value)))) : '0';
   };
 
   useEffect(() => {
