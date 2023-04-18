@@ -29,6 +29,7 @@ export interface IMember {
   joined?: number;
   createdAt?: number;
   updatedAt?: number;
+  source?: '' | 'recipient';
 }
 
 export interface IUser extends FirebaseUser {

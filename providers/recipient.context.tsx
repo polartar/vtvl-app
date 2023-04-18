@@ -1,6 +1,7 @@
 import { onSnapshot, query, where } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { recipientCollection } from 'services/db/firestore';
+import { updateRecipient } from 'services/db/recipient';
 import { IRecipientDoc } from 'types/models';
 
 import { useAuthContext } from './auth.context';
