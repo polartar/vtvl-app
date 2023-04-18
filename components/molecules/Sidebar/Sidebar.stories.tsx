@@ -53,7 +53,7 @@ Collapsed.args = {
   submenuList: [
     { title: 'Notifications', icon: notificationsIcon, route: '/notifications' },
     { title: 'Support', icon: supportIcon, route: '/support' },
-    { title: 'Switch to investor', icon: switchUserIcon, route: '/switch-account' }
+    { title: 'Switch to investor', icon: switchUserIcon, route: '/switch-role' }
   ],
   userName: 'John Doe',
   role: 'Founder'

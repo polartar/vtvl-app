@@ -17,6 +17,17 @@ export interface IInvitee {
   type: ITeamRole;
 }
 
+export type IUserType =
+  | 'admin'
+  | 'founder'
+  | 'investor'
+  | 'manager'
+  | 'manager2'
+  | 'employee'
+  | 'advisor'
+  | 'anonymous'
+  | '';
+
 export interface IMember {
   id?: string;
   user_id?: string;
@@ -25,7 +36,7 @@ export interface IMember {
   email?: string;
   companyEmail?: string;
   wallets?: IAddress[];
-  type?: string;
+  type?: IUserType;
   joined?: number;
   createdAt?: number;
   updatedAt?: number;

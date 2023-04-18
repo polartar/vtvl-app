@@ -133,7 +133,13 @@ const FounderRoutes = {
       isExternal: true,
       available: true
     },
-    { title: 'Switch to investor', icon: '/icons/switchUser.svg', hoverIcon: '', route: '/switch-account' },
+    {
+      title: 'Switch to investor',
+      icon: '/icons/switchUser.svg',
+      hoverIcon: '/icons/switchUser2.svg',
+      route: '/switch-role',
+      available: true
+    },
     {
       title: 'Settings',
       icon: '/icons/settings.svg',
@@ -181,7 +187,13 @@ const employeeInvestorMenuItems = {
       isExternal: true,
       available: true
     },
-    { title: 'Switch to founder', icon: '/icons/switchUser.svg', route: '/switch-account' }
+    {
+      title: 'Switch to founder',
+      icon: '/icons/switchUser.svg',
+      hoverIcon: '/icons/switchUser2.svg',
+      route: '/switch-role',
+      available: true
+    }
   ]
 };
 
