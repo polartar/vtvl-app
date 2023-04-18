@@ -88,7 +88,7 @@ const Summary: NextPageWithLayout = () => {
           initialSupply: initialSupply ? initialSupply : 0,
           status: 'SUCCESS',
           chainId,
-          burnable: false
+          burnable
         });
 
         updateMintFormState({ ...mintFormState, address: tokenContract.address, status: 'SUCCESS', chainId });
