@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useMemo } from 'react';
 import { IVesting } from 'types/models';
 import { formatNumber } from 'utils/token';
+import { BNToAmountString } from 'utils/web3';
 
 import StandardCard from '../Cards/StandardCard';
 
@@ -15,6 +16,7 @@ interface IVestingScheduleProfile {
   title: string;
   icon?: React.ReactElement;
   content: string;
+  data?: BigNumber;
   isCaret?: boolean;
 }
 
@@ -42,17 +44,20 @@ const VestingScheduleProfile = ({
         {
           title: 'Withdrawn',
           icon: <div className="w-3 h-3 bg-yellow-200 rounded-full flex-shrink-0" />,
-          content: Number(formatEther(vestingScheduleInfo.withdrawn)).toFixed(2)
+          content: formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(vestingScheduleInfo.withdrawn)))),
+          data: vestingScheduleInfo.withdrawn
         },
         {
           title: 'Unclaimed',
           icon: <div className="w-3 h-3 bg-green-400 rounded-full flex-shrink-0" />,
-          content: Number(formatEther(vestingScheduleInfo.unclaimed)).toFixed(2)
+          content: formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(vestingScheduleInfo.unclaimed)))),
+          data: vestingScheduleInfo.unclaimed
         },
         {
           title: 'Total locked',
           icon: <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0" />,
-          content: Number(formatEther(vestingScheduleInfo.locked)).toFixed(2)
+          content: formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(vestingScheduleInfo.locked)))),
+          data: vestingScheduleInfo.locked
         },
         {
           title: 'Total allocation',
@@ -131,11 +136,9 @@ const VestingScheduleProfile = ({
       {cardsInfo && cardsInfo.length > 0 && (
         <DashboardBarChart
           totalAllocation={BigNumber.from(ethers.utils.parseUnits(vesting.details.amountToBeVested.toString(), 18))}
-          totalLocked={BigNumber.from(ethers.utils.parseUnits(cardsInfo[3].content, 18))}
-          unlocked={BigNumber.from(ethers.utils.parseUnits(cardsInfo[1].content, 18)).add(
-            BigNumber.from(ethers.utils.parseUnits(cardsInfo[2].content, 18))
-          )}
-          withdrawn={BigNumber.from(ethers.utils.parseUnits(cardsInfo[1].content, 18))}
+          totalLocked={cardsInfo[3].data!}
+          unlocked={cardsInfo[1].data!.add(cardsInfo[2].data!)}
+          withdrawn={cardsInfo[1].data!}
         />
       )}
     </div>
