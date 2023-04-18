@@ -1,30 +1,22 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
-import CreateLabel from '@components/atoms/CreateLabel/CreateLabel';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Checkbox from '@components/atoms/FormControls/Checkbox/Checkbox';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Timepicker } from '@components/atoms/FormControls/Pickers';
-// import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-// import { TimePicker } from 'antd';
-import Datepicker from '@components/atoms/FormControls/Pickers/Datepicker/Datepicker';
 import QuantityInput from '@components/atoms/FormControls/QuantityInput/QuantityInput';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
-import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
 import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { sendRecipientInvite } from '@components/organisms/Recipient';
 import TextField from '@mui/material/TextField';
-import { StaticDatePicker } from '@mui/x-date-pickers';
-import { StaticTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { PickersActionBarProps } from '@mui/x-date-pickers/PickersActionBar';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
@@ -33,17 +25,14 @@ import { injected } from 'connectors';
 import add from 'date-fns/add';
 import differenceInHours from 'date-fns/differenceInHours';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
-import format from 'date-fns/format';
-import { ethers } from 'ethers';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
 import ContractsIcon from 'public/icons/contracts-colored.svg';
-import { ElementType, ForwardedRef, ReactElement, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
 import { toast } from 'react-toastify';
 import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
@@ -52,17 +41,10 @@ import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
 import { IRecipientForm } from 'types/models/recipient';
-import { formatRecipientsDocToForm, getRecipient } from 'utils/recipients';
+import { getRecipient } from 'utils/recipients';
 import { getActualDateTime, scrollIntoView } from 'utils/shared';
 import { formatNumber } from 'utils/token';
-import {
-  getChartData,
-  getCliffAmount,
-  getCliffDurationTimestamp,
-  getNumberOfReleases,
-  getReleaseFrequencyTimestamp
-} from 'utils/vesting';
-import { BNToAmountString } from 'utils/web3';
+import { getChartData, getCliffAmount, getCliffDurationTimestamp, getReleaseFrequencyTimestamp } from 'utils/vesting';
 
 type DateTimeType = Date | null;
 
@@ -1091,7 +1073,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         tokenId,
         chainId
       });
-      console.log({ recipients });
 
       const newRecipients = await Promise.all(
         recipients.map(async ({ data: recipient }) => {
