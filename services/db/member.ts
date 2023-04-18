@@ -1,4 +1,4 @@
-import { addDoc, deleteDoc, doc, getDoc, getDocs, limit, query, setDoc, where } from '@firebase/firestore';
+import { addDoc, deleteDoc, doc, getDoc, getDocs, limit, query, setDoc, updateDoc, where } from '@firebase/firestore';
 import axios from 'axios';
 import { inviteeCollection, memberCollection } from 'services/db/firestore';
 import { IInvitee, IMember } from 'types/models';
@@ -39,12 +39,14 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
 
   const path = existingMember ? existingMember.id : uid;
   const memberRef = doc(memberCollection, path);
+  console.log({ member });
   const memberInfo: IMember = {
     ...invitee?.data(),
     email: member.email || '',
     name: member.name,
     companyEmail: invitee?.data().email || member.companyEmail || '',
     type: member.type || 'anonymous',
+    source: member.source || '',
     org_id: invitee?.data().org_id || member.org_id || '',
     joined: member.joined || Math.floor(new Date().getTime() / 1000),
     createdAt: Math.floor(new Date().getTime() / 1000),
@@ -85,4 +87,12 @@ export const fetchAllMembers = async (): Promise<IMember[]> => {
     documents.push(doc.data());
   });
   return documents;
+};
+
+export const updateMember = async (id: string, updateObj: { [key: string]: any }): Promise<void> => {
+  const recipientRef = doc(memberCollection, id);
+
+  await updateDoc(recipientRef, {
+    ...updateObj
+  });
 };

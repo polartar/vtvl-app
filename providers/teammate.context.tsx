@@ -24,7 +24,7 @@ export function TeammateContextProvider({ children }: any) {
     let memberSub: Unsubscribe, inviteeSub: Unsubscribe;
 
     const getTeammates = () => {
-      const q = query(memberCollection, where('org_id', '==', organizationId));
+      const q = query(memberCollection, where('org_id', '==', organizationId), where('source', '==', ''));
       memberSub = onSnapshot(q, (snapshot) => {
         const ids = members.map((member) => member.id);
 

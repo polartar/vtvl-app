@@ -9,6 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const recipients = (await fetchAllRecipientsWithId()).filter((recipient) => emails.includes(recipient.data.email));
   const members = await fetchAllMembers();
   const memberEmails = members.map((member) => member.email);
+
   await Promise.all(
     recipients.map(async (recipient) => {
       if (!memberEmails.includes(recipient.data.email)) {
@@ -21,7 +22,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           companyEmail: recipient.data.email,
           name: recipient.data.name || '',
           type: recipient.data.recipientType,
-          org_id: recipient.data.organizationId
+          org_id: recipient.data.organizationId,
+          source: 'recipient'
         });
       }
     })
