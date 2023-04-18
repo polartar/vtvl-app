@@ -28,6 +28,7 @@ import { fetchRecipientByQuery, fetchRecipientsByQuery } from 'services/db/recip
 import { createOrUpdateSafe, fetchSafeByQuery, fetchSafesByQuery } from 'services/db/safe';
 import { getSafeInfo } from 'services/gnosois';
 import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
+import { IUserType } from 'types/models/member';
 import { compareAddresses } from 'utils';
 import { CACHE_KEY } from 'utils/constants';
 import { getCache, setCache } from 'utils/localStorage';
@@ -41,6 +42,9 @@ export type NewLogin = {
 export type TConnections = 'metamask' | 'walletconnect';
 
 export type AuthContextData = {
+  isAuthenticated: boolean;
+  switchRole?: IUserType;
+  setSwitchRole: (role: IUserType) => void;
   user: IUser | undefined;
   currentSafe: ISafe | undefined;
   currentSafeId: string;
@@ -55,10 +59,10 @@ export type AuthContextData = {
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
   registerNewMember: (
-    member: { name: string; email: string; companyEmail: string; type: string },
+    member: { name: string; email: string; companyEmail: string; type: IUserType },
     org: IOrganization
   ) => Promise<string | undefined>;
-  teammateSignIn: (email: string, type: string, orgId: string, url: string) => Promise<void>;
+  teammateSignIn: (email: string, type: IUserType, orgId: string, url: string) => Promise<void>;
   sendTeammateInvite: (
     email: string,
     type: string,
@@ -92,6 +96,7 @@ export type AuthContextData = {
 const AuthContext = createContext({} as AuthContextData);
 
 export function AuthContextProvider({ children }: any) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { chainId, account, library } = useWeb3React();
   const [user, setUser] = useState<IUser | undefined>();
   const [organizationId, setOrganizationId] = useState<string | undefined>();
@@ -109,6 +114,10 @@ export function AuthContextProvider({ children }: any) {
   // Stores the connection status whether the user is connected via metamask or other wallets
   const [connection, setConnection] = useState<TConnections | undefined>();
 
+  // User role switching from founder to investor and vice versa
+  const [switchRole, setSwitchRole] = useState<IUserType>('');
+
+  // Sets the recipient if it is found
   useEffect(() => {
     if (chainId && user?.memberInfo?.email && user.memberInfo?.type == 'investor') {
       fetchRecipientsByQuery(['email', 'chainId'], ['==', '=='], [user.email, chainId]).then((response) => {
@@ -124,6 +133,7 @@ export function AuthContextProvider({ children }: any) {
       if (user) {
         const memberInfo = await fetchMember(user.uid);
         setUser({ ...user, memberInfo });
+        if (memberInfo) setIsAuthenticated(true);
       }
       setLoading(false);
     });
@@ -197,6 +207,7 @@ export function AuthContextProvider({ children }: any) {
       const memberInfo = await fetchMember(credential.user.uid);
       setOrganizationId(memberInfo?.org_id);
       setUser({ ...credential.user, memberInfo });
+      setIsAuthenticated(true);
 
       return {
         isNewUser: Boolean(additionalInfo?.isNewUser),
@@ -236,7 +247,7 @@ export function AuthContextProvider({ children }: any) {
   };
 
   const registerNewMember = async (
-    member: { name: string; email: string; companyEmail: string; type: string },
+    member: { name: string; email: string; companyEmail: string; type: IUserType },
     org: IOrganization
   ): Promise<string | undefined> => {
     setLoading(true);
@@ -264,6 +275,7 @@ export function AuthContextProvider({ children }: any) {
     await newMember(user.uid, { ...memberInfo });
     setOrganizationId(org_id);
     setUser({ ...user, memberInfo });
+    setIsAuthenticated(true);
     setIsNewUser(true);
     setLoading(false);
     return org_id || '';
@@ -300,6 +312,7 @@ export function AuthContextProvider({ children }: any) {
       ...memberInfo
     });
     setUser({ ...credential.user, memberInfo });
+    setIsAuthenticated(true);
 
     setLoading(false);
   };
@@ -339,11 +352,12 @@ export function AuthContextProvider({ children }: any) {
       ...memberInfo
     });
     setUser({ ...credential.user, memberInfo });
+    setIsAuthenticated(true);
 
     setLoading(false);
   };
 
-  const teammateSignIn = async (email: string, type: string, orgId: string, url?: string): Promise<void> => {
+  const teammateSignIn = async (email: string, type: IUserType, orgId: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
     await setPersistence(auth, browserSessionPersistence);
@@ -376,6 +390,7 @@ export function AuthContextProvider({ children }: any) {
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     setUser({ ...credential.user, memberInfo });
+    setIsAuthenticated(true);
     setLoading(false);
   };
 
@@ -422,6 +437,7 @@ export function AuthContextProvider({ children }: any) {
     const additionalInfo = getAdditionalUserInfo(credential);
 
     setUser({ ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } });
+    setIsAuthenticated(true);
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
@@ -436,6 +452,7 @@ export function AuthContextProvider({ children }: any) {
     const memberInfo = await fetchMember(user.uid);
     if (memberInfo) {
       setUser({ ...user, memberInfo });
+      setIsAuthenticated(true);
     }
     setLoading(false);
   }, []);
@@ -443,6 +460,7 @@ export function AuthContextProvider({ children }: any) {
   const logOut = useCallback(async () => {
     await signOut(auth);
     setUser(undefined);
+    setIsAuthenticated(false);
     Router.replace('/onboarding');
   }, []);
 
@@ -454,6 +472,9 @@ export function AuthContextProvider({ children }: any) {
 
   const memoedValue = useMemo(
     () => ({
+      isAuthenticated,
+      switchRole,
+      setSwitchRole,
       user,
       currentSafe,
       currentSafeId,
@@ -493,6 +514,7 @@ export function AuthContextProvider({ children }: any) {
       setRecipient
     }),
     [
+      isAuthenticated,
       user,
       loading,
       error,
