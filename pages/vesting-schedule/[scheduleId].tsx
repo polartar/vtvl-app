@@ -175,8 +175,8 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
 
   // Actually fetch the Safe transaction
   useEffect(() => {
-    if (transaction?.data?.hash) {
-      fetchSafeTransactionFromHash(transaction.data.hash);
+    if (transaction?.data?.safeHash) {
+      fetchSafeTransactionFromHash(transaction.data.safeHash);
     }
   }, [transaction, account]);
 

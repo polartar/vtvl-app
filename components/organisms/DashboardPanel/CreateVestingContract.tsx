@@ -334,11 +334,11 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
     }
   };
 
-  useEffect(() => {
-    if (transaction?.hash) {
-      fetchSafeTransactionFromHash(transaction.hash);
-    }
-  }, [transaction, account]);
+  // useEffect(() => {
+  //   if (transaction?.hash) {
+  //     fetchSafeTransactionFromHash(transaction.hash);
+  //   }
+  // }, [transaction, account]);
 
   return (
     <div className={`panel ${className} mb-5`}>

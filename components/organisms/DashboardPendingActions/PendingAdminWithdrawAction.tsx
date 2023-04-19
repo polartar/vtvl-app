@@ -107,7 +107,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
         });
-        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(data?.hash as string);
+        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(data?.safeHash as string);
 
         const safeTx = await safeSdk.createTransaction({
           safeTransactionData: {
@@ -119,10 +119,10 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        const approveTxResponse = await safeSdk.approveTransactionHash(data?.hash as string);
+        const approveTxResponse = await safeSdk.approveTransactionHash(data?.safeHash as string);
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
-        setSafeTransaction(await fetchSafeTransactionFromHash(data?.hash as string));
+        setSafeTransaction(await fetchSafeTransactionFromHash(data?.safeHash as string));
         await fetchDashboardData();
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
