@@ -53,7 +53,7 @@ const SelectUserTypePage: NextPage = () => {
     const params: any = new URL(window.location.toString());
     const name = params.searchParams.get('name');
     const orgId = params.searchParams.get('orgId');
-    const email = params.searchParams.get('email').replace(' ', '+');
+    const email = params.searchParams.get('email')?.replace(' ', '+');
     const newUser: boolean = params.searchParams.get('newUser');
     setMember({
       org_id: orgId,

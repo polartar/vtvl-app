@@ -170,6 +170,11 @@ export function AuthContextProvider({ children }: any) {
           // If this user was already registered as a recipient
           payload.org_id = recipientInfo.data.organizationId;
           payload.name = recipientInfo.data.name;
+          payload.type = recipientInfo.data.recipientType;
+          payload.wallets!.push({
+            walletAddress: recipientInfo.data.walletAddress,
+            chainId: recipientInfo.data.chainId!
+          });
 
           if (account && !compareAddresses(account, recipientInfo.data.walletAddress)) {
             // TODO add handler if recipient wallet is not matched with current wallet
@@ -239,7 +244,7 @@ export function AuthContextProvider({ children }: any) {
     const memberInfo: IMember = {
       email: member.email || '',
       companyEmail: member.email || user.email || '',
-      name: user.displayName || '',
+      name: member.name || user.displayName || '',
       type: member.type,
       org_id,
       joined: Math.floor(new Date().getTime() / 1000)
