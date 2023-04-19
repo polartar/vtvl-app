@@ -43,8 +43,8 @@ export type TConnections = 'metamask' | 'walletconnect';
 
 export type AuthContextData = {
   isAuthenticated: boolean;
-  switchRole?: IUserType;
-  setSwitchRole: (role: IUserType) => void;
+  roleOverride?: IUserType;
+  switchRole: (role: IUserType) => void;
   user: IUser | undefined;
   currentSafe: ISafe | undefined;
   currentSafeId: string;
@@ -115,7 +115,7 @@ export function AuthContextProvider({ children }: any) {
   const [connection, setConnection] = useState<TConnections | undefined>();
 
   // User role switching from founder to investor and vice versa
-  const [switchRole, setSwitchRole] = useState<IUserType>('');
+  const [roleOverride, setRoleOverride] = useState<IUserType>('');
 
   // Sets the recipient if it is found
   useEffect(() => {
@@ -132,8 +132,12 @@ export function AuthContextProvider({ children }: any) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const memberInfo = await fetchMember(user.uid);
+        const persistedRoleOverride = localStorage.getItem('vtvlr');
         setUser({ ...user, memberInfo });
-        if (memberInfo) setIsAuthenticated(true);
+        if (memberInfo) {
+          setIsAuthenticated(true);
+          if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IUserType);
+        }
       }
       setLoading(false);
     });
@@ -160,6 +164,16 @@ export function AuthContextProvider({ children }: any) {
       }
     }
   }, [library]);
+
+  // Switch role feature
+  const switchRole = (newRole: IUserType) => {
+    setRoleOverride(newRole);
+    if (newRole) {
+      localStorage.setItem('vtvlr', newRole);
+    } else {
+      localStorage.removeItem('vtvlr');
+    }
+  };
 
   const updateAuthState = useCallback(
     async (credential: UserCredential, isGuestMode = false) => {
@@ -473,8 +487,8 @@ export function AuthContextProvider({ children }: any) {
   const memoedValue = useMemo(
     () => ({
       isAuthenticated,
+      roleOverride,
       switchRole,
-      setSwitchRole,
       user,
       currentSafe,
       currentSafeId,
@@ -515,6 +529,7 @@ export function AuthContextProvider({ children }: any) {
     }),
     [
       isAuthenticated,
+      roleOverride,
       user,
       loading,
       error,
