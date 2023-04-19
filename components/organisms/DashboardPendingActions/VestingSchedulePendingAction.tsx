@@ -641,7 +641,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.hash as string
+          transaction?.data?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -650,10 +650,10 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.hash as string);
+        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.safeHash as string);
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
-        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.hash as string));
+        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.safeHash as string));
         await fetchDashboardData();
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
