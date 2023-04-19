@@ -15,9 +15,10 @@ type RoleGuardOptions = {
 
 const useRoleGuard = (options: RoleGuardOptions) => {
   const router = useRouter();
-  const { user, switchRole } = useAuthContext();
+  const { user, roleOverride } = useAuthContext();
 
   useEffect(() => {
+    console.log('USE ROLE GUARD IN ACTION');
     // Gets the current path being accessed.
     const currentPath = router.pathname;
 
@@ -26,19 +27,21 @@ const useRoleGuard = (options: RoleGuardOptions) => {
 
     // Do nothing if the route is not protected.
     if (!currentRouteIsProtected) return;
+    console.log('Current route is protected', currentRouteIsProtected, user);
 
     // Check protected routes only when the user type is available.
     if (user?.memberInfo?.type) {
+      console.log('User type?', user?.memberInfo?.type);
       // Gets the current role of the user from the Auth Context.
-      const userRole = user?.memberInfo?.type || '';
+      // Prioritise using the roleOverride if it is available.
+      const userRole =
+        (user?.memberInfo?.type === 'founder' && roleOverride ? roleOverride : user?.memberInfo?.type) ||
+        user?.memberInfo?.type ||
+        '';
 
       // For protected routes, filter out all the allowedRoutes for that particular user role.
       // If the user is a founder, they are able to switch role into investor.
-      const allowedRoutes = options.routes.filter((route) =>
-        switchRole
-          ? route.allowedRoles.includes(userRole) || route.allowedRoles.includes(switchRole)
-          : route.allowedRoles.includes(userRole)
-      );
+      const allowedRoutes = options.routes.filter((route) => route.allowedRoles.includes(userRole));
 
       // Check if the role is allowed in current path.
       const isAllowedRoute = allowedRoutes.some((route) => route.path === currentPath);
@@ -48,7 +51,7 @@ const useRoleGuard = (options: RoleGuardOptions) => {
         router.push(options.fallbackPath);
       }
     }
-  }, [user?.memberInfo?.type, options.routes, options.fallbackPath]);
+  }, [user, roleOverride, options.routes, options.fallbackPath]);
 };
 
 export default useRoleGuard;
