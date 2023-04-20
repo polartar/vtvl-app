@@ -1,5 +1,6 @@
 import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
 import NetworkSelector from '@components/atoms/NetworkSelector/NetworkSelector';
+import SafeSelector from '@components/atoms/SafeSelector/SafeSelector';
 import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
 import { useWeb3React } from '@web3-react/core';
 import Router, { useRouter } from 'next/router';
@@ -54,6 +55,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
             className={`flex flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5 flex-shrink-0 transition-all delay-300 ${
               displayWalletConnect ? 'w-auto' : 'w-0'
             }`}>
+            <SafeSelector />
             <div className={`${active ? 'w-auto' : 'w-0'}`}>
               <NetworkSelector />
             </div>

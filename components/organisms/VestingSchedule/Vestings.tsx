@@ -29,17 +29,17 @@ interface IVestingsProps {
 const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, totalBalance, filter }) => {
   const { chainId, library } = useWeb3React();
   const { transactions } = useTransactionLoaderContext();
-  const { safe, organizationId } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   const { data: revokedSchedules } = useSWR('fetchRevokings', () => fetchRevokingSchedules(organizationId || ''));
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (safe?.address && chainId) {
+    if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
       });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const safeService = new SafeServiceClient({
         txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
         ethAdapter
@@ -70,7 +70,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
           let isFund;
           let safeTx;
 
-          if (transaction && transaction.data.safeHash && safe) {
+          if (transaction && transaction.data.safeHash && currentSafe) {
             safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
             isFund = transaction.data.type === 'FUNDING_CONTRACT' && vesting.data.status === 'WAITING_APPROVAL';
           } else {
@@ -109,7 +109,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
             );
           }
           if (filter.status === IStatus.Execute) {
-            if (safeTx && safe?.threshold && safeTx.signatures.size >= safe?.threshold && !isFund) {
+            if (safeTx && currentSafe?.threshold && safeTx.signatures.size >= currentSafe?.threshold && !isFund) {
               return true;
             }
 
@@ -130,7 +130,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
       let isFund;
       let safeTx;
 
-      if (transaction && transaction.data.safeHash && safe) {
+      if (transaction && transaction.data.safeHash && currentSafe) {
         safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
         isFund = transaction.data.type === 'FUNDING_CONTRACT' && vesting.data.status === 'WAITING_APPROVAL';
       } else {
@@ -143,7 +143,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
           vesting.data.status !== 'LIVE';
       }
 
-      if (safeTx && safe?.threshold && safeTx.signatures.size >= safe?.threshold && !isFund) {
+      if (safeTx && currentSafe?.threshold && safeTx.signatures.size >= currentSafe?.threshold && !isFund) {
         executeCount++;
       }
 

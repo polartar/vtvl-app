@@ -11,8 +11,8 @@ export const fetchSafe = async (id: string): Promise<ISafe | undefined> => {
 export const fetchSafeByAddress = async (address: string): Promise<ISafe | undefined> => {
   const q = query(safeCollection, where('address', '==', address), limit(1));
   const querySnapshot = await getDocs(q);
-  const safe = querySnapshot?.docs.at(0)?.data();
-  if (safe) safe.id = querySnapshot?.docs.at(0)?.ref.id;
+  const safe = querySnapshot?.docs[0]?.data();
+  if (safe) safe.id = querySnapshot?.docs[0]?.ref.id;
   return safe;
 };
 
@@ -49,4 +49,20 @@ export const fetchSafeByQuery = async (
   if (querySnapshot && !querySnapshot.empty) {
     return querySnapshot.docs[0].data();
   }
+};
+
+export const fetchSafesByQuery = async (
+  fields: string[],
+  syntaxs: WhereFilterOp[],
+  values: any[]
+): Promise<{ id: string; data: ISafe }[] | []> => {
+  const q = query(safeCollection, ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index])));
+  const querySnapshot = await getDocs(q);
+
+  const result: any = [];
+
+  if (querySnapshot && !querySnapshot.empty) {
+    querySnapshot.forEach((doc) => result.push({ id: doc.id, data: doc.data() }));
+  }
+  return result;
 };

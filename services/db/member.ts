@@ -12,13 +12,15 @@ export const fetchMember = async (id: string): Promise<IMember | undefined> => {
 export const fetchMemberByEmail = async (email: string): Promise<IMember | undefined> => {
   const q = query(memberCollection, where('email', '==', email), limit(1));
   const querySnapshot = await getDocs(q);
-  return querySnapshot?.docs.at(0)?.data();
+  if (!querySnapshot.empty) return querySnapshot?.docs[0]?.data();
+  return;
 };
 
 export const fetchInviteeByEmail = async (email: string): Promise<IInvitee | undefined> => {
   const q = query(inviteeCollection, where('email', '==', email), limit(1));
   const querySnapshot = await getDocs(q);
-  return querySnapshot?.docs.at(0)?.data();
+  if (!querySnapshot.empty) return querySnapshot?.docs[0]?.data();
+  return;
 };
 
 // export const createOrUpdateMember = async (member: IMember, id: string): Promise<void> => {
@@ -29,13 +31,13 @@ export const fetchInviteeByEmail = async (email: string): Promise<IInvitee | und
 export const newMember = async (uid: string, member: IMember): Promise<void> => {
   const q = query(inviteeCollection, where('email', '==', member.email), limit(1));
   const querySnapshot = await getDocs(q);
-  const invitee = querySnapshot?.docs.at(0);
+  const invitee = querySnapshot?.docs[0];
 
   if (invitee) await deleteDoc(invitee.ref);
 
   const m = query(memberCollection, where('email', '==', member.email), limit(1));
   const existingMemberQuerySnapshot = await getDocs(m);
-  const existingMember = existingMemberQuerySnapshot?.docs.at(0);
+  const existingMember = existingMemberQuerySnapshot?.docs[0];
 
   const path = existingMember ? existingMember.id : uid;
   const memberRef = doc(memberCollection, path);
