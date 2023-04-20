@@ -114,8 +114,8 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
         ) : null}
         <h1 className="text-[#101828] text-xl font-semibold text-center">ACME Token Supply</h1>
         <h2 className="text-[#667085] text-xl text-center mt-3">Select amount of tokens to burn</h2>
-        <div className="w-full h-[1px] bg-[#eaecf0] mt-5" />
-        <div className="mt-5 w-full flex items-center justify-between gap-5">
+        {/* <div className="w-full h-[1px] bg-[#eaecf0] mt-5" /> */}
+        {/* <div className="mt-5 w-full flex items-center justify-between gap-5">
           <div className="inline-flex flex-col items-end gap-1.5">
             <div className="flex items-center gap-1.5">
               <div className="w-[10px] h-[10px] rounded-full bg-[#fecaca]" />
@@ -148,7 +148,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
               {mintFormState.initialSupply ? formatNumber(mintFormState.initialSupply) : 0}
             </div>
           </div>
-        </div>
+        </div> */}
         <div className="w-full h-[1px] bg-[#eaecf0] mt-5" />
         <div className="w-full py-4 pb-8 mt-10">
           <div className="flex rounded-xl relative">
@@ -170,7 +170,12 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
               style={{
                 width:
                   burnAmount && mintFormState.initialSupply
-                    ? `${Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / mintFormState.initialSupply) * 100)}%`
+                    ? `${
+                        Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / mintFormState.initialSupply) * 100) >
+                        100
+                          ? 100
+                          : Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / mintFormState.initialSupply) * 100)
+                      }%`
                     : '0%',
                 backgroundColor: '#ef4444'
               }}
