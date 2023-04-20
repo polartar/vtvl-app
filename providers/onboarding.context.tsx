@@ -86,7 +86,7 @@ export function OnboardingContextProvider({ children }: any) {
   const completeOnboarding = () => {
     setInProgress(false);
     refreshUser();
-    router.replace(user?.memberInfo?.type === 'investor' ? '/tokens' : '/dashboard');
+    router.replace(user?.memberInfo?.type === 'investor' ? '/claim-portal' : '/dashboard');
   };
 
   const onPrevious = () => {
