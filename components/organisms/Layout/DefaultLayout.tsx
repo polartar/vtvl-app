@@ -162,14 +162,14 @@ const employeeInvestorMenuItems = {
       icon: '/icons/claims-portal.svg',
       hoverIcon: '/icons/claims-portal-hover.svg',
       available: true
-    },
-    {
-      title: 'My tokens',
-      icon: '/icons/s_dashboard.svg',
-      hoverIcon: '/icons/s_dashboard2.svg',
-      route: '/tokens',
-      available: true
     }
+    // {
+    //   title: 'My tokens',
+    //   icon: '/icons/s_dashboard.svg',
+    //   hoverIcon: '/icons/s_dashboard2.svg',
+    //   route: '/tokens',
+    //   available: true
+    // }
   ],
   submenuList: [
     // { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
