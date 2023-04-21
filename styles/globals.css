@@ -888,3 +888,7 @@ body {
   color: var(--primary-700) !important;
   background-color: var(--primary-50) !important;
 }
+
+.underline-offset-3 {
+  text-underline-offset: 3px;
+}

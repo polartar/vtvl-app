@@ -40,7 +40,7 @@ import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, ITransaction, IVesting } from 'types/models';
+import { IRecipient, ITransaction, IVesting, IVestingContract } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
@@ -195,9 +195,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // Renderer for schedule name -- with scenario for COMPLETED status
   const CellScheduleName = ({ value, row, ...props }: any) => {
     return (
-      <div className="row-center cursor-pointer" onClick={() => router.push(`/vesting-schedule/${row.original.id}`)}>
+      <div
+        className="row-center cursor-pointer underline-offset-3	 underline"
+        onClick={() => router.push(`/vesting-schedule/${row.original.id}`)}>
         {row.original.data.status === 'COMPLETED' ? <StatusIndicator size="small" color="success" /> : null}
-        <span className="font-medium text-neutral-800">{value}</span>
+        <span className="font-medium text-neutral-800 ">{value}</span>
       </div>
     );
   };
