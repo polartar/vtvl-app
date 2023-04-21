@@ -177,9 +177,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         hoverIcon: '/icons/switchUser2.svg',
         route: '/switch-role',
         available: true,
-        onClick: () => {
-          switchRole('investor');
-          router.push('/claim-portal');
+        onClick: async () => {
+          await switchRole('investor');
           toast.success(
             <>
               You switched to <strong className="text-primary-900">Investor</strong> mode.
@@ -243,9 +242,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
               hoverIcon: '/icons/switchUser2.svg',
               route: '/switch-role',
               available: true,
-              onClick: () => {
-                switchRole('');
-                router.push('/dashboard');
+              onClick: async () => {
+                await switchRole('');
                 toast.success(
                   <>
                     You switched to <strong className="text-secondary-900">Founder</strong> mode.
