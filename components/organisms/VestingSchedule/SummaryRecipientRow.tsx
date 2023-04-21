@@ -19,7 +19,7 @@ interface ISummaryRecipientRowProps {
 
 const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient }) => {
   const { chainId, library } = useWeb3React();
-  const { safe } = useAuthContext();
+  const { currentSafe } = useAuthContext();
 
   const [revoking, setRevoking] = useState<{ id: string; data: IRevoking }>();
   const [transaction, setTransaction] = useState<ITransaction>();
@@ -27,13 +27,13 @@ const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient })
   const [threshold, setThreshold] = useState(0);
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (safe?.address && chainId) {
+    if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
       });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const thres = await safeSdk.getThreshold();
       setThreshold(thres);
       const safeService = new SafeServiceClient({

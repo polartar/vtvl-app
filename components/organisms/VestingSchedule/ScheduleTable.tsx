@@ -15,7 +15,6 @@ import {
 import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
-import { formatEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import useIsAdmin from 'hooks/useIsAdmin';
@@ -27,7 +26,6 @@ import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
-// import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipientDoc, ITransaction, IVesting } from 'types/models';
 import { compareAddresses } from 'utils';

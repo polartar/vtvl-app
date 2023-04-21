@@ -1,6 +1,5 @@
 import DashboardBarChart from '@components/molecules/DashboardBarChart';
 import { BigNumber, ethers } from 'ethers';
-import { formatEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import moment from 'moment';
@@ -120,7 +119,7 @@ const VestingScheduleProfile = ({
   return (
     <div className="w-full">
       <div className="grid  2xl:grid-cols-5 xl:grid-cols-5 md:grid-cols-4 gap-6">
-        {cardsInfo.map((card, index) => {
+        {cardsInfo.map((card) => {
           return (
             <StandardCard
               // isLoading={isLoadingDetails}

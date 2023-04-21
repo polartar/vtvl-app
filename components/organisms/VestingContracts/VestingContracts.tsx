@@ -37,7 +37,7 @@ import ContractsProfile from './VestingContractsProfile';
 
 export default function VestingContracts() {
   const { vestingContracts, vestings: allVestings, recipients: allRecipients } = useDashboardContext();
-  const { organizationId, safe } = useAuthContext();
+  const { organizationId, currentSafe } = useAuthContext();
   const { chainId, account, library } = useWeb3React();
   const { mintFormState: token } = useTokenContext();
   const { ModalWrapper, showModal, hideModal } = useModal({});
@@ -154,7 +154,7 @@ export default function VestingContracts() {
       const vestingContract = new ethers.Contract(vestingContractAddress, VestingABI.abi, library.getSigner());
       const vestingContractInfo = vestingContractsInfo.find((contract) => contract.address === vestingContractAddress);
       try {
-        if (safe?.address) {
+        if (currentSafe?.address) {
           const ADMIN_WITHDRAW_FUNCTION = 'function withdrawAdmin(uint112 _amountRequested)';
           const ABI = [ADMIN_WITHDRAW_FUNCTION];
           const vestingContractInterface = new ethers.utils.Interface(ABI);
@@ -166,7 +166,7 @@ export default function VestingContracts() {
             signer: library?.getSigner(0)
           });
 
-          const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+          const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
           const txData = {
             to: vestingContractAddress,
             data: adminWithdrawEncoded,
@@ -182,7 +182,7 @@ export default function VestingContracts() {
             ethAdapter
           });
           await safeService.proposeTransaction({
-            safeAddress: safe.address,
+            safeAddress: currentSafe.address,
             senderAddress: account,
             safeTransactionData: safeTransaction.data,
             safeTxHash: txHash,
