@@ -1,7 +1,7 @@
 import { Route } from 'hooks/useRoleGuard';
 import { IUserType } from 'types/models/member';
 
-const allRoles: IUserType[] = [
+export const allRoles: IUserType[] = [
   'admin',
   'founder',
   'investor',
@@ -12,9 +12,9 @@ const allRoles: IUserType[] = [
   'anonymous',
   ''
 ];
-const managerRoles: IUserType[] = ['founder', 'manager', 'manager2'];
-const recipientRoles: IUserType[] = ['investor', 'employee', 'advisor'];
-const guestRoles: IUserType[] = ['anonymous', ''];
+export const managerRoles: IUserType[] = ['founder', 'manager', 'manager2'];
+export const recipientRoles: IUserType[] = ['investor', 'employee', 'advisor'];
+export const guestRoles: IUserType[] = ['anonymous', ''];
 
 export const platformRoutes: Route[] = [
   // Initial routes

@@ -21,6 +21,7 @@ import useToggle from 'hooks/useToggle';
 import { ILocalStorage } from 'interfaces/locaStorage';
 import Router from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
@@ -132,8 +133,9 @@ export function AuthContextProvider({ children }: any) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const memberInfo = await fetchMember(user.uid);
-        const persistedRoleOverride = localStorage.getItem('vtvlr');
+        const persistedRoleOverride = getCache()?.roleOverride;
         setUser({ ...user, memberInfo });
+        setCache({ user: { ...user, memberInfo } });
         if (memberInfo) {
           setIsAuthenticated(true);
           if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IUserType);
@@ -165,13 +167,31 @@ export function AuthContextProvider({ children }: any) {
     }
   }, [library]);
 
+  // Wait for the switch role to update before redirecting
+  useEffect(() => {
+    const persistedUser = getCache()?.user;
+    if (persistedUser?.memberInfo?.type === 'founder' || user?.memberInfo?.type === 'founder') {
+      switch (roleOverride) {
+        case '':
+        case 'founder':
+          Router.replace('/dashboard');
+          break;
+        case 'investor':
+          Router.replace('/claim-portal');
+          break;
+        default:
+          break;
+      }
+    }
+  }, [roleOverride, user]);
+
   // Switch role feature
   const switchRole = (newRole: IUserType) => {
     setRoleOverride(newRole);
     if (newRole) {
-      localStorage.setItem('vtvlr', newRole);
+      setCache({ roleOverride: newRole });
     } else {
-      localStorage.removeItem('vtvlr');
+      setCache({ roleOverride: undefined });
     }
   };
 
@@ -221,6 +241,7 @@ export function AuthContextProvider({ children }: any) {
       const memberInfo = await fetchMember(credential.user.uid);
       setOrganizationId(memberInfo?.org_id);
       setUser({ ...credential.user, memberInfo });
+      setCache({ user: { ...credential.user, memberInfo } });
       setIsAuthenticated(true);
 
       return {
@@ -289,6 +310,7 @@ export function AuthContextProvider({ children }: any) {
     await newMember(user.uid, { ...memberInfo });
     setOrganizationId(org_id);
     setUser({ ...user, memberInfo });
+    setCache({ user: { ...user, memberInfo } });
     setIsAuthenticated(true);
     setIsNewUser(true);
     setLoading(false);
@@ -326,6 +348,7 @@ export function AuthContextProvider({ children }: any) {
       ...memberInfo
     });
     setUser({ ...credential.user, memberInfo });
+    setCache({ user: { ...credential.user, memberInfo } });
     setIsAuthenticated(true);
 
     setLoading(false);
@@ -366,6 +389,7 @@ export function AuthContextProvider({ children }: any) {
       ...memberInfo
     });
     setUser({ ...credential.user, memberInfo });
+    setCache({ user: { ...credential.user, memberInfo } });
     setIsAuthenticated(true);
 
     setLoading(false);
@@ -404,6 +428,7 @@ export function AuthContextProvider({ children }: any) {
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
     setUser({ ...credential.user, memberInfo });
+    setCache({ user: { ...credential.user, memberInfo } });
     setIsAuthenticated(true);
     setLoading(false);
   };
@@ -449,8 +474,10 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await signInAnonymously(auth);
     const additionalInfo = getAdditionalUserInfo(credential);
+    const userDetails: IUser = { ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } };
 
-    setUser({ ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } });
+    setUser(userDetails);
+    setCache({ user: userDetails });
     setIsAuthenticated(true);
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
@@ -466,6 +493,7 @@ export function AuthContextProvider({ children }: any) {
     const memberInfo = await fetchMember(user.uid);
     if (memberInfo) {
       setUser({ ...user, memberInfo });
+      setCache({ user: { ...user, memberInfo } });
       setIsAuthenticated(true);
     }
     setLoading(false);
@@ -475,6 +503,7 @@ export function AuthContextProvider({ children }: any) {
     await signOut(auth);
     setUser(undefined);
     setIsAuthenticated(false);
+    setCache({ user: undefined, roleOverride: undefined });
     Router.replace('/onboarding');
   }, []);
 
