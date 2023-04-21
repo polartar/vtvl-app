@@ -1,6 +1,7 @@
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import CollapsibleContent from '@components/atoms/CollapsibleContent/CollapsibleContent';
+import Checkbox from '@components/atoms/FormControls/Checkbox/Checkbox';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
@@ -40,7 +41,8 @@ const MintingToken: NextPageWithLayout = () => {
     defaultValues: {
       ...mintFormState,
       initialSupplyText: '',
-      maxSupplyText: ''
+      maxSupplyText: '',
+      burnable: false
     }
   });
 
@@ -52,6 +54,7 @@ const MintingToken: NextPageWithLayout = () => {
   const initialSupplyText = { value: watch('initialSupplyText'), state: getFieldState('initialSupplyText') };
   const maxSupply = { value: watch('maxSupply'), state: getFieldState('maxSupply') };
   const maxSupplyText = { value: watch('maxSupplyText'), state: getFieldState('maxSupplyText') };
+  const burnable = { value: watch('burnable'), state: getFieldState('burnable') };
 
   // Updates made when the user is interacting with the Range Slider component
   // Should also update the text value -- for display -- of the number input
@@ -189,6 +192,16 @@ const MintingToken: NextPageWithLayout = () => {
                 name="logo"
                 control={control}
                 render={({ field }) => <Uploader label="Token logo" onUpload={handleUpload} />}
+              />
+            </div>
+            <div className="border-t border-neutral-200 py-5">
+              <Controller
+                name="burnable"
+                control={control}
+                rules={{ required: false }}
+                render={({ field }) => (
+                  <Checkbox label="Burnable" checked={burnable.value} {...field} value="" className="cursor-pointer" />
+                )}
               />
             </div>
             <div className="border-t border-neutral-200 py-5">

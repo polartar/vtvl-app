@@ -92,6 +92,7 @@ const Dashboard: NextPageWithLayout = () => {
                 symbol={mintFormState.symbol}
                 logo={mintFormState.logo}
                 address={mintFormState.address}
+                burnable={mintFormState.burnable}
               />
 
               {/* {vestingContract && vestingContract.data?.address && (
