@@ -17,4 +17,5 @@ export interface ISafe {
   threshold: number;
   createdAt?: number;
   updatedAt?: number;
+  safeNonce?: number;
 }

@@ -58,7 +58,7 @@ const DashboardContext = createContext({} as IDashboardData);
 export function DashboardContextProvider({ children }: any) {
   const { account, chainId, library } = useWeb3React();
   const { mintFormState } = useTokenContext();
-  const { organizationId, safe } = useAuthContext();
+  const { organizationId, currentSafe } = useAuthContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const router = useRouter();
 

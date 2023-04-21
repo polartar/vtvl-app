@@ -19,7 +19,7 @@ import { compareAddresses } from 'utils';
 
 const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, data }) => {
   const { account, chainId, library } = useWeb3React();
-  const { safe } = useAuthContext();
+  const { currentSafe } = useAuthContext();
   const { vestingContracts, transactions, vestings, recipients, fetchDashboardData } = useDashboardContext();
   const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
@@ -42,13 +42,13 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (safe?.address && chainId) {
+    if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
       });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const safeService = new SafeServiceClient({
         txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
         ethAdapter
@@ -65,11 +65,11 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
   };
 
   const initializeStatus = async () => {
-    if (transaction && transaction.data.safeHash && safe && account) {
+    if (transaction && transaction.data.safeHash && currentSafe && account) {
       const safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
       if (safeTx) {
         setSafeTransaction(safeTx);
-        if (safeTx.signatures.size >= safe?.threshold) {
+        if (safeTx.signatures.size >= currentSafe?.threshold) {
           setTransactionStatus('EXECUTABLE');
           setStatus('AUTHORIZATION_REQUIRED');
         } else if (safeTx.signatures.has(account.toLowerCase())) {
@@ -85,14 +85,14 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
 
   const handleExecuteFundingTransaction = async () => {
     try {
-      if (safe?.address && chainId && safeTransaction) {
+      if (currentSafe?.address && chainId && safeTransaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
         });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
@@ -139,7 +139,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
     try {
       setIsCloseAvailable(false);
 
-      if (safe?.address && chainId && transaction) {
+      if (currentSafe?.address && chainId && transaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -148,14 +148,14 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
 
         const safeSdk: Safe = await Safe.create({
           ethAdapter: ethAdapter,
-          safeAddress: safe?.address
+          safeAddress: currentSafe?.address
         });
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.hash as string
+          transaction?.data?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -168,10 +168,10 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.hash as string);
+        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.safeHash as string);
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
-        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.hash as string));
+        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.safeHash as string));
         await fetchDashboardData();
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
@@ -186,14 +186,14 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
   const handleExecuteTransaction = async () => {
     try {
       setIsCloseAvailable(false);
-      if (safe?.address && chainId && transaction) {
+      if (currentSafe?.address && chainId && transaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
         });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
@@ -243,8 +243,8 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
 
   useEffect(() => {
     initializeStatus();
-  }, [data, safe, account, transactions, transaction]);
-  console.log({ transactionStatus });
+  }, [data, currentSafe, account, transactions, transaction]);
+
   return (
     <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">
       <div className="flex items-center w-16 py-3"></div>
@@ -264,6 +264,9 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
           <img className="w-4 h-4" src="icons/safe.png" />
           Founders
         </div>
+      </div>
+      <div className="flex items-center w-32 py-3">
+        <div className="flex gap-1.5 items-center">{safeTransaction?.data.nonce}</div>
       </div>
       <div className="flex items-center w-40 py-3"></div>
       <div className="flex items-center min-w-[200px] flex-grow py-3">

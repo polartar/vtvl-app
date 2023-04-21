@@ -72,7 +72,7 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
   // Color is not included in the statuses object because of typescript -- converts the value into a type string which will not be accepted by Chip
 
   const { account, library, activate, chainId } = useWeb3React();
-  const { safe, organizationId } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   const { mintFormState } = useTokenContext();
   const { vestings, setOwnershipTransfered, setRemoveOwnership } = useDashboardContext();
   const { pendingTransactions, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
@@ -153,7 +153,7 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
         updateTransaction(transactionData, transactionId);
         setTransactionStatus('SUCCESS');
         // fetchDashboardVestingContract();
-        if (!safe?.address) {
+        if (!currentSafe?.address) {
           setStatus('success');
         } else setStatus('transferToMultisigSafe');
       }
@@ -180,7 +180,7 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
             VTVL_VESTING_ABI.abi,
             library.getSigner()
           );
-          const transactionResponse = await vestingContract.setAdmin(safe?.address, true);
+          const transactionResponse = await vestingContract.setAdmin(currentSafe?.address, true);
           setTransactionStatus('IN_PROGRESS');
           await transactionResponse.wait();
           setStatus('success');
@@ -201,7 +201,11 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
         return;
       }
 
-      if (organizationId && safe?.address && account.toLowerCase() === safe?.owners[0].address.toLowerCase()) {
+      if (
+        organizationId &&
+        currentSafe?.address &&
+        account.toLowerCase() === currentSafe?.owners[0].address.toLowerCase()
+      ) {
         setIsCloseAvailable(false);
 
         setTransactionStatus('PENDING');
@@ -312,13 +316,13 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
   };
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (safe?.address && chainId) {
+    if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
       });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const safeService = new SafeServiceClient({
         txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
         ethAdapter
@@ -334,11 +338,11 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
     }
   };
 
-  useEffect(() => {
-    if (transaction?.hash) {
-      fetchSafeTransactionFromHash(transaction.hash);
-    }
-  }, [transaction, account]);
+  // useEffect(() => {
+  //   if (transaction?.hash) {
+  //     fetchSafeTransactionFromHash(transaction.hash);
+  //   }
+  // }, [transaction, account]);
 
   return (
     <div className={`panel ${className} mb-5`}>
@@ -370,11 +374,11 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
           <div className="row-center gap-1 paragraphy-small-medium text-neutral-500">
             <div>
               Confirmation status <span className="text-secondary-900">{safeTransaction?.signatures.size}</span>/
-              {safe?.owners.length}
+              {currentSafe?.owners.length}
             </div>
             <StepWizard
               status={safeTransaction?.signatures.size ?? 0}
-              steps={new Array(safe?.owners.length).fill({ title: '', desc: '' })}
+              steps={new Array(currentSafe?.owners.length).fill({ title: '', desc: '' })}
               size="tiny"
             />
           </div>

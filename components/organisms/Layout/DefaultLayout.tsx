@@ -162,14 +162,14 @@ const employeeInvestorMenuItems = {
       icon: '/icons/claims-portal.svg',
       hoverIcon: '/icons/claims-portal-hover.svg',
       available: true
-    },
-    {
-      title: 'My tokens',
-      icon: '/icons/s_dashboard.svg',
-      hoverIcon: '/icons/s_dashboard2.svg',
-      route: '/tokens',
-      available: true
     }
+    // {
+    //   title: 'My tokens',
+    //   icon: '/icons/s_dashboard.svg',
+    //   hoverIcon: '/icons/s_dashboard2.svg',
+    //   route: '/tokens',
+    //   available: true
+    // }
   ],
   submenuList: [
     // { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
@@ -277,7 +277,7 @@ interface DefaultLayoutProps {
  *  This has a sidebar prop to determine if the Sidebar component should be shown or not.
  */
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
-  const { user, recipient, safe, error, logOut, showSideBar, sidebarIsExpanded, toggleSideBar, refreshUser } =
+  const { user, recipient, currentSafe, error, logOut, showSideBar, sidebarIsExpanded, toggleSideBar, refreshUser } =
     useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
   const { loading } = useLoaderContext();
@@ -368,7 +368,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
 
   useEffect(() => {
     if (user && user.memberInfo && user.memberInfo.type) {
-      if (safe && user.memberInfo.type === 'founder') {
+      if (currentSafe && user.memberInfo.type === 'founder') {
         const sbProps = SidebarProps[user?.memberInfo?.type];
         // sbProps.menuList.slice(3, 1); // Remove connect safe
         setSidebarProperties({ ...sbProps });
@@ -379,7 +379,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       // For testing purposes only
       setSidebarProperties({ ...SidebarProps.employee });
     }
-  }, [user, safe]);
+  }, [user, currentSafe]);
 
   useEffect(() => {
     // Check if the user has a wallet connected on all of the pages except:

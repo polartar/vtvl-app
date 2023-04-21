@@ -1,38 +1,24 @@
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { NetworkConnector } from '@web3-react/network-connector';
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
-import { SUPPORTED_CHAIN_IDS, SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
+import { SUPPORTED_CHAIN_IDS, SupportedChains } from 'types/constants/supported-chains';
 
 export const injected = new InjectedConnector({
   supportedChainIds: SUPPORTED_CHAIN_IDS
 });
 
+const rpcs: { [chainId: number]: string } = {};
+SUPPORTED_CHAIN_IDS.forEach((chainId) => {
+  rpcs[chainId] = SupportedChains[chainId].rpc;
+});
+
 export const walletconnect = new WalletConnectConnector({
-  rpc: {
-    1: `https://mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`,
-    [SupportedChainId.BINANCE]: SupportedChains[SupportedChainId.BINANCE].rpc,
-    [SupportedChainId.POLYGON]: SupportedChains[SupportedChainId.POLYGON].rpc,
-    [SupportedChainId.AVALANCHE]: SupportedChains[SupportedChainId.AVALANCHE].rpc,
-    [SupportedChainId.FANTOM]: SupportedChains[SupportedChainId.FANTOM].rpc,
-    [SupportedChainId.CRONOS]: SupportedChains[SupportedChainId.CRONOS].rpc,
-    [SupportedChainId.MUMBAI]: SupportedChains[SupportedChainId.MUMBAI].rpc,
-    [SupportedChainId.GOERLI]: SupportedChains[SupportedChainId.GOERLI].rpc,
-    [SupportedChainId.OKC_MAINNET]: SupportedChains[SupportedChainId.OKC_MAINNET].rpc
-  },
+  rpc: rpcs,
   bridge: 'https://bridge.walletconnect.org',
   qrcode: true
 });
 
 export const network = new NetworkConnector({
-  urls: {
-    [SupportedChainId.BINANCE]: SupportedChains[SupportedChainId.BINANCE].rpc,
-    [SupportedChainId.POLYGON]: SupportedChains[SupportedChainId.POLYGON].rpc,
-    [SupportedChainId.AVALANCHE]: SupportedChains[SupportedChainId.AVALANCHE].rpc,
-    [SupportedChainId.FANTOM]: SupportedChains[SupportedChainId.FANTOM].rpc,
-    [SupportedChainId.CRONOS]: SupportedChains[SupportedChainId.CRONOS].rpc,
-    [SupportedChainId.MUMBAI]: SupportedChains[SupportedChainId.MUMBAI].rpc,
-    [SupportedChainId.OKC_MAINNET]: SupportedChains[SupportedChainId.OKC_MAINNET].rpc,
-    [SupportedChainId.OKC_TESTNET]: SupportedChains[SupportedChainId.OKC_TESTNET].rpc
-  },
+  urls: rpcs,
   defaultChainId: 1
 });

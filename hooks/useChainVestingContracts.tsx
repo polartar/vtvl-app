@@ -1,6 +1,7 @@
 import { useWeb3React } from '@web3-react/core';
 import NEW_VTVL_VESTING_ABI from 'contracts/abi/NewVtvlVesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import getUnixTime from 'date-fns/getUnixTime';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
 import { BigNumber } from 'ethers/lib/ethers';
@@ -12,9 +13,6 @@ import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
 
 import { useShallowState } from './useShallowState';
-
-const TOTAL_ALLOCATION_AMOUNT_INDEX = 4;
-const WITHDRAWN_AMOUNT_INDEX = 5;
 
 export type VestingContractInfo = {
   address: string;
@@ -82,24 +80,29 @@ export default function useChainVestingContracts(
           .forEach(({ data: recipient }) => {
             result = result.concat([
               {
-                reference: `withdrawn-${vestingContract.data.address}-${recipient.walletAddress}`,
-                contractAddress: vestingContract.data.address,
-                abi:
-                  vestingContract.data.updatedAt < Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT)
-                    ? VTVL_VESTING_ABI.abi
-                    : NEW_VTVL_VESTING_ABI.abi,
-                calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }]
-              },
-              {
-                reference: `unclaimed-${vestingContract.data.address}-${recipient.walletAddress}`,
+                reference: `multicall-${vestingContract.data.address}-${recipient.walletAddress}`,
                 contractAddress: vestingContract.data.address,
                 abi: VTVL_VESTING_ABI.abi,
                 calls: [
                   {
+                    // This gets the claimable amount by the recipient
                     reference: 'claimableAmount',
                     methodName: 'claimableAmount',
                     methodParameters: [recipient.walletAddress]
+                  },
+                  {
+                    // This gets the total vested amount for the recipient (includes everything)
+                    reference: 'finalVestedAmount',
+                    methodName: 'finalVestedAmount',
+                    methodParameters: [recipient.walletAddress]
+                  },
+                  {
+                    // This gets the current vested amount as of date (currently unlocked tokens, both claimed and unclaimed)
+                    reference: 'vestedAmount',
+                    methodName: 'vestedAmount',
+                    methodParameters: [recipient.walletAddress, getUnixTime(new Date())]
                   }
+                  // { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }
                 ]
               }
             ]);
@@ -111,6 +114,12 @@ export default function useChainVestingContracts(
     multicall
       .call(contractCallContext)
       .then((response) => {
+        console.log('VESTING SCHEDULE DETAILS MULTICALL', response);
+        // Set constants for referencing the calls based on the multicall setup above
+        const CLAIMABLE_AMOUNT_CALL = 0;
+        const FINAL_VESTED_AMOUNT_CALL = 1;
+        const VESTED_AMOUNT_CALL = 2;
+
         const chainData: Array<{
           address: string;
           recipient: string;
@@ -142,13 +151,30 @@ export default function useChainVestingContracts(
                   numTokensReservedForVesting: BigNumber.from(0),
                   recipient
                 };
-          if (reference === 'withdrawn') {
-            data.allocation = BigNumber.from(value.callsReturnContext[0].returnValues[TOTAL_ALLOCATION_AMOUNT_INDEX]);
-            data.withdrawn = BigNumber.from(value.callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_INDEX]);
-          } else if (reference === 'unclaimed') {
-            data.unclaimed = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
-          } else {
+
+          if (reference === 'numTokensReservedForVesting') {
             data.numTokensReservedForVesting = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
+          } else {
+            const record = value.callsReturnContext;
+            // Gets the claimable amount of the recipient
+            const claimableAmount = record[CLAIMABLE_AMOUNT_CALL].returnValues[0];
+            // Gets the total allocation of the recipient
+            const finalVestedAmount = record[FINAL_VESTED_AMOUNT_CALL].returnValues[0];
+            // Gets the vested amount of the recipient -- which is the claimed and unclaimed tokens
+            const vestedAmount = record[VESTED_AMOUNT_CALL].returnValues[0];
+            // Computes the actual withdrawn amount by getting the claimed tokens
+            // unclaimed = claimableAmount
+            // claimed = vested amount - unclaimed
+            const claimedAmount = ethers.BigNumber.from(vestedAmount).gt(claimableAmount)
+              ? ethers.BigNumber.from(vestedAmount).sub(claimableAmount)
+              : ethers.BigNumber.from(0);
+
+            // Computes the locked tokens of the recipient
+            const lockedTokens = ethers.BigNumber.from(finalVestedAmount).sub(claimedAmount).sub(claimableAmount);
+            data.allocation = BigNumber.from(finalVestedAmount);
+            data.withdrawn = BigNumber.from(claimedAmount);
+            data.unclaimed = BigNumber.from(claimableAmount);
+            data.locked = BigNumber.from(lockedTokens);
           }
 
           if (index > -1) {
@@ -159,9 +185,9 @@ export default function useChainVestingContracts(
         });
         setState({
           vestingSchedules: chainData.map((data) => {
-            const locked = BigNumber.from(data.allocation)
-              .sub(BigNumber.from(data.withdrawn))
-              .sub(BigNumber.from(data.unclaimed));
+            // const locked = BigNumber.from(data.allocation)
+            //   .sub(BigNumber.from(data.withdrawn))
+            //   .sub(BigNumber.from(data.unclaimed));
             return {
               address: data.address,
               recipient: data.recipient,
@@ -169,7 +195,7 @@ export default function useChainVestingContracts(
               withdrawn: data.withdrawn,
               unclaimed: data.unclaimed,
               numTokensReservedForVesting: data.numTokensReservedForVesting,
-              locked: locked.gte(0) ? locked : BigNumber.from(0)
+              locked: data.locked.gte(0) ? data.locked : BigNumber.from(0)
             };
           })
         });
@@ -178,7 +204,7 @@ export default function useChainVestingContracts(
       .finally(() => {
         setState({ isLoading: false });
       });
-  }, [chainId, vestingContracts]);
+  }, [chainId, vestingContracts, recipients]);
 
   return { ...state };
 }

@@ -8,7 +8,7 @@ interface ICheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Checkbox = ({ label = '', name = 'Checkbox', ...props }: ICheckboxProps) => {
   return (
     <label
-      className={`relative flex flex-row items-center gap-2 text-sm transition-all ${
+      className={`relative flex flex-row items-center gap-2 text-sm cursor-pointer transition-all ${
         props.checked ? 'text-primary-900' : 'text-neutral-900'
       }`}>
       {/* Custom check UI */}

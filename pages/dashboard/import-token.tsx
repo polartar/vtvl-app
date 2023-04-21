@@ -68,7 +68,8 @@ const DashboardImportToken: NextPageWithLayout = () => {
         updatedAt: Math.floor(new Date().getTime() / 1000),
         supplyCap: 'UNLIMITED',
         status: 'SUCCESS',
-        chainId
+        chainId,
+        burnable: false
       });
       updateMintFormState({
         name: tokenName,

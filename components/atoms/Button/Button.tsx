@@ -58,7 +58,7 @@ const Button = ({
   danger,
   success,
   warning,
-  size,
+  size = 'medium',
   label,
   ...props
 }: ButtonProps) => {

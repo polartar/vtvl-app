@@ -20,11 +20,13 @@ import { BigNumber, ethers } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
+import useIsAdmin from 'hooks/useIsAdmin';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
+import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 // import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
@@ -48,7 +50,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   vestingSchedulesInfo
 }) => {
   const { account, chainId, activate, library } = useWeb3React();
-  const { safe, organizationId } = useAuthContext();
+  const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
   const {
     // fetchDashboardVestingContract,
     vestingContracts,
@@ -79,6 +81,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     () => recipients?.filter((recipient) => recipient.data.vestingId === id) ?? [],
     [recipients, id]
   );
+
+  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract?.data);
 
   const [status, setStatus] = useState<IStatus>('');
 
@@ -115,13 +119,13 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   }, [pendingTransactions]);
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (safe?.address && chainId) {
+    if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
       });
 
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const safeService = new SafeServiceClient({
         txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
         ethAdapter
@@ -141,18 +145,18 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     if (
       !vestingContract ||
       vestingContract.data.status === 'INITIALIZED' ||
-      (vestingContract.data.status === 'PENDING' && safe?.address)
+      (vestingContract.data.status === 'PENDING' && currentSafe?.address)
     ) {
       setStatus('CONTRACT_REQUIRED');
       return;
     }
 
-    if (transaction && transaction.data.safeHash && safe && account) {
+    if (transaction && transaction.data.safeHash && currentSafe && account) {
       const safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
 
       if (safeTx) {
         setSafeTransaction(safeTx);
-        if (safeTx.signatures.size >= safe?.threshold) {
+        if (safeTx.signatures.size >= currentSafe?.threshold) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
@@ -222,14 +226,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const handleExecuteFundingTransaction = async () => {
     try {
       setIsCloseAvailable(true);
-      if (safe?.address && chainId && safeTransaction) {
+      if (currentSafe?.address && chainId && safeTransaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
         });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
@@ -350,18 +354,24 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           vestingContract?.data?.address,
           ethers.utils.parseEther(amount)
         ]);
-        if (safe?.address && account && chainId && organizationId) {
-          if (safe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())) {
+        if (currentSafe?.address && account && chainId && organizationId) {
+          if (currentSafe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())) {
             setTransactionLoaderStatus('PENDING');
             const ethAdapter = new EthersAdapter({
               ethers: ethers,
               signer: library?.getSigner(0)
             });
-            const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+            const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+
+            if (currentSafe.safeNonce === undefined) {
+              throw new Error('Nonce is not defined');
+            }
+
             const txData = {
               to: mintFormState.address,
               data: transferEncoded,
-              value: '0'
+              value: '0',
+              nonce: currentSafe.safeNonce + 1
             };
             const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
             const txHash = await safeSdk.getTransactionHash(safeTransaction);
@@ -373,7 +383,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               ethAdapter
             });
             await safeService.proposeTransaction({
-              safeAddress: safe.address,
+              safeAddress: currentSafe.address,
               senderAddress: account,
               safeTransactionData: safeTransaction.data,
               safeTxHash: txHash,
@@ -398,6 +408,18 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               },
               id
             );
+
+            await createOrUpdateSafe(
+              {
+                ...currentSafe,
+                safeNonce: currentSafe.safeNonce + 1
+              },
+              currentSafeId
+            );
+            setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
+
+            toast.success(`Funding transaction with nonce ${currentSafe.safeNonce + 1} is created successfully`);
+
             await fetchDashboardData();
             setTransactionLoaderStatus('SUCCESS');
           } else {
@@ -503,17 +525,29 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         vestingCliffAmounts
       ]);
       setIsCloseAvailable(false);
-      if (safe?.address && account && chainId && organizationId) {
+      if (currentSafe?.address && account && chainId && organizationId) {
+        if (!isAdmin) {
+          toast.error(
+            "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
+          );
+          return;
+        }
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
         });
         setTransactionLoaderStatus('PENDING');
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+
+        if (currentSafe.safeNonce === undefined) {
+          throw new Error('Nonce is not defined');
+        }
+
         const txData = {
           to: vestingContract?.data?.address ?? '',
           data: createClaimsBatchEncoded,
-          value: '0'
+          value: '0',
+          nonce: currentSafe.safeNonce + 1
         };
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
@@ -525,7 +559,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           ethAdapter
         });
         await safeService.proposeTransaction({
-          safeAddress: safe.address,
+          safeAddress: currentSafe.address,
           senderAddress: account,
           safeTransactionData: safeTransaction.data,
           safeTxHash: txHash,
@@ -554,11 +588,28 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             },
             id
           );
+
+          await createOrUpdateSafe(
+            {
+              ...currentSafe,
+              safeNonce: currentSafe.safeNonce + 1
+            },
+            currentSafeId
+          );
+          setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
+          toast.success(`Created a transaction with nonce ${currentSafe.safeNonce + 1} successfully`);
           await fetchDashboardData();
         }
         toast.success('Transaction has been created successfully.');
         setTransactionLoaderStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
+        if (!isAdmin) {
+          toast.error(
+            "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
+          );
+          return;
+        }
+
         setTransactionLoaderStatus('PENDING');
         const vestingContractInstance = new ethers.Contract(
           vestingContract?.data?.address ?? '',
@@ -621,20 +672,20 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const handleApproveTransaction = async () => {
     try {
       setIsCloseAvailable(false);
-      if (safe?.address && chainId && transaction) {
+      if (currentSafe?.address && chainId && transaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
         });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.hash as string
+          transaction?.data?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -643,10 +694,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.hash as string);
+        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.safeHash as string);
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
-        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.hash as string));
+        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.safeHash as string));
         await fetchDashboardData();
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
@@ -661,14 +712,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const handleExecuteTransaction = async () => {
     setIsCloseAvailable(true);
     try {
-      if (safe?.address && chainId && transaction) {
+      if (currentSafe?.address && chainId && transaction) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
         });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const safeService = new SafeServiceClient({
           txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
           ethAdapter
@@ -736,7 +787,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       setStatus('FUNDING_REQUIRED');
       setTransactionStatus('INITIALIZE');
     }
-  }, [data, safe, account, vestingContract, transactions, transaction]);
+  }, [data, currentSafe, account, vestingContract, transactions, transaction]);
 
   const CellCliff = () => {
     const newValue = data.details.cliffDuration.replace('-', ' ');

@@ -30,8 +30,8 @@ const Summary: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { mintFormState, updateMintFormState, updateTokenId } = useTokenContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
-
-  const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply } = mintFormState;
+  console.log({ mintFormState });
+  const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply, burnable } = mintFormState;
 
   const [loading, setLoading] = useState(false);
 
@@ -52,9 +52,10 @@ const Summary: NextPageWithLayout = () => {
                 name,
                 symbol,
                 parseTokenAmount(initialSupply, decimals),
-                parseTokenAmount(maxSupply, decimals)
+                parseTokenAmount(maxSupply, decimals),
+                burnable
               )
-            : await TokenFactory.deploy(name, symbol, parseTokenAmount(initialSupply, decimals));
+            : await TokenFactory.deploy(name, symbol, parseTokenAmount(initialSupply, decimals), burnable);
 
         const transactionData: ITransaction = {
           hash: tokenContract.deployTransaction.hash,
@@ -86,7 +87,8 @@ const Summary: NextPageWithLayout = () => {
           maxSupply: maxSupply ? maxSupply : 0,
           initialSupply: initialSupply ? initialSupply : 0,
           status: 'SUCCESS',
-          chainId
+          chainId,
+          burnable
         });
 
         updateMintFormState({ ...mintFormState, address: tokenContract.address, status: 'SUCCESS', chainId });

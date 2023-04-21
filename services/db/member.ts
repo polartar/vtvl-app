@@ -1,4 +1,4 @@
-import { addDoc, deleteDoc, doc, getDoc, getDocs, limit, query, setDoc, where } from '@firebase/firestore';
+import { addDoc, deleteDoc, doc, getDoc, getDocs, limit, query, setDoc, updateDoc, where } from '@firebase/firestore';
 import axios from 'axios';
 import { inviteeCollection, memberCollection } from 'services/db/firestore';
 import { IInvitee, IMember } from 'types/models';
@@ -12,13 +12,15 @@ export const fetchMember = async (id: string): Promise<IMember | undefined> => {
 export const fetchMemberByEmail = async (email: string): Promise<IMember | undefined> => {
   const q = query(memberCollection, where('email', '==', email), limit(1));
   const querySnapshot = await getDocs(q);
-  return querySnapshot?.docs.at(0)?.data();
+  if (!querySnapshot.empty) return querySnapshot?.docs[0]?.data();
+  return;
 };
 
 export const fetchInviteeByEmail = async (email: string): Promise<IInvitee | undefined> => {
   const q = query(inviteeCollection, where('email', '==', email), limit(1));
   const querySnapshot = await getDocs(q);
-  return querySnapshot?.docs.at(0)?.data();
+  if (!querySnapshot.empty) return querySnapshot?.docs[0]?.data();
+  return;
 };
 
 // export const createOrUpdateMember = async (member: IMember, id: string): Promise<void> => {
@@ -29,22 +31,24 @@ export const fetchInviteeByEmail = async (email: string): Promise<IInvitee | und
 export const newMember = async (uid: string, member: IMember): Promise<void> => {
   const q = query(inviteeCollection, where('email', '==', member.email), limit(1));
   const querySnapshot = await getDocs(q);
-  const invitee = querySnapshot?.docs.at(0);
+  const invitee = querySnapshot?.docs[0];
 
   if (invitee) await deleteDoc(invitee.ref);
 
   const m = query(memberCollection, where('email', '==', member.email), limit(1));
   const existingMemberQuerySnapshot = await getDocs(m);
-  const existingMember = existingMemberQuerySnapshot?.docs.at(0);
+  const existingMember = existingMemberQuerySnapshot?.docs[0];
 
   const path = existingMember ? existingMember.id : uid;
   const memberRef = doc(memberCollection, path);
+  console.log({ member });
   const memberInfo: IMember = {
     ...invitee?.data(),
     email: member.email || '',
     name: member.name,
     companyEmail: invitee?.data().email || member.companyEmail || '',
     type: member.type || 'anonymous',
+    source: member.source || '',
     org_id: invitee?.data().org_id || member.org_id || '',
     joined: member.joined || Math.floor(new Date().getTime() / 1000),
     createdAt: Math.floor(new Date().getTime() / 1000),
@@ -85,4 +89,12 @@ export const fetchAllMembers = async (): Promise<IMember[]> => {
     documents.push(doc.data());
   });
   return documents;
+};
+
+export const updateMember = async (id: string, updateObj: { [key: string]: any }): Promise<void> => {
+  const recipientRef = doc(memberCollection, id);
+
+  await updateDoc(recipientRef, {
+    ...updateObj
+  });
 };

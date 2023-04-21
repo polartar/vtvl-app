@@ -170,7 +170,7 @@ const MintSuppy: NextPageWithLayout = () => {
         message={formMessage}
         onSubmit={handleSubmit(onSubmit)}
         className="w-full my-6">
-        <TokenProfile {...mintFormState} className="mb-6" />
+        <TokenProfile {...mintFormState} burnable={false} className="mb-6" />
         <span className="paragraphy-medium-medium text-neutral-700">Contract address</span>
         <Copy text={mintFormState.address}>
           <p className="text-sm text-neutral-500 mb-2">{mintFormState.address}</p>

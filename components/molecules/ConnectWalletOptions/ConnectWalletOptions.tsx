@@ -80,14 +80,6 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
       onClick: metamaskActivate
     },
     {
-      name: 'Ledger Connect',
-      image: '/icons/wallets/ledger.png',
-      // need to add an onClick handler here
-      onClick: () => setLedgerModalShow(true),
-      subLabel: 'Soon',
-      disabled: true
-    },
-    {
       name: 'Wallet Connect',
       image: '/icons/wallets/walletconnect.svg',
       onClick: walletConnectActivate,
@@ -102,6 +94,14 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
     {
       name: 'Trezor',
       image: '/icons/wallets/trezor.png',
+      subLabel: 'Soon',
+      disabled: true
+    },
+    {
+      name: 'Ledger Connect',
+      image: '/icons/wallets/ledger.png',
+      // need to add an onClick handler here
+      onClick: () => setLedgerModalShow(true),
       subLabel: 'Soon',
       disabled: true
     }

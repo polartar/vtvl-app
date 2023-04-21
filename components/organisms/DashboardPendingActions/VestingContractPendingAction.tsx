@@ -32,7 +32,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
   updateFilter
 }) => {
   const { account, chainId, activate, library } = useWeb3React();
-  const { safe, organizationId } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   // const { fetchDashboardVestingContract } = useDashboardContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
@@ -77,7 +77,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
 
         setTransactionStatus('SUCCESS');
         // fetchDashboardVestingContract();
-        if (safe?.address) {
+        if (currentSafe?.address) {
           setStatus('TRANSFER_OWNERSHIP');
         } else {
           setStatus('SUCCESS');
@@ -96,7 +96,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         setTransactionStatus('PENDING');
 
         const vestingContract = new ethers.Contract(data.address, VTVL_VESTING_ABI.abi, library.getSigner());
-        const transactionResponse = await vestingContract.setAdmin(safe?.address, true);
+        const transactionResponse = await vestingContract.setAdmin(currentSafe?.address, true);
         setTransactionStatus('IN_PROGRESS');
         await transactionResponse.wait();
         setStatus('REMOVE_ORIGINAL_OWNERSHIP');
@@ -119,9 +119,9 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
 
       if (
         organizationId &&
-        safe &&
-        safe.address &&
-        safe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())
+        currentSafe &&
+        currentSafe.address &&
+        currentSafe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())
       ) {
         setTransactionStatus('PENDING');
         const vestingContract = new ethers.Contract(data.address, VTVL_VESTING_ABI.abi, library.getSigner());
@@ -148,13 +148,13 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
   useEffect(() => {
     if (data.status === 'INITIALIZED') {
       setStatus('AUTHORIZATION_REQUIRED');
-    } else if (data.status === 'PENDING' && safe) {
+    } else if (data.status === 'PENDING' && currentSafe) {
       const VestingContract = new ethers.Contract(
         data.address,
         VTVL_VESTING_ABI.abi,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
-      VestingContract.isAdmin(safe.address).then((res: any) => {
+      VestingContract.isAdmin(currentSafe.address).then((res: any) => {
         if (!res) {
           setStatus('TRANSFER_OWNERSHIP');
           return;
@@ -173,7 +173,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
     } else {
       setStatus('SUCCESS');
     }
-  }, [data, safe, account]);
+  }, [data, currentSafe, account]);
 
   return status === 'SUCCESS' ? null : shouldShow ? (
     <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">

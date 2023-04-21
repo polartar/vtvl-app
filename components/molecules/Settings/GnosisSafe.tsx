@@ -12,7 +12,8 @@ import { useTransactionLoaderContext } from '@providers/transaction-loader.conte
 import { useWeb3React } from '@web3-react/core';
 import Router from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
-import { fetchSafeByAddress } from 'services/db/safe';
+import { fetchOrg } from 'services/db/organization';
+import { createOrUpdateSafe, fetchSafeByAddress } from 'services/db/safe';
 import { fetchSafes, getSafeInfo } from 'services/gnosois';
 
 import SafeForm from './SafeForm';
@@ -27,7 +28,7 @@ export default function GonsisSafe() {
   const { account, chainId, library } = useWeb3React();
   // const { inProgress, startOnboarding } = useContext(OnboardingContext);
   const [safes, setSafes] = useState<string[]>();
-  const { safe: importedSafe, setSafe } = useAuthContext();
+  const { currentSafe: importedSafe, setCurrentSafe, user, organizationId, setCurrentSafeId } = useAuthContext();
   const [step, setStep] = useState<keyof typeof STEP_GUIDES>(1);
   const { showLoading, hideLoading } = useLoaderContext();
 
@@ -48,22 +49,57 @@ export default function GonsisSafe() {
   }, [account]);
 
   const importSafe = async (address: string) => {
-    showLoading();
-    try {
-      const safeFromDB = await fetchSafeByAddress(address);
-      if (!safeFromDB) {
-        throw 'Safe is not existed in db';
-      }
+    if (organizationId) {
+      showLoading();
+      try {
+        const safe = await getSafeInfo(library, address);
+        if (!safe) {
+          throw 'Safe is not existed on-chain';
+        }
 
-      const safe = await getSafeInfo(library, address);
-      if (!safe) {
-        throw 'Safe is not existed on-chain';
+        const safeFromDB = await fetchSafeByAddress(address);
+        if (!safeFromDB) {
+          const organization = await fetchOrg(organizationId);
+          if (organization && safe) {
+            const owners = await safe.getOwners();
+            const safeNonce = await safe.getNonce();
+            const threshold = await safe.getThreshold();
+            const safeId = await createOrUpdateSafe({
+              user_id: user?.uid,
+              org_id: user?.memberInfo?.org_id || '',
+              org_name: organization.name,
+              address: safe.getAddress(),
+              chainId: chainId || 0,
+              owners: owners.map((owner) => ({
+                address: owner,
+                name: ''
+              })),
+              threshold,
+              safeNonce
+            });
+            setCurrentSafeId(safeId);
+            setCurrentSafe({
+              user_id: user?.uid,
+              org_id: user?.memberInfo?.org_id || '',
+              org_name: organization.name,
+              address: safe.getAddress(),
+              chainId: chainId || 0,
+              owners: owners.map((owner) => ({
+                address: owner,
+                name: ''
+              })),
+              threshold,
+              safeNonce
+            });
+          }
+        } else {
+          setCurrentSafe(safeFromDB);
+        }
+      } catch (error) {
+        console.error('Importing safe error: ', error);
       }
-      setSafe(safeFromDB);
-    } catch (error) {
-      console.error('Importing safe error: ', error);
+      hideLoading();
     }
-    hideLoading();
   };
 
   const renderStep = () => {

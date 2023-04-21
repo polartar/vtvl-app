@@ -26,6 +26,7 @@ import differenceInSeconds from 'date-fns/differenceInSeconds';
 import toDate from 'date-fns/toDate';
 import { ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
+import useIsAdmin from 'hooks/useIsAdmin';
 import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
@@ -34,6 +35,8 @@ import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { createRevoking } from 'services/db/revoking';
+import { createOrUpdateSafe } from 'services/db/safe';
+import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
@@ -58,7 +61,7 @@ import {
 const VestingScheduleProject: NextPageWithLayout = () => {
   const router = useRouter();
   const { account, library, activate, chainId } = useWeb3React();
-  const { organizationId, safe } = useAuthContext();
+  const { organizationId, currentSafe, currentSafeId, setCurrentSafe } = useAuthContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
@@ -78,6 +81,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     keyword: string;
     status: 'ALL' | 'FUND' | 'INITIALIZED' | 'LIVE' | 'PENDING';
   }>({ keyword: '', status: 'ALL' });
+  const [vestingContract, setVestingContract] = useState<IVestingContract | undefined>();
+
+  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract);
 
   const filteredVestingSchedules = useMemo(() => {
     return vestingSchedules && vestingSchedules.length > 0
@@ -394,77 +400,77 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   };
 
   // Handles revoking process
-  const handleRevoke = async (id: string, data: IVesting, rIndex: number) => {
-    const signer = library?.getSigner(0);
-    const vestingAddress = vestingContracts.find((v) => v.id === data.vestingContractId)?.data.address;
-    if (!signer || !account || !chainId || !vestingAddress) return;
+  // const handleRevoke = async (id: string, data: IVesting, rIndex: number) => {
+  //   const signer = library?.getSigner(0);
+  //   const vestingAddress = vestingContracts.find((v) => v.id === data.vestingContractId)?.data.address;
+  //   if (!signer || !account || !chainId || !vestingAddress) return;
 
-    const recipient = recipients.filter((recipient) => recipient.data.vestingId === id)[rIndex].data.walletAddress;
-    if (data.status === 'COMPLETED' || data.status === 'LIVE') {
-      setIsCloseAvailable(false);
-      try {
-        setTransactionStatus('PENDING');
-        if (safe?.address) {
-          const vestingContractInterface = new ethers.utils.Interface([REVOKE_CLAIM_FUNCTION_ABI]);
+  //   const recipient = recipients.filter((recipient) => recipient.data.vestingId === id)[rIndex].data.walletAddress;
+  //   if (data.status === 'COMPLETED' || data.status === 'LIVE') {
+  //     setIsCloseAvailable(false);
+  //     try {
+  //       setTransactionStatus('PENDING');
+  //       if (currentSafe?.address) {
+  //         const vestingContractInterface = new ethers.utils.Interface([REVOKE_CLAIM_FUNCTION_ABI]);
 
-          setTransactionStatus('IN_PROGRESS');
-          const { hash: safeHash } = await createSafeTransaction(
-            signer,
-            chainId as SupportedChainId,
-            account,
-            safe.address,
-            safe?.owners?.map((owner) => owner.address) ?? [],
-            {
-              to: vestingAddress,
-              data: vestingContractInterface.encodeFunctionData('revokeClaim', [recipient]),
-              value: '0'
-            }
-          );
+  //         setTransactionStatus('IN_PROGRESS');
+  //         const { hash: safeHash } = await createSafeTransaction(
+  //           signer,
+  //           chainId as SupportedChainId,
+  //           account,
+  //           currentSafe.address,
+  //           currentSafe?.owners?.map((owner) => owner.address) ?? [],
+  //           {
+  //             to: vestingAddress,
+  //             data: vestingContractInterface.encodeFunctionData('revokeClaim', [recipient]),
+  //             value: '0'
+  //           }
+  //         );
 
-          const transactionID = await createTransaction({
-            hash: '',
-            safeHash,
-            chainId: data.chainId,
-            organizationId: data.organizationId,
-            vestingIds: [id],
-            to: vestingAddress,
-            status: 'PENDING',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
-            type: 'REVOKE_CLAIM'
-          });
+  //         const transactionID = await createTransaction({
+  //           hash: '',
+  //           safeHash,
+  //           chainId: data.chainId,
+  //           organizationId: data.organizationId,
+  //           vestingIds: [id],
+  //           to: vestingAddress,
+  //           status: 'PENDING',
+  //           createdAt: Math.floor(new Date().getTime() / 1000),
+  //           updatedAt: Math.floor(new Date().getTime() / 1000),
+  //           type: 'REVOKE_CLAIM'
+  //         });
 
-          await createRevoking({
-            vestingId: id,
-            recipient,
-            transactionId: transactionID ?? '',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
-            chainId,
-            organizationId: organizationId!,
-            status: 'PENDING'
-          });
-          toast.success('Revoking transaction is created successfully.');
-          console.info('Safe Transaction: ', safeHash);
-        } else {
-          const vestingContractInstance = new ethers.Contract(
-            vestingAddress,
-            VTVL_VESTING_ABI.abi,
-            library.getSigner()
-          );
-          const revokeTransaction = await vestingContractInstance.revokeClaim(recipient);
-          setTransactionStatus('IN_PROGRESS');
-          await revokeTransaction.wait();
-          toast.success('Revoking is done successfully.');
-        }
-        setTransactionStatus('REVOKE_SUCCESS');
-      } catch (err) {
-        console.log('handleRevoke - ', err);
-        toast.error('Something went wrong. Try agaiin later.');
-        setTransactionStatus('ERROR');
-      }
-    }
-  };
+  //         await createRevoking({
+  //           vestingId: id,
+  //           recipient,
+  //           transactionId: transactionID ?? '',
+  //           createdAt: Math.floor(new Date().getTime() / 1000),
+  //           updatedAt: Math.floor(new Date().getTime() / 1000),
+  //           chainId,
+  //           organizationId: organizationId!,
+  //           status: 'PENDING'
+  //         });
+  //         toast.success('Revoking transaction is created successfully.');
+  //         console.info('Safe Transaction: ', safeHash);
+  //       } else {
+  //         const vestingContractInstance = new ethers.Contract(
+  //           vestingAddress,
+  //           VTVL_VESTING_ABI.abi,
+  //           library.getSigner()
+  //         );
+  //         const revokeTransaction = await vestingContractInstance.revokeClaim(recipient);
+  //         setTransactionStatus('IN_PROGRESS');
+  //         await revokeTransaction.wait();
+  //         toast.success('Revoking is done successfully.');
+  //       }
+  //       setTransactionStatus('SUCCESS');
+  //     } catch (err) {
+  //       console.log('handleRevoke - ', err);
+  //       toast.error('Something went wrong. Try agaiin later.');
+  //       setTransactionStatus('ERROR');
+  //     }
+  //   }
+  // };
 
   // Defines the columns used and their functions in the table
   const columns = useMemo(
@@ -567,6 +573,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       let vestingCliffAmounts: any = [];
       const vestingIds = selectedRows.map((row: any) => row.id);
       const vestingContract = vestingContracts.find((v) => v.id === (selectedRows as any)[0].data.vestingContractId);
+      setVestingContract(vestingContract?.data);
       selectedRows.forEach((row: any) => {
         const vesting = row.data;
         const vestingId = row.id;
@@ -663,17 +670,29 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         vestingCliffAmounts
       ]);
 
-      if (safe?.address && account && chainId && organizationId) {
+      if (currentSafe?.address && account && chainId && organizationId) {
+        if (!isAdmin) {
+          toast.error(
+            "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
+          );
+          return;
+        }
+
+        if (currentSafe.safeNonce === undefined) {
+          throw new Error('Nonce is not defined');
+        }
+
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
           signer: library?.getSigner(0)
         });
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: safe?.address });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const txData = {
           to: vestingContract?.data?.address ?? '',
           data: createClaimsBatchEncoded,
-          value: '0'
+          value: '0',
+          nonce: currentSafe.safeNonce + 1
         };
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
@@ -685,7 +704,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           ethAdapter
         });
         await safeService.proposeTransaction({
-          safeAddress: safe.address,
+          safeAddress: currentSafe.address,
           senderAddress: account,
           safeTransactionData: safeTransaction.data,
           safeTxHash: txHash,
@@ -719,11 +738,28 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               );
             })
           );
+
+          await createOrUpdateSafe(
+            {
+              ...currentSafe,
+              safeNonce: currentSafe.safeNonce + 1
+            },
+            currentSafeId
+          );
+          setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
+          toast.success(`Created a transaction with nonce ${currentSafe.safeNonce + 1} successfully`);
           await fetchDashboardData();
         }
         toast.success('Transaction has been created successfully.');
         setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
+        if (!isAdmin) {
+          toast.error(
+            "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
+          );
+          return;
+        }
+
         setTransactionStatus('PENDING');
         const vestingContractInstance = new ethers.Contract(
           vestingContract?.data?.address ?? '',
@@ -794,7 +830,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         setTransactionStatus('SUCCESS');
       }
     } catch (err) {
-      console.log('handleCreateSignTransaction - ', err);
+      console.log('handleBatchProcess - ', err);
       toast.error('Something went wrong. Try again later.');
       setTransactionStatus('ERROR');
     }
@@ -905,7 +941,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <VestingSummary
               vestingSchedule={selectedSchedule}
               symbol={mintFormState.symbol}
-              safe={safe}
+              safe={currentSafe}
               recipients={recipients}
             />
           )}
