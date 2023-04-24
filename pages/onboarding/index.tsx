@@ -1,13 +1,13 @@
 import Carousel from '@components/atoms/Carousel/Carousel';
-import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
 import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
-import OnboardingContext, { Step, useOnboardingContext } from '@providers/onboarding.context';
+import { Step, useOnboardingContext } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import AstroHelmet from 'public/icons/astronaut-helmet.svg';
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
+import { hotjar } from 'react-hotjar';
 
 const OnboardingContainer = styled.div`
   display: grid;
@@ -45,6 +45,7 @@ const SelectLoginTypePage: NextPage = () => {
   const { startOnboarding } = useOnboardingContext();
   useEffect(() => {
     startOnboarding(Step.ChainSetup);
+    hotjar.initialize(Number(process.env.NEXT_PUBLIC_HOTJAR_HJID), Number(process.env.NEXT_PUBLIC_HOTJAR_HJSV));
   }, []);
 
   const wallets = [
