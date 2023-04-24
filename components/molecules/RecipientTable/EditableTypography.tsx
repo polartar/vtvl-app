@@ -1,6 +1,6 @@
 import { Typography } from '@components/atoms/Typography/Typography';
 import useToggle from 'hooks/useToggle';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { truncateComma } from 'utils';
 import { formatNumber } from 'utils/token';
 import { validate } from 'utils/validator';
@@ -68,6 +68,10 @@ export const EditableTypography = ({
     },
     [value, initialValue]
   );
+
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
 
   return editable ? (
     <input

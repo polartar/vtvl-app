@@ -1,6 +1,7 @@
 import Button from '@components/atoms/Button/Button';
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from '@components/atoms/Icons';
 import { Typography } from '@components/atoms/Typography/Typography';
+import { useDashboardContext } from '@providers/dashboard.context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Select, { OnChangeValue } from 'react-select';
 import { IRecipientType } from 'types/models/recipient';
@@ -28,6 +29,8 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
   onReturn,
   onContinue
 }) => {
+  const { vestings, recipients: allRecipients } = useDashboardContext();
+
   const [rows, setRows] = useState<RecipientTableRow[]>(initialRows);
 
   const totalAllocations = useMemo(() => rows?.reduce((val, row) => val + Number(row.allocations), 0) ?? 0, [rows]);
@@ -86,7 +89,25 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
 
   const handleChange = useCallback(
     (index: number, field: string) => (value: string | number) => {
-      setRows((values) => values.map((val, idx) => (idx === index ? { ...val, [field]: value } : val)));
+      if (field === 'email') {
+        const recipient = allRecipients.find((r) => r.data.email === value);
+        if (recipient) {
+          setRows((values) =>
+            values.map((val, idx) =>
+              idx === index
+                ? {
+                    ...val,
+                    name: recipient.data.name,
+                    address: recipient.data.walletAddress,
+                    email: recipient.data.email
+                  }
+                : val
+            )
+          );
+        }
+      } else {
+        setRows((values) => values.map((val, idx) => (idx === index ? { ...val, [field]: value } : val)));
+      }
     },
     []
   );
