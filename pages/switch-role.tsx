@@ -5,17 +5,17 @@ import { useEffect, useState } from 'react';
 import { IUserType } from 'types/models/member';
 
 const SwitchRole = () => {
-  const { user, switchRole, setSwitchRole } = useAuthContext();
+  const { user, switchRole } = useAuthContext();
   const [newRole, setNewRole] = useState<IUserType>('');
 
   useEffect(() => {
     if (user?.memberInfo?.type === 'founder') {
-      setNewRole(newRole ? '' : ('investor' as IUserType));
+      setNewRole((newRole ? '' : 'investor') as IUserType);
     }
-  }, [user?.memberInfo?.type, switchRole]);
+  }, [user?.memberInfo?.type]);
 
   const handleSwitchRole = () => {
-    setSwitchRole(newRole);
+    switchRole(newRole);
     // Add some redirects here
     Router.push('/claim-portal');
   };
@@ -27,7 +27,7 @@ const SwitchRole = () => {
       </Typography>
       <Typography size="paragraph" className="mt-4">
         Switching to <strong className="capitalize">{newRole || 'founder'}</strong> will change your current experience
-        that will enable you to check for claimable tokens.
+        that will enable you to {newRole.includes('investor') ? 'check for your claimable' : 'manage your'} tokens.
       </Typography>
       <div className="flex flex-row items-center justify-center gap-2 mt-6">
         <button className="primary line" onClick={() => Router.push('/dashboard')}>
