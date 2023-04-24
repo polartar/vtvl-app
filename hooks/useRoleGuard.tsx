@@ -1,9 +1,11 @@
-import { useAuthContext } from '@providers/auth.context';
+import { ILocalStorage } from 'interfaces/locaStorage';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { IUser, IUserType } from 'types/models/member';
-import { getCache, setCache } from 'utils/localStorage';
+import { useEffect } from 'react';
+import { IUserType } from 'types/models/member';
+import { getCache } from 'utils/localStorage';
 import { managerRoles, recipientRoles } from 'utils/routes';
+
+import { useShallowState } from './useShallowState';
 
 export type Route = {
   path: string;
@@ -17,95 +19,100 @@ type RoleGuardOptions = {
 
 const useRoleGuard = (options: RoleGuardOptions) => {
   const router = useRouter();
-  const { user, roleOverride, isAuthenticated } = useAuthContext();
-  const [persistedUser, setPersistedUser] = useState<IUser | undefined>();
+  const [auth, setAuth] = useShallowState<ILocalStorage | null>(null);
 
-  // Checking of persisting user role
-  useEffect(() => {
-    const savedUser = getCache();
-    if (savedUser?.user) {
-      setPersistedUser(savedUser?.user as IUser);
-    } else {
-      setPersistedUser(undefined);
-    }
-    console.log('Getting cache works', savedUser?.user);
-  }, []);
-
-  // Whenever the user is updated, update the persistedUser
-  useEffect(() => {
-    console.log('CACHING WORKS', persistedUser, user);
+  const updateRoleGuardState = async () => {
+    const persistedUser = await getCache();
+    console.log('INITIAL CACHE CHECK', persistedUser);
+    // Check if user exists
     if (persistedUser) {
-      setCache({ user: persistedUser });
-    } else if (user) {
-      setCache({ user });
+      const stringAuth = JSON.stringify(auth);
+      const stringCache = JSON.stringify(persistedUser);
+      // Only update the states if there is an update.
+      if (stringAuth !== stringCache) {
+        console.log('UPDATE STATE FROM CACHE CHANGES', persistedUser);
+        await setAuth(persistedUser);
+      }
     }
-  }, [persistedUser, user]);
+  };
+
+  // Waits and sets the global auth state based on persisted user details
+  useEffect(() => {
+    updateRoleGuardState();
+  }, []);
 
   // Watch for route changes
   useEffect(() => {
-    const handleRouteChanges = (url: string) => {
-      console.log('USE ROLE GUARD IN ACTION', url);
-      // Gets the current path being accessed.
-      const currentPath = url;
-      const currentUser = persistedUser || user || undefined;
+    // Only run this if auth is present already
+    console.log('AUTH', auth);
+    if (auth) {
+      const { user, roleOverride, isAuthenticated } = auth;
+      console.log('USER + ROLE OVERRIDE', user, roleOverride);
 
-      // Check if the current route is protected.
-      const currentRouteIsProtected = options.routes.find((route) => route.path === currentPath);
+      const handleRouteChanges = (url: string) => {
+        console.log('URL', url);
+        // Check if the current route is protected.
+        const currentRouteIsProtected = options.routes.find((route) => route.path === url);
 
-      // Do nothing if the route is not protected.
-      if (!currentRouteIsProtected) return;
+        // Do nothing if the route is not protected.
+        if (!currentRouteIsProtected) return;
 
-      // When not authenticated, make sure to block the user
-      if (!isAuthenticated) {
-        router.push(options.fallbackPath);
-        return;
-      }
+        console.log('PAGE IS PROTECTED', currentRouteIsProtected, user);
 
-      console.log('Current route is protected', currentRouteIsProtected, currentUser);
-
-      // Check protected routes only when the user type is available.
-      if (currentUser?.memberInfo?.type) {
-        // Gets the current role of the user from the Auth Context.
-        // Prioritise using the roleOverride if it is available.
-        const userRole =
-          (currentUser?.memberInfo?.type === 'founder' && roleOverride
-            ? roleOverride
-            : currentUser?.memberInfo?.type) ||
-          currentUser?.memberInfo?.type ||
-          '';
-
-        // For protected routes, filter out all the allowedRoutes for that particular user role.
-        // If the user is a founder, they are able to switch role into investor.
-        const allowedRoutes = options.routes.filter((route) => route.allowedRoles.includes(userRole));
-
-        // Check if the role is allowed in current path.
-        const isAllowedRoute = allowedRoutes.some((route) => route.path === currentPath);
-
-        // Redirect the user to the fallbackPath when the user is not allowed.
-        if (!isAllowedRoute) {
-          // Fallback path is determined based on the role group
-          const fallbackTo = managerRoles.includes(userRole)
-            ? '/dashboard'
-            : recipientRoles.includes(userRole)
-            ? '/claim-portal'
-            : options.fallbackPath;
-          console.log('FALLBACK', fallbackTo, userRole, currentUser);
-          router.push(fallbackTo);
+        // When not authenticated, make sure to block the user
+        if (!isAuthenticated) {
+          router.push(options.fallbackPath);
+          return;
         }
-        return;
-      }
-    };
 
-    // Initial load or when refreshed
-    handleRouteChanges(router.pathname);
-    // Succeeding and navigational redirects
-    router.events.on('routeChangeStart', handleRouteChanges);
+        // Check protected routes only when the user type is available.
+        if (user?.memberInfo?.type) {
+          // Gets the current role of the user from the Auth Context.
+          // Prioritise using the roleOverride if it is available.
+          const userRole =
+            (user?.memberInfo?.type === 'founder' && roleOverride ? roleOverride : user?.memberInfo?.type) ||
+            user?.memberInfo?.type ||
+            '';
 
-    // Unsubscribe to avoid bubbling
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChanges);
-    };
-  }, [user, roleOverride, persistedUser, options.routes, options.fallbackPath]);
+          console.log('USER ROLE', userRole);
+
+          // For protected routes, filter out all the allowedRoutes for that particular user role.
+          // If the user is a founder, they are able to switch role into investor.
+          const allowedRoutes = options.routes.filter((route) => route.allowedRoles.includes(userRole));
+
+          // Check if the role is allowed in current path.
+          const isAllowedRoute = allowedRoutes.some((route) => route.path === url);
+
+          // Redirect the user to the fallbackPath when the user is not allowed.
+          if (!isAllowedRoute) {
+            // Fallback path is determined based on the role group
+            const fallbackTo = managerRoles.includes(userRole)
+              ? '/dashboard'
+              : recipientRoles.includes(userRole)
+              ? '/claim-portal'
+              : options.fallbackPath;
+            console.log('FALLBACK', fallbackTo, userRole, user);
+            router.push(fallbackTo);
+          }
+          return;
+        }
+      };
+
+      // Initial load or when refreshed
+      handleRouteChanges(router.pathname);
+
+      // Succeeding and navigational redirects
+      router.events.on('routeChangeStart', handleRouteChanges);
+
+      // Unsubscribe to avoid bubbling
+      return () => {
+        router.events.off('routeChangeStart', handleRouteChanges);
+      };
+    }
+  }, [auth, options.routes, options.fallbackPath]);
+
+  // Return the updateRoleGuardState to allow other components to use it to update the Role Guard's state.
+  return { updateRoleGuardState };
 };
 
 export default useRoleGuard;

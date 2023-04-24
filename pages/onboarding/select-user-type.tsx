@@ -10,6 +10,7 @@ import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { newMember } from 'services/db/member';
 import { IMember } from 'types/models';
+import { IUserType } from 'types/models/member';
 
 const Container = styled.div`
   width: 100%;
@@ -93,7 +94,7 @@ const SelectUserTypePage: NextPage = () => {
           email: user.email || member?.email,
           companyEmail: user.email || member?.email,
           name: user.displayName || member?.name,
-          type: selected,
+          type: selected as IUserType,
           org_id: member?.org_id,
           wallets: [{ walletAddress: account, chainId: chainId! }]
         });

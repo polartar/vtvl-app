@@ -34,7 +34,14 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
     Router.push(url);
   };
 
-  const displayWalletConnect = ['/onboarding/connect-wallet', '/onboarding'].every((o) => asPath !== o);
+  const displayWalletConnect = [
+    '/onboarding/connect-wallet',
+    '/onboarding',
+    '/404',
+    '/not-found',
+    '/terms',
+    '/privacypolicy'
+  ].every((o) => asPath !== o);
 
   const renderVTVLLogo = () => {
     return (

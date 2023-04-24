@@ -5,4 +5,5 @@ export interface ILocalStorage {
   safeAddress?: string;
   user?: IUser;
   roleOverride?: IUserType;
+  isAuthenticated?: boolean;
 }

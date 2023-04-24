@@ -16,20 +16,22 @@ export const managerRoles: IUserType[] = ['founder', 'manager', 'manager2'];
 export const recipientRoles: IUserType[] = ['investor', 'employee', 'advisor'];
 export const guestRoles: IUserType[] = ['anonymous', ''];
 
+// List of routes in VTVL app.
+// Developer may need to add items here if it is protected and new to the platform.
 export const platformRoutes: Route[] = [
   // Initial routes
   // { path: '/', allowedRoles: [...allRoles] },
   // { path: '/404', allowedRoles: [...allRoles] },
   // Onboarding routes
   // { path: '/onboarding', allowedRoles: [...allRoles] },
-  { path: '/onboarding/account-setup', allowedRoles: ['founder'] },
-  { path: '/onboarding/connect-wallet', allowedRoles: [...guestRoles] },
+  // { path: '/onboarding/account-setup', allowedRoles: ['founder'] },
+  // { path: '/onboarding/connect-wallet', allowedRoles: [...guestRoles] },
   // { path: '/onboarding/login', allowedRoles: [...guestRoles] },
   // { path: '/onboarding/member-login', allowedRoles: [...guestRoles] },
-  { path: '/onboarding/new-safe', allowedRoles: ['founder'] },
-  { path: '/onboarding/select-user-type', allowedRoles: [...guestRoles] },
-  { path: '/onboarding/setup-safe-success', allowedRoles: ['founder'] },
-  { path: '/onboarding/setup-safes', allowedRoles: ['founder'] },
+  // { path: '/onboarding/new-safe', allowedRoles: ['founder'] },
+  // { path: '/onboarding/select-user-type', allowedRoles: [...guestRoles] },
+  // { path: '/onboarding/setup-safe-success', allowedRoles: ['founder'] },
+  // { path: '/onboarding/setup-safes', allowedRoles: ['founder'] },
   // { path: '/onboarding/sign-up', allowedRoles: [...guestRoles] },
   // Dashboard routes
   { path: '/dashboard', allowedRoles: [...managerRoles] },

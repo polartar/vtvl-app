@@ -17,11 +17,10 @@ import {
   signOut,
   updateEmail
 } from 'firebase/auth';
+import useRoleGuard from 'hooks/useRoleGuard';
 import useToggle from 'hooks/useToggle';
-import { ILocalStorage } from 'interfaces/locaStorage';
 import Router from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
@@ -31,8 +30,8 @@ import { getSafeInfo } from 'services/gnosois';
 import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
 import { IUserType } from 'types/models/member';
 import { compareAddresses } from 'utils';
-import { CACHE_KEY } from 'utils/constants';
 import { getCache, setCache } from 'utils/localStorage';
+import { platformRoutes } from 'utils/routes';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -45,6 +44,7 @@ export type TConnections = 'metamask' | 'walletconnect';
 export type AuthContextData = {
   isAuthenticated: boolean;
   roleOverride?: IUserType;
+  authenticateUser: (user: IUser) => void;
   switchRole: (role: IUserType) => void;
   user: IUser | undefined;
   currentSafe: ISafe | undefined;
@@ -118,6 +118,9 @@ export function AuthContextProvider({ children }: any) {
   // User role switching from founder to investor and vice versa
   const [roleOverride, setRoleOverride] = useState<IUserType>('');
 
+  // Adds the auth and role guard here
+  const { updateRoleGuardState } = useRoleGuard({ routes: platformRoutes, fallbackPath: '/404' });
+
   // Sets the recipient if it is found
   useEffect(() => {
     if (chainId && user?.memberInfo?.email && user.memberInfo?.type == 'investor') {
@@ -130,16 +133,16 @@ export function AuthContextProvider({ children }: any) {
   }, [chainId, user]);
 
   useEffect(() => {
+    // Update the user for persisted data
+    const persistedUser = getCache();
+    if (persistedUser?.user) authenticateUser(persistedUser?.user, persistedUser?.roleOverride);
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const memberInfo = await fetchMember(user.uid);
         const persistedRoleOverride = getCache()?.roleOverride;
-        setUser({ ...user, memberInfo });
-        setCache({ user: { ...user, memberInfo } });
-        if (memberInfo) {
-          setIsAuthenticated(true);
-          if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IUserType);
-        }
+        authenticateUser({ ...user, memberInfo });
+        if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IUserType);
       }
       setLoading(false);
     });
@@ -167,32 +170,29 @@ export function AuthContextProvider({ children }: any) {
     }
   }, [library]);
 
-  // Wait for the switch role to update before redirecting
-  useEffect(() => {
-    const persistedUser = getCache()?.user;
-    if (persistedUser?.memberInfo?.type === 'founder' || user?.memberInfo?.type === 'founder') {
-      switch (roleOverride) {
-        case '':
-        case 'founder':
-          Router.replace('/dashboard');
-          break;
-        case 'investor':
-          Router.replace('/claim-portal');
-          break;
-        default:
-          break;
-      }
-    }
-  }, [roleOverride, user]);
-
   // Switch role feature
-  const switchRole = (newRole: IUserType) => {
+  const switchRole = async (newRole: IUserType) => {
     setRoleOverride(newRole);
-    if (newRole) {
-      setCache({ roleOverride: newRole });
-    } else {
-      setCache({ roleOverride: undefined });
+
+    const updatedAuthData = { roleOverride: newRole };
+    // Update setCache for persistency
+    await setCache(updatedAuthData);
+    // Update the global state for the auth and role -- automatically redirects the user.
+    updateRoleGuardState();
+  };
+
+  // A function to abstract all authentication from different authentication methods
+  const authenticateUser = async (user: IUser, role?: IUserType) => {
+    await setCache({ user, isAuthenticated: true });
+    // Condition is used because a possible value is blank '' from IUserType
+    if (role !== undefined) {
+      setRoleOverride(role);
+      await setCache({ roleOverride: role });
     }
+    await updateRoleGuardState();
+    setOrganizationId(user?.memberInfo?.org_id);
+    setUser(user);
+    setIsAuthenticated(true);
   };
 
   const updateAuthState = useCallback(
@@ -223,7 +223,7 @@ export function AuthContextProvider({ children }: any) {
           // If this user was already registered as a recipient
           payload.org_id = recipientInfo.data.organizationId;
           payload.name = recipientInfo.data.name;
-          payload.type = recipientInfo.data.recipientType;
+          payload.type = recipientInfo.data.recipientType as IUserType;
           payload.wallets!.push({
             walletAddress: recipientInfo.data.walletAddress,
             chainId: recipientInfo.data.chainId!
@@ -239,10 +239,7 @@ export function AuthContextProvider({ children }: any) {
       }
 
       const memberInfo = await fetchMember(credential.user.uid);
-      setOrganizationId(memberInfo?.org_id);
-      setUser({ ...credential.user, memberInfo });
-      setCache({ user: { ...credential.user, memberInfo } });
-      setIsAuthenticated(true);
+      authenticateUser({ ...credential.user, memberInfo });
 
       return {
         isNewUser: Boolean(additionalInfo?.isNewUser),
@@ -308,10 +305,7 @@ export function AuthContextProvider({ children }: any) {
     if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
 
     await newMember(user.uid, { ...memberInfo });
-    setOrganizationId(org_id);
-    setUser({ ...user, memberInfo });
-    setCache({ user: { ...user, memberInfo } });
-    setIsAuthenticated(true);
+    authenticateUser({ ...user, memberInfo: { ...memberInfo, org_id } });
     setIsNewUser(true);
     setLoading(false);
     return org_id || '';
@@ -347,10 +341,7 @@ export function AuthContextProvider({ children }: any) {
     await newMember(credential.user.uid, {
       ...memberInfo
     });
-    setUser({ ...credential.user, memberInfo });
-    setCache({ user: { ...credential.user, memberInfo } });
-    setIsAuthenticated(true);
-
+    authenticateUser({ ...credential.user, memberInfo });
     setLoading(false);
   };
 
@@ -388,10 +379,7 @@ export function AuthContextProvider({ children }: any) {
     await newMember(credential.user.uid, {
       ...memberInfo
     });
-    setUser({ ...credential.user, memberInfo });
-    setCache({ user: { ...credential.user, memberInfo } });
-    setIsAuthenticated(true);
-
+    authenticateUser({ ...credential.user, memberInfo });
     setLoading(false);
   };
 
@@ -427,9 +415,7 @@ export function AuthContextProvider({ children }: any) {
     });
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
-    setUser({ ...credential.user, memberInfo });
-    setCache({ user: { ...credential.user, memberInfo } });
-    setIsAuthenticated(true);
+    authenticateUser({ ...credential.user, memberInfo });
     setLoading(false);
   };
 
@@ -476,9 +462,7 @@ export function AuthContextProvider({ children }: any) {
     const additionalInfo = getAdditionalUserInfo(credential);
     const userDetails: IUser = { ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } };
 
-    setUser(userDetails);
-    setCache({ user: userDetails });
-    setIsAuthenticated(true);
+    authenticateUser(userDetails);
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
@@ -492,18 +476,22 @@ export function AuthContextProvider({ children }: any) {
     if (!user) return;
     const memberInfo = await fetchMember(user.uid);
     if (memberInfo) {
-      setUser({ ...user, memberInfo });
-      setCache({ user: { ...user, memberInfo } });
-      setIsAuthenticated(true);
+      authenticateUser({ ...user, memberInfo });
     }
     setLoading(false);
   }, []);
 
   const logOut = useCallback(async () => {
+    // sign out from firebase
     await signOut(auth);
+    // remove user state
     setUser(undefined);
+    // unauthorize user
     setIsAuthenticated(false);
-    setCache({ user: undefined, roleOverride: undefined });
+    // remove persistent user states
+    setCache({ user: undefined, roleOverride: undefined, isAuthenticated: undefined });
+    // update auth and role guard states
+    updateRoleGuardState();
     Router.replace('/onboarding');
   }, []);
 
@@ -517,6 +505,7 @@ export function AuthContextProvider({ children }: any) {
     () => ({
       isAuthenticated,
       roleOverride,
+      authenticateUser,
       switchRole,
       user,
       currentSafe,
@@ -558,6 +547,7 @@ export function AuthContextProvider({ children }: any) {
     }),
     [
       isAuthenticated,
+      authenticateUser,
       roleOverride,
       user,
       loading,
