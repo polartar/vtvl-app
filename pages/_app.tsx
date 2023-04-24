@@ -12,7 +12,6 @@ import { VestingContextProvider } from '@providers/vesting.context';
 // react-query imports
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Web3ReactProvider } from '@web3-react/core';
-import useRoleGuard from 'hooks/useRoleGuard';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import { TransactionLoaderContextProvider } from 'providers/transaction-loader.context';
@@ -28,7 +27,6 @@ import { ToastContainer } from 'react-toastify';
 // Toast initial styling.
 import 'react-toastify/dist/ReactToastify.css';
 import 'styles/globals.css';
-import { platformRoutes } from 'utils/routes';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -57,9 +55,6 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   // Use the layout defined at the page level, if available
   // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.
   const getLayout = Component.getLayout ?? ((page) => page);
-
-  // Apply the role guard
-  useRoleGuard({ routes: platformRoutes, fallbackPath: '/onboarding' });
 
   return (
     <>
