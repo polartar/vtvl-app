@@ -441,7 +441,11 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       '/onboarding/connect-wallet',
       '/expired',
       '/recipient/create',
-      '/recipient/schedule'
+      '/recipient/schedule',
+      '/404',
+      '/not-found',
+      '/terms',
+      '/privacypolicy'
     ];
 
     if (!hideConnectModalOnRoutes.includes(router.pathname) && !active && !account) {
