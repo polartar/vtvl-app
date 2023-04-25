@@ -15,10 +15,11 @@ import { Web3ReactProvider } from '@web3-react/core';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import { TransactionLoaderContextProvider } from 'providers/transaction-loader.context';
-import React, { ReactElement, ReactNode } from 'react';
+import React, { ReactElement, ReactNode, useEffect } from 'react';
 // Todo: Arvin #18 - Explore styles that can be customized / override to conform with VTVL branding.
 // React datepicker initial styling.
 import 'react-datepicker/dist/react-datepicker.css';
+import { hotjar } from 'react-hotjar';
 // Skeleton loader styles
 import 'react-loading-skeleton/dist/skeleton.css';
 import Modal from 'react-modal';
@@ -46,6 +47,10 @@ function getLibrary(provider: any): Web3Provider {
 }
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+  useEffect(() => {
+    hotjar.initialize(Number(process.env.NEXT_PUBLIC_HOTJAR_HJID), Number(process.env.NEXT_PUBLIC_HOTJAR_HJSV));
+  }, []);
+
   Modal.setAppElement('#react-modal');
   // Use the layout defined at the page level, if available
   // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.

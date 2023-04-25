@@ -7,7 +7,6 @@ import { NextPage } from 'next';
 import Router from 'next/router';
 import AstroHelmet from 'public/icons/astronaut-helmet.svg';
 import { useEffect } from 'react';
-import { hotjar } from 'react-hotjar';
 
 const OnboardingContainer = styled.div`
   display: grid;
@@ -45,7 +44,6 @@ const SelectLoginTypePage: NextPage = () => {
   const { startOnboarding } = useOnboardingContext();
   useEffect(() => {
     startOnboarding(Step.ChainSetup);
-    hotjar.initialize(Number(process.env.NEXT_PUBLIC_HOTJAR_HJID), Number(process.env.NEXT_PUBLIC_HOTJAR_HJSV));
   }, []);
 
   const wallets = [
