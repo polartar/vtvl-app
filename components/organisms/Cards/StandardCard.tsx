@@ -46,15 +46,15 @@ export default function StandardCard({
           </>
         )}
       </div>
-      <div className="flex justify-between items-end">
+      <div className="flex justify-start items-center gap-4">
         {isLoading ? (
-          <div className="animate-pulse">
+          <div className="animate-pulse mt-2">
             <div className="bg-neutral-100 h-[33px] w-150 rounded-10"></div>
           </div>
         ) : (
           <>
-            {contentIcon && <span className="w-8 h-8 flex items-center justify-center">{contentIcon}</span>}
-            <Typography variant="inter" size="title">
+            {contentIcon && <span className="flex items-center justify-center">{contentIcon}</span>}
+            <Typography variant="inter" size="title" className="font-medium">
               {renderContent(content, contentType)}
             </Typography>
           </>
