@@ -158,7 +158,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
         const prevRecipients = allRecipients
           .filter((recipient) => existingVestings.includes(recipient.data.vestingId))
-          .map((recipient) => recipient.data.walletAddress);
+          .map((recipient) => recipient.data.walletAddress?.toLowerCase());
 
         // To optimize later
         // Apply validation of this only on add form
