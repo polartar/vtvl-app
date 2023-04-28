@@ -11,6 +11,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { fetchRecipient, updateRecipient } from 'services/db/recipient';
 import { IRecipient, IRecipientDoc } from 'types/models';
+import { IUserType } from 'types/models/member';
 
 const RecipientCreate: NextPage = () => {
   const { setOrganizationId, loading, setRecipient: setCurrentRecipient, signUpWithToken } = useAuthContext();
@@ -73,7 +74,7 @@ const RecipientCreate: NextPage = () => {
         ...recipient?.data,
 
         org_id: recipient.data.organizationId,
-        type: 'investor'
+        type: 'investor' as IUserType
       };
 
       signUpWithToken(newRecipient, token);

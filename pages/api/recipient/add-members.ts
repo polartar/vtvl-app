@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
 import { fetchAllMembers, newMember } from 'services/db/member';
 import { fetchAllRecipientsWithId } from 'services/db/recipient';
+import { IUserType } from 'types/models/member';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { emails } = req.body;
@@ -21,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           email: recipient.data.email,
           companyEmail: recipient.data.email,
           name: recipient.data.name || '',
-          type: recipient.data.recipientType,
+          type: recipient.data.recipientType as IUserType,
           org_id: recipient.data.organizationId,
           source: 'recipient'
         });

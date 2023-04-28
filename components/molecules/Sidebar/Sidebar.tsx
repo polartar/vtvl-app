@@ -15,6 +15,7 @@ interface SubMenuItemProps {
   route: string;
   available?: boolean;
   isExternal?: boolean;
+  onClick?: () => void;
 }
 
 interface MenuItemProps extends SubMenuItemProps {
@@ -36,8 +37,12 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
   const currentRoute = useRouter();
   const [selectedRoute, setSelectedRoute] = React.useState(currentRoute.pathname || '');
 
-  const handleMenuClick = (route: string, isExternal?: boolean) => {
-    if (isExternal) {
+  const handleMenuClick = (route: string, isExternal?: boolean, onClick?: () => void) => {
+    // Prioritize custom onClick events under the menu item,
+    // then the external linkage and lastly the declared route.
+    if (onClick) {
+      onClick();
+    } else if (isExternal) {
       window.open(route);
     } else {
       setSelectedRoute(route);
@@ -80,7 +85,7 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
                 <SidebarItem
                   selected={selectedRoute.includes(menu.route)}
                   disabled={!menu.available}
-                  onClick={() => (menu.available ? handleMenuClick(menu.route, menu.isExternal) : {})}
+                  onClick={() => (menu.available ? handleMenuClick(menu.route, menu.isExternal, menu.onClick) : {})}
                   icon={menu.icon}
                   hoverIcon={menu.hoverIcon}
                   className={`${sidebarIsExpanded ? 'w-60' : ''} ${!menu.available ? '!opacity-40' : ''}`}>
@@ -124,7 +129,9 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
                 key={index}
                 disabled={!submenu.available}
                 selected={selectedRoute.includes(submenu.route)}
-                onClick={() => (submenu.available ? handleMenuClick(submenu.route, submenu.isExternal) : {})}
+                onClick={() =>
+                  submenu.available ? handleMenuClick(submenu.route, submenu.isExternal, submenu.onClick) : {}
+                }
                 icon={submenu.icon}
                 hoverIcon={submenu.hoverIcon}
                 className={`${sidebarIsExpanded ? 'w-60' : ''} ${!submenu.available ? '!opacity-40' : ''}`}>

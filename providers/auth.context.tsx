@@ -17,8 +17,8 @@ import {
   signOut,
   updateEmail
 } from 'firebase/auth';
+import useRoleGuard from 'hooks/useRoleGuard';
 import useToggle from 'hooks/useToggle';
-import { ILocalStorage } from 'interfaces/locaStorage';
 import Router from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from 'services/auth/firebase';
@@ -28,9 +28,10 @@ import { fetchRecipientByQuery, fetchRecipientsByQuery } from 'services/db/recip
 import { createOrUpdateSafe, fetchSafeByQuery, fetchSafesByQuery } from 'services/db/safe';
 import { getSafeInfo } from 'services/gnosois';
 import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
+import { IUserType } from 'types/models/member';
 import { compareAddresses } from 'utils';
-import { CACHE_KEY } from 'utils/constants';
 import { getCache, setCache } from 'utils/localStorage';
+import { platformRoutes } from 'utils/routes';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -41,6 +42,10 @@ export type NewLogin = {
 export type TConnections = 'metamask' | 'walletconnect';
 
 export type AuthContextData = {
+  isAuthenticated: boolean;
+  roleOverride?: IUserType;
+  authenticateUser: (user: IUser) => void;
+  switchRole: (role: IUserType) => void;
   user: IUser | undefined;
   currentSafe: ISafe | undefined;
   currentSafeId: string;
@@ -55,10 +60,10 @@ export type AuthContextData = {
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
   registerNewMember: (
-    member: { name: string; email: string; companyEmail: string; type: string },
+    member: { name: string; email: string; companyEmail: string; type: IUserType },
     org: IOrganization
   ) => Promise<string | undefined>;
-  teammateSignIn: (email: string, type: string, orgId: string, url: string) => Promise<void>;
+  teammateSignIn: (email: string, type: IUserType, orgId: string, url: string) => Promise<void>;
   sendTeammateInvite: (
     email: string,
     type: string,
@@ -92,6 +97,7 @@ export type AuthContextData = {
 const AuthContext = createContext({} as AuthContextData);
 
 export function AuthContextProvider({ children }: any) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { chainId, account, library } = useWeb3React();
   const [user, setUser] = useState<IUser | undefined>();
   const [organizationId, setOrganizationId] = useState<string | undefined>();
@@ -109,6 +115,13 @@ export function AuthContextProvider({ children }: any) {
   // Stores the connection status whether the user is connected via metamask or other wallets
   const [connection, setConnection] = useState<TConnections | undefined>();
 
+  // User role switching from founder to investor and vice versa
+  const [roleOverride, setRoleOverride] = useState<IUserType>('');
+
+  // Adds the auth and role guard here
+  const { updateRoleGuardState } = useRoleGuard({ routes: platformRoutes, fallbackPath: '/404' });
+
+  // Sets the recipient if it is found
   useEffect(() => {
     if (chainId && user?.memberInfo?.email && user.memberInfo?.type == 'investor') {
       fetchRecipientsByQuery(['email', 'chainId'], ['==', '=='], [user.email, chainId]).then((response) => {
@@ -120,10 +133,16 @@ export function AuthContextProvider({ children }: any) {
   }, [chainId, user]);
 
   useEffect(() => {
+    // Update the user for persisted data
+    const persistedUser = getCache();
+    if (persistedUser?.user) authenticateUser(persistedUser?.user, persistedUser?.roleOverride);
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const memberInfo = await fetchMember(user.uid);
-        setUser({ ...user, memberInfo });
+        const persistedRoleOverride = getCache()?.roleOverride;
+        authenticateUser({ ...user, memberInfo });
+        if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IUserType);
       }
       setLoading(false);
     });
@@ -150,6 +169,31 @@ export function AuthContextProvider({ children }: any) {
       }
     }
   }, [library]);
+
+  // Switch role feature
+  const switchRole = async (newRole: IUserType) => {
+    setRoleOverride(newRole);
+
+    const updatedAuthData = { roleOverride: newRole };
+    // Update setCache for persistency
+    await setCache(updatedAuthData);
+    // Update the global state for the auth and role -- automatically redirects the user.
+    updateRoleGuardState();
+  };
+
+  // A function to abstract all authentication from different authentication methods
+  const authenticateUser = async (user: IUser, role?: IUserType) => {
+    await setCache({ user, isAuthenticated: true });
+    // Condition is used because a possible value is blank '' from IUserType
+    if (role !== undefined) {
+      setRoleOverride(role);
+      await setCache({ roleOverride: role });
+    }
+    await updateRoleGuardState();
+    setOrganizationId(user?.memberInfo?.org_id);
+    setUser(user);
+    setIsAuthenticated(true);
+  };
 
   const updateAuthState = useCallback(
     async (credential: UserCredential, isGuestMode = false) => {
@@ -179,7 +223,7 @@ export function AuthContextProvider({ children }: any) {
           // If this user was already registered as a recipient
           payload.org_id = recipientInfo.data.organizationId;
           payload.name = recipientInfo.data.name;
-          payload.type = recipientInfo.data.recipientType;
+          payload.type = recipientInfo.data.recipientType as IUserType;
           payload.wallets!.push({
             walletAddress: recipientInfo.data.walletAddress,
             chainId: recipientInfo.data.chainId!
@@ -195,8 +239,7 @@ export function AuthContextProvider({ children }: any) {
       }
 
       const memberInfo = await fetchMember(credential.user.uid);
-      setOrganizationId(memberInfo?.org_id);
-      setUser({ ...credential.user, memberInfo });
+      authenticateUser({ ...credential.user, memberInfo });
 
       return {
         isNewUser: Boolean(additionalInfo?.isNewUser),
@@ -236,7 +279,7 @@ export function AuthContextProvider({ children }: any) {
   };
 
   const registerNewMember = async (
-    member: { name: string; email: string; companyEmail: string; type: string },
+    member: { name: string; email: string; companyEmail: string; type: IUserType },
     org: IOrganization
   ): Promise<string | undefined> => {
     setLoading(true);
@@ -262,8 +305,7 @@ export function AuthContextProvider({ children }: any) {
     if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
 
     await newMember(user.uid, { ...memberInfo });
-    setOrganizationId(org_id);
-    setUser({ ...user, memberInfo });
+    authenticateUser({ ...user, memberInfo: { ...memberInfo, org_id } });
     setIsNewUser(true);
     setLoading(false);
     return org_id || '';
@@ -299,8 +341,7 @@ export function AuthContextProvider({ children }: any) {
     await newMember(credential.user.uid, {
       ...memberInfo
     });
-    setUser({ ...credential.user, memberInfo });
-
+    authenticateUser({ ...credential.user, memberInfo });
     setLoading(false);
   };
 
@@ -338,12 +379,11 @@ export function AuthContextProvider({ children }: any) {
     await newMember(credential.user.uid, {
       ...memberInfo
     });
-    setUser({ ...credential.user, memberInfo });
-
+    authenticateUser({ ...credential.user, memberInfo });
     setLoading(false);
   };
 
-  const teammateSignIn = async (email: string, type: string, orgId: string, url?: string): Promise<void> => {
+  const teammateSignIn = async (email: string, type: IUserType, orgId: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
     await setPersistence(auth, browserSessionPersistence);
@@ -375,7 +415,7 @@ export function AuthContextProvider({ children }: any) {
     });
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
-    setUser({ ...credential.user, memberInfo });
+    authenticateUser({ ...credential.user, memberInfo });
     setLoading(false);
   };
 
@@ -420,8 +460,9 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await signInAnonymously(auth);
     const additionalInfo = getAdditionalUserInfo(credential);
+    const userDetails: IUser = { ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } };
 
-    setUser({ ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } });
+    authenticateUser(userDetails);
 
     if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
@@ -435,14 +476,22 @@ export function AuthContextProvider({ children }: any) {
     if (!user) return;
     const memberInfo = await fetchMember(user.uid);
     if (memberInfo) {
-      setUser({ ...user, memberInfo });
+      authenticateUser({ ...user, memberInfo });
     }
     setLoading(false);
   }, []);
 
   const logOut = useCallback(async () => {
+    // sign out from firebase
     await signOut(auth);
+    // remove user state
     setUser(undefined);
+    // unauthorize user
+    setIsAuthenticated(false);
+    // remove persistent user states
+    setCache({ user: undefined, roleOverride: undefined, isAuthenticated: undefined });
+    // update auth and role guard states
+    updateRoleGuardState();
     Router.replace('/onboarding');
   }, []);
 
@@ -454,6 +503,10 @@ export function AuthContextProvider({ children }: any) {
 
   const memoedValue = useMemo(
     () => ({
+      isAuthenticated,
+      roleOverride,
+      authenticateUser,
+      switchRole,
       user,
       currentSafe,
       currentSafeId,
@@ -493,6 +546,9 @@ export function AuthContextProvider({ children }: any) {
       setRecipient
     }),
     [
+      isAuthenticated,
+      authenticateUser,
+      roleOverride,
       user,
       loading,
       error,

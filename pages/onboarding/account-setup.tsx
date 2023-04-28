@@ -1,9 +1,7 @@
-import Avatar from '@components/atoms/Avatar/Avatar';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
-import Radio from '@components/atoms/FormControls/Radio/Radio';
 import { Typography } from '@components/atoms/Typography/Typography';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -14,6 +12,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
+import { IUserType } from 'types/models/member';
 import { ITeamRole } from 'types/models/settings';
 
 interface Contributor {
@@ -133,7 +132,7 @@ const AccountSetupPage: NextPage = () => {
           name: values.name,
           email: user.email || '',
           companyEmail: values.companyEmail,
-          type: info?.accountType || ''
+          type: (info?.accountType || '') as IUserType
         },
         { name: values.company, email: values.companyEmail }
       );
