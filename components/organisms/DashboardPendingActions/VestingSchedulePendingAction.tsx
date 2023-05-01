@@ -48,13 +48,15 @@ interface IVestingContractPendingActionProps {
     keyword: string;
     status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
   }) => void;
+  isBatchTransaction: boolean;
 }
 
 const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps> = ({
   id,
   data,
   filter,
-  updateFilter
+  updateFilter,
+  isBatchTransaction
 }) => {
   const { account, chainId, activate, library } = useWeb3React();
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
@@ -65,7 +67,9 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     vestings,
     vestingsStatus,
     recipients,
-    setVestingsStatus
+    setVestingsStatus,
+    safeTransactions,
+    setSafeTransactions
   } = useDashboardContext();
   const { editSchedule, deleteSchedulePrompt, setShowDeleteModal } = useVestingContext();
   const {
@@ -85,7 +89,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   );
 
   const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract?.data);
-  console.log({ isAdmin, vestingContract });
   const [status, setStatus] = useState<IStatus>('');
 
   const [transactionStatus, setTransactionStatus] = useState<
@@ -113,7 +116,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   }, [pendingTransactions]);
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (currentSafe?.address && chainId) {
+    if (currentSafe?.address && chainId && txHash) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
@@ -131,6 +134,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       apiTx.confirmations?.forEach((confirmation) => {
         safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
       });
+      setSafeTransactions({ ...safeTransactions, [txHash]: safeTx });
       return safeTx;
     }
   };
@@ -146,11 +150,21 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     }
 
     if (transaction && transaction.data.safeHash && currentSafe && account) {
-      const safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
+      const safeTx = safeTransactions[transaction.data.safeHash]
+        ? safeTransactions[transaction.data.safeHash]
+        : !isBatchTransaction
+        ? await fetchSafeTransactionFromHash(transaction.data.safeHash)
+        : null;
 
       if (safeTx) {
         setSafeTransaction(safeTx);
-        if (safeTx.signatures.size >= currentSafe?.threshold) {
+        const ethAdapter = new EthersAdapter({
+          ethers: ethers,
+          signer: library?.getSigner(0)
+        });
+        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+        const threshold = await safeSdk.getThreshold();
+        if (safeTx.signatures.size >= threshold) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
@@ -172,6 +186,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
           });
         }
+      } else {
+        return;
       }
     } else {
       const TokenContract = new ethers.Contract(
@@ -798,7 +814,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
 
   useEffect(() => {
     initializeStatus();
-  }, [data, currentSafe, account, vestingContract, transactions, transaction]);
+  }, [data, currentSafe, account, vestingContract, transactions, transaction, isBatchTransaction, safeTransactions]);
 
   return isVisible ? (
     <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">
