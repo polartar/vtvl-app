@@ -86,7 +86,6 @@ export const getCliffDurationTimestamp = (cliffDuration: CliffDuration, startDat
   // Subtract
   const cliffDurationTimestamp = cliffDurationDateSeconds - startDateSeconds;
 
-  console.log('All about durations', cliffDuration, startDateSeconds, cliffDurationDateSeconds, cliffDurationTimestamp);
   return cliffDurationTimestamp;
 };
 
@@ -143,7 +142,6 @@ export const getReleaseFrequencyTimestamp = (
       ? 60
       : Math.round((getUnixTime(endDate) - getUnixTime(actualStartDateTime)) / intervals); //startWithIntervalSeconds - getUnixTime(actualStartDateTime);
 
-  console.log('FREQUENCY TIMESTAMP', startDate, endDate, intervalSeconds);
   return intervalSeconds;
 };
 
@@ -276,7 +274,6 @@ export const getNumberOfReleases = (frequency: ReleaseFrequency, startDate: Date
   }
 
   // Return the number of intervals
-  console.log('INTERVALS', intervals.length, intervals, diffSeconds);
   // Avoids having to bloat the number of releases when doing years gap and continuous/minute release frequencies
   return frequency && frequency === 'continuous'
     ? // Use the difference of dates in seconds for the intervals in the continuous frequency
