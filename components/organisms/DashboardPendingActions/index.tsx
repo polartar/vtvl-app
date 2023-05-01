@@ -109,7 +109,7 @@ const DashboardPendingActions = () => {
       <div className="mb-6">
         <PendingActionsFilter filter={filter} updateFilter={setFilter} />
       </div>
-      <div className="border border-[#d0d5dd] rounded-xl w-full overflow-hidden">
+      <div className="border border-[#d0d5dd] rounded-xl w-full max-h-[700px] overflow-y-auto">
         <div className="flex bg-[#f2f4f7] text-[#475467] text-xs">
           <div className="w-16 py-3"></div>
           <div className="w-36 py-3">Name</div>
@@ -130,17 +130,18 @@ const DashboardPendingActions = () => {
             updateFilter={setFilter}
           />
         ))}
-        {vestings
-          .filter((vesting) => vesting.data.status !== 'COMPLETED' && vesting.data.status !== 'LIVE')
-          .map((vesting) => (
-            <VestingSchedulePendingAction
-              id={vesting.id}
-              data={vesting.data}
-              key={vesting.id}
-              filter={filter}
-              updateFilter={setFilter}
-            />
-          ))}
+        {pendingVestings.map((vesting, index) => (
+          <VestingSchedulePendingAction
+            id={vesting.id}
+            data={vesting.data}
+            key={vesting.id}
+            filter={filter}
+            updateFilter={setFilter}
+            isBatchTransaction={
+              !!pendingVestings.find((v, i) => v.data.transactionId === vesting.data.transactionId && i < index)
+            }
+          />
+        ))}
         {revokings.map((revoking) => (
           <PendingRevokingAction id={revoking.id} data={revoking.data} key={revoking.id} />
         ))}

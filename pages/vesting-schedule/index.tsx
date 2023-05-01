@@ -19,6 +19,7 @@ import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
+import VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import toDate from 'date-fns/toDate';
@@ -657,10 +658,18 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       ]);
 
       if (currentSafe?.address && account && chainId && organizationId) {
+        const VestingContract = new ethers.Contract(
+          vestingContract?.data.address ?? '',
+          VESTING_ABI.abi,
+          ethers.getDefaultProvider(SupportedChains[chainId].rpc)
+        );
+        const isAdmin = await VestingContract.isAdmin(currentSafe?.address);
+
         if (!isAdmin) {
           toast.error(
             "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
           );
+          setTransactionStatus('ERROR');
           return;
         }
 
@@ -739,6 +748,13 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         toast.success('Transaction has been created successfully.');
         setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
+        const VestingContract = new ethers.Contract(
+          vestingContract?.data.address ?? '',
+          VESTING_ABI.abi,
+          ethers.getDefaultProvider(SupportedChains[chainId].rpc)
+        );
+        const isAdmin = await VestingContract.isAdmin(account);
+
         if (!isAdmin) {
           toast.error(
             "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
