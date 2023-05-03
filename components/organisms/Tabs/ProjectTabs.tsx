@@ -49,7 +49,11 @@ export default function ProjectTabs({
               selectedProject.value === project.value ? 'bg-primary-50' : 'bg-white'
             }`}
             onClick={handleSelectProject(project)}>
-            <Typography size="body" className="font-medium text-neutral-500">
+            <Typography
+              size="body"
+              className={`font-medium ${
+                selectedProject.value === project.value ? 'text-neutral-900' : 'text-neutral-500'
+              }`}>
               {project.label}
             </Typography>
           </button>

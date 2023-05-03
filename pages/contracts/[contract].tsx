@@ -9,13 +9,6 @@ import useSWR from 'swr';
 const ContractsPage: NextPageWithLayout = () => {
   const router = useRouter();
   const contractId = router.query.contract;
-  return <Contract vestingContractId={contractId as string} />;
-};
-
-ContractsPage.getLayout = function getLayout(page: React.ReactElement) {
-  const router = useRouter();
-  const contractId = router.query.contract;
-
   const { data: vestingContract } = useSWR(['fetch', contractId], async () => {
     if (contractId) return await fetchVestingContract(contractId as string);
     return undefined;
@@ -27,7 +20,7 @@ ContractsPage.getLayout = function getLayout(page: React.ReactElement) {
   ];
   return (
     <SteppedLayout title="Contracts" crumbs={crumbSteps}>
-      {page}
+      <Contract vestingContractId={contractId as string} />;
     </SteppedLayout>
   );
 };

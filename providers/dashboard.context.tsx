@@ -1,3 +1,4 @@
+import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import getUnixTime from 'date-fns/getUnixTime';
@@ -44,6 +45,7 @@ interface IDashboardData {
   totalClaimable: ethers.BigNumber;
   claims: number;
   recipientTokenDetails: TCapTableRecipientTokenDetails[];
+  safeTransactions: { [key: string]: SafeTransaction };
   // fetchDashboardVestingContract: () => void;
   fetchDashboardVestings: () => void;
   fetchDashboardTransactions: () => void;
@@ -51,6 +53,7 @@ interface IDashboardData {
   fetchDashboardData: () => void;
   setRemoveOwnership: (v: boolean) => void;
   setVestingsStatus: (v: { [key: string]: IVestingStatus }) => void;
+  setSafeTransactions: (v: { [key: string]: SafeTransaction }) => void;
 }
 
 const DashboardContext = createContext({} as IDashboardData);
@@ -79,6 +82,7 @@ export function DashboardContextProvider({ children }: any) {
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [recipients, setRecipients] = useState<IRecipientDoc[]>([]);
   const [vestingsStatus, setVestingsStatus] = useState<{ [key: string]: IVestingStatus }>({});
+  const [safeTransactions, setSafeTransactions] = useState<{ [key: string]: SafeTransaction }>({});
 
   // Stores everything about the user token details
   // Used to compute total withdrawn, unclaimed, total allocations etc.
@@ -451,12 +455,14 @@ export function DashboardContextProvider({ children }: any) {
       totalClaimable,
       claims,
       recipientTokenDetails,
+      safeTransactions,
       fetchDashboardVestings,
       fetchDashboardTransactions,
       setOwnershipTransfered,
       fetchDashboardData,
       setRemoveOwnership,
-      setVestingsStatus
+      setVestingsStatus,
+      setSafeTransactions
     }),
     [
       vestings,
@@ -476,7 +482,8 @@ export function DashboardContextProvider({ children }: any) {
       totalWithdrawn,
       totalClaimable,
       claims,
-      recipientTokenDetails
+      recipientTokenDetails,
+      safeTransactions
     ]
   );
 
