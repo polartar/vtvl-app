@@ -9,22 +9,10 @@ const SafeSelector = () => {
   const { library, account, active, chainId } = useWeb3React();
   const { currentSafe, setCurrentSafe, safes, currentSafeId, setCurrentSafeId } = useAuthContext();
   const [showSafes, setShowSafes] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = React.useState({
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Ethereum',
-    code: 'ETH'
-  });
 
   useEffect(() => {
     if (!active) setShowSafes(false);
-    if (chainId) {
-      setSelectedNetwork({
-        icon: SupportedChains[chainId as SupportedChainId].icon,
-        title: SupportedChains[chainId as SupportedChainId].title,
-        code: SupportedChains[chainId as SupportedChainId].code
-      });
-    }
-  }, [active, chainId]);
+  }, [active]);
 
   return (
     <div className="relative sm:w-32 lg:w-44 shrink-0" tabIndex={0} onBlur={() => setShowSafes(false)}>
