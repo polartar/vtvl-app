@@ -1,6 +1,5 @@
-const env = process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NEXT_PUBLIC_NODE_ENV;
-console.log('vercel_env', process.env.NEXT_PUBLIC_VERCEL_ENV);
-console.log('node_env', process.env.NEXT_PUBLIC_NODE_ENV);
+const env = process.env.NEXT_PUBLIC_NODE_ENV;
+console.log('env', env);
 export enum SupportedChainId {
   MAINNET = 1,
   GOERLI = 5,
