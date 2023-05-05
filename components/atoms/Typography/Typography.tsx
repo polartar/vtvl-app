@@ -13,11 +13,11 @@ export const Typography: React.FC<TypographyProps> = ({
   // Add a11y for the typography
   switch (size) {
     case 'title':
-      return <h1 className={className}>{children}</h1>;
+      return <h1 className={classNames}>{children}</h1>;
     case 'subtitle':
-      return <h2 className={className}>{children}</h2>;
+      return <h2 className={classNames}>{children}</h2>;
     case 'paragraph':
-      return <p className={className}>{children}</p>;
+      return <p className={classNames}>{children}</p>;
     default:
       return <span className={classNames}>{children}</span>;
   }

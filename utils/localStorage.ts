@@ -3,9 +3,7 @@ import { ILocalStorage } from 'interfaces/locaStorage';
 import { CACHE_KEY } from './constants';
 
 export const getCache = () => {
-  if (!localStorage.getItem(CACHE_KEY)) {
-    return {};
-  }
+  if (typeof window === 'undefined' || !localStorage.getItem(CACHE_KEY)) return {};
   return JSON.parse(localStorage.getItem(CACHE_KEY) as string) as ILocalStorage;
 };
 

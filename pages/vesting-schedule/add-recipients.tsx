@@ -151,6 +151,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
   const handleContinue = useCallback(
     async (data: RecipientTableRow[], newErrors: string[]) => {
+      console.log({ scheduleState });
       if (scheduleState.vestingContractId) {
         const existingVestings = vestings
           .filter((vesting) => vesting.data.vestingContractId === scheduleState.vestingContractId)
@@ -158,7 +159,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
         const prevRecipients = allRecipients
           .filter((recipient) => existingVestings.includes(recipient.data.vestingId))
-          .map((recipient) => recipient.data.walletAddress.toLowerCase());
+          .map((recipient) => recipient.data.walletAddress?.toLowerCase());
 
         // To optimize later
         // Apply validation of this only on add form

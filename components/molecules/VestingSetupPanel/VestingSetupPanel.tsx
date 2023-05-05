@@ -88,7 +88,7 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
       scheduleName: form.scheduleName,
       contractName: form.contractName,
       createNewContract: form.createNewContract,
-      vestingContractId: form.vestingContract.value
+      vestingContractId: form.createNewContract ? '' : form.vestingContract.value
     });
   }, [form, onContinue]);
 
