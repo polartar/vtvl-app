@@ -80,7 +80,7 @@ const FundingContractModal = ({
     getFieldState,
     setValue,
     getValues,
-    formState: { isSubmitting }
+    formState: { errors, isSubmitting }
   } = useForm({
     defaultValues: {
       selectedFundSource: '',
@@ -286,6 +286,12 @@ const FundingContractModal = ({
                           label="Amount to be funded"
                           required
                           type="number"
+                          error={+depositAmount > amount.value}
+                          message={
+                            +depositAmount > amount.value
+                              ? 'The amount should be greater than the allocation amount'
+                              : ''
+                          }
                           {...field}
                           onChange={(v) => {
                             setValue('amount', parseFloat(v.target.value.replaceAll(',', '')));
