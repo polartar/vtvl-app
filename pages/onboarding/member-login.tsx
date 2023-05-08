@@ -3,6 +3,7 @@ import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import AuthContext from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { States, Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -18,6 +19,9 @@ type LoginForm = {
 const MemberLoginPage: NextPage = () => {
   const { teammateSignIn, sendLoginLink, signInWithGoogle, allowSignIn } = useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
+  const {
+    website: { features }
+  } = useGlobalContext();
   const router = useRouter();
 
   useEffect(() => {
@@ -116,13 +120,17 @@ const MemberLoginPage: NextPage = () => {
             </Button>
           </div>
         </div>
-        <hr className="border-t border-neutral-200 w-full mb-6" />
-        <div className="flex flex-row items-center gap-5 justify-center font-medium text-xs text-neutral-800 text-center ">
-          Don&apos;t have an account?{' '}
-          <button type="button" className="primary small" onClick={() => router.replace('/onboarding/sign-up')}>
-            Create an account
-          </button>
-        </div>
+        {!features?.auth?.memberOnly && (
+          <>
+            <hr className="border-t border-neutral-200 w-full mb-6" />
+            <div className="flex flex-row items-center gap-5 justify-center font-medium text-xs text-neutral-800 text-center ">
+              Don&apos;t have an account?{' '}
+              <button type="button" className="primary small" onClick={() => router.replace('/onboarding/sign-up')}>
+                Create an account
+              </button>
+            </div>
+          </>
+        )}
       </Form>
     </div>
   );
