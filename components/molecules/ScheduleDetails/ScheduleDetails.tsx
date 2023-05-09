@@ -217,20 +217,6 @@ const ScheduleDetails = ({
       <hr className="my-6" />
       <div className={`grid gap-3 ${layout === 'small' ? 'grid-cols-2' : 'sm:grid-cols-2 md:grid-cols-4 '}`}>
         <label>
-          <span>Cliff</span>
-          <p className="flex flex-row items-start gap-2 text-xs">
-            <StairCase className="w-6 h-6 text-secondary-900" />
-            {formatNumber(cliffAmount)} {token}
-          </p>
-        </label>
-        <label>
-          <span>Linear Release</span>
-          <p className="flex flex-row items-start gap-2 text-xs">
-            <GraphLine className="w-6 h-6 text-secondary-900" />
-            {formatNumber(releaseAmount)} {token} /{getReleaseFrequencyLabel(releaseFrequency)}
-          </p>
-        </label>
-        <label>
           <span>Start</span>
           <p className="flex flex-row items-start gap-2 text-xs">
             <CalendarClock className="w-5 h-5 text-secondary-900" />
@@ -255,6 +241,20 @@ const ScheduleDetails = ({
               </>
             ) : null}
             {/* <Hint tip="This is exact end date and time.<br />Adjusted based on frequency interval." /> */}
+          </p>
+        </label>
+        <label>
+          <span>Cliff</span>
+          <p className="flex flex-row items-start gap-2 text-xs capitalize">
+            <StairCase className="w-6 h-6 text-secondary-900" />
+            {cliffDuration.split('-').join(' ')}
+          </p>
+        </label>
+        <label>
+          <span>Linear Release</span>
+          <p className="flex flex-row items-start gap-2 text-xs capitalize">
+            <GraphLine className="w-6 h-6 text-secondary-900" />
+            {releaseFrequency}
           </p>
         </label>
       </div>

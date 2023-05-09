@@ -1655,9 +1655,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             <div>
               <label className="text-sm text-neutral-600 flex flex-row items-center gap-2 mb-2.5">
                 <ContractsIcon className="h-4" />
-                Contract
+                Contract Name: <p className="text-neutral-900">{scheduleState.contractName}</p>
               </label>
-              <p className="text-neutral-900">{scheduleState.contractName}</p>
+              <label className="text-sm text-neutral-600 flex flex-row items-center gap-2 mb-2.5">
+                <ContractsIcon className="h-4 invisible" />
+                Schedule Name: <p className="text-neutral-900">{scheduleState.name}</p>
+              </label>
             </div>
             {currentSafe && currentSafe.address ? (
               <div>
