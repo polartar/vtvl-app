@@ -40,13 +40,15 @@ const TokenProfile = ({
       {logo ? <img src={logo} className={`rounded-full ${sizes[size].image}`} alt={name} /> : null}
       {name ? <h3 className={`font-semibold inter ${sizes[size].name}`}>{name}</h3> : null}
       {symbol ? <Chip label={symbol} rounded /> : null}
-      <div className="text-sm font-medium text-netural-900">
-        <span className="text-neutral-500">
-          <Copy text={address}>
-            {address.slice(0, 5)}...{address.slice(-4)}
-          </Copy>
-        </span>
-      </div>
+      {address ? (
+        <div className="text-sm font-medium text-netural-900">
+          <span className="text-neutral-500">
+            <Copy text={address}>
+              {address.slice(0, 5)}...{address.slice(-4)}
+            </Copy>
+          </span>
+        </div>
+      ) : null}
       {burnable && address ? (
         <Chip className="cursor-pointer" label="Burn" color="danger" size="small" onClick={showModal} />
       ) : null}
