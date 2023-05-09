@@ -22,6 +22,7 @@ interface FormTypes {
   logo: string;
   supplyCap: string;
   initialSupply: number | '';
+  maxSupply: number | '';
 }
 
 const MintingToken: NextPageWithLayout = () => {
@@ -55,7 +56,7 @@ const MintingToken: NextPageWithLayout = () => {
   const maxSupply = { value: watch('maxSupply'), state: getFieldState('maxSupply') };
   const maxSupplyText = { value: watch('maxSupplyText'), state: getFieldState('maxSupplyText') };
   const burnable = { value: watch('burnable'), state: getFieldState('burnable') };
-
+  console.log({ initialSupply });
   // Updates made when the user is interacting with the Range Slider component
   // Should also update the text value -- for display -- of the number input
   const handleinitialSupplyChange = (e: any) => {
@@ -77,6 +78,13 @@ const MintingToken: NextPageWithLayout = () => {
 
   // Handle the submit of the form
   const onSubmit: SubmitHandler<FormTypes> = (data) => {
+    if (
+      Number(data.initialSupply) <= 0 ||
+      Number(data.maxSupply) <= 0 ||
+      Number(data.maxSupply) < Number(data.initialSupply)
+    ) {
+      return;
+    }
     setFormSuccess(false);
     setFormError(false);
     setFormMessage('');
@@ -143,6 +151,13 @@ const MintingToken: NextPageWithLayout = () => {
     setValue('initialSupply', !isNaN(initialSupplyToFloat) ? initialSupplyToFloat : 0);
     setValue('maxSupply', !isNaN(maxSupplyToFloat) ? maxSupplyToFloat : 0);
   }, [initialSupplyText.value, maxSupplyText.value]);
+
+  const isDisabled =
+    !!errors.name ||
+    !!errors.symbol ||
+    !initialSupply.value ||
+    Number(initialSupply.value) < 0 ||
+    (supplyCap.value === 'LIMITED' && Number(initialSupply.value) > Number(maxSupply.value));
 
   return (
     <>
@@ -253,7 +268,7 @@ const MintingToken: NextPageWithLayout = () => {
                       }
                       placeholder="Enter amount"
                       type="number"
-                      error={Boolean(errors.maxSupply)}
+                      error={Boolean(errors.maxSupply) || Number(maxSupply.value) <= 0}
                       message={errors.maxSupply ? 'Please enter the initial total supply' : ''}
                       {...field}
                     />
@@ -276,14 +291,15 @@ const MintingToken: NextPageWithLayout = () => {
                       type="number"
                       error={
                         Boolean(errors.initialSupply) ||
-                        (initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED')
+                        (initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED') ||
+                        Number(initialSupply.value) <= 0
                       }
                       message={
                         errors.initialSupply
                           ? 'Please enter amount to mint'
                           : initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED'
                           ? 'Amount to mint should be smaller than the maximum amount'
-                          : ''
+                          : 'Please input valid amount'
                       }
                       {...field}
                     />
@@ -312,7 +328,7 @@ const MintingToken: NextPageWithLayout = () => {
               ) : null}
             </div>
             <div className="flex flex-row justify-end items-center border-t border-neutral-200 pt-5">
-              <Button className="primary" type="submit" loading={isSubmitting}>
+              <Button className="primary" type="submit" loading={isSubmitting} disabled={isDisabled}>
                 Continue
               </Button>
             </div>
