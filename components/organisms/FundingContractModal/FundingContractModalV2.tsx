@@ -80,7 +80,7 @@ const FundingContractModal = ({
     getFieldState,
     setValue,
     getValues,
-    formState: { isSubmitting }
+    formState: { errors, isSubmitting }
   } = useForm({
     defaultValues: {
       selectedFundSource: '',
@@ -164,9 +164,9 @@ const FundingContractModal = ({
       {depositAmount ? (
         <Modal isOpen={isOpen} className="z-50 max-w-lg w-full" style={modalStyles}>
           <Form isSubmitting={isSubmitting} onSubmit={handleSubmit(onSubmit)}>
-            <h2 className="h5 mb-3 text-neutral-800 font-medium">Fund contract</h2>
-            <h3 className="h6 text-neutral-800 font-medium">Select Wallet</h3>
-            <p className="paragraphy-small neutral-text mb-3">The wallet you wish to use to fund the contract</p>
+            <h2 className="h5 mb-3 text-neutral-800 font-medium">Fund schedule</h2>
+            <h3 className="h6 text-neutral-800 font-medium">Select wallet</h3>
+            <p className="paragraphy-small neutral-text mb-3">Select the wallet to fund the schedule</p>
             <Controller
               name="selectedFundSource"
               control={control}
@@ -204,8 +204,8 @@ const FundingContractModal = ({
             {/* RADIO SECTIONS FOR SELECTING THE METHOD OF FUNDING */}
             {selectedFundSource.value ? (
               <div className="pt-5 mt-5 border-t border-neutral-200">
-                <h3 className="h6 text-neutral-800 font-medium">Select Funding Method</h3>
-                <p className="paragraphy-small neutral-text mb-3">How much would you like to fund your contract?</p>
+                <h3 className="h6 text-neutral-800 font-medium">Select funding amount</h3>
+                <p className="paragraphy-small neutral-text mb-3">How much would you like to fund your schedule?</p>
                 <Controller
                   name="fundingMethod"
                   control={control}
@@ -240,7 +240,7 @@ const FundingContractModal = ({
                       checked={fundingMethod.value === 'CUSTOM_AMOUNT'}
                       label={
                         <div className="row-center justify-between">
-                          <span>Fund as you want</span>
+                          <span>Fund a different amount</span>
                           <span>
                             {formatNumber(+amount.value)} <strong>{mintFormState.symbol}</strong>
                           </span>
@@ -262,7 +262,7 @@ const FundingContractModal = ({
                       checked={fundingMethod.value === 'MANUAL'}
                       label={
                         <div className="row-center justify-between">
-                          <span>Fund manually</span>
+                          <span>Transfer manually</span>
                           <span>
                             {formatNumber(+depositAmount)} <strong>{mintFormState.symbol}</strong>
                           </span>
@@ -286,6 +286,12 @@ const FundingContractModal = ({
                           label="Amount to be funded"
                           required
                           type="number"
+                          error={+depositAmount > amount.value}
+                          message={
+                            +depositAmount > amount.value
+                              ? 'The amount should be greater than the allocation amount'
+                              : ''
+                          }
                           {...field}
                           onChange={(v) => {
                             setValue('amount', parseFloat(v.target.value.replaceAll(',', '')));
