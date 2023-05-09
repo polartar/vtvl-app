@@ -16,11 +16,11 @@ const ConfirmationSuccess: NextPageWithLayout = () => {
         image={<Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />}
         imageSize="small"
         imageBlend={false}
-        title={`Vesting schedule succesfully ${scheduleMode.edit ? 'updated' : 'created'}!`}
-        description="A notification has been sent to the founder for approval">
-        <button type="button" className="primary flex" onClick={() => Router.push(`/vesting-schedule`)}>
+        title={`Vesting schedule succesfully ${scheduleMode.edit ? 'updated' : 'configured'}!`}
+        description="Go to your dashboard to proceed">
+        {/* <button type="button" className="primary flex" onClick={() => Router.push(`/vesting-schedule`)}>
           View schedules
-        </button>
+        </button> */}
         <button type="button" className="primary line" onClick={() => Router.push(`/dashboard`)}>
           Go to dashboard
         </button>
