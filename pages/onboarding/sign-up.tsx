@@ -155,7 +155,11 @@ const SignUpPage: NextPage = () => {
               )}
             />
             <Consent variant="check" className="mt-5" onAgree={handleAgree} />
-            <Button className="secondary mt-5 mx-auto" type="submit" loading={isSubmitting}>
+            <Button
+              className="secondary mt-5 mx-auto"
+              type="submit"
+              loading={isSubmitting}
+              disabled={Boolean(errors.memberEmail) || !agreedOnConsent}>
               Create account
             </Button>
           </div>
