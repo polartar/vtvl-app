@@ -77,7 +77,7 @@ const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient })
       </div>
       <div className="flex items-center w-36 p-3 flex-shrink-0 bg-[#f9fafb] border-t border-[#d0d5dd]">
         {revoking ? (
-          <Chip rounded label="Revoking" color="dangerAlt" />
+          <Chip rounded label="Revoked" color="dangerAlt" />
         ) : (
           <Chip rounded label="Active" color="success" />
         )}

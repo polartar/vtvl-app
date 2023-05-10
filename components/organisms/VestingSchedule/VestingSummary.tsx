@@ -44,15 +44,6 @@ const VestingSummary = ({
     }
   });
 
-  const tokenPerUser = useMemo(() => {
-    const recipientsNum = vestingRecipients.length;
-    if (recipientsNum > 0) {
-      return (vestingSchedule.data.details.amountToBeVested / recipientsNum).toFixed(1);
-    } else {
-      return 0;
-    }
-  }, [vestingRecipients, vestingSchedule]);
-
   const vestingContract = useMemo(() => {
     return vestingContracts.find((v) => v.id === vestingSchedule.data.vestingContractId);
   }, [vestingContracts]);
@@ -114,13 +105,6 @@ const VestingSummary = ({
       <hr className="my-6" />
 
       <div className="grid sm:grid-cols-2 md:grid-cols-5 gap-3">
-        <div>
-          <label>
-            <span className=" text-xs  neutral-text">Token per user</span>
-          </label>
-          <p className="">{tokenPerUser}</p>
-        </div>
-
         <div>
           <label>
             <span className=" text-xs  neutral-text">Total locked tokens</span>
