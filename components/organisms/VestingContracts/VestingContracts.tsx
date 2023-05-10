@@ -250,7 +250,7 @@ export default function VestingContracts() {
   return (
     <div className="w-full">
       <div className="mb-9">
-        {revocableContracts.map((vestingContract) => {
+        {/* {revocableContracts.map((vestingContract) => {
           return (
             <div
               key={vestingContract.id}
@@ -270,7 +270,7 @@ export default function VestingContracts() {
               </button>
             </div>
           );
-        })}
+        })} */}
 
         <div className="flex justify-between">
           <Typography size="title" variant="inter" className=" font-semibold text-neutral-900 ">

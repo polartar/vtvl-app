@@ -303,13 +303,12 @@ export default function VestingContract({ vestingContractId }: { vestingContract
               <div>
                 <div className="font-bold text-sm text-[#344054]">Unallocated tokens</div>
                 <div className="text-label text-sm">
-                  You can now transfer the locked tokens from <b>{availableRevokings.length}</b> revoked schedule under
-                  this contract, Another option is to check it under Schedule’s section <b>Revoke</b> tab or simply
-                  click <b>"Transfer All Tokens"</b> and transfer them back to your wallet.
+                  You can now transfer the remaining locked tokens from revoked schedules to your project's wallet by
+                  clicking on <b>"Transfer tokens"</b>.
                 </div>
               </div>
               <button className="secondary small whitespace-nowrap" onClick={handleWithdraw}>
-                Transfer All Tokens
+                Transfer tokens
               </button>
             </div>
           )}
