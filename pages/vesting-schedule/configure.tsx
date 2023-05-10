@@ -48,15 +48,6 @@ import { getChartData, getCliffAmount, getCliffDurationTimestamp, getReleaseFreq
 
 type DateTimeType = Date | null;
 
-interface ScheduleFormTypes {
-  startDateTime: DateTimeType;
-  endDateTime: DateTimeType;
-  cliffDuration: CliffDuration;
-  lumpSumReleaseAfterCliff: string | number;
-  releaseFrequency: ReleaseFrequency;
-  amountToBeVested: number;
-}
-
 interface TemplateType {
   template?: SingleValue<IVestingTemplate> | undefined;
 }
@@ -1450,7 +1441,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     rules={{ required: true }}
                     render={({ field, fieldState, formState }) => (
                       <Input
-                        label="Tokens unlocked after cliff (0-99%)"
+                        label="Tokens unlocked after cliff (1-99%)"
                         placeholder="Enter percentage amount"
                         className="mt-4"
                         required

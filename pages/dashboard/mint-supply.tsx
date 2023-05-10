@@ -78,7 +78,7 @@ const MintSuppy: NextPageWithLayout = () => {
         mintFormState.address &&
         !mintFormState.imported &&
         mintFormState.supplyCap === 'UNLIMITED' &&
-        additionalTokens.value > 0
+        Number(additionalTokens.value) > 0
       ) {
         setTransactionStatus('PENDING');
         const tokenContract = new ethers.Contract(
@@ -205,7 +205,7 @@ const MintSuppy: NextPageWithLayout = () => {
                 }
                 placeholder="Enter amount"
                 type="number"
-                error={Boolean(errors.additionalTokensText)}
+                error={Boolean(errors.additionalTokensText) || Number(additionalTokens.value) <= 0}
                 message={errors.additionalTokensText ? 'Please enter amount to mint' : ''}
                 {...field}
               />
@@ -232,7 +232,9 @@ const MintSuppy: NextPageWithLayout = () => {
                       placeholder="Enter amount"
                       type="number"
                       max={maxAllowableToMint}
-                      error={Boolean(errors.additionalTokensText) || additionalTokens.value > maxAllowableToMint}
+                      error={
+                        Boolean(errors.additionalTokensText) || Number(additionalTokens.value) > maxAllowableToMint
+                      }
                       message={errors.additionalTokensText ? 'Please enter amount to be vested' : ''}
                       {...field}
                     />
@@ -241,10 +243,12 @@ const MintSuppy: NextPageWithLayout = () => {
               />
               <Chip
                 label="MAX"
-                color={additionalTokens.value < maxAllowableToMint ? 'secondary' : 'default'}
+                color={Number(additionalTokens.value) < maxAllowableToMint ? 'secondary' : 'default'}
                 onClick={handleMaxAmount}
                 className={`absolute right-6 cursor-pointer ${
-                  additionalTokens.value > maxAllowableToMint || errors.additionalTokensText ? 'bottom-9' : 'bottom-2'
+                  Number(additionalTokens.value) > maxAllowableToMint || errors.additionalTokensText
+                    ? 'bottom-9'
+                    : 'bottom-2'
                 }`}
               />
             </div>
@@ -267,7 +271,7 @@ const MintSuppy: NextPageWithLayout = () => {
           />
           <Button
             loading={isSubmitting}
-            disabled={!+additionalTokens.value}
+            disabled={Number(additionalTokens.value) <= 0}
             className="flex flex-row items-center gap-2 primary group transition-all transform"
             type="submit">
             Create transaction

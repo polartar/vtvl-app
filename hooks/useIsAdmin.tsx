@@ -8,7 +8,6 @@ import { IVestingContract } from 'types/models';
 function useIsAdmin(address: string, vestingContract?: IVestingContract) {
   const { chainId } = useWeb3React();
   const [isAdmin, setIsAdmin] = useState(false);
-
   useEffect(() => {
     if (address && vestingContract && chainId) {
       const VestingContract = new ethers.Contract(

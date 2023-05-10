@@ -1,11 +1,10 @@
-import Avatar from '@components/atoms/Avatar/Avatar';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
-import Radio from '@components/atoms/FormControls/Radio/Radio';
 import { Typography } from '@components/atoms/Typography/Typography';
 import AuthContext from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import PlusIcon from 'public/icons/plus.svg';
@@ -14,7 +13,9 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
+import { IUserType } from 'types/models/member';
 import { ITeamRole } from 'types/models/settings';
+import { WEBSITE_NAME } from 'utils/constants';
 
 interface Contributor {
   name: string;
@@ -32,6 +33,9 @@ type AccountForm = {
 const AccountSetupPage: NextPage = () => {
   const { sendTeammateInvite, user, registerNewMember } = useContext(AuthContext);
   const { onPrevious, onNext, info, inProgress, startOnboarding } = useContext(OnboardingContext);
+  const {
+    website: { name }
+  } = useGlobalContext();
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -133,7 +137,7 @@ const AccountSetupPage: NextPage = () => {
           name: values.name,
           email: user.email || '',
           companyEmail: values.companyEmail,
-          type: info?.accountType || ''
+          type: (info?.accountType || '') as IUserType
         },
         { name: values.company, email: values.companyEmail }
       );
@@ -172,7 +176,7 @@ const AccountSetupPage: NextPage = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
       <Typography size="title" variant="sora" className="font-medium text-neutral-900">
-        Hey there, Welcome to VTVL
+        Hey there, Welcome to {name || WEBSITE_NAME}
       </Typography>
       <p className="text-sm max-w-xl text-center text-neutral-500">
         Let's get to know you so you can start setting up your account.

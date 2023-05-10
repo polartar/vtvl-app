@@ -1,7 +1,9 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import { VestingCalendarIcon, VestingScheduleIcon } from '@components/atoms/Icons';
+import MediaAsset from '@components/atoms/MediaAsset/MediaAsset';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
@@ -34,10 +36,9 @@ export default function ClaimPortal() {
   const { library } = useWeb3React();
   const { isLoadingMyRecipes, myRecipes, myVestingIds, myOrganizationIds, schedulesByOrganization } = useMyRecipes();
   const { isLoadingOrganizations, organizations } = useOrganizationsFromIds(myOrganizationIds);
-  const { isLoadingVestings, vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);
-  const { isLoadingTokens, tokens } = useTokensFromIds(vestingTokenIds);
-  const { isLoadingVestingContracts, vestingContracts, vestingContractAddresses } =
-    useVestingContractsFromIds(vestingContractIds);
+  const { vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);
+  const { tokens } = useTokensFromIds(vestingTokenIds);
+  const { vestingContracts, vestingContractAddresses } = useVestingContractsFromIds(vestingContractIds);
   const {
     isLoadingVestings: isLoadingChainVesting,
     vestings: vestingInfos,
@@ -51,6 +52,10 @@ export default function ClaimPortal() {
   const hasContracts = !!vestingContractAddresses?.length;
 
   const isLoading = isLoadingMyRecipes || (isLoadingChainVesting && hasVestings && hasContracts);
+
+  const {
+    website: { assets }
+  } = useGlobalContext();
 
   /**
    * Project Tabs data
@@ -185,161 +190,201 @@ export default function ClaimPortal() {
 
   return !isLoadingMyRecipes && !hasVestings ? (
     <EmptyState
-      image="/images/cryptocurrency-trading-bot.gif"
+      image={
+        <MediaAsset
+          src={assets?.emptyState?.src || '/images/cryptocurrency-trading-bot.gif'}
+          animated={assets?.emptyState?.animated || false}
+          active={true}
+          fallback="/images/cryptocurrency-trading-bot.gif"
+          className="h-80"
+        />
+      }
       title="No claimable tokens"
       description={<>Come back again next time.</>}
     />
   ) : (
     <div className="w-full">
-      <div className="mb-6 px-6 flex items-center gap-6">
-        <div className="w-323 h-323 relative">
-          <AllocationSummaryChart
-            width={323}
-            height={323}
-            colors={['#00e396', '#008ffb', '#f9e597']}
-            data={[
-              {
-                name: 'Withdraw Amount',
-                value: vestingDetail.withdrawn
-              },
-              {
-                name: 'Unclaimed Amount',
-                value: vestingDetail.unclaimed
-              },
-              {
-                name: 'Total Locked Amount',
-                value: vestingDetail.locked
-              }
-            ]}
-          />
-          <div className="w-full flex flex-col gap-2 items-center justify-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <Typography size="caption" className="font-medium text-neutral-500">
-              Your total allocation
-            </Typography>
-            {token && vestingDetail ? (
-              <Typography size="subtitle" className="font-semibold">
-                {formatNumber(totalAllocations)} {token.data.symbol}
-              </Typography>
-            ) : (
-              <div className="animate-pulse">
-                <div className="w-[100px] h-[40px] bg-neutral-100 rounded-10"></div>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="w-full">
-          <div className="mb-6">
-            {isLoadingOrganizations || !selectedProject ? (
-              <div className="animate-pulse">
-                <div className="w-[200px] h-[40px] bg-neutral-100 rounded-10"></div>
-              </div>
-            ) : (
-              <ProjectTabs
-                title="Projects"
-                projects={projects}
-                initialSelectedProject={selectedProject}
-                onSelectProject={handleSelectProject}
+      <Typography size="title" className="font-semibold text-neutral-900 mb-5">
+        My Tokens
+      </Typography>
+      {!isLoadingMyRecipes && !hasVestings ? (
+        <EmptyState
+          image="/images/cryptocurrency-trading-bot.gif"
+          title="No claimable tokens"
+          description={<>Come back again next time.</>}
+        />
+      ) : (
+        <div className="w-full px-4">
+          <div className="mb-6 flex gap-6">
+            <div className="w-323 h-323 relative mx-auto hidden lg:flex scale-105">
+              <AllocationSummaryChart
+                width={323}
+                height={323}
+                colors={['#00e396', '#008ffb', '#f9e597']}
+                data={[
+                  {
+                    name: 'Withdraw Amount',
+                    value: vestingDetail.withdrawn
+                  },
+                  {
+                    name: 'Unclaimed Amount',
+                    value: vestingDetail.unclaimed
+                  },
+                  {
+                    name: 'Total Locked Amount',
+                    value: vestingDetail.locked
+                  }
+                ]}
               />
-            )}
+              <div className="w-full flex flex-col gap-2 items-center justify-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <Typography size="caption" className="font-medium text-neutral-500">
+                  Your total allocation
+                </Typography>
+                {token && vestingDetail ? (
+                  <Typography size="subtitle" className="font-semibold">
+                    {formatNumber(totalAllocations)} {token.data.symbol}
+                  </Typography>
+                ) : (
+                  <div className="animate-pulse">
+                    <div className="w-[100px] h-[40px] bg-neutral-100 rounded-10"></div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="w-full">
+              <div className="mb-6">
+                {isLoadingOrganizations || !selectedProject ? (
+                  <div className="animate-pulse">
+                    <div className="w-[200px] h-[40px] bg-neutral-100 rounded-10"></div>
+                  </div>
+                ) : (
+                  <ProjectTabs
+                    title="Projects"
+                    projects={projects}
+                    initialSelectedProject={selectedProject}
+                    onSelectProject={handleSelectProject}
+                  />
+                )}
+              </div>
+              <div className="grid sm:grid-cols-12 gap-6">
+                <StandardCard
+                  isLoading={isLoadingDetails}
+                  icon={<VestingScheduleIcon className="w-6 h-6" />}
+                  title="Token Name"
+                  content={String(token?.data.name)}
+                  contentType="text"
+                  contentIcon={
+                    <div className="h-8 w-8 p-1.5 rounded-full bg-neutral-200 text-neutral-500 flex flex-shrink-0 items-center justify-center font-bold">
+                      {token?.data.logo ? (
+                        <Image
+                          src={String(token?.data.logo)}
+                          alt={`${token?.data.name} Token`}
+                          width={19}
+                          height={19}
+                        />
+                      ) : (
+                        token?.data.name.charAt(0)
+                      )}
+                    </div>
+                  }
+                  className="sm:col-span-12 lg:col-span-6 xl:col-span-4"
+                />
+                <StandardCard
+                  isLoading={isLoadingDetails || !vestingDetail}
+                  icon={<VestingScheduleIcon className="w-6 h-6" />}
+                  title="Total granted"
+                  content={String(formatNumber(totalAllocations))}
+                  contentType="number"
+                  className="sm:col-span-6 xl:col-span-4"
+                />
+                <StandardCard
+                  isLoading={isLoadingDetails}
+                  icon={<VestingCalendarIcon className="w-6 h-6" />}
+                  title="Schedule"
+                  content={String(Number(schedulesByOrganization?.[selectedProject.value] ?? 0))}
+                  contentType="text"
+                  className="sm:col-span-6 xl:col-span-4"
+                />
+                <StandardCard
+                  isLoading={isLoadingDetails}
+                  icon={<span className="w-2.5 h-2.5 rounded-full bg-[#00e396]" />}
+                  title="Withdrawn"
+                  content={Number(vestingDetail.withdrawn).toFixed(2)}
+                  contentType="number"
+                  className="sm:col-span-6 md:col-span-4 lg:col-span-6 xl:col-span-4"
+                />
+                <StandardCard
+                  isLoading={isLoadingDetails}
+                  icon={<span className="w-2.5 h-2.5 rounded-full bg-[#008ffb]" />}
+                  title="Unclaimed"
+                  content={Number(vestingDetail.unclaimed).toFixed(2)}
+                  contentType="number"
+                  className="sm:col-span-6 md:col-span-4 lg:col-span-6 xl:col-span-4"
+                />
+                <StandardCard
+                  isLoading={isLoadingDetails}
+                  icon={<span className="w-2.5 h-2.5 rounded-full bg-[#f9e597]" />}
+                  title="Total locked"
+                  content={Number(vestingDetail.locked).toFixed(2)}
+                  contentType="number"
+                  className="sm:col-span-12 md:col-span-4 lg:col-span-6 xl:col-span-4"
+                />
+              </div>
+            </div>
           </div>
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
-            <StandardCard
-              isLoading={isLoadingDetails}
-              icon={<VestingScheduleIcon className="w-6 h-6" />}
-              title="Token Name"
-              content={String(token?.data.name)}
-              contentType="text"
-              contentIcon={<Image src={String(token?.data.logo)} alt="token-image" width={32} height={32} />}
-            />
-            <StandardCard
-              isLoading={isLoadingDetails || !vestingDetail}
-              icon={<VestingScheduleIcon className="w-6 h-6" />}
-              title="Total granted"
-              content={String(formatNumber(totalAllocations))}
-              contentType="number"
-            />
-            <StandardCard
-              isLoading={isLoadingDetails}
-              icon={<VestingCalendarIcon className="w-6 h-6" />}
-              title="Schedule"
-              content={String(Number(schedulesByOrganization?.[selectedProject.value] ?? 0))}
-              contentType="text"
-            />
-            <StandardCard
-              isLoading={isLoadingDetails}
-              icon={<span className="w-2.5 h-2.5 rounded-full bg-[#00e396]" />}
-              title="Withdrawn"
-              content={Number(vestingDetail.withdrawn).toFixed(2)}
-              contentType="number"
-            />
-            <StandardCard
-              isLoading={isLoadingDetails}
-              icon={<span className="w-2.5 h-2.5 rounded-full bg-[#008ffb]" />}
-              title="Unclaimed"
-              content={Number(vestingDetail.unclaimed).toFixed(2)}
-              contentType="number"
-            />
-            <StandardCard
-              isLoading={isLoadingDetails}
-              icon={<span className="w-2.5 h-2.5 rounded-full bg-[#f9e597]" />}
-              title="Total locked"
-              content={Number(vestingDetail.locked).toFixed(2)}
-              contentType="number"
-            />
+          <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {isLoading
+              ? Array.from(new Array(3)).map((_, index) => (
+                  <div key={index} className="animate-pulse w-full">
+                    <div className="w-full h-368 bg-neutral-100 rounded-10"></div>
+                  </div>
+                ))
+              : vestings.map((singleVesting) => {
+                  const contract = vestingContracts.find((c) => c.id === singleVesting.data.vestingContractId);
+                  const vestingInfo = getVestingInfoByContract(String(contract?.data.address));
+                  const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = singleVesting.data.details;
+                  const computeCliffDateTime = getCliffDateTime(startDateTime!, cliffDuration);
+
+                  const actualDates = getActualDateTime(singleVesting.data.details);
+                  let progress = 0;
+                  if (actualDates.startDateTime && actualDates.endDateTime && singleVesting.data.status === 'LIVE') {
+                    const totalSeconds = differenceInSeconds(actualDates.endDateTime, actualDates.startDateTime);
+                    const secondsFromNow = differenceInSeconds(new Date(), actualDates.startDateTime);
+                    progress = Math.round((Number(secondsFromNow) / Number(totalSeconds)) * 100);
+                  }
+                  progress = progress >= 100 ? 100 : progress;
+
+                  const unlockDate =
+                    singleVesting.data.status === 'LIVE'
+                      ? Date.now() +
+                        (singleVesting.data.details.releaseFrequency !== 'continuous' && endDateTime
+                          ? getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime)
+                          : 60) *
+                          1000
+                      : 0;
+
+                  return (
+                    <VestingCard
+                      key={singleVesting.id}
+                      title={String(singleVesting.data.name)}
+                      startDate={formatDateTime(startDateTime)}
+                      endDate={formatDateTime(endDateTime)}
+                      unlockDate={unlockDate}
+                      withdrawnAmount={Number(String(vestingInfo?.withdrawn)).toFixed(2)}
+                      unclaimedAmount={Number(String(vestingInfo?.unclaimed)).toFixed(2)}
+                      totalLockedAmount={Number(String(vestingInfo?.locked)).toFixed(2)}
+                      buttonLabel={`CLAIM ${Number(String(vestingInfo?.unclaimed ?? 0)).toFixed(2)} ${getTokenSymbol(
+                        String(singleVesting.data.tokenId)
+                      )}`}
+                      buttonAction={() => vestingInfo && handleClaim(vestingInfo)}
+                      percentage={progress}
+                      disabled={!vestingInfo}
+                    />
+                  );
+                })}
           </div>
         </div>
-      </div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-cols-1 gap-6 px-6">
-        {isLoading
-          ? Array.from(new Array(3)).map((_, index) => (
-              <div key={index} className="animate-pulse w-full">
-                <div className="w-full h-368 bg-neutral-100 rounded-10"></div>
-              </div>
-            ))
-          : vestings.map((singleVesting) => {
-              const contract = vestingContracts.find((c) => c.id === singleVesting.data.vestingContractId);
-              const vestingInfo = getVestingInfoByContract(String(contract?.data.address));
-              const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = singleVesting.data.details;
-              const computeCliffDateTime = getCliffDateTime(startDateTime!, cliffDuration);
-
-              const actualDates = getActualDateTime(singleVesting.data.details);
-              let progress = 0;
-              if (actualDates.startDateTime && actualDates.endDateTime && singleVesting.data.status === 'LIVE') {
-                const totalSeconds = differenceInSeconds(actualDates.endDateTime, actualDates.startDateTime);
-                const secondsFromNow = differenceInSeconds(new Date(), actualDates.startDateTime);
-                progress = Math.round((Number(secondsFromNow) / Number(totalSeconds)) * 100);
-              }
-              progress = progress >= 100 ? 100 : progress;
-
-              const unlockDate =
-                singleVesting.data.status === 'LIVE'
-                  ? Date.now() +
-                    (singleVesting.data.details.releaseFrequency !== 'continuous' && endDateTime
-                      ? getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime)
-                      : 60) *
-                      1000
-                  : 0;
-
-              return (
-                <VestingCard
-                  key={singleVesting.id}
-                  title={String(singleVesting.data.name)}
-                  startDate={formatDateTime(startDateTime)}
-                  endDate={formatDateTime(endDateTime)}
-                  unlockDate={unlockDate}
-                  withdrawnAmount={Number(String(vestingInfo?.withdrawn)).toFixed(2)}
-                  unclaimedAmount={Number(String(vestingInfo?.unclaimed)).toFixed(2)}
-                  totalLockedAmount={Number(String(vestingInfo?.locked)).toFixed(2)}
-                  buttonLabel={`CLAIM ${Number(String(vestingInfo?.unclaimed ?? 0)).toFixed(2)} ${getTokenSymbol(
-                    String(singleVesting.data.tokenId)
-                  )}`}
-                  buttonAction={() => vestingInfo && handleClaim(vestingInfo)}
-                  percentage={progress}
-                  disabled={!vestingInfo}
-                />
-              );
-            })}
-      </div>
+      )}
     </div>
   );
 }

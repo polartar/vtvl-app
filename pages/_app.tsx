@@ -1,8 +1,10 @@
+import ThemeLoader from '@components/atoms/ThemeLoader/ThemeLoader';
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { Web3Provider } from '@ethersproject/providers';
 import { AuthContextProvider } from '@providers/auth.context';
 import { ClaimTokensContextProvider } from '@providers/claim-tokens.context';
 import { DashboardContextProvider } from '@providers/dashboard.context';
+import { GlobalContextProvider } from '@providers/global.context';
 import { LoaderContextProvider } from '@providers/loader.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
 import { RecipientContextProvider } from '@providers/recipient.context';
@@ -15,10 +17,11 @@ import { Web3ReactProvider } from '@web3-react/core';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
 import { TransactionLoaderContextProvider } from 'providers/transaction-loader.context';
-import React, { ReactElement, ReactNode } from 'react';
+import React, { ReactElement, ReactNode, useEffect } from 'react';
 // Todo: Arvin #18 - Explore styles that can be customized / override to conform with VTVL branding.
 // React datepicker initial styling.
 import 'react-datepicker/dist/react-datepicker.css';
+import { hotjar } from 'react-hotjar';
 // Skeleton loader styles
 import 'react-loading-skeleton/dist/skeleton.css';
 import Modal from 'react-modal';
@@ -45,7 +48,13 @@ function getLibrary(provider: any): Web3Provider {
   return library;
 }
 
+// const Web3ReactProviderReloaded = createWeb3ReactRoot('network')
+
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+  useEffect(() => {
+    hotjar.initialize(Number(process.env.NEXT_PUBLIC_HOTJAR_HJID), Number(process.env.NEXT_PUBLIC_HOTJAR_HJSV));
+  }, []);
+
   Modal.setAppElement('#react-modal');
   // Use the layout defined at the page level, if available
   // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.
@@ -55,29 +64,32 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
     <>
       <Web3ReactProvider getLibrary={(provider: any) => getLibrary(provider)}>
         <QueryClientProvider client={queryClient}>
-          <AuthContextProvider>
-            <LoaderContextProvider>
-              <TokenContextProvider>
-                <OnboardingContextProvider>
-                  <VestingContextProvider>
-                    <DashboardContextProvider>
-                      <TransactionLoaderContextProvider>
-                        <TeammateContextProvider>
-                          <ClaimTokensContextProvider>
-                            <RecipientContextProvider>
-                              <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                              <ToastContainer autoClose={6000} style={{ top: '6rem', right: '1rem' }} />
-                            </RecipientContextProvider>
-                          </ClaimTokensContextProvider>
-                        </TeammateContextProvider>
-                      </TransactionLoaderContextProvider>
-                    </DashboardContextProvider>
-                  </VestingContextProvider>
-                </OnboardingContextProvider>
-              </TokenContextProvider>
-            </LoaderContextProvider>
-          </AuthContextProvider>
+          <GlobalContextProvider>
+            <AuthContextProvider>
+              <LoaderContextProvider>
+                <TokenContextProvider>
+                  <OnboardingContextProvider>
+                    <VestingContextProvider>
+                      <DashboardContextProvider>
+                        <TransactionLoaderContextProvider>
+                          <TeammateContextProvider>
+                            <ClaimTokensContextProvider>
+                              <RecipientContextProvider>
+                                <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                                <ToastContainer autoClose={6000} style={{ top: '6rem', right: '1rem' }} />
+                              </RecipientContextProvider>
+                            </ClaimTokensContextProvider>
+                          </TeammateContextProvider>
+                        </TransactionLoaderContextProvider>
+                      </DashboardContextProvider>
+                    </VestingContextProvider>
+                  </OnboardingContextProvider>
+                </TokenContextProvider>
+              </LoaderContextProvider>
+            </AuthContextProvider>
+          </GlobalContextProvider>
         </QueryClientProvider>
+        {/* </Web3ReactProviderReloaded> */}
       </Web3ReactProvider>
       <div id="react-modal"></div>
     </>

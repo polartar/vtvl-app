@@ -2,11 +2,13 @@ import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
+import ThemeLoader from '@components/atoms/ThemeLoader/ThemeLoader';
 import ConnectWalletOptionsProps from '@components/molecules/ConnectWalletOptions/ConnectWalletOptions';
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
@@ -15,6 +17,8 @@ import { useRouter } from 'next/router';
 import { useLoaderContext } from 'providers/loader.context';
 import React, { useContext, useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
+import { toast } from 'react-toastify';
+import { WEBSITE_NAME } from 'utils/constants';
 
 import AuthContext from '../../../providers/auth.context';
 
@@ -36,236 +40,6 @@ const Main = styled.main<{ sidebarIsExpanded: boolean; sidebarIsShown: boolean }
     sidebarIsShown ? 'calc(100vw - ' + (sidebarIsExpanded ? '279px' : '80px') + ');' : '100vw;'};
 `;
 
-/**
- * SIDEBAR ITEMS BASED ON USER ROLES
- *
- * INVESTOR/EMPLOYEE
- * - Portfolio Overview
- * - Claims Portal
- * - Support
- * - Switch to founder
- *
- * FOUNDER
- * - Dashboard
- *  - Minting token / Import token
- *  - Additional Supply
- *  - Funding Contracts
- * - Vesting Schedule
- * - Cap table
- */
-
-// Available routes for Founders
-const FounderRoutes = {
-  collapsed: false,
-  roleTitle: 'Founder',
-  menuList: [
-    {
-      title: 'Dashboard',
-      icon: '/icons/s_dashboard.svg',
-      hoverIcon: '/icons/s_dashboard2.svg',
-      route: '/dashboard',
-      available: true
-    },
-    {
-      title: 'Contracts',
-      route: '/contracts',
-      icon: '/icons/contracts.svg',
-      hoverIcon: '/icons/contracts-hover.svg',
-      available: true
-    },
-    {
-      title: 'Vesting schedule',
-      icon: '/icons/s_vestingSchedule.svg',
-      hoverIcon: '/icons/s_vestingSchedule2.svg',
-      route: '/vesting-schedule',
-      available: true
-    },
-    {
-      title: 'Cap table',
-      icon: '/icons/s_capTable.svg',
-      hoverIcon: '/icons/s_capTable2.svg',
-      route: '/cap-table',
-      available: true
-    },
-    {
-      title: 'Recipients',
-      icon: '/icons/recipient.svg',
-      hoverIcon: '/icons/recipient-hover.svg',
-      route: '/recipient',
-      available: true
-    },
-    // {
-    //   title: 'Connect safe',
-    //   icon: '/icons/s_vestingSchedule.svg',
-    //   hoverIcon: '/icons/s_vestingSchedule2.svg',
-    //   route: '/onboarding/setup-safes',
-    //   available: true
-    // },
-    {
-      title: 'Token performance',
-      icon: '/icons/s_tokenPerformance.svg',
-      hoverIcon: '/icons/s_tokenPerformance2.svg',
-      route: '/token-performance',
-      available: false
-    },
-    {
-      title: 'Tokenomics',
-      icon: '/icons/s_tokenomics.svg',
-      hoverIcon: '/icons/s_tokenomics2.svg',
-      route: '/tokenomics',
-      available: false
-    },
-    {
-      title: 'Transactions',
-      icon: '/icons/s_transactions.svg',
-      hoverIcon: '/icons/s_transactions2.svg',
-      route: '/transactions',
-      available: false
-    }
-  ],
-  submenuList: [
-    { title: 'Notifications', icon: '/icons/notifications.svg', hoverIcon: '', route: '/notifications' },
-    {
-      title: 'Support',
-      icon: '/icons/support.svg',
-      hoverIcon: '/icons/support-hover.svg',
-      route: 'https://app.gitbook.com/o/ZU2c5iaF4aXyvh8Ii9QB/s/tslbhiJoCUNqnvkdNUVE/introduction/',
-      isExternal: true,
-      available: true
-    },
-    { title: 'Switch to investor', icon: '/icons/switchUser.svg', hoverIcon: '', route: '/switch-account' },
-    {
-      title: 'Settings',
-      icon: '/icons/settings.svg',
-      hoverIcon: 'icons/settings-hover.svg',
-      route: '/settings',
-      available: true
-    }
-  ],
-  userName: 'John Doe',
-  role: 'founder'
-};
-
-// Menulist for both Employee and Investors
-const employeeInvestorMenuItems = {
-  menuList: [
-    // {
-    //   title: 'Portfolio Overview',
-    //   icon: '/icons/s_dashboard.svg',
-    //   hoverIcon: '/icons/s_dashboard2.svg',
-    //   route: '/dashboard',
-    //   available: false
-    // },
-    {
-      title: 'Claims Portal',
-      route: '/claim-portal',
-      icon: '/icons/claims-portal.svg',
-      hoverIcon: '/icons/claims-portal-hover.svg',
-      available: true
-    }
-    // {
-    //   title: 'My tokens',
-    //   icon: '/icons/s_dashboard.svg',
-    //   hoverIcon: '/icons/s_dashboard2.svg',
-    //   route: '/tokens',
-    //   available: true
-    // }
-  ],
-  submenuList: [
-    // { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
-    {
-      title: 'Support',
-      icon: '/icons/support.svg',
-      hoverIcon: '/icons/support-hover.svg',
-      route: 'https://app.gitbook.com/o/ZU2c5iaF4aXyvh8Ii9QB/s/tslbhiJoCUNqnvkdNUVE/introduction/',
-      isExternal: true,
-      available: true
-    },
-    { title: 'Switch to founder', icon: '/icons/switchUser.svg', route: '/switch-account' }
-  ]
-};
-
-// Routes available for Employees
-const EmployeeRoutes = {
-  collapsed: false,
-  roleTitle: 'Employee',
-  menuList: [...employeeInvestorMenuItems.menuList],
-  submenuList: [...employeeInvestorMenuItems.submenuList],
-  userName: 'John Doe',
-  role: 'employee'
-};
-// Routes available for Investors -- same as the employees
-const InvestorRoutes = {
-  collapsed: false,
-  roleTitle: 'Investor',
-  menuList: [...employeeInvestorMenuItems.menuList],
-  submenuList: [...employeeInvestorMenuItems.submenuList],
-  userName: 'John Doe',
-  role: 'investor'
-};
-// Routes available for Managers -- temporary
-const ManagerRoutes = {
-  ...EmployeeRoutes,
-  menuList: [
-    {
-      title: 'Dashboard',
-      icon: '/icons/s_dashboard.svg',
-      hoverIcon: '/icons/s_dashboard2.svg',
-      route: '/dashboard',
-      available: true
-    },
-    {
-      title: 'Vesting schedule',
-      icon: '/icons/s_vestingSchedule.svg',
-      hoverIcon: '/icons/s_vestingSchedule2.svg',
-      route: '/vesting-schedule',
-      available: true
-    },
-    ...EmployeeRoutes.menuList
-  ],
-  roleTitle: 'Manager',
-  role: 'manager'
-};
-
-// Routes available for Manager level 2 -- Manager that is extended with Cap Table view
-const Manager2Routes = {
-  ...EmployeeRoutes,
-  menuList: [
-    {
-      title: 'Dashboard',
-      icon: '/icons/s_dashboard.svg',
-      hoverIcon: '/icons/s_dashboard2.svg',
-      route: '/dashboard',
-      available: true
-    },
-    {
-      title: 'Vesting schedule',
-      icon: '/icons/s_vestingSchedule.svg',
-      hoverIcon: '/icons/s_vestingSchedule2.svg',
-      route: '/vesting-schedule',
-      available: true
-    },
-    {
-      title: 'Cap table',
-      icon: '/icons/s_capTable.svg',
-      hoverIcon: '/icons/s_capTable2.svg',
-      route: '/cap-table',
-      available: true
-    },
-    ...EmployeeRoutes.menuList
-  ],
-  roleTitle: 'Manager',
-  role: 'manager2'
-};
-
-const SidebarProps: Record<string, any> = {
-  founder: { ...FounderRoutes },
-  employee: { ...EmployeeRoutes },
-  investor: { ...InvestorRoutes },
-  manager: { ...ManagerRoutes },
-  manager2: { ...Manager2Routes }
-};
-
 interface DefaultLayoutProps {
   sidebar?: boolean;
   connected?: boolean;
@@ -277,10 +51,28 @@ interface DefaultLayoutProps {
  *  This has a sidebar prop to determine if the Sidebar component should be shown or not.
  */
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
-  const { user, recipient, currentSafe, error, logOut, showSideBar, sidebarIsExpanded, toggleSideBar, refreshUser } =
-    useContext(AuthContext);
+  const {
+    user,
+    recipient,
+    currentSafe,
+    error,
+    logOut,
+    showSideBar,
+    sidebarIsExpanded,
+    toggleSideBar,
+    refreshUser,
+    switchRole,
+    roleOverride
+  } = useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
   const { loading } = useLoaderContext();
+  const {
+    website: { theme }
+  } = useGlobalContext();
+  const {
+    isLoading,
+    website: { name, assets }
+  } = useGlobalContext();
   const { active, account } = useWeb3React();
   const [sidebarProperties, setSidebarProperties] = useState({
     roleTitle: 'Anonymous',
@@ -291,6 +83,269 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   });
   const [connectWalletModal, setConnectWalletModal] = useState(false);
   const router = useRouter();
+
+  /**
+   * SIDEBAR ITEMS BASED ON USER ROLES
+   *
+   * INVESTOR/EMPLOYEE
+   * - Portfolio Overview
+   * - Claims Portal
+   * - Support
+   * - Switch to founder
+   *
+   * FOUNDER
+   * - Dashboard
+   *  - Minting token / Import token
+   *  - Additional Supply
+   *  - Funding Contracts
+   * - Vesting Schedule
+   * - Cap table
+   */
+
+  // Available routes for Founders
+  const FounderRoutes = {
+    collapsed: false,
+    roleTitle: 'Founder',
+    menuList: [
+      {
+        title: 'Dashboard',
+        icon: '/icons/s_dashboard.svg',
+        hoverIcon: '/icons/s_dashboard2.svg',
+        route: '/dashboard',
+        available: true
+      },
+      {
+        title: 'Contracts',
+        route: '/contracts',
+        icon: '/icons/contracts.svg',
+        hoverIcon: '/icons/contracts-hover.svg',
+        available: true
+      },
+      {
+        title: 'Vesting schedule',
+        icon: '/icons/s_vestingSchedule.svg',
+        hoverIcon: '/icons/s_vestingSchedule2.svg',
+        route: '/vesting-schedule',
+        available: true
+      },
+      {
+        title: 'Cap table',
+        icon: '/icons/s_capTable.svg',
+        hoverIcon: '/icons/s_capTable2.svg',
+        route: '/cap-table',
+        available: true
+      },
+      {
+        title: 'Recipients',
+        icon: '/icons/recipient.svg',
+        hoverIcon: '/icons/recipient-hover.svg',
+        route: '/recipient',
+        available: true
+      },
+      // {
+      //   title: 'Connect safe',
+      //   icon: '/icons/s_vestingSchedule.svg',
+      //   hoverIcon: '/icons/s_vestingSchedule2.svg',
+      //   route: '/onboarding/setup-safes',
+      //   available: true
+      // },
+      {
+        title: 'Token performance',
+        icon: '/icons/s_tokenPerformance.svg',
+        hoverIcon: '/icons/s_tokenPerformance2.svg',
+        route: '/token-performance',
+        available: false
+      },
+      {
+        title: 'Tokenomics',
+        icon: '/icons/s_tokenomics.svg',
+        hoverIcon: '/icons/s_tokenomics2.svg',
+        route: '/tokenomics',
+        available: false
+      },
+      {
+        title: 'Transactions',
+        icon: '/icons/s_transactions.svg',
+        hoverIcon: '/icons/s_transactions2.svg',
+        route: '/transactions',
+        available: false
+      }
+    ],
+    submenuList: [
+      { title: 'Notifications', icon: '/icons/notifications.svg', hoverIcon: '', route: '/notifications' },
+      {
+        title: 'Support',
+        icon: '/icons/support.svg',
+        hoverIcon: '/icons/support-hover.svg',
+        route: 'https://app.gitbook.com/o/ZU2c5iaF4aXyvh8Ii9QB/s/tslbhiJoCUNqnvkdNUVE/introduction/',
+        isExternal: true,
+        available: true
+      },
+      {
+        title: 'Switch to investor',
+        icon: '/icons/switchUser.svg',
+        hoverIcon: '/icons/switchUser2.svg',
+        route: '/switch-role',
+        available: true,
+        onClick: async () => {
+          await switchRole('investor');
+          toast.success(
+            <>
+              You switched to <strong className="text-primary-900">Investor</strong> mode.
+            </>
+          );
+        }
+      },
+      {
+        title: 'Settings',
+        icon: '/icons/settings.svg',
+        hoverIcon: 'icons/settings-hover.svg',
+        route: '/settings',
+        available: true
+      }
+    ],
+    userName: 'John Doe',
+    role: 'founder'
+  };
+
+  // Menulist for both Employee and Investors
+  const employeeInvestorMenuItems = {
+    menuList: [
+      // {
+      //   title: 'Portfolio Overview',
+      //   icon: '/icons/s_dashboard.svg',
+      //   hoverIcon: '/icons/s_dashboard2.svg',
+      //   route: '/dashboard',
+      //   available: false
+      // },
+      {
+        title: 'Claims Portal',
+        route: '/claim-portal',
+        icon: '/icons/claims-portal.svg',
+        hoverIcon: '/icons/claims-portal-hover.svg',
+        available: true
+      }
+      // {
+      //   title: 'My tokens',
+      //   icon: '/icons/s_dashboard.svg',
+      //   hoverIcon: '/icons/s_dashboard2.svg',
+      //   route: '/tokens',
+      //   available: true
+      // }
+    ],
+    submenuList: [
+      // { title: 'Notifications', icon: '/icons/notifications.svg', route: '/notifications' },
+      {
+        title: 'Support',
+        icon: '/icons/support.svg',
+        hoverIcon: '/icons/support-hover.svg',
+        route: 'https://app.gitbook.com/o/ZU2c5iaF4aXyvh8Ii9QB/s/tslbhiJoCUNqnvkdNUVE/introduction/',
+        isExternal: true,
+        available: true
+      },
+      // Only add this option if the user is a founder
+      ...(user?.memberInfo?.type === 'founder'
+        ? [
+            {
+              title: 'Switch to founder',
+              icon: '/icons/switchUser.svg',
+              hoverIcon: '/icons/switchUser2.svg',
+              route: '/switch-role',
+              available: true,
+              onClick: async () => {
+                await switchRole('');
+                toast.success(
+                  <>
+                    You switched to <strong className="text-secondary-900">Founder</strong> mode.
+                  </>
+                );
+              }
+            }
+          ]
+        : [])
+    ]
+  };
+
+  // Routes available for Employees
+  const EmployeeRoutes = {
+    collapsed: false,
+    roleTitle: 'Employee',
+    menuList: [...employeeInvestorMenuItems.menuList],
+    submenuList: [...employeeInvestorMenuItems.submenuList],
+    userName: 'John Doe',
+    role: 'employee'
+  };
+  // Routes available for Investors -- same as the employees
+  const InvestorRoutes = {
+    collapsed: false,
+    roleTitle: 'Investor',
+    menuList: [...employeeInvestorMenuItems.menuList],
+    submenuList: [...employeeInvestorMenuItems.submenuList],
+    userName: 'John Doe',
+    role: 'investor'
+  };
+  // Routes available for Managers -- temporary
+  const ManagerRoutes = {
+    ...EmployeeRoutes,
+    menuList: [
+      {
+        title: 'Dashboard',
+        icon: '/icons/s_dashboard.svg',
+        hoverIcon: '/icons/s_dashboard2.svg',
+        route: '/dashboard',
+        available: true
+      },
+      {
+        title: 'Vesting schedule',
+        icon: '/icons/s_vestingSchedule.svg',
+        hoverIcon: '/icons/s_vestingSchedule2.svg',
+        route: '/vesting-schedule',
+        available: true
+      },
+      ...EmployeeRoutes.menuList
+    ],
+    roleTitle: 'Manager',
+    role: 'manager'
+  };
+
+  // Routes available for Manager level 2 -- Manager that is extended with Cap Table view
+  const Manager2Routes = {
+    ...EmployeeRoutes,
+    menuList: [
+      {
+        title: 'Dashboard',
+        icon: '/icons/s_dashboard.svg',
+        hoverIcon: '/icons/s_dashboard2.svg',
+        route: '/dashboard',
+        available: true
+      },
+      {
+        title: 'Vesting schedule',
+        icon: '/icons/s_vestingSchedule.svg',
+        hoverIcon: '/icons/s_vestingSchedule2.svg',
+        route: '/vesting-schedule',
+        available: true
+      },
+      {
+        title: 'Cap table',
+        icon: '/icons/s_capTable.svg',
+        hoverIcon: '/icons/s_capTable2.svg',
+        route: '/cap-table',
+        available: true
+      },
+      ...EmployeeRoutes.menuList
+    ],
+    roleTitle: 'Manager',
+    role: 'manager2'
+  };
+
+  const SidebarProps: Record<string, any> = {
+    founder: { ...FounderRoutes },
+    employee: { ...EmployeeRoutes },
+    investor: { ...InvestorRoutes },
+    manager: { ...ManagerRoutes },
+    manager2: { ...Manager2Routes }
+  };
 
   // Vesting schedule section
   const { fetchDashboardData } = useDashboardContext();
@@ -303,6 +358,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     showDeleteModal,
     setShowDeleteModal
   } = useVestingContext();
+  const {
+    website: { organizationId: webOrgId }
+  } = useGlobalContext();
 
   // Hides the modal and sets the necessary states.
   const handleHideModal = () => {
@@ -368,18 +426,18 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
 
   useEffect(() => {
     if (user && user.memberInfo && user.memberInfo.type) {
-      if (currentSafe && user.memberInfo.type === 'founder') {
-        const sbProps = SidebarProps[user?.memberInfo?.type];
-        // sbProps.menuList.slice(3, 1); // Remove connect safe
-        setSidebarProperties({ ...sbProps });
+      if (user.memberInfo.type === 'founder' && roleOverride) {
+        // set the sidebar items into the switched role
+        setSidebarProperties({ ...SidebarProps[roleOverride] });
       } else {
+        // Normally set the sidebar itesm to corresponding user type
         setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
       }
     } else {
       // For testing purposes only
       setSidebarProperties({ ...SidebarProps.employee });
     }
-  }, [user, currentSafe]);
+  }, [user, currentSafe, roleOverride]);
 
   useEffect(() => {
     // Check if the user has a wallet connected on all of the pages except:
@@ -396,7 +454,11 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       '/onboarding/connect-wallet',
       '/expired',
       '/recipient/create',
-      '/recipient/schedule'
+      '/recipient/schedule',
+      '/404',
+      '/not-found',
+      '/terms',
+      '/privacypolicy'
     ];
 
     if (!hideConnectModalOnRoutes.includes(router.pathname) && !active && !account) {
@@ -406,11 +468,27 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     }
   }, [account, active, router]);
 
+  const renderFavicons = (icon: string) => (
+    <>
+      <link rel="apple-touch-icon" sizes="180x180" href={icon} />
+      <link rel="icon" type="image/png" sizes="32x32" href={icon} />
+      <link rel="icon" type="image/png" sizes="16x16" href={icon} />
+      <link rel="mask-icon" href={icon} color="#fefefe" />
+      <meta name="msapplication-TileColor" content="#fff" />
+      <meta name="theme-color" content="#ffffff" />
+    </>
+  );
+
   return (
     <>
       <Container>
         <Head>
-          <title>VTVL</title>
+          <title>{name || WEBSITE_NAME}</title>
+          {isLoading
+            ? renderFavicons('/default-loader-icon.png')
+            : assets?.logoFavicon
+            ? renderFavicons(assets.logoFavicon.src)
+            : renderFavicons('/favicon.ico')}
         </Head>
         <Header
           connected={active}
@@ -423,7 +501,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         <Layout className="flex flex-row w-full">
           {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
           <div className="relative">
-            {loading && <PageLoader />}
+            {loading && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
             <Main
               sidebarIsExpanded={sidebarIsExpanded}
               sidebarIsShown={displaySideBar}
@@ -459,6 +537,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
           </div>
         </Form>
       </PromptModal>
+      {/* {theme ? <ThemeLoader url={theme} /> : null} */}
     </>
   );
 };

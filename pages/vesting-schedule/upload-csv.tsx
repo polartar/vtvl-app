@@ -1,17 +1,22 @@
 import ImportCSVFlow from '@components/organisms/Forms/ImportCSVFlow';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useGlobalContext } from '@providers/global.context';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement } from 'react';
+import { WEBSITE_NAME } from 'utils/constants';
 
 const UploadCSVConfiguration: NextPageWithLayout = () => {
+  const {
+    website: { name }
+  } = useGlobalContext();
   const vestingScheduleFields = [{ label: 'saple', value: 'samepl' }];
 
   const vestingScheduleSteps = {
     step1: {
       title: 'Import details from a CSV file',
       description: 'Speed up the process by uploading a CSV file containing all your vesting requirements.',
-      templateLabel: 'VTVL vesting schedule template',
+      templateLabel: `${name || WEBSITE_NAME} vesting schedule template`,
       templateUrl: '/',
       cancelButtonLabel: 'Back',
       confirmButtonLabel: 'Continue'

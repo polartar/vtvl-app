@@ -17,7 +17,7 @@ type LoginForm = {
 };
 
 const SignUpPage: NextPage = () => {
-  const { teammateSignIn, sendLoginLink, signInWithGoogle, agreedOnConsent, setAgreedOnConsent } =
+  const { teammateSignIn, sendLoginLink, signInWithGoogle, agreedOnConsent, setAgreedOnConsent, allowSignIn } =
     useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const router = useRouter();
@@ -86,7 +86,6 @@ const SignUpPage: NextPage = () => {
       }
 
       await sendLoginLink(values.memberEmail);
-      toast.success('Please check your email for the link to login');
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);
@@ -125,7 +124,7 @@ const SignUpPage: NextPage = () => {
         <button
           type="button"
           onClick={onGoogleSignUp}
-          className="line flex flex-row items-center justify-center gap-2.5 w-full">
+          className="line flex flex-row items-center justify-center gap-2.5 w-full rounded-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign up with Google
         </button>
@@ -155,7 +154,11 @@ const SignUpPage: NextPage = () => {
               )}
             />
             <Consent variant="check" className="mt-5" onAgree={handleAgree} />
-            <Button className="secondary mt-5 mx-auto" type="submit" loading={isSubmitting}>
+            <Button
+              className="secondary mt-5 mx-auto"
+              type="submit"
+              loading={isSubmitting}
+              disabled={Boolean(errors.memberEmail) || !agreedOnConsent}>
               Create account
             </Button>
           </div>

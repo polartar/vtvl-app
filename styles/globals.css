@@ -72,6 +72,14 @@
   --danger-200: #fecaca;
   --danger-100: #fee2e2;
   --danger-50: #fef2f2;
+
+  /* Other colors */
+
+  /* Metamask */
+  --metamask: #f6851b;
+
+  /* Wallet Connect */
+  --walletconnect: #3b99fc;
 }
 
 .loader-dot1,
@@ -197,7 +205,7 @@
   /* Button component */
   /* Defaults to primary */
   button {
-    @apply rounded-full inline-block text-base py-2 px-5 bg-neutral-100 border border-transparent;
+    @apply rounded-lg inline-block text-base py-2 px-5 bg-neutral-100 border border-transparent;
   }
 
   button,
@@ -891,4 +899,10 @@ body {
 
 .underline-offset-3 {
   text-underline-offset: 3px;
+  /* react-toastify overrides */
+}
+.Toastify__toast-container {
+  max-width: 480px;
+  min-width: 320px;
+  width: auto;
 }

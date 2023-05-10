@@ -5,6 +5,7 @@ import { fetchOrg } from 'services/db/organization';
 import { updateRecipient } from 'services/db/recipient';
 import { IOrganization } from 'types/models';
 import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
+import { INVITEE_EXPIRED_TIME, WEBSITE_EMAIL, WEBSITE_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 dotenv.config();
@@ -14,8 +15,7 @@ type Data = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const recipients = req.body.recipients;
-  const symbol = req.body.symbol;
+  const { recipients, symbol, websiteName, websiteEmail, emailTemplate } = req.body;
   const orgId = recipients[0]?.orgId;
   let organization: IOrganization | undefined;
   if (orgId) {
@@ -39,9 +39,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       try {
         await SendMail({
           to: email,
-          data: { emailLink, tokenSymbol: symbol, name },
-          subject: 'Join VTVL',
-          templateId: MailTemplates.RecipientInvite
+          data: { emailLink, tokenSymbol: symbol, orgName: websiteName || WEBSITE_NAME, name, ...emailTemplate },
+          subject: `Join ${websiteName || WEBSITE_NAME}`,
+          websiteName: websiteName || WEBSITE_NAME,
+          websiteEmail: websiteEmail || WEBSITE_EMAIL,
+          templateId: MailTemplates.ThemedRecipientInvite
         });
         updateRecipient(recipient.memberId, {
           status: 'delivered'

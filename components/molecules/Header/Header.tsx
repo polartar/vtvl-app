@@ -1,12 +1,15 @@
 import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
+import MediaAsset from '@components/atoms/MediaAsset/MediaAsset';
 import NetworkSelector from '@components/atoms/NetworkSelector/NetworkSelector';
 import SafeSelector from '@components/atoms/SafeSelector/SafeSelector';
 import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
+import { useGlobalContext } from '@providers/global.context';
 import { useWeb3React } from '@web3-react/core';
 import Router, { useRouter } from 'next/router';
-import React from 'react';
+import React, { useState } from 'react';
 import Fade from 'react-reveal/Fade';
 import { IUser } from 'types/models';
+import { WEBSITE_NAME } from 'utils/constants';
 
 interface HeaderProps {
   user: IUser | undefined;
@@ -20,6 +23,9 @@ interface HeaderProps {
 const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSideBar }: HeaderProps) => {
   const { active, account } = useWeb3React();
   const { asPath } = useRouter();
+  const {
+    website: { assets, name }
+  } = useGlobalContext();
 
   // Redirects the user to the right URL depending on the user's login state eg., /onboarding for non-logged in, /dashboard for logged-in users
   const redirectToHome = () => {
@@ -34,13 +40,30 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
     Router.push(url);
   };
 
-  const displayWalletConnect = ['/onboarding/connect-wallet', '/onboarding'].every((o) => asPath !== o);
+  const displayWalletConnect = [
+    '/onboarding/connect-wallet',
+    '/onboarding',
+    '/404',
+    '/not-found',
+    '/terms',
+    '/privacypolicy'
+  ].every((o) => asPath !== o);
 
   const renderVTVLLogo = () => {
     return (
       <div className={`flex flex-row items-center`}>
-        <img src="/icons/vtvl-icon.svg" className="h-10 sm:hidden md:h-12" onClick={redirectToHome} />
-        <img src="/logo.svg" className="hidden sm:block w-48 h-9 cursor-pointer" alt="VTVL" onClick={redirectToHome} />
+        <MediaAsset
+          src={assets?.logoIcon?.src || '/icons/vtvl-icon.svg'}
+          className="h-10 sm:hidden md:h-12"
+          alt={name || WEBSITE_NAME}
+          onClick={redirectToHome}
+        />
+        <MediaAsset
+          src={assets?.logoImage?.src || '/logo.svg'}
+          className="hidden sm:block w-48 h-12 cursor-pointer"
+          alt={name || WEBSITE_NAME}
+          onClick={redirectToHome}
+        />
       </div>
     );
   };
