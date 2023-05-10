@@ -456,6 +456,11 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     }
   };
 
+  const hasNoWalletAddress = useMemo(() => {
+    const addresses = vestingRecipients.map(({ data: recipient }) => recipient.walletAddress);
+    return addresses.filter((address) => !address).length > 0;
+  }, [vestingRecipients]);
+
   const handleCreateSignTransaction = async () => {
     try {
       if (!account || !library) {
@@ -473,7 +478,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         ) / totalRecipients;
       const vestingAmountPerUser = +vesting.details.amountToBeVested / totalRecipients - cliffAmountPerUser;
       const addresses = vestingRecipients.map(({ data: recipient }) => recipient.walletAddress);
-      const hasNoWalletAddress = addresses.filter((address) => !address).length > 0;
 
       if (hasNoWalletAddress) {
         toast.error("Some recipients don't have wallet address.");
@@ -855,7 +859,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           <button
             className="secondary small whitespace-nowrap"
             onClick={handleCreateSignTransaction}
-            disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
+            disabled={transactionLoaderStatus === 'IN_PROGRESS' || hasNoWalletAddress}>
             Create &amp; sign
           </button>
         )}
