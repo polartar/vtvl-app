@@ -23,7 +23,7 @@
   width: 8px;
   border-radius: 4px;
   padding: 0;
-  opacity: 0.3
+  opacity: 0.3;
 }
 
 .dots_custom :global(li.slick-active) button {

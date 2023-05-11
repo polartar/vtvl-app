@@ -10,6 +10,7 @@ import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { fetchMemberByEmail } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 
 type LoginForm = {
@@ -21,6 +22,7 @@ const SignUpPage: NextPage = () => {
     useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const router = useRouter();
+  const [isSignup, setIsSignup] = useState(false);
 
   useEffect(() => {
     startOnboarding(Step.SignUp);
@@ -29,27 +31,24 @@ const SignUpPage: NextPage = () => {
   const {
     control,
     handleSubmit,
-    watch,
-    getFieldState,
     getValues,
-    setValue,
-    formState: { errors, isValid, isDirty, isSubmitted, isSubmitting }
+    formState: { errors, isSubmitting }
   } = useForm({
     defaultValues: {
       memberEmail: ''
     }
   });
 
-  const memberEmail = {
-    value: watch('memberEmail'),
-    state: getFieldState('memberEmail')
-  };
-
   const googleSignIn = async () => {
     try {
+      setIsSignup(true);
       const newLogin = await signInWithGoogle();
-      if (newLogin?.isFirstLogin) startOnboarding(Step.SignUp);
+
+      if (newLogin?.isFirstLogin) {
+        startOnboarding(Step.SignUp);
+      }
       onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
+      setIsSignup(false);
     } catch (error) {
       console.error(error);
     }
@@ -157,7 +156,7 @@ const SignUpPage: NextPage = () => {
             <Button
               className="secondary mt-5 mx-auto"
               type="submit"
-              loading={isSubmitting}
+              loading={isSubmitting || isSignup}
               disabled={Boolean(errors.memberEmail) || !agreedOnConsent}>
               Create account
             </Button>
@@ -166,7 +165,13 @@ const SignUpPage: NextPage = () => {
         <hr className="border-t border-neutral-200 w-full mb-5" />
         <div className="flex flex-row items-center justify-center gap-5 font-medium text-xs text-neutral-800">
           Already have an account?{' '}
-          <button type="button" className="primary small" onClick={() => router.replace('/onboarding/member-login')}>
+          <button
+            type="button"
+            className="primary small"
+            onClick={() => {
+              setAgreedOnConsent(false);
+              router.replace('/onboarding/member-login');
+            }}>
             Login
           </button>
         </div>

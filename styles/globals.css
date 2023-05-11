@@ -76,10 +76,10 @@
   /* Other colors */
 
   /* Metamask */
-  --metamask: #F6851B;
+  --metamask: #f6851b;
 
   /* Wallet Connect */
-  --walletconnect: #3B99FC;
+  --walletconnect: #3b99fc;
 }
 
 .loader-dot1,

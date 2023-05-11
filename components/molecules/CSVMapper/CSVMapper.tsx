@@ -45,7 +45,6 @@ const CSVMapper = ({ headers, fields, onChange }: ICSVMapperProps) => {
 
   // Ensures that the values object is updated before triggering the onchange
   useEffect(() => {
-    console.log(values);
     if (onChange) onChange(values);
   }, [values]);
 

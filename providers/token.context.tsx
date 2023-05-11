@@ -96,7 +96,6 @@ export function TokenContextProvider({ children }: any) {
         ]);
         // Divide response token unit 256 to 1e18 for 18 decimal places.
         // To do: look for a util function that does this.
-        console.log('Token details', name, symbol, decimals, +totalSupply.toString() / 1e18, vestingContractInstance);
 
         setMintFormState({
           ...mintFormState,
