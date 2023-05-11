@@ -1,6 +1,7 @@
 import { WhereFilterOp, addDoc, doc, getDoc, getDocs, query, setDoc, where } from '@firebase/firestore';
 import { revokingCollection } from 'services/db/firestore';
 import { IRevoking } from 'types/models';
+import { IRevokingDoc } from 'types/models/revoking';
 import { generateRandomName } from 'utils/shared';
 
 export const fetchRevoking = async (id: string): Promise<IRevoking | undefined> => {
@@ -20,7 +21,7 @@ export const fetchAllRevokings = async () => {
 
 export const fetchAllRevokingsWithId = async () => {
   const snapshot = await getDocs(revokingCollection);
-  const documentsWithId: { id: string; data: IRevoking }[] = [];
+  const documentsWithId: IRevokingDoc[] = [];
   snapshot.forEach((doc) => {
     documentsWithId.push({ id: doc.id, data: doc.data() });
   });
@@ -31,7 +32,7 @@ export const fetchRevokingsByQuery = async (
   fields: string[],
   syntaxs: WhereFilterOp[],
   values: any[]
-): Promise<{ id: string; data: IRevoking }[] | []> => {
+): Promise<IRevokingDoc[] | []> => {
   const q = query(revokingCollection, ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index])));
   const querySnapshot = await getDocs(q);
 

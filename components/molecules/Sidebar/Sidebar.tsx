@@ -1,3 +1,4 @@
+import { SidebarCollapse } from '@components/atoms/Icons';
 import SidebarItem from '@components/atoms/SidebarItem/SidebarItem';
 import User from '@components/atoms/User/User';
 import styled from '@emotion/styled';
@@ -68,13 +69,11 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
 
   return (
     <SidebarContainer isExpanded={sidebarIsExpanded} className="transition-all">
-      <img
-        src="/icons/collapse-btn.svg"
-        alt="toggle sidebar"
-        onClick={expandSidebar}
-        className={`absolute top-8 -right-2 h-4 w-4 z-30 cursor-pointer transform-gpu transition-all rounded-full ${
+      <SidebarCollapse
+        className={`absolute top-8 -right-2 h-4 w-4 z-30 cursor-pointer text-secondary-900 transform-gpu transition-all rounded-full ${
           sidebarIsExpanded ? 'rotate-180' : ''
         }`}
+        onClick={expandSidebar}
         data-tip="Toggle sidebar"
       />
       <div>
@@ -106,18 +105,18 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
                 </SidebarItem>
                 {/* Display only when the Claim portal link is available and has claimable tokens */}
                 {/* We can probably refactor this one later into a component */}
-                {hasTokensToClaim(menu)
+                {/* {hasTokensToClaim(menu)
                   ? vestingSchedules.map((schedule) => (
                       <div
                         key={`schedule-${schedule.id}`}
                         className={`text-neutral-700 font-medium py-2 cursor-pointer hover:bg-gray-200 rounded-full transition-all mt-3 last:mb-3 ${
-                          sidebarIsExpanded ? 'px-12' : 'flex items-center justify-center'
+                          sidebarIsExpanded ? 'px-10' : 'flex items-center justify-center'
                         } ${currentRoute.asPath.includes(schedule.id) ? 'bg-gray-200' : ''}`}
                         onClick={() => Router.push(`/tokens/${schedule.id}`)}>
                         {sidebarIsExpanded ? schedule.data.name : schedule.data.name?.charAt(0)}
                       </div>
                     ))
-                  : null}
+                  : null} */}
               </Fragment>
             ))
           : null}
@@ -152,15 +151,15 @@ const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {
               </SidebarItem>
             ))
           : null}
-        <UserContainer>
+        <div className="h-16 border-t border-gray-200 flex row justify-between align-center pt-6 mx-auto">
           <User
-            userName={user?.memberInfo?.name || user?.displayName || 'John Doe'}
+            userName={user?.memberInfo?.name || user?.displayName || user?.memberInfo?.email || 'John Doe'}
             profilePhoto={user?.photoURL || ''}
             role={roleTitle}
             compact={!sidebarIsExpanded}
           />
           {sidebarIsExpanded ? <LogoutImg src="/icons/logout.svg" alt="logoutImg" onClick={() => logOut()} /> : null}
-        </UserContainer>
+        </div>
       </div>
     </SidebarContainer>
   );
@@ -189,16 +188,6 @@ const RoleTitle = styled.span`
   flex-direction: row;
   align-items: center;
   margin-bottom: 12px;
-`;
-const UserContainer = styled.div`
-  height: 64px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 24px;
-  border-top: 1px solid ${Colors.border};
-  margin: 0 auto;
 `;
 const LogoutImg = styled.img`
   width: 20px;

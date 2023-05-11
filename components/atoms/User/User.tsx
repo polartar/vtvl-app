@@ -23,8 +23,8 @@ const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
         // Temporarily use role as avatar initials -- update later
         <Avatar name={role.toUpperCase()} />
       )}
-      <div className={`transition-all ${compact ? 'w-0 opacity-0' : ''}`}>
-        {/* <p>{userName}</p> */}
+      <div className={`transition-all whitespace-nowrap ${compact ? 'w-0 opacity-0' : ''}`}>
+        {userName.length && <p>{userName?.length > 20 ? `${userName.substring(0, 20)}...` : userName}</p>}
         <p className="capitalize">{role}</p>
       </div>
     </UserContainer>

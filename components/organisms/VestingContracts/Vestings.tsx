@@ -178,70 +178,72 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
   }, [vestings, transactions, revokedSchedules, fetchSafeTransactionFromHash]);
 
   return (
-    <div className="w-full">
-      <div className="w-full flex items-center gap-4">
-        <div className="flex-grow flex items-center gap-2 px-5 py-2 bg-white border border-gray-100 rounded-lg">
-          <div className="w-5 h-5 relative">
-            <Image src="/icons/search.svg" layout="fill" />
+    <div className="w-full overflow-auto	">
+      <div className="w-max	">
+        <div className="w-full flex items-center gap-4">
+          <div className="flex-grow flex items-center gap-2 px-5 py-2 bg-white border border-gray-100 rounded-lg">
+            <div className="w-5 h-5 relative">
+              <Image src="/icons/search.svg" layout="fill" />
+            </div>
+            <input
+              className="w-full outline-none bg-transparent"
+              placeholder="Search"
+              value={filter.keyword}
+              onChange={(e) => setFilter({ ...filter, keyword: e.target.value })}
+            />
           </div>
-          <input
-            className="w-full outline-none bg-transparent"
-            placeholder="Search"
-            value={filter.keyword}
-            onChange={(e) => setFilter({ ...filter, keyword: e.target.value })}
-          />
         </div>
-      </div>
 
-      <div className="mt-5 w-full">
-        <div className="inline-flex border border-[hsl(217,16%,84%)] rounded-lg overflow-hidden">
-          {Object.values(IStatus).map((status, index) => {
-            return (
-              <div
-                key={status}
-                className={`px-4 py-3 bg-white border-r border-[#d0d5dd] text-sm text-[#1d2939] cursor-pointer hover:bg-[#eaeaea] ${
-                  filter.status === status ? 'bg-[#eaeaea]' : ''
-                }`}
-                onClick={() => {
-                  setFilter({
-                    ...filter,
-                    status: status
-                  });
-                }}>
-                {status}
-                {status !== IStatus.ALL && (
-                  <div
-                    className={`avatar  bg-primary-50 text-primary-500 ml-3
+        <div className="mt-5 w-full">
+          <div className="inline-flex border border-[hsl(217,16%,84%)] rounded-lg overflow-hidden">
+            {Object.values(IStatus).map((status, index) => {
+              return (
+                <div
+                  key={status}
+                  className={`px-4 py-3 bg-white border-r border-[#d0d5dd] text-sm text-[#1d2939] cursor-pointer hover:bg-[#eaeaea] ${
+                    filter.status === status ? 'bg-[#eaeaea]' : ''
+                  }`}
+                  onClick={() => {
+                    setFilter({
+                      ...filter,
+                      status: status
+                    });
+                  }}>
+                  {status}
+                  {status !== IStatus.ALL && (
+                    <div
+                      className={`avatar  bg-primary-50 text-primary-500 ml-3
                  w-5 h-5`}>
-                    {filteredVestingCounts[index]}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="border border-[#d0d5dd] rounded-xl w-full overflow-hidden mt-3">
-        <div className="flex bg-[#f2f4f7] text-[#475467] text-xs">
-          <div className="w-16 py-3"></div>
-          <div className="w-36 py-3">Schedule</div>
-          <div className="w-52 py-3">Pending Actions</div>
-          <div className="w-52 py-3">Cliff release</div>
-          <div className="w-40 py-3">Vesting period</div>
-          <div className="w-32 py-3"></div>
-          <div className="w-40 py-3">Total allocation</div>
-          <div className="min-w-[200px] flex-grow py-3"></div>
+                      {filteredVestingCounts[index]}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {filteredVestingSchedules?.map((vesting) => (
-          <ScheduleTable
-            id={vesting.id}
-            data={vesting.data}
-            key={vesting.id}
-            vestingSchedulesInfo={vestingSchedulesInfo}
-          />
-        ))}
+        <div className="border border-[#d0d5dd] rounded-xl w-full overflow-hidden mt-3">
+          <div className="flex bg-[#f2f4f7] text-[#475467] text-xs">
+            <div className="w-16 py-3"></div>
+            <div className="w-36 py-3">Schedule</div>
+            <div className="w-52 py-3">Pending Actions</div>
+            <div className="w-52 py-3">Cliff release</div>
+            <div className="w-40 py-3">Vesting period</div>
+            <div className="w-32 py-3"></div>
+            <div className="w-40 py-3">Total allocation</div>
+            <div className="min-w-[200px] flex-grow py-3"></div>
+          </div>
+
+          {filteredVestingSchedules?.map((vesting) => (
+            <ScheduleTable
+              id={vesting.id}
+              data={vesting.data}
+              key={vesting.id}
+              vestingSchedulesInfo={vestingSchedulesInfo}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

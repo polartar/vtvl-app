@@ -4,6 +4,7 @@ import { VestingSetupPanel } from '@components/molecules/VestingSetupPanel';
 import ImportCSVFlow from '@components/organisms/Forms/ImportCSVFlow';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useGlobalContext } from '@providers/global.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { getDownloadURL, getStorage, ref } from 'firebase/storage';
 import { useShallowState } from 'hooks/useShallowState';
@@ -13,6 +14,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { IRecipientDoc, IVesting } from 'types/models';
+import { WEBSITE_NAME } from 'utils/constants';
 import { getRecipient } from 'utils/recipients';
 import { isEmptyArray } from 'utils/regex';
 
@@ -49,6 +51,9 @@ const crumbSteps = [
 const CreateVestingSchedule: NextPageWithLayout = () => {
   const { updateRecipients, setScheduleState, scheduleState, scheduleMode, recipients } = useVestingContext();
   const { vestings, recipients: allRecipients } = useDashboardContext();
+  const {
+    website: { name }
+  } = useGlobalContext();
   const [rows, setRows] = useState<Array<RecipientTableRow>>([]);
   const [state, setState] = useShallowState({ step: 0 });
   const [duplicatedUsers, setDuplicatedUsers] = useState<Array<RecipientTableRow>>([]);
@@ -81,7 +86,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
       step1: {
         title: 'Import from CSV file',
         description: "Speed up the process by uploading a CSV file containing all your recipients' details.",
-        templateLabel: 'VTVL recipient template',
+        templateLabel: `${name || WEBSITE_NAME} recipient template`,
         templateUrl: templateUrl,
         cancelButtonLabel: 'Cancel',
         confirmButtonLabel: 'Upload file'
@@ -151,6 +156,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
   const handleContinue = useCallback(
     async (data: RecipientTableRow[], newErrors: string[]) => {
+      console.log({ scheduleState });
       if (scheduleState.vestingContractId) {
         const existingVestings = vestings
           .filter((vesting) => vesting.data.vestingContractId === scheduleState.vestingContractId)

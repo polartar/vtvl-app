@@ -48,15 +48,6 @@ import { getChartData, getCliffAmount, getCliffDurationTimestamp, getReleaseFreq
 
 type DateTimeType = Date | null;
 
-interface ScheduleFormTypes {
-  startDateTime: DateTimeType;
-  endDateTime: DateTimeType;
-  cliffDuration: CliffDuration;
-  lumpSumReleaseAfterCliff: string | number;
-  releaseFrequency: ReleaseFrequency;
-  amountToBeVested: number;
-}
-
 interface TemplateType {
   template?: SingleValue<IVestingTemplate> | undefined;
 }
@@ -69,7 +60,7 @@ interface CustomActionBarProps {
 const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no-cliff';
 
 const ConfigureSchedule: NextPageWithLayout = () => {
-  const { organizationId, currentSafe } = useAuthContext();
+  const { organizationId, currentSafe, user } = useAuthContext();
   const { account, chainId, activate } = useWeb3React();
   const { recipients, scheduleFormState, scheduleMode, scheduleState, updateScheduleFormState, setScheduleState } =
     useVestingContext();
@@ -1071,7 +1062,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         vestingContractId,
         tokenAddress: mintFormState.address,
         tokenId,
-        chainId
+        chainId,
+        createdBy: user?.uid
       });
 
       const newRecipients = await Promise.all(
@@ -1449,7 +1441,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     rules={{ required: true }}
                     render={({ field, fieldState, formState }) => (
                       <Input
-                        label="Tokens unlocked after cliff (0-99%)"
+                        label="Tokens unlocked after cliff (1-99%)"
                         placeholder="Enter percentage amount"
                         className="mt-4"
                         required
@@ -1663,9 +1655,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             <div>
               <label className="text-sm text-neutral-600 flex flex-row items-center gap-2 mb-2.5">
                 <ContractsIcon className="h-4" />
-                Contract
+                Contract Name: <p className="text-neutral-900">{scheduleState.contractName}</p>
               </label>
-              <p className="text-neutral-900">{scheduleState.contractName}</p>
+              <label className="text-sm text-neutral-600 flex flex-row items-center gap-2 mb-2.5">
+                <ContractsIcon className="h-4 invisible" />
+                Schedule Name: <p className="text-neutral-900">{scheduleState.name}</p>
+              </label>
             </div>
             {currentSafe && currentSafe.address ? (
               <div>

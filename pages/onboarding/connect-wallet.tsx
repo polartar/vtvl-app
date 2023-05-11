@@ -3,6 +3,7 @@ import ConnectWalletOptions from '@components/molecules/ConnectWalletOptions/Con
 import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
 import AuthContext from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
@@ -31,9 +32,9 @@ const Signing = styled.div`
   border-radius: 26px 0 0 26px;
 `;
 
-const Vesting = styled.div`
+const Vesting = styled.div<{ background?: string }>`
   border-radius: 0 26px 26px 0;
-  background: url('/images/background.png');
+  background: url(${({ background }) => background ?? '/images/background.png'});
   background-size: cover;
 `;
 
@@ -42,6 +43,9 @@ const ConnectWalletPage: NextPage = () => {
   const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
   const { user, anonymousSignIn } = useContext(AuthContext);
   const [activated, setActivated] = useState(false);
+  const {
+    website: { assets, features }
+  } = useGlobalContext();
 
   // When a wallet is connected
   const handleConnectedState = () => {
@@ -57,39 +61,11 @@ const ConnectWalletPage: NextPage = () => {
         (async () => {
           await activate(injected, undefined, true);
           if (user) completeOnboarding();
-          else if (!activated) Router.push('/onboarding/sign-up');
+          else if (!activated) Router.push(`/onboarding/${features?.auth?.memberOnly ? 'member-login' : 'sign-up'}`);
         })();
       }
     });
   }, [active]);
-
-  const carouselItems = [
-    {
-      title: ['100% ', <strong>no-code</strong>, <br />, 'ready in minutes'],
-      image: '/images/how-it-works/1.png',
-      subtitle: 'Mint or bring your own token',
-      description: 'Variable or fixed supply? No problem, you have options.'
-    },
-    {
-      title: ['Create multiple ', <strong>vesting smart contracts</strong>, ' in just a few clicks'],
-      image: '/images/how-it-works/2.png',
-      subtitle: 'Generate smart contracts for investors & employees',
-      description:
-        'We get it, have your engineers build YOUR product and let us take care of the custom vesting systems'
-    },
-    {
-      title: ['Automate ', <strong>custom token</strong>, ' distributions to your holders'],
-      image: '/images/how-it-works/3.png',
-      subtitle: 'Track your own tokens',
-      description: 'Say goodbye to managing via spreadsheet.'
-    },
-    {
-      title: ['Token vesting analytics ', <br />, <strong>coming soon!</strong>],
-      image: '/images/how-it-works/4.png',
-      subtitle: 'Token analytics coming soon',
-      description: 'What you really want to know about your tokenomics.'
-    }
-  ];
 
   return (
     <PaddedLayout>
@@ -97,8 +73,10 @@ const ConnectWalletPage: NextPage = () => {
         <Signing>
           <ConnectWalletOptions onConnect={handleConnectedState} />
         </Signing>
-        <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
-          <Carousel variant="dark" items={carouselItems} />
+        <Vesting
+          className="flex flex-col items-center justify-center pt-12 pb-10"
+          background={assets?.loginBgImage?.src}>
+          <Carousel variant="dark" />
         </Vesting>
       </OnboardingContainer>
     </PaddedLayout>

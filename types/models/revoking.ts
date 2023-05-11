@@ -8,3 +8,7 @@ export interface IRevoking {
   chainId: number;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
 }
+export interface IRevokingDoc {
+  id: string;
+  data: IRevoking;
+}

@@ -2,11 +2,13 @@ import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
+import ThemeLoader from '@components/atoms/ThemeLoader/ThemeLoader';
 import ConnectWalletOptionsProps from '@components/molecules/ConnectWalletOptions/ConnectWalletOptions';
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
 import { useDashboardContext } from '@providers/dashboard.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
@@ -16,6 +18,7 @@ import { useLoaderContext } from 'providers/loader.context';
 import React, { useContext, useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { toast } from 'react-toastify';
+import { WEBSITE_NAME } from 'utils/constants';
 
 import AuthContext from '../../../providers/auth.context';
 
@@ -63,6 +66,13 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   } = useContext(AuthContext);
   const { inProgress } = useContext(OnboardingContext);
   const { loading } = useLoaderContext();
+  const {
+    website: { theme }
+  } = useGlobalContext();
+  const {
+    isLoading,
+    website: { name, assets }
+  } = useGlobalContext();
   const { active, account } = useWeb3React();
   const [sidebarProperties, setSidebarProperties] = useState({
     roleTitle: 'Anonymous',
@@ -348,6 +358,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     showDeleteModal,
     setShowDeleteModal
   } = useVestingContext();
+  const {
+    website: { organizationId: webOrgId }
+  } = useGlobalContext();
 
   // Hides the modal and sets the necessary states.
   const handleHideModal = () => {
@@ -455,11 +468,27 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     }
   }, [account, active, router]);
 
+  const renderFavicons = (icon: string) => (
+    <>
+      <link rel="apple-touch-icon" sizes="180x180" href={icon} />
+      <link rel="icon" type="image/png" sizes="32x32" href={icon} />
+      <link rel="icon" type="image/png" sizes="16x16" href={icon} />
+      <link rel="mask-icon" href={icon} color="#fefefe" />
+      <meta name="msapplication-TileColor" content="#fff" />
+      <meta name="theme-color" content="#ffffff" />
+    </>
+  );
+
   return (
     <>
       <Container>
         <Head>
-          <title>VTVL</title>
+          <title>{name || WEBSITE_NAME}</title>
+          {isLoading
+            ? renderFavicons('/default-loader-icon.png')
+            : assets?.logoFavicon
+            ? renderFavicons(assets.logoFavicon.src)
+            : renderFavicons('/favicon.ico')}
         </Head>
         <Header
           connected={active}
@@ -472,7 +501,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         <Layout className="flex flex-row w-full">
           {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
           <div className="relative">
-            {loading && <PageLoader />}
+            {loading && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
             <Main
               sidebarIsExpanded={sidebarIsExpanded}
               sidebarIsShown={displaySideBar}
@@ -508,6 +537,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
           </div>
         </Form>
       </PromptModal>
+      {/* {theme ? <ThemeLoader url={theme} /> : null} */}
     </>
   );
 };

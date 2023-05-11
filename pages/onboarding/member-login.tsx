@@ -3,6 +3,7 @@ import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import AuthContext from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { States, Step } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -16,8 +17,11 @@ type LoginForm = {
 };
 
 const MemberLoginPage: NextPage = () => {
-  const { teammateSignIn, sendLoginLink, signInWithGoogle } = useContext(AuthContext);
+  const { teammateSignIn, sendLoginLink, signInWithGoogle, allowSignIn } = useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
+  const {
+    website: { features }
+  } = useGlobalContext();
   const router = useRouter();
 
   useEffect(() => {
@@ -37,11 +41,12 @@ const MemberLoginPage: NextPage = () => {
 
   const googleSignIn = async () => {
     const newLogin = await signInWithGoogle();
-    if (newLogin?.isOnboarding) {
-      startOnboarding(Step.UserTypeSetup);
+    if (newLogin) {
+      if (newLogin?.isOnboarding) {
+        startOnboarding(Step.UserTypeSetup);
+      }
+      onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
     }
-
-    onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
   };
 
   const onSubmit: SubmitHandler<LoginForm> = async () => {
@@ -59,7 +64,6 @@ const MemberLoginPage: NextPage = () => {
       }
 
       await sendLoginLink(values.memberEmail);
-      toast.success('Please check your email for the link to login');
       return;
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
@@ -81,8 +85,8 @@ const MemberLoginPage: NextPage = () => {
         className="w-full my-6 flex flex-col items-center">
         <button
           type="button"
-          onClick={googleSignIn}
-          className="line flex flex-row items-center justify-center gap-2.5 w-full">
+          onClick={async () => await googleSignIn()}
+          className="line flex flex-row items-center justify-center gap-2.5 w-full rounded-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign in with Google
         </button>
@@ -116,13 +120,17 @@ const MemberLoginPage: NextPage = () => {
             </Button>
           </div>
         </div>
-        <hr className="border-t border-neutral-200 w-full mb-6" />
-        <div className="flex flex-row items-center gap-5 justify-center font-medium text-xs text-neutral-800 text-center ">
-          Don&apos;t have an account?{' '}
-          <button type="button" className="primary small" onClick={() => router.replace('/onboarding/sign-up')}>
-            Create an account
-          </button>
-        </div>
+        {!features?.auth?.memberOnly && (
+          <>
+            <hr className="border-t border-neutral-200 w-full mb-6" />
+            <div className="flex flex-row items-center gap-5 justify-center font-medium text-xs text-neutral-800 text-center ">
+              Don&apos;t have an account?{' '}
+              <button type="button" className="primary small" onClick={() => router.replace('/onboarding/sign-up')}>
+                Create an account
+              </button>
+            </div>
+          </>
+        )}
       </Form>
     </div>
   );

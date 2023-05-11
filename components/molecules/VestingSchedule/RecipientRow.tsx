@@ -265,7 +265,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
       <div className="flex items-center min-w-[136px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd] bg-[#f9fafb]">
         {(!revoking || revoking.data.status === 'PENDING') && vesting.status === 'LIVE' && (
           <Button
-            disabled={revoking?.data.status === 'PENDING'}
+            disabled={revoking?.data.status === 'PENDING' || revoked}
             danger
             size="small"
             label="Revoke"

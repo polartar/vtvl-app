@@ -138,7 +138,6 @@ const Table = ({
   const [depositAmount, setDepositAmount] = useState('0');
 
   const handleBatchProcess = () => {
-    console.log('Raw selected rows', selectedFlatRows);
     const actualData = selectedFlatRows.map((row) => ({ ...row.original }));
     batchOptions.onBatchProcessClick(actualData);
   };

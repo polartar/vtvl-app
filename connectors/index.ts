@@ -1,15 +1,20 @@
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { NetworkConnector } from '@web3-react/network-connector';
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
-import { SUPPORTED_CHAIN_IDS, SupportedChains } from 'types/constants/supported-chains';
+import {
+  DEV_SUPPORTED_CHAIN_IDS,
+  SUPPORTED_CHAIN_IDS,
+  SupportedChains,
+  devSupportedChains
+} from 'types/constants/supported-chains';
 
 export const injected = new InjectedConnector({
-  supportedChainIds: SUPPORTED_CHAIN_IDS
+  supportedChainIds: DEV_SUPPORTED_CHAIN_IDS
 });
 
 const rpcs: { [chainId: number]: string } = {};
-SUPPORTED_CHAIN_IDS.forEach((chainId) => {
-  rpcs[chainId] = SupportedChains[chainId].rpc;
+DEV_SUPPORTED_CHAIN_IDS.forEach((chainId) => {
+  rpcs[chainId] = devSupportedChains[chainId].rpc;
 });
 
 export const walletconnect = new WalletConnectConnector({

@@ -25,7 +25,7 @@ const CapTable: NextPageWithLayout = () => {
   const [schedules, setSchedules] = useState<any[]>([]);
   const { loading, hideLoading } = useLoaderContext();
   const { totalAllocation, totalWithdrawn, totalClaimable, vestings, recipientTokenDetails } = useDashboardContext();
-
+  console.log(recipientTokenDetails);
   // Renderer for the recipient types for UI purpose
   const CellRecipientType = ({ value }: any) => <Chip label={value} rounded size="small" color="gray" />;
 

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
 import { fetchInviteeByEmail, fetchMemberByEmail } from 'services/db/member';
-import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
+import { PUBLIC_DOMAIN_NAME, WEBSITE_EMAIL, WEBSITE_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 import { GetSignInToken, SignInToken } from '../token/getCustomToken';
@@ -32,7 +32,7 @@ const checkMemberExist = async (email: string) => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { encryptToken, email } = req.body;
+  const { encryptToken, email, websiteName, websiteEmail, emailTemplate } = req.body;
 
   let token;
 
@@ -54,9 +54,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const emailLink = PUBLIC_DOMAIN_NAME + '/member?token=' + token;
     await SendMail({
       to: payload.email,
-      data: { emailLink, orgName: payload.orgName, name: payload.name },
-      subject: 'Join VTVL',
-      templateId: MailTemplates.TeammateInvite
+      data: { emailLink, orgName: payload.orgName, name: payload.name, ...emailTemplate },
+      subject: `Join ${websiteName || WEBSITE_NAME}`,
+      websiteName: websiteName || WEBSITE_NAME,
+      websiteEmail: websiteEmail || WEBSITE_EMAIL,
+      templateId: MailTemplates.ThemedTeamInvite
     });
     res.status(200).json({ message: 'Success!' });
   } catch (err: any) {

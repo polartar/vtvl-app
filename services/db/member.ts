@@ -54,7 +54,6 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
     updatedAt: Math.floor(new Date().getTime() / 1000)
   };
   if (member.wallets) memberInfo.wallets = member.wallets;
-  console.log('Member', memberRef, memberInfo);
   await setDoc(memberRef, memberInfo);
 
   // send slack message

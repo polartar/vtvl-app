@@ -1,6 +1,9 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import { VestingCalendarIcon, VestingScheduleIcon } from '@components/atoms/Icons';
+import MediaAsset from '@components/atoms/MediaAsset/MediaAsset';
 import { Typography } from '@components/atoms/Typography/Typography';
+import { useAuthContext } from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
@@ -49,6 +52,10 @@ export default function ClaimPortal() {
   const hasContracts = !!vestingContractAddresses?.length;
 
   const isLoading = isLoadingMyRecipes || (isLoadingChainVesting && hasVestings && hasContracts);
+
+  const {
+    website: { assets }
+  } = useGlobalContext();
 
   /**
    * Project Tabs data
@@ -181,7 +188,21 @@ export default function ClaimPortal() {
     setSelectedProject(projects?.[0]);
   }, [projects]);
 
-  return (
+  return !isLoadingMyRecipes && !hasVestings ? (
+    <EmptyState
+      image={
+        <MediaAsset
+          src={assets?.emptyState?.src || '/images/cryptocurrency-trading-bot.gif'}
+          animated={assets?.emptyState?.animated || false}
+          active={true}
+          fallback="/images/cryptocurrency-trading-bot.gif"
+          className="h-80"
+        />
+      }
+      title="No claimable tokens"
+      description={<>Come back again next time.</>}
+    />
+  ) : (
     <div className="w-full">
       <Typography size="title" className="font-semibold text-neutral-900 mb-5">
         My Tokens

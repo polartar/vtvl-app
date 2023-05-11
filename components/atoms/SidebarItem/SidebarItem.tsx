@@ -33,8 +33,8 @@ const SidebarItemContainer = styled.div<{
   disabled: boolean;
 }>`
   height: 48px;
-  border-radius: ${({ selected }) => (selected ? '24px' : '5px')};
-  background-color: ${({ selected }) => (selected ? '#1B369A' : 'transparent')};
+  border-radius: ${({ selected }) => (selected ? '10px' : '24px')};
+  background-color: ${({ selected }) => (selected ? 'var(--primary-900)' : 'transparent')};
   display: flex;
   align-items: center;
   font-style: normal;
@@ -51,8 +51,8 @@ const SidebarItemContainer = styled.div<{
       : `
     &:hover {
       cursor: pointer;
-      background-color: #1b369a;
-      border-radius: 24px;
+      background-color: var(--primary-900);
+      border-radius: 10px;
       color: #f9fafb;
     }
     &:hover > .sidebar-item-icon {

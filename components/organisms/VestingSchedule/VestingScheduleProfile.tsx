@@ -1,6 +1,5 @@
 import DashboardBarChart from '@components/molecules/DashboardBarChart';
 import { BigNumber, ethers } from 'ethers';
-import { formatEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import moment from 'moment';
@@ -104,7 +103,7 @@ const VestingScheduleProfile = ({
 
       let progress =
         vesting.status === 'LIVE' && diffFromNow >= 0 ? Math.floor((diffFromNow / diff) * 100).toString() : 0;
-      if (progress > 100) progress = 100;
+      if (Number(progress) > 100) progress = 100;
       items[7].content = `${progress}/100%`;
 
       const years = Math.floor(diff / 12);
@@ -116,11 +115,11 @@ const VestingScheduleProfile = ({
       return [];
     }
   }, [vestingScheduleInfo]);
-  console.log(cardsInfo);
+
   return (
     <div className="w-full">
       <div className="grid  2xl:grid-cols-5 xl:grid-cols-5 md:grid-cols-4 gap-6">
-        {cardsInfo.map((card, index) => {
+        {cardsInfo.map((card) => {
           return (
             <StandardCard
               // isLoading={isLoadingDetails}

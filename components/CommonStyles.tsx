@@ -1,17 +1,17 @@
 import styled from '@emotion/styled';
 
 export const Colors: any = {
-  border: '#EAECF0',
-  background: '#f9fafb',
+  border: 'var(--neutral-200)',
+  background: 'var(--neutral-50)',
   stepBg: '#EBF2FF',
   successBg: '#ECFDF3',
-  text: '#1d2939',
-  orange: '#F9623B',
-  grey: '#667085',
-  primary: '#1B369A',
+  text: 'var(--neutral-800)',
+  orange: 'var(--secondary-900)',
+  grey: 'var(--neutral-500)',
+  primary: 'var(--primary-900)',
   secondary: '#344054',
-  success: '#039855',
-  pageTitle: '#101828'
+  success: 'var(--success-500)',
+  pageTitle: 'var(--neutral-900)'
 };
 export const Row = styled.div`
   display: flex;

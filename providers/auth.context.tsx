@@ -19,8 +19,9 @@ import {
 } from 'firebase/auth';
 import useRoleGuard from 'hooks/useRoleGuard';
 import useToggle from 'hooks/useToggle';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
@@ -31,7 +32,11 @@ import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/model
 import { IUserType } from 'types/models/member';
 import { compareAddresses } from 'utils';
 import { getCache, setCache } from 'utils/localStorage';
+import { MESSAGES } from 'utils/messages';
 import { platformRoutes } from 'utils/routes';
+
+import { useGlobalContext } from './global.context';
+import { useOnboardingContext } from './onboarding.context';
 
 export type NewLogin = {
   isFirstLogin: boolean;
@@ -92,6 +97,7 @@ export type AuthContextData = {
   setOrganizationId: (orgId: string) => void;
   recipient: IRecipientDoc | undefined;
   setRecipient: (data: any) => void;
+  allowSignIn: (userOrgId: string) => boolean;
 };
 
 const AuthContext = createContext({} as AuthContextData);
@@ -110,6 +116,10 @@ export function AuthContextProvider({ children }: any) {
   const [error, setError] = useState('');
   const [showSideBar, setShowSideBar] = useToggle(false);
   const [sidebarIsExpanded, setSidebarIsExpanded, , , forceCollapseSidebar] = useToggle(true);
+  const {
+    website: { organizationId: websiteOrganizationId, name: websiteName, email: websiteEmail, features },
+    emailTemplate
+  } = useGlobalContext();
 
   const [recipient, setRecipient] = useState<IRecipientDoc>();
   // Stores the connection status whether the user is connected via metamask or other wallets
@@ -120,6 +130,9 @@ export function AuthContextProvider({ children }: any) {
 
   // Adds the auth and role guard here
   const { updateRoleGuardState } = useRoleGuard({ routes: platformRoutes, fallbackPath: '/404' });
+
+  const { inProgress } = useOnboardingContext();
+  const router = useRouter();
 
   // Sets the recipient if it is found
   useEffect(() => {
@@ -195,6 +208,23 @@ export function AuthContextProvider({ children }: any) {
     setIsAuthenticated(true);
   };
 
+  const allowSignIn = (userOrganizationId?: string) => {
+    // Used this kind of conditions for readability
+    // Allow sign in when:
+    if (features?.auth?.organizationOnly) {
+      // - Website is white-labelled + (user is member of organization OR user is currently registering)
+      if (
+        !websiteOrganizationId ||
+        (websiteOrganizationId && (websiteOrganizationId === userOrganizationId || !userOrganizationId))
+      )
+        return true;
+      // - white-labelled but user is not a member
+      return false;
+    }
+    // - Website is not white-labelled, allow all forms of sign in email sending
+    return true;
+  };
+
   const updateAuthState = useCallback(
     async (credential: UserCredential, isGuestMode = false) => {
       const additionalInfo = getAdditionalUserInfo(credential);
@@ -239,12 +269,16 @@ export function AuthContextProvider({ children }: any) {
       }
 
       const memberInfo = await fetchMember(credential.user.uid);
-      authenticateUser({ ...credential.user, memberInfo });
+      if (allowSignIn(memberInfo?.org_id)) {
+        authenticateUser({ ...credential.user, memberInfo });
 
-      return {
-        isNewUser: Boolean(additionalInfo?.isNewUser),
-        isOnboarding: Boolean(recipientInfo)
-      };
+        return {
+          isNewUser: Boolean(additionalInfo?.isNewUser) || !memberInfo?.org_id,
+          isOnboarding: Boolean(recipientInfo)
+        };
+      }
+      toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+      return false;
     },
     [account, chainId]
   );
@@ -254,10 +288,14 @@ export function AuthContextProvider({ children }: any) {
     await setPersistence(auth, browserSessionPersistence);
 
     const credential = await signInWithPopup(auth, new GoogleAuthProvider());
-    const { isNewUser: isFirstLogin, isOnboarding } = await updateAuthState(credential);
+    const authState = await updateAuthState(credential);
 
     setLoading(false);
-    return { isFirstLogin, isOnboarding, uuid: credential.user.uid };
+    if (authState) {
+      const { isNewUser: isFirstLogin, isOnboarding } = authState;
+      return { isFirstLogin, isOnboarding, uuid: credential.user.uid };
+    }
+    return;
   };
 
   const signInWithEmail = async (email: string, password: string) => {
@@ -287,28 +325,39 @@ export function AuthContextProvider({ children }: any) {
 
     const existingOrg = await fetchOrgByQuery('email', '==', user?.email || '');
     let orgId;
-    if (existingOrg?.id) {
+    if (features?.auth?.organizationOnly && websiteOrganizationId) {
+      // If the website is white-labelled and has enabled login by organization, use it as the organizationId.
+      orgId = websiteOrganizationId;
+    } else if (existingOrg?.id) {
+      // for existing VTVL organizations, just use and update the organization details.
       await updateOrg({ name: org.name, email: org.email, user_id: user?.uid }, existingOrg.id);
     } else {
+      // for new VTVL organizations
       orgId = await createOrg({ name: org.name, email: org.email, user_id: user?.uid });
     }
     const org_id = existingOrg?.id || orgId;
-    const memberInfo: IMember = {
-      email: member.email || '',
-      companyEmail: member.email || user.email || '',
-      name: member.name || user.displayName || '',
-      type: member.type,
-      org_id,
-      joined: Math.floor(new Date().getTime() / 1000)
-    };
 
-    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+    // If logged in user is not the member of organization
+    if (allowSignIn(org_id)) {
+      const memberInfo: IMember = {
+        email: member.email || '',
+        companyEmail: member.email || user.email || '',
+        name: member.name || user.displayName || '',
+        type: member.type,
+        org_id,
+        joined: Math.floor(new Date().getTime() / 1000)
+      };
 
-    await newMember(user.uid, { ...memberInfo });
-    authenticateUser({ ...user, memberInfo: { ...memberInfo, org_id } });
-    setIsNewUser(true);
-    setLoading(false);
-    return org_id || '';
+      if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+
+      await newMember(user.uid, { ...memberInfo });
+      authenticateUser({ ...user, memberInfo: { ...memberInfo, org_id } });
+      setIsNewUser(true);
+      setLoading(false);
+      return org_id || '';
+    } else {
+      toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+    }
   };
 
   const emailSignUp = async (newSignUp: IMember, url?: string): Promise<void> => {
@@ -320,67 +369,78 @@ export function AuthContextProvider({ children }: any) {
     if (!isValidLink || !newSignUp.email) throw new Error('invalid sign url');
 
     const credential = await signInWithEmailLink(auth, newSignUp.email, url);
-    const additionalInfo = getAdditionalUserInfo(credential);
-    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
-    const member = await fetchMember(credential.user.uid);
-    const memberInfo = member
-      ? // Updating the type to support email invites on team member management.
-        // By default uses the current user type of the member logging in.
-        { ...member, type: newSignUp.type || member.type }
-      : // Next block is used when a new user is detected.
-        {
-          email: newSignUp.email || credential.user.email || '',
-          companyEmail: newSignUp.email || credential.user.email || '',
-          name: newSignUp.name || credential.user.displayName || '',
-          type: newSignUp.type,
-          org_id: newSignUp.org_id
-        };
+    // If logged in user is not the member of organization
+    if (allowSignIn(newSignUp.org_id)) {
+      const additionalInfo = getAdditionalUserInfo(credential);
+      if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
 
-    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
-    await newMember(credential.user.uid, {
-      ...memberInfo
-    });
-    authenticateUser({ ...credential.user, memberInfo });
+      const member = await fetchMember(credential.user.uid);
+      const memberInfo = member
+        ? // Updating the type to support email invites on team member management.
+          // By default uses the current user type of the member logging in.
+          { ...member, type: newSignUp.type || member.type }
+        : // Next block is used when a new user is detected.
+          {
+            email: newSignUp.email || credential.user.email || '',
+            companyEmail: newSignUp.email || credential.user.email || '',
+            name: newSignUp.name || credential.user.displayName || '',
+            type: newSignUp.type,
+            org_id: newSignUp.org_id
+          };
+
+      if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+      await newMember(credential.user.uid, {
+        ...memberInfo
+      });
+      authenticateUser({ ...credential.user, memberInfo });
+    } else {
+      toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+    }
+
     setLoading(false);
   };
 
   const signUpWithToken = async (newSignUp: IMember, token: string) => {
-    setLoading(true);
-    await setPersistence(auth, browserSessionPersistence);
-    const credential = await signInWithCustomToken(auth, token);
+    // If logged in user is not the member of organization
+    if (allowSignIn(newSignUp.org_id)) {
+      setLoading(true);
+      await setPersistence(auth, browserSessionPersistence);
+      const credential = await signInWithCustomToken(auth, token);
 
-    if (!credential.user.email) {
-      try {
-        await updateEmail(credential.user, newSignUp.email || '');
-      } catch (err) {
-        // TODO handle this error in the future
-        console.log(err);
-      }
-    }
-
-    const additionalInfo = getAdditionalUserInfo(credential);
-    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
-    const member = await fetchMember(credential.user.uid);
-    const memberInfo = member
-      ? {
-          ...member,
-          type: newSignUp.type
+      if (!credential.user.email) {
+        try {
+          await updateEmail(credential.user, newSignUp.email || '');
+        } catch (err) {
+          /// We should handle this error in the future
+          console.log(err);
         }
-      : {
-          email: newSignUp.email || credential.user.email || '',
-          companyEmail: newSignUp.email || credential.user.email || '',
-          name: newSignUp.name || credential.user.displayName || '',
-          type: newSignUp.type,
-          org_id: newSignUp.org_id
-        };
+      }
+      const additionalInfo = getAdditionalUserInfo(credential);
+      if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+      const member = await fetchMember(credential.user.uid);
+      const memberInfo = member
+        ? {
+            ...member,
+            type: newSignUp.type
+          }
+        : {
+            email: newSignUp.email || credential.user.email || '',
+            companyEmail: newSignUp.email || credential.user.email || '',
+            name: newSignUp.name || credential.user.displayName || '',
+            type: newSignUp.type,
+            org_id: newSignUp.org_id
+          };
 
-    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
-    await newMember(credential.user.uid, {
-      ...memberInfo
-    });
-    authenticateUser({ ...credential.user, memberInfo });
-    setLoading(false);
+      if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+      await newMember(credential.user.uid, {
+        ...memberInfo
+      });
+      authenticateUser({ ...credential.user, memberInfo });
+      setLoading(false);
+    } else {
+      toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+    }
   };
 
   const teammateSignIn = async (email: string, type: IUserType, orgId: string, url?: string): Promise<void> => {
@@ -394,28 +454,34 @@ export function AuthContextProvider({ children }: any) {
     const org = await fetchOrg(orgId);
     if (!org) throw new Error('invalid sign url, no organization');
 
-    const credential = await signInWithEmailLink(auth, email, url);
-    const additionalInfo = getAdditionalUserInfo(credential);
+    // If logged in user is not the member of organization
+    if (allowSignIn(orgId)) {
+      console.log('user type is ', type);
+      const credential = await signInWithEmailLink(auth, email, url);
+      const additionalInfo = getAdditionalUserInfo(credential);
 
-    const member = await fetchMember(credential.user.uid);
-    const memberInfo = member
-      ? member
-      : {
-          email: credential.user.email || '',
-          companyEmail: credential.user.email || '',
-          name: credential.user.displayName || '',
-          type
-        };
+      const member = await fetchMember(credential.user.uid);
+      const memberInfo = member
+        ? member
+        : {
+            email: credential.user.email || '',
+            companyEmail: credential.user.email || '',
+            name: credential.user.displayName || '',
+            type
+          };
 
-    if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
+      if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
 
-    await newMember(credential.user.uid, {
-      ...memberInfo,
-      type
-    });
+      await newMember(credential.user.uid, {
+        ...memberInfo,
+        type
+      });
 
-    if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
-    authenticateUser({ ...credential.user, memberInfo });
+      if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
+      authenticateUser({ ...credential.user, memberInfo });
+    } else {
+      toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+    }
     setLoading(false);
   };
 
@@ -423,10 +489,19 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const member = await fetchMemberByEmail(email);
     //TODO: abstract api calls
-    await axios.post('/api/email/login', {
-      email,
-      newUser: member ? false : true
-    });
+    if (allowSignIn(member?.org_id)) {
+      await axios.post('/api/email/login', {
+        email,
+        newUser: member ? false : true,
+        websiteEmail,
+        websiteName,
+        emailTemplate
+      });
+      setLoading(false);
+      toast.success('Please check your email for the link to login');
+    } else {
+      toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
+    }
     setLoading(false);
   };
 
@@ -446,7 +521,10 @@ export function AuthContextProvider({ children }: any) {
       orgId,
       orgName,
       name,
-      memberId
+      memberId,
+      websiteEmail,
+      websiteName,
+      emailTemplate
     });
     setLoading(false);
   };
@@ -543,7 +621,8 @@ export function AuthContextProvider({ children }: any) {
       setUser,
       setOrganizationId,
       recipient,
-      setRecipient
+      setRecipient,
+      allowSignIn
     }),
     [
       isAuthenticated,
@@ -565,16 +644,22 @@ export function AuthContextProvider({ children }: any) {
   );
 
   useEffect(() => {
+    // when sign up, we shouldn't redirect to claim portal
+    if (agreedOnConsent) return;
     if (
       user &&
       user.memberInfo &&
       user.memberInfo.type &&
       user.memberInfo.type !== 'founder' &&
       user.memberInfo.type !== 'manager' &&
-      user.memberInfo.type !== 'manager2'
+      user.memberInfo.type !== 'manager2' &&
+      !inProgress &&
+      !router.asPath.includes('welcome')
     ) {
       if (user.memberInfo.type === 'investor' && (!recipient || (recipient && !recipient.data.walletAddress))) {
         Router.push('/recipient/schedule');
+      } else if (isNewUser) {
+        Router.push('/welcome');
       } else {
         Router.push('/claim-portal');
       }
@@ -584,7 +669,7 @@ export function AuthContextProvider({ children }: any) {
     if (user && user.email && user.uid) {
       setOrganizationId(user?.memberInfo?.org_id);
     }
-  }, [user, recipient]);
+  }, [user, recipient, agreedOnConsent]);
 
   useEffect(() => {
     fetchSafe();
