@@ -1,4 +1,5 @@
 import { useWeb3React } from '@web3-react/core';
+import NEW_VTVL_VESTING_ABI from 'contracts/abi/NewVtvlVesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import getUnixTime from 'date-fns/getUnixTime';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
@@ -6,8 +7,9 @@ import { ethers } from 'ethers';
 import { BigNumber } from 'ethers/lib/ethers';
 import { useEffect } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVesting, IVestingContract } from 'types/models';
+import { IVesting } from 'types/models';
 import { IRecipientDoc } from 'types/models/recipient';
+import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
 
 import { useShallowState } from './useShallowState';
@@ -27,7 +29,7 @@ export type VestingContractInfo = {
  * Fetch on-chain vesting data
  */
 export default function useChainVestingContracts(
-  vestingContracts: { id: string; data: IVestingContract }[],
+  vestingContracts: IVestingContractDoc[] | IVestingContractDoc,
   vestings: { id: string; data: IVesting }[],
   recipients: IRecipientDoc[]
 ) {
@@ -41,16 +43,16 @@ export default function useChainVestingContracts(
   });
 
   useEffect(() => {
-    if (!chainId || !vestingContracts?.length) return;
+    const arrVestingContracts = Array.isArray(vestingContracts) ? vestingContracts : [vestingContracts];
+    if (!chainId || !arrVestingContracts?.length) return;
 
     setState({ isLoading: true });
     const multicall = new Multicall({
       ethersProvider: ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc),
       tryAggregate: true
     });
-
-    const contractCallContext: ContractCallContext[] = vestingContracts
-      .filter((vestingContract) => !!vestingContract.data.address)
+    const contractCallContext: ContractCallContext[] = arrVestingContracts
+      .filter((contract) => !!contract.data.address)
       .reduce((res, vestingContract) => {
         const partialVestings = vestings
           .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)

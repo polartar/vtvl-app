@@ -94,8 +94,6 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     };
   }, [vestingSchedulesInfo, vestingContracts]);
 
-  console.log({ vestingScheduleDetails });
-
   const getVestingScheduleDetails = async () => {
     console.log('fetching schedule', scheduleId);
     // Get the schedule details
@@ -103,7 +101,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
       const getVestingSchedule = await fetchVesting(scheduleId as string);
       const recipientsData = await fetchRecipientsByQuery(['vestingId'], ['=='], [scheduleId]);
       setRecipients(recipientsData);
-      console.log('Vesting Schedule UI', getVestingSchedule);
+
       if (getVestingSchedule) {
         const actualDateTime = getActualDateTime(getVestingSchedule.details);
         setVestingSchedule({

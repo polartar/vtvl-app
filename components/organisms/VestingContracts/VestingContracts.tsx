@@ -21,7 +21,6 @@ export default function VestingContracts() {
   const { vestingContracts, vestings: allVestings, recipients: allRecipients } = useDashboardContext();
   const { mintFormState: token } = useTokenContext();
   const { ModalWrapper, showModal, hideModal } = useModal({});
-
   const router = useRouter();
 
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(

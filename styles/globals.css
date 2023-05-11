@@ -897,7 +897,10 @@ body {
   background-color: var(--primary-50) !important;
 }
 
-/* react-toastify overrides */
+.underline-offset-3 {
+  text-underline-offset: 3px;
+  /* react-toastify overrides */
+}
 .Toastify__toast-container {
   max-width: 480px;
   min-width: 320px;

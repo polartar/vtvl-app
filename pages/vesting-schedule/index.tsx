@@ -1,15 +1,17 @@
+import Button from '@components/atoms/Button/Button';
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
 import ProgressCircle from '@components/atoms/ProgressCircle/ProgressCircle';
+import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import StatusIndicator from '@components/atoms/StatusIndicator/StatusIndicator';
 import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
 import Table from '@components/molecules/Table/Table';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import VestingOverview from '@components/molecules/VestingOverview/VestingOverview';
 import VestingScheduleFilter from '@components/molecules/VestingScheduleFilter';
-import FundingContractModalV2 from '@components/organisms/FundingContractModal/FundingContractModalV2';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import VestingSummary from '@components/organisms/VestingSchedule/VestingSummary';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
@@ -23,7 +25,7 @@ import VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import toDate from 'date-fns/toDate';
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import useIsAdmin from 'hooks/useIsAdmin';
 import Router, { useRouter } from 'next/router';
@@ -38,12 +40,12 @@ import { createOrUpdateSafe } from 'services/db/safe';
 import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
-import { fetchVestingContractByQuery } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, IToken, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IRecipient, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IVestingDoc } from 'types/models/vesting';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
-import { convertAllToOptions, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
+import { formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -66,7 +68,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { vestings: vestingSchedules, recipients, vestingContracts, fetchDashboardData } = useDashboardContext();
   const { editSchedule, setShowDeleteModal, deleteSchedulePrompt } = useVestingContext();
-
+  const [selectedSchedule, setSelectedSchedule] = useState<IVestingDoc>();
   const [selected, setSelected] = useState('manual');
   const [vestingScheduleDataCounts, setVestingScheduleDataCounts] = useState({
     totalSchedules: 0,
@@ -194,9 +196,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   // Renderer for schedule name -- with scenario for COMPLETED status
   const CellScheduleName = ({ value, row, ...props }: any) => {
     return (
-      <div className="row-center cursor-pointer" onClick={() => router.push(`/vesting-schedule/${row.original.id}`)}>
+      <div
+        className="row-center cursor-pointer underline-offset-3	 underline"
+        onClick={() => router.push(`/vesting-schedule/${row.original.id}`)}>
         {row.original.data.status === 'COMPLETED' ? <StatusIndicator size="small" color="success" /> : null}
-        <span className="font-medium text-neutral-800">{value}</span>
+        <span className="font-medium text-neutral-800 ">{value}</span>
       </div>
     );
   };
@@ -308,6 +312,20 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       return items;
     };
 
+    const onScheduleSelect = () => {
+      const actualDateTime = getActualDateTime(data.details);
+      setSelectedSchedule({
+        id,
+        data: {
+          ...data,
+          details: {
+            ...data?.details,
+            startDateTime: actualDateTime.startDateTime,
+            endDateTime: actualDateTime.endDateTime
+          }
+        }
+      });
+    };
     return (
       <table className="-my-3.5 -mx-6">
         <tbody>
@@ -316,12 +334,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               <tr key={`recipient-${rIndex}`} className="group">
                 <td className="group-last:border-b-0">
                   <div className="py-2 flex items-center flex-nowrap">
-                    <button
-                      className="line small"
-                      onClick={() => Router.push(`/vesting-schedule/${props.row.original.id}`)}>
-                      Details
+                    <button className="primary" onClick={() => onScheduleSelect()}>
+                      Quick preview
                     </button>
-                    <DropdownMenu items={actionItems(rIndex)} />
+                    {data.status !== 'LIVE' && <DropdownMenu items={actionItems(rIndex)} />}
                   </div>
                 </td>
               </tr>
@@ -937,6 +953,27 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           </button>
         </>
       )}
+      <PromptModal isOpen={!!selectedSchedule} hideModal={() => setSelectedSchedule(undefined)}>
+        <div className="panel max-w-2xl w-full">
+          {selectedSchedule && (
+            <VestingSummary
+              vestingSchedule={selectedSchedule}
+              symbol={mintFormState.symbol}
+              safe={currentSafe}
+              recipients={recipients}
+            />
+          )}
+          <div className="flex justify-between ">
+            <Button label="Close" onClick={() => setSelectedSchedule(undefined)} />
+
+            <Button
+              className="primary"
+              label="View all details"
+              onClick={() => router.push(`/vesting-schedule/${selectedSchedule?.id}`)}
+            />
+          </div>
+        </div>
+      </PromptModal>
     </>
   );
 };
