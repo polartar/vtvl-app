@@ -48,7 +48,7 @@ const Consent = ({ variant = 'default', className = '', onAgree = (e) => {} }: C
         </div>
       ) : (
         <span>
-          By connecting a wallet, you agree to {name || WEBSITE_NAME}{' '}
+          By connecting a wallet, you agree to VTVL&apos;s{' '}
           <a href={links?.terms || 'https://vtvl.io/terms'} target="_blank" title="Terms and Conditions">
             <span className="cursor-pointer font-bold text-primary-900 no-underline">Terms of Service</span>
           </a>{' '}
