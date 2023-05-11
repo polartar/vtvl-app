@@ -109,6 +109,14 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
       onClick: () => setLedgerModalShow(true),
       subLabel: 'Soon',
       disabled: true
+    },
+    {
+      name: 'Ledger Connect',
+      image: '/icons/wallets/ledger.png',
+      // need to add an onClick handler here
+      onClick: () => setLedgerModalShow(true),
+      subLabel: 'Soon',
+      disabled: true
     }
   ];
 

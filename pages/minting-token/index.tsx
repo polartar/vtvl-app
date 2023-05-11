@@ -56,7 +56,6 @@ const MintingToken: NextPageWithLayout = () => {
   const maxSupply = { value: watch('maxSupply'), state: getFieldState('maxSupply') };
   const maxSupplyText = { value: watch('maxSupplyText'), state: getFieldState('maxSupplyText') };
   const burnable = { value: watch('burnable'), state: getFieldState('burnable') };
-  console.log({ initialSupply });
   // Updates made when the user is interacting with the Range Slider component
   // Should also update the text value -- for display -- of the number input
   const handleinitialSupplyChange = (e: any) => {
