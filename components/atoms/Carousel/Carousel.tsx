@@ -78,7 +78,7 @@ const Carousel = ({ variant = 'dark', items = defaultCarouselItems, ...props }: 
           alignItems: 'center',
           justifyContent: 'center',
           position: 'absolute',
-          bottom: '108px'
+          top: '379px'
         }}>
         <ul style={{ padding: 0 }}> {dots} </ul>
       </div>
@@ -96,10 +96,12 @@ const Carousel = ({ variant = 'dark', items = defaultCarouselItems, ...props }: 
           <div
             key={`carousel-item-${itemIndex}-${item.title}`}
             className="p-6 flex flex-col items-center justify-center text-center">
-            <h3 key={`carousel-item-heading-${itemIndex}`} className="font-medium leading-snug mx-auto h-20">
+            <h3
+              key={`carousel-item-heading-${itemIndex}`}
+              className="font-medium leading-snug mx-auto h-20 max-h-[80px]">
               {item.title}
             </h3>
-            <img src={item.image} className="w-auto h-56 mx-auto mt-4 mb-16" alt={item.subtitle} />
+            <img src={item.image} className="w-auto h-56 max-h-[224px] mx-auto mt-4 mb-16" alt={item.subtitle} />
             {item.subtitle ? <h3 className="text-sm font-bold mx-auto mb-2.5">{item.subtitle}</h3> : null}
             {item.description ? (
               <p className={`text-sm max-auto ${variant === 'dark' ? 'text-neutral-300' : 'text-neutral-500'}`}>
