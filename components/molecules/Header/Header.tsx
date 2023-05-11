@@ -1,4 +1,3 @@
-import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
 import MediaAsset from '@components/atoms/MediaAsset/MediaAsset';
 import NetworkSelector from '@components/atoms/NetworkSelector/NetworkSelector';
 import SafeSelector from '@components/atoms/SafeSelector/SafeSelector';
@@ -6,7 +5,7 @@ import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
 import { useGlobalContext } from '@providers/global.context';
 import { useWeb3React } from '@web3-react/core';
 import Router, { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React from 'react';
 import Fade from 'react-reveal/Fade';
 import { IUser } from 'types/models';
 import { WEBSITE_NAME } from 'utils/constants';
@@ -79,12 +78,8 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
               displayWalletConnect ? 'w-auto' : 'w-0'
             }`}>
             <SafeSelector />
-            <div className={`${active ? 'w-auto' : 'w-0'}`}>
-              <NetworkSelector />
-            </div>
-            <div>
-              <WalletConnect connected={active} account={account || ''} />
-            </div>
+            <NetworkSelector />
+            <WalletConnect connected={active} account={account || ''} />
           </div>
         </div>
       </Fade>
