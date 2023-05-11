@@ -19,3 +19,8 @@ export interface IFundContractProps {
   address: string;
   amount: string;
 }
+
+export interface IVestingContractDoc {
+  id: string;
+  data: IVestingContract;
+}

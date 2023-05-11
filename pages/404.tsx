@@ -26,7 +26,7 @@ const Page = () => {
   return (
     <div className="absolute left-0 top-0 bottom-0 right-0 flex justify-center items-center">
       <div className="relative w-[800px] h-[800px]">
-        <Image src="/images/404.gif" layout="fill" alt="VTVL" />
+        <Image src="/images/404.gif" layout="fill" alt="Page not found" />
         <div
           className="absolute bottom-[80px] left-0 right-0 flex flex-col
          items-center">

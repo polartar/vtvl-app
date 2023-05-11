@@ -27,6 +27,7 @@ export interface IVesting {
   transactionId: string;
   archive?: boolean;
   chainId: number;
+  createdBy?: string;
 }
 
 export interface IScheduleOverviewProps {
@@ -53,4 +54,9 @@ export interface IVestingContractProps {
   supplyCap: 'LIMITED' | 'UNLIMITED';
   maxSupply: number | Decimal;
   address: string;
+}
+
+export interface IVestingDoc {
+  id: string;
+  data: IVesting;
 }

@@ -296,6 +296,7 @@ export function DashboardContextProvider({ children }: any) {
             const currentRecipient = recipients.find(({ data: { walletAddress } }) =>
               compareAddresses(walletAddress, wallet)
             );
+
             // Only add it in if the recipient on a particular vesting contract and schedule has vested allocation.
             if (currentRecipient && ethers.BigNumber.from(finalVestedAmount).gt(0)) {
               recipientsTokenDetails.push({

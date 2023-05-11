@@ -1,8 +1,8 @@
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
-import Image from 'next/image';
-import Router from 'next/router';
 import React, { useContext, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
+import { connectionAssets } from 'types/constants/shared';
 import { truncateAddress } from 'utils/web3';
 
 import AuthContext from '../../../providers/auth.context';
@@ -15,7 +15,7 @@ interface Props {
 
 const WalletConnect = ({ account, connected }: Props) => {
   const { activate, deactivate } = useWeb3React();
-  const { logOut } = useContext(AuthContext);
+  const { logOut, connection } = useContext(AuthContext);
   const [expanded, setExpanded] = useState(false);
 
   // Function intended for the overall clickable area of the connect wallet button
@@ -50,24 +50,38 @@ const WalletConnect = ({ account, connected }: Props) => {
   ];
 
   return (
-    <div className="h-10 transition-all" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
-      <div className="h-10 shrink-0 flex flex-row items-center gap-2 bg-primary-900 rounded-3xl px-2 sm:px-3 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125">
-        <img src="/icons/wallet.svg" className={`w-5 ${connected ? 'hidden md:block' : ''}`} alt="e-wallet" />
+    <div className="h-10 transition-all relative" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
+      <div
+        className={twMerge(
+          'h-10 w-auto shrink-0 flex flex-row items-center gap-2 rounded-3xl px-1.5 sm:px-2 lg:px-4 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
+          connection === 'metamask'
+            ? 'bg-metamask'
+            : connection === 'walletconnect'
+            ? 'bg-walletconnect'
+            : 'bg-primary-900'
+        )}>
+        <img src="/icons/wallet.svg" className={twMerge('w-5', connected ? 'hidden md:block' : '')} alt="e-wallet" />
         {connected && account ? (
           <>
             <p className="hidden lg:inline">{truncateAddress(account)}</p>
-            <img className="w-6" src="/icons/avatar.svg" alt="More" />
+            <div className="p-0.5 bg-white rounded-full h-7 w-7 flex items-center justify-center">
+              <img
+                className={twMerge(connection === 'metamask' ? 'h-4' : 'h-5', 'flex-shrink-0')}
+                src={connection ? connectionAssets[connection].walletIcon : '/icons/avatar.svg'}
+                alt="More"
+              />
+            </div>
           </>
         ) : (
           <p className="hidden md:inline">Connect Wallet</p>
         )}
       </div>
       {expanded && (
-        <div className="mt-2 text-sm bg-neutral-50 border border-primary-900 rounded-xl overflow-hidden">
+        <div className="absolute right-0 w-40 mt-2 text-sm bg-neutral-50 border border-primary-900 rounded-xl overflow-hidden">
           {menuItems.map((menu, menuIndex) => (
             <div
               key={`menu-${menuIndex}`}
-              className="py-2 px-3 cursor-pointer transition-all hover:bg-primary-700 hover:text-white"
+              className="py-3 px-4 cursor-pointer transition-all hover:bg-primary-700 hover:text-white"
               onClick={menu.action}>
               {menu.label}
             </div>

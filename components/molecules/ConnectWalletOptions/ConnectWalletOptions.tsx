@@ -1,4 +1,5 @@
 import { useAuthContext } from '@providers/auth.context';
+import { useGlobalContext } from '@providers/global.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
 import { useState } from 'react';
@@ -18,8 +19,11 @@ interface ConnectWalletOptionsProps {
 
 const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProps) => {
   // Use web3 react to activate the connection
-  const { active, activate } = useWeb3React();
+  const { activate } = useWeb3React();
   const { setConnection } = useAuthContext();
+  const {
+    website: { features }
+  } = useGlobalContext();
   // Stores the state of the ledger modal
   const [ledgerModalShow, setLedgerModalShow] = useState(false);
 
@@ -86,14 +90,15 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
       disabled: false
     },
     {
-      name: 'Coinbase Wallet',
-      image: '/icons/wallets/coinbase.png',
-      subLabel: 'Soon',
-      disabled: true
-    },
-    {
       name: 'Trezor',
       image: '/icons/wallets/trezor.png',
+      // subLabel: 'Soon',
+      onClick: metamaskActivate
+      // disabled: true
+    },
+    {
+      name: 'Coinbase Wallet',
+      image: '/icons/wallets/coinbase.png',
       subLabel: 'Soon',
       disabled: true
     },
@@ -115,18 +120,20 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
         <div className="max-w-sm mx-auto">
           <Wallets wallets={wallets} />
         </div>
-        <div className="mt-7 mb-4 text-xs text-neutral-600 font-medium flex flex-row items-center justify-center gap-10">
-          <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
-            What is Wallet?
-          </a>
-          <div>
-            <span>Can&apos;t find your wallet?</span>&nbsp;
+        {!features?.auth?.memberOnly && (
+          <div className="mt-7 mb-4 text-xs text-neutral-600 font-medium flex flex-row items-center justify-center gap-10">
             <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
-              Suggest Wallet
+              What is Wallet?
             </a>
+            <div>
+              <span>Can&apos;t find your wallet?</span>&nbsp;
+              <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
+                Suggest Wallet
+              </a>
+            </div>
           </div>
-        </div>
-        <Consent />
+        )}
+        <Consent className="mt-6" />
       </div>
       <Modal isOpen={ledgerModalShow} style={modalStyles}>
         Instructions goes here

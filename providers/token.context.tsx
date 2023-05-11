@@ -96,7 +96,6 @@ export function TokenContextProvider({ children }: any) {
         ]);
         // Divide response token unit 256 to 1e18 for 18 decimal places.
         // To do: look for a util function that does this.
-        console.log('Token details', name, symbol, decimals, +totalSupply.toString() / 1e18, vestingContractInstance);
 
         setMintFormState({
           ...mintFormState,
@@ -109,7 +108,7 @@ export function TokenContextProvider({ children }: any) {
     }
   };
 
-  const fetchToken = () => {
+  const fetchToken = async () => {
     if (organizationId && chainId) {
       fetchTokensByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId])
         .then((res) => {
@@ -146,10 +145,12 @@ export function TokenContextProvider({ children }: any) {
             } else {
               setMintFormState((prevState) => ({ ...INITIAL_STATE }));
             }
+            setIsTokenLoading(false);
+            return false;
           } else {
             setMintFormState((prevState) => ({ ...INITIAL_STATE }));
+            setIsTokenLoading(false);
           }
-          setIsTokenLoading(false);
         })
         .catch((err) => {
           setMintFormState((prevState) => ({ ...INITIAL_STATE }));

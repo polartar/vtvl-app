@@ -1,6 +1,7 @@
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
+import { useGlobalContext } from '@providers/global.context';
 import axios from 'axios';
 import Lottie from 'lottie-react';
 import { useRouter } from 'next/router';
@@ -12,6 +13,10 @@ import { emailPattern } from 'types/constants/validation-patterns';
 
 const Expired = () => {
   const router = useRouter();
+  const {
+    website: { name: websiteName, email: websiteEmail },
+    emailTemplate
+  } = useGlobalContext();
 
   const loginToken = useMemo(() => {
     return router.query.loginToken;
@@ -31,7 +36,10 @@ const Expired = () => {
       try {
         const res = await axios.post('/api/email/resend-invite', {
           encryptToken: loginToken,
-          email: data.email
+          email: data.email,
+          websiteEmail,
+          websiteName,
+          emailTemplate
         });
         if (res.data.message === 'Success!') {
           toast.success('A new invitation link has been sent to your email');

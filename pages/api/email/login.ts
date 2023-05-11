@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
-import { PUBLIC_DOMAIN_NAME } from 'utils/constants';
+import { PUBLIC_DOMAIN_NAME, WEBSITE_EMAIL, WEBSITE_NAME } from 'utils/constants';
 import SendMail, { MailTemplates } from 'utils/email';
 
 dotenv.config();
@@ -11,7 +11,7 @@ type Data = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const { email, newUser } = req.body;
+  const { email, newUser, websiteName, websiteEmail, emailTemplate } = req.body;
   const url = `${PUBLIC_DOMAIN_NAME}/${
     newUser === true ? `onboarding/select-user-type?email=${email}&newUser=${newUser}` : `dashboard?email=${email}`
   }`;
@@ -24,9 +24,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const emailLink = await firebaseAdmin?.auth().generateSignInWithEmailLink(email, actionCodeSettings);
   await SendMail({
     to: email,
-    data: { emailLink },
-    subject: 'Login to VTVL',
-    templateId: MailTemplates.Login
+    data: {
+      emailLink,
+      ...emailTemplate
+    },
+    subject: `Login to ${websiteName || WEBSITE_NAME}`,
+    websiteName: websiteName || WEBSITE_NAME,
+    websiteEmail: websiteEmail || WEBSITE_EMAIL,
+    templateId: MailTemplates.ThemedLogin
   });
   res.status(200).json({ message: 'Success!' });
 }

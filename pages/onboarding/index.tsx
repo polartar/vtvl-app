@@ -2,11 +2,13 @@ import Carousel from '@components/atoms/Carousel/Carousel';
 import Wallets from '@components/molecules/Wallets/Wallets';
 import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
+import { useGlobalContext } from '@providers/global.context';
 import { Step, useOnboardingContext } from '@providers/onboarding.context';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import AstroHelmet from 'public/icons/astronaut-helmet.svg';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { WEBSITE_NAME } from 'utils/constants';
 
 const OnboardingContainer = styled.div`
   display: grid;
@@ -29,10 +31,11 @@ const Signing = styled.div`
   border-radius: 26px 0 0 26px;
 `;
 
-const Vesting = styled.div`
+const Vesting = styled.div<{ background?: string }>`
   border-radius: 0 26px 26px 0;
-  background-color: #202b8b;
-  background: url('/images/background.png'), linear-gradient(0deg, #e65e43 -40%, #202b8b 70%, #202b8b 100%);
+  background-color: var(--primary-900);
+  background: url('${({ background }) => background ?? '/images/background.png'}'),
+    linear-gradient(0deg, var(--secondary-900) -40%, var(--primary-900) 70%, var(--primary-900) 100%);
   background-size: cover;
 `;
 
@@ -42,11 +45,11 @@ const WalletContainer = styled.div`
 
 const SelectLoginTypePage: NextPage = () => {
   const { startOnboarding } = useOnboardingContext();
-  useEffect(() => {
-    startOnboarding(Step.ChainSetup);
-  }, []);
+  const {
+    website: { assets, name, organizationId: webOrgId, features }
+  } = useGlobalContext();
 
-  const wallets = [
+  const [wallets, setWallets] = useState([
     {
       name: 'Member',
       image: <AstroHelmet className="w-10 h-10 text-primary-900 mb-3" />,
@@ -59,45 +62,30 @@ const SelectLoginTypePage: NextPage = () => {
       // Change this based on where the flow it should be
       onClick: () => Router.push('/onboarding/connect-wallet')
     }
-  ];
-  const carouselItems = [
-    {
-      title: ['100% ', <strong>no-code</strong>, <br />, 'ready in minutes'],
-      image: '/images/how-it-works/1.png',
-      subtitle: 'Mint or bring your own token',
-      description: 'Variable or fixed supply? No problem, you have options.'
-    },
-    {
-      title: ['Create multiple ', <strong>vesting smart contracts</strong>, ' in just a few clicks'],
-      image: '/images/how-it-works/2.png',
-      subtitle: 'Generate smart contracts for investors & employees',
-      description:
-        'We get it, have your engineers build YOUR product and let us take care of the custom vesting systems'
-    },
-    {
-      title: ['Automate ', <strong>custom token</strong>, ' distributions to your holders'],
-      image: '/images/how-it-works/3.png',
-      subtitle: 'Track your own tokens',
-      description: 'Say goodbye to managing via spreadsheet.'
-    },
-    {
-      title: ['Token vesting analytics ', <br />, <strong>coming soon!</strong>],
-      image: '/images/how-it-works/4.png',
-      subtitle: 'Token analytics coming soon',
-      description: 'What you really want to know about your tokenomics.'
+  ]);
+
+  useEffect(() => {
+    startOnboarding(Step.ChainSetup);
+  }, []);
+
+  useEffect(() => {
+    if (webOrgId && features?.auth?.memberOnly) {
+      setWallets([...wallets.slice(0, 1)]);
     }
-  ];
+  }, [webOrgId, features]);
 
   return (
     <PaddedLayout>
       <OnboardingContainer>
         <Signing>
           <div className="max-w-[397px]">
-            <h1 className="font-medium">Access VTVL as</h1>
-            <p className="text-sm font-medium text-neutral-500">
-              Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
-              <strong>Guest</strong> to test our platform.
-            </p>
+            <h1 className="font-medium">Access {name || WEBSITE_NAME} as</h1>
+            {!features?.auth?.memberOnly && (
+              <p className="text-sm font-medium text-neutral-500">
+                Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
+                <strong>Guest</strong> to test our platform.
+              </p>
+            )}
           </div>
           <WalletContainer>
             <div className="max-w-sm mx-auto mb-11">
@@ -105,8 +93,10 @@ const SelectLoginTypePage: NextPage = () => {
             </div>
           </WalletContainer>
         </Signing>
-        <Vesting className="flex flex-col items-center justify-center pt-12 pb-10">
-          <Carousel variant="dark" items={carouselItems} />
+        <Vesting
+          className="flex flex-col items-center justify-center pt-12 pb-10"
+          background={assets?.loginBgImage?.src}>
+          <Carousel variant="dark" />
         </Vesting>
       </OnboardingContainer>
     </PaddedLayout>

@@ -30,7 +30,7 @@ const Summary: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { mintFormState, updateMintFormState, updateTokenId } = useTokenContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
-  console.log({ mintFormState });
+
   const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply, burnable } = mintFormState;
 
   const [loading, setLoading] = useState(false);
@@ -106,6 +106,7 @@ const Summary: NextPageWithLayout = () => {
     } catch (err) {
       console.log('handleCreateToken - ', err);
       setTransactionStatus('ERROR');
+      setLoading(false);
     }
   };
 
@@ -118,10 +119,6 @@ const Summary: NextPageWithLayout = () => {
   return (
     <div className="panel rounded-lg mx-auto max-w-xl w-1/2 mt-14">
       <TokenProfile address={mintFormState.address} name={name} symbol={symbol} logo={logo} />
-      <label className="mt-5">
-        <span>Contract Address</span>
-      </label>
-      <Skeleton />
       {/* <progress
         value={
           supplyCap === 'LIMITED' ? (parseInt(initialSupply.toString()) / parseInt(maxSupply.toString())) * 100 : 100

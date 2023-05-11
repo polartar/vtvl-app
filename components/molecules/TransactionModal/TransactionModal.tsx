@@ -10,7 +10,7 @@ import WalletConnectAnimation from 'public/walletconnect_loader.json';
 import { useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 
-export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'ERROR';
+export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'ERROR' | 'REVOKE_SUCCESS';
 export interface TransactionModalProps {
   status: TransactionStatuses;
   isCloseAvailable: boolean;
@@ -96,6 +96,21 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
         </div>
       ),
       description: <>No worries! Just try again later.</>
+    },
+    REVOKE_SUCCESS: {
+      image: <Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />,
+      title: (
+        <div className="flex justify-center flex-row items-center gap-2 text-center">
+          <img src="/images/tx-success.png" className="w-7 h-7" />
+          Woo hoo! Transaction was successful
+        </div>
+      ),
+      description: (
+        <>
+          You can now transfer the remaining locked tokens from the revoked schedule to your projects' wallet by
+          selecting the vesting contract in the <b>Contracts tab.</b>
+        </>
+      )
     }
   };
 
@@ -105,7 +120,7 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
   const progressAdditionBasedOnSeconds = 100 / ((3 * 1000) / 100);
 
   useEffect(() => {
-    if (status === 'SUCCESS' || status === 'ERROR') {
+    if (status === 'SUCCESS' || status === 'ERROR' || status === 'REVOKE_SUCCESS') {
       setProgress(1);
       setIsOpen(true);
     } else if (status) {
@@ -127,7 +142,7 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
     <>
       {status ? (
         <Modal isOpen={isOpen} style={modalStyles}>
-          {status === 'SUCCESS' || status === 'ERROR' ? (
+          {status === 'SUCCESS' || status === 'ERROR' || status === 'REVOKE_SUCCESS' ? (
             <Loader progress={progress} onComplete={() => setIsOpen(false)} />
           ) : null}
           {txTypes[status].image}
@@ -147,7 +162,7 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
           ) : (
             <>
               {' '}
-              {status !== 'SUCCESS' && status !== 'ERROR' && (
+              {status !== 'SUCCESS' && status !== 'REVOKE_SUCCESS' && status !== 'ERROR' && (
                 <Chip
                   label={
                     <div className="flex flex-row items-center gap-2">

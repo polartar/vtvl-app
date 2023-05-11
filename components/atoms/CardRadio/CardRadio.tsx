@@ -1,5 +1,9 @@
 import styled from '@emotion/styled';
-import React from 'react';
+import React, { useState } from 'react';
+import { twMerge } from 'tailwind-merge';
+import { IWebsiteAsset } from 'types/models';
+
+import MediaAsset from '../MediaAsset/MediaAsset';
 
 const Label = styled.label<{ disabled?: boolean }>`
   position: relative;
@@ -11,12 +15,11 @@ const Label = styled.label<{ disabled?: boolean }>`
   gap: 30px;
 
   width: 275px;
-  padding: 60px 25px 25px 25px;
   border-radius: 26px;
   border: 2px solid transparent;
 
   font-size: 14px;
-  color: #101828;
+  color: var(--neutral-900);
 
   cursor: pointer;
   transition: border-color 0.5s ease, box-shadow 0.5s ease, transform 0.3s ease;
@@ -24,7 +27,7 @@ const Label = styled.label<{ disabled?: boolean }>`
   ${({ disabled }) =>
     disabled
       ? 'opacity: 0.6;'
-      : '&:hover, &.selected { border-color: #1b369a; box-shadow: 0 10px 20px -15px rgba(56, 56, 56, 0.6); transform: translateY(-2px);}'}
+      : '&:hover, &.selected { border-color: var(--primary-900); box-shadow: 0 10px 20px -15px rgba(56, 56, 56, 0.6); transform: translateY(-2px);}'}
 `;
 
 const Check = styled.div`
@@ -34,20 +37,16 @@ const Check = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 20px;
-  background-color: #dfe6ff;
-  border: 1px solid #1b369a;
+  background-color: var(--primary-50);
+  border: 1px solid var(--primary-900);
 
   &.selected {
-    background-color: #1b369a;
+    background-color: var(--primary-900);
   }
 `;
 
-const RadioImage = styled.img`
-  height: 156px;
-`;
-
 interface CardRadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  image: string;
+  image: IWebsiteAsset;
   value: string;
   name: string;
   label: string | string[] | JSX.Element | JSX.Element[];
@@ -58,11 +57,23 @@ interface CardRadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
  * UI component for a radio group's single item
  */
 const CardRadio = ({ image, label, value, name, ...props }: CardRadioProps) => {
-  // const [selected, setSelected] = useState('');
+  const [hover, setHover] = useState(false);
   return (
-    <Label disabled={props.disabled} className={`card-radio ${props.checked ? 'selected' : ''}`}>
-      <RadioImage src={image} alt={name} aria-hidden="true" />
-      <p className="font-semibold h-11">{label}</p>
+    <Label
+      disabled={props.disabled}
+      className={twMerge(
+        'card-radio pt-16 pb-6 overflow-hidden',
+        props.checked ? 'selected' : '',
+        image.animated ? 'px-0' : 'px-6'
+      )}
+      onMouseOver={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}>
+      <MediaAsset
+        {...image}
+        active={props.checked || hover}
+        classOnComplete={(condition: boolean) => twMerge(condition ? 'w-full scale-125' : 'h-40')}
+      />
+      <p className={twMerge('font-semibold h-11', image.animated ? 'px-6' : 'px-0')}>{label}</p>
       <Check className={props.checked ? 'selected' : ''}>
         {props.checked ? <img src="/icons/check.svg" alt={`${value} selected`} /> : null}
       </Check>

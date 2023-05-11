@@ -11,7 +11,8 @@ import type {
   IUser,
   IVesting,
   IVestingContract,
-  IVestingTemplate
+  IVestingTemplate,
+  IWebsite
 } from 'types/models';
 
 import firebase from '../auth/firebase';
@@ -34,3 +35,4 @@ export const transactionCollection = getCollection<ITransaction>('transactions')
 export const inviteeCollection = getCollection<IInvitee>('invitee');
 export const revokingCollection = getCollection<IRevoking>('revokings');
 export const recipientCollection = getCollection<IRecipient>('recipients');
+export const websiteCollection = getCollection<IWebsite>('websites');

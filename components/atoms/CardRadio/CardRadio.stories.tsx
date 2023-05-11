@@ -13,17 +13,17 @@ export default {
 
 const options = [
   {
-    image: EmployeeSvg,
+    image: { src: EmployeeSvg },
     value: 'employee',
     label: "I'm an employee looking to check my assets"
   },
   {
-    image: FounderSvg,
+    image: { src: FounderSvg },
     value: 'founder',
     label: "I'm a founder who will setup the vesting schedule"
   },
   {
-    image: InvestorSvg,
+    image: { src: InvestorSvg },
     value: 'investor',
     label: "I'm an investor looking to check my assets"
   }

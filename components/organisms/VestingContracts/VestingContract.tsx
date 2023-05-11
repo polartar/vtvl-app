@@ -17,10 +17,14 @@ import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { updateRecipient } from 'services/db/recipient';
+import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, fetchTransactionsByQuery, updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
+import { IRevokingDoc } from 'types/models/revoking';
+import { IVestingDoc } from 'types/models/vesting';
 import { formatNumber } from 'utils/token';
 import { string } from 'yup';
 
@@ -34,14 +38,11 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     vestingContracts: allVestingContracts,
     recipients: allRecipients
   } = useDashboardContext();
+  const [revokings, setRevokings] = useState<IRevokingDoc[]>();
+
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
   const { mintFormState } = useTokenContext();
-  const {
-    pendingTransactions,
-    transactionStatus: transactionLoaderStatus,
-    setTransactionStatus: setTransactionLoaderStatus,
-    setIsCloseAvailable
-  } = useTransactionLoaderContext();
+  const { setTransactionStatus: setTransactionLoaderStatus } = useTransactionLoaderContext();
 
   const [withdrawTransactions, setWithdrawTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
 
@@ -49,6 +50,20 @@ export default function VestingContract({ vestingContractId }: { vestingContract
   const vestings = useMemo(() => {
     return allVestings.filter((vesting) => vesting.data.vestingContractId === vestingContractId);
   }, [allVestings]);
+
+  useEffect(() => {
+    if (chainId && organizationId) {
+      fetchRevokingsByQuery(
+        ['chainId', 'organizationId', 'status'],
+        ['==', '==', '=='],
+        [chainId, organizationId, 'SUCCESS']
+      ).then((res) => {
+        if (res) {
+          setRevokings(res);
+        }
+      });
+    }
+  }, [chainId, organizationId]);
 
   const vestingContracts = useMemo(() => {
     const selectedVestingContract = allVestingContracts?.find((contract) => contract.id === vestingContractId);
@@ -65,6 +80,23 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     allVestings,
     allRecipients
   );
+
+  const availableRevokings = useMemo(() => {
+    if (revokings && vestings && allRecipients) {
+      return revokings.filter((revoking) => {
+        const rc = allRecipients.find(
+          (recipient) =>
+            recipient.data.vestingId === revoking.data.vestingId &&
+            recipient.data.walletAddress === revoking.data.recipient &&
+            vestings.map((vesting) => vesting.id).includes(recipient.data.vestingId)
+        );
+        return rc && Number(rc.data.allocations) !== 0;
+      });
+    } else {
+      return [];
+    }
+  }, [revokings, allRecipients, vestings]);
+
   const vestingContractsInfo = useMemo(() => {
     if (!vestingSchedulesInfo || !vestingSchedulesInfo.length || !vestingContracts.length) return undefined;
     let allocation = ethers.BigNumber.from(0),
@@ -91,6 +123,21 @@ export default function VestingContract({ vestingContractId }: { vestingContract
         : ethers.BigNumber.from(0)
     };
   }, [vestingSchedulesInfo, vestingContracts]);
+
+  const initRecipientAllocation = (vestingContractAddress: string) => {
+    const vestingContract = vestingContracts.find((contract) => contract.data.address === vestingContractAddress);
+    if (!vestingContract) return;
+    const vestingIds = allVestings
+      .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
+      .map((vesting) => vesting.id);
+    const availableRecipients = allRecipients.filter((recipient) => vestingIds.includes(recipient.data.vestingId));
+
+    availableRecipients.forEach((recipient) => {
+      updateRecipient(recipient.id, {
+        allocations: 0
+      });
+    });
+  };
 
   const handleWithdraw = async () => {
     if (vestingContracts && vestingContracts.length > 0 && organizationId && chainId && account) {
@@ -213,6 +260,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           }
         ]);
       }
+      initRecipientAllocation(vestingContractAddress);
     }
   };
 
@@ -243,6 +291,24 @@ export default function VestingContract({ vestingContractId }: { vestingContract
               </div>
               <button className="secondary small whitespace-nowrap" onClick={handleWithdraw}>
                 Withdraw
+              </button>
+            </div>
+          )}
+        {availableRevokings &&
+          availableRevokings.length > 0 &&
+          vestingContractsInfo &&
+          vestingContractsInfo.reserved.gt(ethers.BigNumber.from(0)) &&
+          (!withdrawTransactions || !withdrawTransactions.length) && (
+            <div className="mb-3 w-full px-6 py-3 bg-warning-100 border border-warning-500 rounded-lg flex items-center justify-between">
+              <div>
+                <div className="font-bold text-sm text-[#344054]">Unallocated tokens</div>
+                <div className="text-label text-sm">
+                  You can now transfer the remaining locked tokens from revoked schedules to your project's wallet by
+                  clicking on <b>"Transfer tokens"</b>.
+                </div>
+              </div>
+              <button className="secondary small whitespace-nowrap" onClick={handleWithdraw}>
+                Transfer tokens
               </button>
             </div>
           )}
