@@ -1,7 +1,5 @@
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
-import Image from 'next/image';
-import Router from 'next/router';
 import React, { useContext, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { connectionAssets } from 'types/constants/shared';
@@ -55,7 +53,7 @@ const WalletConnect = ({ account, connected }: Props) => {
     <div className="h-10 transition-all relative" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
       <div
         className={twMerge(
-          'h-10 w-auto shrink-0 flex flex-row items-center justify-between gap-2 rounded-3xl px-1.5 sm:px-2 lg:w-40 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
+          'h-10 w-auto shrink-0 flex flex-row items-center gap-2 rounded-3xl px-1.5 sm:px-2 lg:px-4 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
           connection === 'metamask'
             ? 'bg-metamask'
             : connection === 'walletconnect'

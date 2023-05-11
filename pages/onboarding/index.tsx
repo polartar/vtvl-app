@@ -80,16 +80,12 @@ const SelectLoginTypePage: NextPage = () => {
         <Signing>
           <div className="max-w-[397px]">
             <h1 className="font-medium">Access {name || WEBSITE_NAME} as</h1>
-            <p className="text-sm font-medium text-neutral-500">
-              Select <strong>Member</strong> if you&apos;re an existing user or signing up
-              {webOrgId && features?.auth?.memberOnly ? (
-                '.'
-              ) : (
-                <>
-                  , else select <strong>Guest</strong> to test our platform.
-                </>
-              )}
-            </p>
+            {!features?.auth?.memberOnly && (
+              <p className="text-sm font-medium text-neutral-500">
+                Select <strong>Member</strong> if you&apos;re an existing user or signing up, else select{' '}
+                <strong>Guest</strong> to test our platform.
+              </p>
+            )}
           </div>
           <WalletContainer>
             <div className="max-w-sm mx-auto mb-11">
