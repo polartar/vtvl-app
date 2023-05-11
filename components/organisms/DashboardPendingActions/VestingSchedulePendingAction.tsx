@@ -351,6 +351,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           vestingContract?.data?.address,
           ethers.utils.parseEther(amount)
         );
+        setShowFundingContractModal(false);
+
         setTransactionLoaderStatus('IN_PROGRESS');
         await fundTransaction.wait();
         // This should have a function to update the vesting schedule status
@@ -398,6 +400,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             const txHash = await safeSdk.getTransactionHash(safeTransaction);
             const signature = await safeSdk.signTransactionHash(txHash);
             setTransactionLoaderStatus('IN_PROGRESS');
+            setShowFundingContractModal(false);
+
             safeTransaction.addSignature(signature);
             const safeService = new SafeServiceClient({
               txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
@@ -448,7 +452,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           }
         }
       }
-      setShowFundingContractModal(false);
     } catch (err) {
       console.log('fundContract - ', err);
       toast.error((err as any).reason ? (err as any).reason : 'Something went wrong. Try again later.');

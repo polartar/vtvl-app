@@ -149,7 +149,7 @@ export function OnboardingContextProvider({ children }: any) {
     //   return
     // }
 
-    console.log('onboarding context valid route aboutt to replace route ', States[nextstep as Step].route);
+    console.log('onboarding context valid route about to replace route ', States[nextstep as Step].route);
 
     // When the website is set to members-only, users should be redirected to the login page after connecting their wallet.
     if (nextstep === Step.SignUp && features?.auth?.memberOnly) {
