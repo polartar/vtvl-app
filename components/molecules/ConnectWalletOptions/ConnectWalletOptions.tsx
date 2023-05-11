@@ -133,7 +133,7 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
             </div>
           </div>
         )}
-        <Consent />
+        <Consent className="mt-6" />
       </div>
       <Modal isOpen={ledgerModalShow} style={modalStyles}>
         Instructions goes here
