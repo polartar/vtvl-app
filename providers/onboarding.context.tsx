@@ -1,4 +1,3 @@
-import useEagerConnect from 'hooks/useEagerConnect';
 import { useRouter } from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -71,7 +70,6 @@ export function OnboardingContextProvider({ children }: any) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState('');
   const router = useRouter();
-  const tried = useEagerConnect();
 
   useEffect(() => {
     router.beforePopState(({ as }) => {
@@ -108,8 +106,6 @@ export function OnboardingContextProvider({ children }: any) {
   const setRoute = async (isFirstTimeUser?: boolean, skipSafe?: boolean) => {
     // Gets the next step if any
     const nextstep = Number(currentStep) + 1;
-    console.log('current step is ', Number(currentStep));
-    console.log('onboarding context nextstep == ', nextstep);
 
     if (nextstep > Step.SafeSetup) {
       // Ensures that the sidebar will appear
@@ -117,7 +113,6 @@ export function OnboardingContextProvider({ children }: any) {
 
       if (skipSafe) {
         // Redirects the user to the dashboard when the last step is met
-        console.log('onboarding context ending onboarding');
         await router.push('/dashboard');
         return;
       }
@@ -137,12 +132,11 @@ export function OnboardingContextProvider({ children }: any) {
     }
 
     if (!States[nextstep as Step].route || !currentStep) throw new Error('invalid route onboarding context');
-    console.log('onboarding context valid route');
+
     setCurrentStep(nextstep);
 
     // if the user is a new user, go to the onboarding process continuation
     if (nextstep == Step.UserTypeSetup) {
-      console.log('is this a first time user -- contest -- ', isFirstTimeUser);
       await router.push(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
       return;
     }
@@ -200,7 +194,6 @@ export function OnboardingContextProvider({ children }: any) {
       default:
         break;
     }
-    console.log('Current INFO state ', info);
   };
 
   const memoedValue = useMemo(

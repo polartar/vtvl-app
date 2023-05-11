@@ -48,7 +48,6 @@ import { getChartData, getCliffAmount, getCliffDurationTimestamp, getReleaseFreq
 
 type DateTimeType = Date | null;
 
-
 interface TemplateType {
   template?: SingleValue<IVestingTemplate> | undefined;
 }
@@ -79,14 +78,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     () =>
       recipients.map(
         (recipient) =>
-        ({
-          walletAddress: recipient.data.walletAddress,
-          name: recipient.data.name,
-          email: recipient.data.email,
-          company: recipient.data.company,
-          recipientType: [getRecipient(String(recipient.data.recipientType))],
-          allocations: Number(recipient.data.allocations)
-        } as IRecipientForm)
+          ({
+            walletAddress: recipient.data.walletAddress,
+            name: recipient.data.name,
+            email: recipient.data.email,
+            company: recipient.data.company,
+            recipientType: [getRecipient(String(recipient.data.recipientType))],
+            allocations: Number(recipient.data.allocations)
+          } as IRecipientForm)
       ),
     [recipients]
   );
@@ -1425,8 +1424,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           type="number"
                         />
                         <span
-                          className={`absolute top-0 right-0 transform transition-all text-sm text-neutral-700 ${fieldState.error ? 'translate-y-5 -translate-x-6' : 'translate-y-4 -translate-x-5'
-                            }`}>
+                          className={`absolute top-0 right-0 transform transition-all text-sm text-neutral-700 ${
+                            fieldState.error ? 'translate-y-5 -translate-x-6' : 'translate-y-4 -translate-x-5'
+                          }`}>
                           {formatCliffDurationOption(+cliffDurationNumber.value, cliffDurationOption.value)}
                         </span>
                       </div>
@@ -1628,7 +1628,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                 label="Back"
                 onClick={() =>
                   Router.push(
-                    `/vesting-schedule/add-recipients?step=1${scheduleMode && scheduleMode.edit ? '&id=' + scheduleMode.id : ''
+                    `/vesting-schedule/add-recipients?step=1${
+                      scheduleMode && scheduleMode.edit ? '&id=' + scheduleMode.id : ''
                     }`
                   )
                 }

@@ -98,25 +98,11 @@ const AccountSetupPage: NextPage = () => {
     };
   };
 
-  console.log(
-    'Values',
-    userTypeRadio,
-    userName,
-    userCompany,
-    userCompanyEmail,
-    errors,
-    isValid,
-    isDirty,
-    isSubmitted,
-    isSubmitting
-  );
-
   // Add a contributor to the list
   const addContributor = () => append({ name: '', email: '' });
 
   // Should always return a promise to resolve in order to make the isSubmitting work
   const onSubmit: SubmitHandler<AccountForm> = async (data) => {
-    console.log('Form Submitted', data, getValues());
     const values = getValues();
     setFormSuccess(false);
     setFormError(false);

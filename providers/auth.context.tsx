@@ -273,7 +273,7 @@ export function AuthContextProvider({ children }: any) {
         authenticateUser({ ...credential.user, memberInfo });
 
         return {
-          isNewUser: Boolean(additionalInfo?.isNewUser),
+          isNewUser: Boolean(additionalInfo?.isNewUser) || !memberInfo?.org_id,
           isOnboarding: Boolean(recipientInfo)
         };
       }
@@ -644,6 +644,8 @@ export function AuthContextProvider({ children }: any) {
   );
 
   useEffect(() => {
+    // when sign up, we shouldn't redirect to claim portal
+    if (agreedOnConsent) return;
     if (
       user &&
       user.memberInfo &&
@@ -667,7 +669,7 @@ export function AuthContextProvider({ children }: any) {
     if (user && user.email && user.uid) {
       setOrganizationId(user?.memberInfo?.org_id);
     }
-  }, [user, recipient]);
+  }, [user, recipient, agreedOnConsent]);
 
   useEffect(() => {
     fetchSafe();
