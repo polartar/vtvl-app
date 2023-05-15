@@ -111,15 +111,15 @@ const DashboardPendingActions = () => {
       </div>
       <div className="border border-[#d0d5dd] rounded-xl w-full max-h-[700px] overflow-y-auto">
         <div className="flex bg-[#f2f4f7] text-[#475467] text-xs">
-          <div className="w-16 py-3"></div>
-          <div className="w-36 py-3">Name</div>
-          <div className="w-52 py-3">Type</div>
-          <div className="w-52 py-3">Status</div>
-          <div className="w-40 py-3">Contract</div>
-          <div className="w-32 py-3">Safe</div>
-          <div className="w-32 py-3">Safe Nonce</div>
-          <div className="w-40 py-3">Total allocation</div>
-          <div className="min-w-[200px] flex-grow py-3"></div>
+          <div className="w-16 py-3 flex-shrink-0 bg-[#f2f4f7]"></div>
+          <div className="w-36 py-3 flex-shrink-0 bg-[#f2f4f7]">Name</div>
+          <div className="w-52 py-3 flex-shrink-0 bg-[#f2f4f7]">Type</div>
+          <div className="w-52 py-3 flex-shrink-0 bg-[#f2f4f7]">Status</div>
+          <div className="w-40 py-3 flex-shrink-0 bg-[#f2f4f7]">Contract</div>
+          <div className="w-32 py-3 flex-shrink-0 bg-[#f2f4f7]">Safe</div>
+          <div className="w-32 py-3 flex-shrink-0 bg-[#f2f4f7]">Safe Nonce</div>
+          <div className="w-40 py-3 flex-shrink-0 bg-[#f2f4f7]">Total allocation</div>
+          <div className="min-w-[200px] flex-grow py-3 flex-shrink-0 bg-[#f2f4f7]"></div>
         </div>
         {pendingVestingContracts.map((vestingContract) => (
           <VestingContractPendingAction

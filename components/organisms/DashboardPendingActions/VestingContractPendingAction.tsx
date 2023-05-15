@@ -176,11 +176,11 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
   }, [data, currentSafe, account]);
 
   return status === 'SUCCESS' ? null : shouldShow ? (
-    <div className="flex bg-white text-[#667085] text-xs border-t border-[#d0d5dd]">
-      <div className="flex items-center w-16 py-3"></div>
-      <div className="flex items-center w-36 py-3">{data.name}</div>
-      <div className="flex items-center w-52 py-3">Contract Deployment</div>
-      <div className="flex items-center w-52 py-3">
+    <div className="flex bg-white text-[#667085] text-xs">
+      <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
+      <div className="flex items-center w-36 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{data.name}</div>
+      <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">Contract Deployment</div>
+      <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {!!status && (
           <div
             className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#fef3c7] text-[#f59e0b] text-xs whitespace-nowrap"
@@ -200,15 +200,16 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
           </div>
         )}
       </div>
-      <div className="flex items-center w-40 py-3">{data.name}</div>
-      <div className="flex items-center w-32 py-3">
+      <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{data.name}</div>
+      <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         <div className="flex gap-1.5 items-center">
           <img className="w-4 h-4" src="icons/safe.png" />
           Founders
         </div>
       </div>
-      <div className="flex items-center w-40 py-3"></div>
-      <div className="flex items-center min-w-[200px] flex-grow py-3">
+      <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
+      <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
+      <div className="flex items-center min-w-[200px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {status === 'AUTHORIZATION_REQUIRED' ? (
           <button className="secondary small" onClick={handleDeployVestingContract}>
             Deploy
