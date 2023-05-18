@@ -115,7 +115,6 @@ export default function useChainVestingContracts(
     multicall
       .call(contractCallContext)
       .then((response) => {
-        console.log('VESTING SCHEDULE DETAILS MULTICALL', response);
         // Set constants for referencing the calls based on the multicall setup above
         const WITHDRAWN_CALL = 1;
         const CLAIMABLE_AMOUNT_CALL = 0;
