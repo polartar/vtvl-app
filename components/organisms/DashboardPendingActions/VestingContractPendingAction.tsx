@@ -3,7 +3,7 @@ import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import { IStatus, STATUS_MAPPING } from 'components/organisms/DashboardPendingActions';
-import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import VTVL_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import { ethers } from 'ethers';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';

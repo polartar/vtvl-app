@@ -1,12 +1,18 @@
+import VTVL2_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { BigNumber, BigNumberish, ethers } from 'ethers';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
+import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
 
-const TOTAL_ALLOCATION_AMOUNT_INDEX = 4;
+const LINEAR_AMOUNT_INDEX = 4;
 const WITHDRAWN_AMOUNT_INDEX = 5;
+const CLIFF_AMOUNT_INDEX = 5;
 
+export function isV2(deployedAt: number) {
+  return deployedAt >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT);
+}
 /**
  * Create multicall class instance
  */
@@ -22,23 +28,23 @@ export const getMulticallInstance = (chainId: SupportedChainId) => {
  */
 export const getVestingDetailsFromContracts = async (
   chainId: SupportedChainId,
-  contractAddresses: string[],
+  contracts: IVestingContractDoc[],
   operator: string
 ) => {
   const multicall = getMulticallInstance(chainId);
 
-  const contractCallContext: ContractCallContext[] = contractAddresses.reduce(
-    (res, address) => [
+  const contractCallContext: ContractCallContext[] = contracts.reduce(
+    (res, contract) => [
       ...res,
       {
-        reference: `withdrawn-${address}`,
-        contractAddress: address,
-        abi: VTVL_VESTING_ABI.abi,
+        reference: `withdrawn-${contract.data.address}`,
+        contractAddress: contract.data.address,
+        abi: isV2(contract.data.updatedAt) ? VTVL2_VESTING_ABI.abi : VTVL_VESTING_ABI.abi,
         calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator] }]
       },
       {
-        reference: `unclaimed-${address}`,
-        contractAddress: address,
+        reference: `unclaimed-${contract.data.address}`,
+        contractAddress: contract.data.address,
         abi: VTVL_VESTING_ABI.abi,
         calls: [{ reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [operator] }]
       }
@@ -73,7 +79,9 @@ export const getVestingDetailsFromContracts = async (
           };
 
     if (reference === 'withdrawn') {
-      data.allocations = BigNumber.from(value.callsReturnContext[0].returnValues[TOTAL_ALLOCATION_AMOUNT_INDEX]);
+      data.allocations = BigNumber.from(value.callsReturnContext[0].returnValues[LINEAR_AMOUNT_INDEX]).add(
+        value.callsReturnContext[0].returnValues[CLIFF_AMOUNT_INDEX]
+      );
       data.withdrawn = BigNumber.from(value.callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_INDEX]);
     } else {
       data.unclaimed = BigNumber.from(value.callsReturnContext[0].returnValues[0]);

@@ -1,5 +1,6 @@
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import { useWeb3React } from '@web3-react/core';
+import VTVL2_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import getUnixTime from 'date-fns/getUnixTime';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
@@ -18,6 +19,7 @@ import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/model
 import { IRecipientDoc, IRecipientForm } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { compareAddresses } from 'utils';
+import { isV2 } from 'utils/multicall';
 import { getRecipient } from 'utils/recipients';
 
 import { useAuthContext } from './auth.context';
@@ -218,7 +220,7 @@ export function DashboardContextProvider({ children }: any) {
                 // Attach the contract address, recipient wallet and schedule ID
                 reference: `multicall-${vestingContract.data.address}-${recipient}-${vestingSchedule?.id}`,
                 contractAddress: vestingContract.data.address,
-                abi: VTVL_VESTING_ABI.abi,
+                abi: isV2(vestingContract.data.updatedAt) ? VTVL2_VESTING_ABI.abi : VTVL_VESTING_ABI.abi,
                 calls: [
                   {
                     // This gets the claimable amount by the recipient
@@ -226,18 +228,19 @@ export function DashboardContextProvider({ children }: any) {
                     methodName: 'claimableAmount',
                     methodParameters: [recipient]
                   },
-                  {
-                    // This gets the total vested amount for the recipient (includes everything)
-                    reference: 'finalVestedAmount',
-                    methodName: 'finalVestedAmount',
-                    methodParameters: [recipient]
-                  },
-                  {
-                    // This gets the current vested amount as of date (currently unlocked tokens, both claimed and unclaimed)
-                    reference: 'vestedAmount',
-                    methodName: 'vestedAmount',
-                    methodParameters: [recipient, getUnixTime(new Date())]
-                  }
+                  // {
+                  //   // This gets the total vested amount for the recipient (includes everything)
+                  //   reference: 'finalVestedAmount',
+                  //   methodName: 'finalVestedAmount',
+                  //   methodParameters: [recipient]
+                  // },
+                  // {
+                  //   // This gets the current vested amount as of date (currently unlocked tokens, both claimed and unclaimed)
+                  //   reference: 'vestedAmount',
+                  //   methodName: 'vestedAmount',
+                  //   methodParameters: [recipient, getUnixTime(new Date())]
+                  // },
+                  { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient] }
                 ]
               }))
             ];
@@ -257,8 +260,7 @@ export function DashboardContextProvider({ children }: any) {
           const res = multicallResponse;
           // Set constants for referencing the calls based on the multicall setup above
           const CLAIMABLE_AMOUNT_CALL = 0;
-          const FINAL_VESTED_AMOUNT_CALL = 1;
-          const VESTED_AMOUNT_CALL = 2;
+          const GET_CLAIM_CALL = 1;
 
           // Set the default values for the totals
           let claimedCount = 0;
@@ -271,21 +273,16 @@ export function DashboardContextProvider({ children }: any) {
             // Gets the claimable amount of the recipient
             const claimableAmount = record[CLAIMABLE_AMOUNT_CALL].returnValues[0];
             // Gets the total allocation of the recipient
-            const finalVestedAmount = record[FINAL_VESTED_AMOUNT_CALL].returnValues[0];
-            // Gets the vested amount of the recipient -- which is the claimed and unclaimed tokens
-            const vestedAmount = record[VESTED_AMOUNT_CALL].returnValues[0];
-            // Computes the actual withdrawn amount by getting the claimed tokens
-            // unclaimed = claimableAmount
-            // claimed = vested amount - unclaimed
-            const claimedAmount = ethers.BigNumber.from(vestedAmount).gt(claimableAmount)
-              ? ethers.BigNumber.from(vestedAmount).sub(claimableAmount)
-              : ethers.BigNumber.from(0);
+            const claimedAmount = ethers.BigNumber.from(record[GET_CLAIM_CALL].returnValues[5]);
+            const linearAmount = record[GET_CLAIM_CALL].returnValues[4];
+            const cliffAmount = record[GET_CLAIM_CALL].returnValues[6];
+            const totalAllocation = ethers.BigNumber.from(linearAmount).add(cliffAmount);
 
             // Computes the locked tokens of the recipient
-            const lockedTokens = ethers.BigNumber.from(finalVestedAmount).sub(claimedAmount).sub(claimableAmount);
+            const lockedTokens = totalAllocation.sub(claimedAmount).sub(claimableAmount);
 
             totalClaimableAmount = totalClaimableAmount.add(claimableAmount);
-            totalAllocationAmount = totalAllocationAmount.add(finalVestedAmount);
+            totalAllocationAmount = totalAllocationAmount.add(totalAllocation);
             totalWithdrawnAmount = totalWithdrawnAmount.add(claimedAmount);
             if (claimedAmount.gt(ethers.BigNumber.from(0))) claimedCount++;
 
@@ -298,7 +295,7 @@ export function DashboardContextProvider({ children }: any) {
             );
 
             // Only add it in if the recipient on a particular vesting contract and schedule has vested allocation.
-            if (currentRecipient && ethers.BigNumber.from(finalVestedAmount).gt(0)) {
+            if (currentRecipient && ethers.BigNumber.from(totalAllocation).gt(0)) {
               recipientsTokenDetails.push({
                 scheduleId,
                 name: currentRecipient.data.name,
@@ -308,7 +305,7 @@ export function DashboardContextProvider({ children }: any) {
                 recipientType: currentRecipient.data.recipientType,
                 address: currentRecipient.data.walletAddress,
                 // Ensure that the totalAllocation for each recipient is divided by the number of recipients
-                totalAllocation: finalVestedAmount,
+                totalAllocation: totalAllocation,
                 // Set recipient's claimed and unclaimed datas
                 claimed: claimedAmount,
                 unclaimed: claimableAmount,
