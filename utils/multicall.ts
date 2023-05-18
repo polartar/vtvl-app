@@ -8,7 +8,7 @@ import { compareAddresses } from 'utils';
 
 const LINEAR_AMOUNT_INDEX = 4;
 const WITHDRAWN_AMOUNT_INDEX = 5;
-const CLIFF_AMOUNT_INDEX = 5;
+const CLIFF_AMOUNT_INDEX = 6;
 
 export function isV2(deployedAt: number) {
   return deployedAt >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT);
