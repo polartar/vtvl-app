@@ -9,7 +9,7 @@ import Chip from 'components/atoms/Chip/Chip';
 import StepWizard from 'components/atoms/StepWizard/StepWizard';
 import ContractOverview from 'components/molecules/ContractOverview/ContractOverview';
 import { injected } from 'connectors';
-import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import VTVL_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import { ethers } from 'ethers';
 import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
@@ -103,7 +103,7 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
         const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
         const VestingFactory = new ethers.ContractFactory(
           VTVL_VESTING_ABI.abi,
-          '0x' + VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
+          VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
           library.getSigner()
         );
         const vestingContract = await VestingFactory.deploy(mintFormState.address);
