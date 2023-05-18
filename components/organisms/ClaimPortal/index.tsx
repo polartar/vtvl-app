@@ -9,7 +9,7 @@ import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import { ethers } from 'ethers';
-import { useChainVestingsFromAddresses } from 'hooks/useChainVestings';
+import { useChainVestings } from 'hooks/useChainVestings';
 import { useOrganizationsFromIds } from 'hooks/useOrganizations';
 import { useMyRecipes } from 'hooks/useRecipients';
 import { useShallowState } from 'hooks/useShallowState';
@@ -43,7 +43,7 @@ export default function ClaimPortal() {
     isLoadingVestings: isLoadingChainVesting,
     vestings: vestingInfos,
     refetchVestings: refetchChainVestings
-  } = useChainVestingsFromAddresses(vestingContractAddresses);
+  } = useChainVestings(vestingContracts);
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [selectedProject, setSelectedProject] = useShallowState<ProjectOption>();
