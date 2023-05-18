@@ -104,6 +104,8 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
                 : val
             )
           );
+        } else {
+          setRows((values) => values.map((val, idx) => (idx === index ? { ...val, email: value as string } : val)));
         }
       } else {
         setRows((values) => values.map((val, idx) => (idx === index ? { ...val, [field]: value } : val)));
