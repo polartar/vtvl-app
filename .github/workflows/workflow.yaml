@@ -3,7 +3,7 @@ name: Workflow
 on:
   pull_request:
     branches: [develop]
-  
+
 jobs:
   lint:
     name: Linting
