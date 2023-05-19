@@ -43,6 +43,10 @@ export default function VestingContracts() {
         locked = locked.add(vesting.locked);
       });
 
+      const vestingContract = vestingContracts.find((contract) =>
+        compareAddresses(contract.data.address, contractAddress)
+      );
+
       return {
         address: contractAddress,
         recipient: '',
@@ -50,10 +54,12 @@ export default function VestingContracts() {
         unclaimed: unclaimed,
         withdrawn: withdrawn,
         locked: locked,
-        reserved: vestings.length ? allocation.sub(vestings[0].numTokensReservedForVesting || '0') : BigNumber.from(0)
+        reserved: vestings.length
+          ? BigNumber.from(vestingContract?.data.balance || '0').sub(vestings[0].numTokensReservedForVesting || '0')
+          : BigNumber.from(0)
       };
     },
-    [vestingSchedulesInfo]
+    [vestingSchedulesInfo, vestingContracts]
   );
 
   const vestingContractsInfo = useMemo(() => {
