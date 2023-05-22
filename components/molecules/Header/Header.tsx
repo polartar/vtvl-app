@@ -21,7 +21,7 @@ interface HeaderProps {
 
 const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSideBar }: HeaderProps) => {
   const { active, account } = useWeb3React();
-  const { asPath } = useRouter();
+  const { pathname } = useRouter();
   const {
     website: { assets, name }
   } = useGlobalContext();
@@ -45,8 +45,9 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
     '/404',
     '/not-found',
     '/terms',
-    '/privacypolicy'
-  ].every((o) => asPath !== o);
+    '/privacypolicy',
+    '/magic-link-verification'
+  ].every((o) => pathname !== o);
 
   const renderVTVLLogo = () => {
     return (
