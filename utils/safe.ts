@@ -8,7 +8,6 @@ export type SafeTransaction = {
   to: string;
   data: string;
   value: string;
-  nonce: number;
 };
 
 export const createSafeTransaction = async (
@@ -20,6 +19,7 @@ export const createSafeTransaction = async (
   transaction: SafeTransaction
 ): Promise<{
   hash: string;
+  nonce: number;
 }> => {
   if (!signer) {
     throw 'Signer is not initialized';
@@ -36,8 +36,11 @@ export const createSafeTransaction = async (
     txServiceUrl: SupportedChains[chainId].multisigTxUrl,
     ethAdapter
   });
+  const nextNonce = await safeService.getNextNonce(safeAddress);
 
-  const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: transaction });
+  const safeTransaction = await safeSdk.createTransaction({
+    safeTransactionData: { ...transaction, nonce: nextNonce }
+  });
   const txHash = await safeSdk.getTransactionHash(safeTransaction);
   const signature = await safeSdk.signTransactionHash(txHash);
 
@@ -49,5 +52,5 @@ export const createSafeTransaction = async (
     senderSignature: signature.data
   });
 
-  return { hash: txHash };
+  return { hash: txHash, nonce: nextNonce };
 };
