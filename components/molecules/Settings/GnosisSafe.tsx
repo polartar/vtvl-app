@@ -62,7 +62,6 @@ export default function GonsisSafe() {
           const organization = await fetchOrg(organizationId);
           if (organization && safe) {
             const owners = await safe.getOwners();
-            const safeNonce = await safe.getNonce();
             const threshold = await safe.getThreshold();
             const safeId = await createOrUpdateSafe({
               user_id: user?.uid,
@@ -74,8 +73,7 @@ export default function GonsisSafe() {
                 address: owner,
                 name: ''
               })),
-              threshold,
-              safeNonce
+              threshold
             });
             setCurrentSafeId(safeId);
             setCurrentSafe({
@@ -88,8 +86,7 @@ export default function GonsisSafe() {
                 address: owner,
                 name: ''
               })),
-              threshold,
-              safeNonce
+              threshold
             });
           }
         } else {

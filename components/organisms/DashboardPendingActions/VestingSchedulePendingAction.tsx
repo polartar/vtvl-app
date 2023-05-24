@@ -380,21 +380,23 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         ]);
         if (currentSafe?.address && account && chainId && organizationId) {
           if (currentSafe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())) {
-            if (currentSafe.safeNonce === undefined) {
-              throw new Error('Nonce is not defined');
-            }
-
             setTransactionLoaderStatus('PENDING');
             const ethAdapter = new EthersAdapter({
               ethers: ethers,
               signer: library?.getSigner(0)
             });
             const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+            const safeService = new SafeServiceClient({
+              txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+              ethAdapter
+            });
+
+            const nextNonce = await safeService.getNextNonce(currentSafe.address);
             const txData = {
               to: mintFormState.address,
               data: transferEncoded,
               value: '0',
-              nonce: currentSafe.safeNonce + 1
+              nonce: nextNonce
             };
             const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
             const txHash = await safeSdk.getTransactionHash(safeTransaction);
@@ -403,10 +405,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             setShowFundingContractModal(false);
 
             safeTransaction.addSignature(signature);
-            const safeService = new SafeServiceClient({
-              txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-              ethAdapter
-            });
             await safeService.proposeTransaction({
               safeAddress: currentSafe.address,
               senderAddress: account,
@@ -414,15 +412,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               safeTxHash: txHash,
               senderSignature: signature.data
             });
-
-            await createOrUpdateSafe(
-              {
-                ...currentSafe,
-                safeNonce: currentSafe.safeNonce + 1
-              },
-              currentSafeId
-            );
-            setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
 
             const transactionId = await createTransaction({
               hash: '',
@@ -444,7 +433,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               id
             );
             await fetchDashboardData();
-            toast.success(`Funding transaction with nonce ${currentSafe.safeNonce + 1} has been created successfully`);
+            toast.success(`Funding transaction with nonce ${nextNonce} has been created successfully`);
             setTransactionLoaderStatus('SUCCESS');
           } else {
             toast.error('You are not a signer of this multisig wallet.');
@@ -562,26 +551,24 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         });
         setTransactionLoaderStatus('PENDING');
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+        const safeService = new SafeServiceClient({
+          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+          ethAdapter
+        });
 
-        if (currentSafe.safeNonce === undefined) {
-          throw new Error('Nonce is not defined');
-        }
+        const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
         const txData = {
           to: vestingContract?.data?.address ?? '',
           data: createClaimsBatchEncoded,
           value: '0',
-          nonce: currentSafe.safeNonce + 1
+          nonce: nextNonce
         };
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
         const signature = await safeSdk.signTransactionHash(txHash);
         setTransactionLoaderStatus('IN_PROGRESS');
         safeTransaction.addSignature(signature);
-        const safeService = new SafeServiceClient({
-          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-          ethAdapter
-        });
         await safeService.proposeTransaction({
           safeAddress: currentSafe.address,
           senderAddress: account,
@@ -613,16 +600,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             id
           );
 
-          await createOrUpdateSafe(
-            {
-              ...currentSafe,
-              safeNonce: currentSafe.safeNonce + 1
-            },
-            currentSafeId
-          );
-          setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
-
-          toast.success(`Created a transaction with nonce ${currentSafe.safeNonce + 1} successfully`);
+          toast.success(`Created a transaction with nonce ${nextNonce} successfully`);
 
           await fetchDashboardData();
         }

@@ -696,20 +696,6 @@ export function AuthContextProvider({ children }: any) {
   useEffect(() => {
     if (currentSafe && library && currentSafeId) {
       setCache({ safeAddress: currentSafe.address });
-      if (!currentSafe.safeNonce && currentSafe.safeNonce !== 0) {
-        getSafeInfo(library, currentSafe.address).then((safeWallet) => {
-          safeWallet?.getNonce().then((nonce) => {
-            createOrUpdateSafe(
-              {
-                ...currentSafe,
-                safeNonce: nonce
-              },
-              currentSafeId
-            );
-            setCurrentSafe((s) => (s ? { ...s, safeNonce: nonce } : undefined));
-          });
-        });
-      }
     }
   }, [currentSafe, library, currentSafeId]);
 

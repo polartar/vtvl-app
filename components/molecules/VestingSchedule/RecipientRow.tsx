@@ -97,12 +97,8 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
 
           const vestingContractInterface = new ethers.utils.Interface([REVOKE_CLAIM_FUNCTION_ABI]);
 
-          if (currentSafe.safeNonce === undefined) {
-            throw new Error('Nonce is not defined');
-          }
-
           setTransactionStatus('IN_PROGRESS');
-          const { hash: safeHash } = await createSafeTransaction(
+          const { hash: safeHash, nonce } = await createSafeTransaction(
             signer,
             chainId as SupportedChainId,
             account,
@@ -111,8 +107,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             {
               to: vestingAddress,
               data: vestingContractInterface.encodeFunctionData('revokeClaim', [recipient]),
-              value: '0',
-              nonce: currentSafe.safeNonce + 1
+              value: '0'
             }
           );
 
@@ -140,16 +135,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             status: 'PENDING'
           });
 
-          await createOrUpdateSafe(
-            {
-              ...currentSafe,
-              safeNonce: currentSafe.safeNonce + 1
-            },
-            currentSafeId
-          );
-          setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
-
-          toast.success(`Revoking transaction with nonce ${currentSafe.safeNonce + 1} has been created successfully.`);
+          toast.success(`Revoking transaction with nonce ${nonce} has been created successfully.`);
           console.info('Safe Transaction: ', safeHash);
         } else {
           const vestingContractInstance = new ethers.Contract(
