@@ -13,7 +13,8 @@ module.exports = defineConfig({
     experimentalOriginDependencies: true,
     testIsolation: true,
     setupNodeEvents(on, config) {
-      synpressPlugins(on, config);
+      synpressPlugins(on, config)
+      require("cypress-localstorage-commands/plugin")(on, config)
     },
     baseUrl: "https://qa-v2.vtvl.io/",
     supportFile: "cypress/support/e2e.js",

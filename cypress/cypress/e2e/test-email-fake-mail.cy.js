@@ -1,4 +1,5 @@
 import 'cypress-iframe'
+
     describe("email test spec", () => {
       let capturedUrl // Declare the capturedUrl variable
 
@@ -51,37 +52,15 @@ import 'cypress-iframe'
             cy.log(`URL captured: ${url}`)
         cy.visit(url, { log: true }) // Visit the captured URL in the current tab/window
         capturedUrl = url // Store the captured URL in the variable
-        cy.getCookie("session").then((cookie) => {
-          if (cookie) {
-            const sessionCookie = cookie.value
-            cy.log(`Session cookie value: ${sessionCookie}`)
-            cy.wrap(sessionCookie).as("sessionCookie") // Store the session cookie value in an alias
-
-            // Run the second test inside the callback to ensure it has access to the session cookie
-            it('should perform another test using the captured URL', () => {
-              cy.get("@sessionCookie").then((sessionCookie) => {
-                if (sessionCookie) {
-                  // Use the session cookie in your test
-                  cy.visit("https://qa-v2.vtvl.io/", {
-                    headers: {
-                      Cookie: `session=${sessionCookie}`, // Set the session cookie in the request headers
-                    },
-                  })
-
-                  // Add the test assertions and actions for the second test
-                  // ...
-                } else {
-                  // Handle the case when the session cookie is not available
-                  cy.log("Session cookie not available")
-                }
-              })
-            })
-          } else {
-            // Handle the case when the session cookie is not found
-            cy.log("Session cookie not found")
-          }
-        })
       })
+    })
+      it("should log in", () => {
+        cy.wait(5000)
+        cy.visit("https://qa-v2.vtvl.io/onboarding/")
+        cy.visit(url, { log: true })
+        cy.wait(5000)
+     })
+   })
   })
-})
-})
+
+
