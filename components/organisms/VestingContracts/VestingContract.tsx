@@ -163,26 +163,24 @@ export default function VestingContract({ vestingContractId }: { vestingContract
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+        const safeService = new SafeServiceClient({
+          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+          ethAdapter
+        });
 
-        if (currentSafe.safeNonce === undefined) {
-          throw new Error('Nonce is not defined');
-        }
-
+        const nextNonce = await safeService.getNextNonce(currentSafe.address);
         const txData = {
           to: vestingContractAddress,
           data: adminWithdrawEncoded,
           value: '0',
-          nonce: currentSafe.safeNonce + 1
+          nonce: nextNonce
         };
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
         const signature = await safeSdk.signTransactionHash(txHash);
         setTransactionLoaderStatus('IN_PROGRESS');
         safeTransaction.addSignature(signature);
-        const safeService = new SafeServiceClient({
-          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-          ethAdapter
-        });
+
         await safeService.proposeTransaction({
           safeAddress: currentSafe.address,
           senderAddress: account,
@@ -206,16 +204,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
         };
         const transactionId = await createTransaction(transactionData);
 
-        await createOrUpdateSafe(
-          {
-            ...currentSafe,
-            safeNonce: currentSafe.safeNonce + 1
-          },
-          currentSafeId
-        );
-        setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
-
-        toast.success(`Withdraw transaction with nonce ${currentSafe.safeNonce + 1} has been created successfully.`);
+        toast.success(`Withdraw transaction with nonce ${nextNonce} has been created successfully.`);
         setTransactionLoaderStatus('SUCCESS');
         setWithdrawTransactions([
           ...withdrawTransactions,

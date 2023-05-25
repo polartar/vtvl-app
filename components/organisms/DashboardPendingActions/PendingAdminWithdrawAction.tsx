@@ -160,6 +160,12 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
+        const currentNonce = await safeSdk.getNonce();
+        if (currentNonce !== apiTx.nonce) {
+          toast.error('You have pending transactions that should be executed first.');
+          setTransactionLoaderStatus('ERROR');
+          return;
+        }
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();

@@ -251,6 +251,12 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
+        const currentNonce = await safeSdk.getNonce();
+        if (currentNonce !== apiTx.nonce) {
+          toast.error('You have pending transactions that should be executed first.');
+          setTransactionLoaderStatus('ERROR');
+          return;
+        }
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
@@ -362,26 +368,24 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               signer: library?.getSigner(0)
             });
             const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
-
-            if (currentSafe.safeNonce === undefined) {
-              throw new Error('Nonce is not defined');
-            }
+            const safeService = new SafeServiceClient({
+              txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+              ethAdapter
+            });
+            const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
             const txData = {
               to: mintFormState.address,
               data: transferEncoded,
               value: '0',
-              nonce: currentSafe.safeNonce + 1
+              nonce: nextNonce
             };
             const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
             const txHash = await safeSdk.getTransactionHash(safeTransaction);
             const signature = await safeSdk.signTransactionHash(txHash);
             setTransactionLoaderStatus('IN_PROGRESS');
             safeTransaction.addSignature(signature);
-            const safeService = new SafeServiceClient({
-              txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-              ethAdapter
-            });
+
             await safeService.proposeTransaction({
               safeAddress: currentSafe.address,
               senderAddress: account,
@@ -409,16 +413,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               id
             );
 
-            await createOrUpdateSafe(
-              {
-                ...currentSafe,
-                safeNonce: currentSafe.safeNonce + 1
-              },
-              currentSafeId
-            );
-            setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
-
-            toast.success(`Funding transaction with nonce ${currentSafe.safeNonce + 1} is created successfully`);
+            toast.success(`Funding transaction with nonce ${nextNonce} is created successfully`);
 
             await fetchDashboardData();
             setTransactionLoaderStatus('SUCCESS');
@@ -538,26 +533,24 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         });
         setTransactionLoaderStatus('PENDING');
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+        const safeService = new SafeServiceClient({
+          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+          ethAdapter
+        });
 
-        if (currentSafe.safeNonce === undefined) {
-          throw new Error('Nonce is not defined');
-        }
-
+        const nextNonce = await safeService.getNextNonce(currentSafe.address);
         const txData = {
           to: vestingContract?.data?.address ?? '',
           data: createClaimsBatchEncoded,
           value: '0',
-          nonce: currentSafe.safeNonce + 1
+          nonce: nextNonce
         };
         const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
         const txHash = await safeSdk.getTransactionHash(safeTransaction);
         const signature = await safeSdk.signTransactionHash(txHash);
         setTransactionLoaderStatus('IN_PROGRESS');
         safeTransaction.addSignature(signature);
-        const safeService = new SafeServiceClient({
-          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-          ethAdapter
-        });
+
         await safeService.proposeTransaction({
           safeAddress: currentSafe.address,
           senderAddress: account,
@@ -589,15 +582,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             id
           );
 
-          await createOrUpdateSafe(
-            {
-              ...currentSafe,
-              safeNonce: currentSafe.safeNonce + 1
-            },
-            currentSafeId
-          );
-          setCurrentSafe({ ...currentSafe, safeNonce: currentSafe.safeNonce + 1 });
-          toast.success(`Created a transaction with nonce ${currentSafe.safeNonce + 1} successfully`);
+          toast.success(`Created a transaction with nonce ${nextNonce} successfully`);
           await fetchDashboardData();
         }
         toast.success('Transaction has been created successfully.');
@@ -737,6 +722,12 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
+        const currentNonce = await safeSdk.getNonce();
+        if (currentNonce !== apiTx.nonce) {
+          toast.error('You have pending transactions that should be executed first.');
+          setTransactionLoaderStatus('ERROR');
+          return;
+        }
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
