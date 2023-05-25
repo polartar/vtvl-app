@@ -10,21 +10,13 @@ import 'cypress-iframe'
         cy.get('.btn').click()
       
         cy.get('.row:nth-child(8) tr:nth-child(2) code')
-          .invoke("text")
-          .then((email) => {
-            // setting the passwordless service origin and
-            // passing the email address as an argument
-    
-            cy.origin("https://qa-v2.vtvl.io/", { args: email }, (email) => {        
-              // connecting to the login page of
-              // the passwordless service
-              cy.visit("/onboarding")
-    
+        .invoke("text")
+        .then((email) => {
+          const magicLinkDomain = "https://qa-v2.vtvl.io/"
+          cy.origin(magicLinkDomain, { args: { email } }, ({ email }) => {
+            cy.visit("/onboarding/sign-up");
+
               // typing the email address in the email input
-              cy.get(':nth-child(2) > .wallet-button').click() //member button update this to use a data-cy label
-              cy.get(':nth-child(1) > .wallet-button').click() //metamask button update this to use a data-cy label
-              cy.get('.h-10.relative > .h-10').click() //connect wallet button update this to use a data-cy label
-              cy.visit('https://qa-v2.vtvl.io/onboarding/sign-up')
               cy.get('.input-component__input').type(email)
               cy.get('.text-xs > .flex-row > .flex').click()
     
@@ -44,23 +36,20 @@ import 'cypress-iframe'
         cy.get('#message > iframe')
         .should('be.visible')
         .then(($iframe) => {
-          const $body = $iframe.contents().find('body')
+          const $body = $iframe.contents().find('body');
           cy.wrap($body)
-          .find('a:contains("Sign in now!")')
-          .invoke('attr', 'href')
-          .then((url) => {
-            cy.log(`URL captured: ${url}`)
-        cy.visit(url, { log: true }) // Visit the captured URL in the current tab/window
-        capturedUrl = url // Store the captured URL in the variable
-      })
-    })
-      it("should log in", () => {
-        cy.wait(5000)
-        cy.visit("https://qa-v2.vtvl.io/onboarding/")
-        cy.visit(url, { log: true })
-        cy.wait(5000)
-     })
-   })
-  })
-
-
+            .find('a:contains("Sign in now!")')
+            .invoke('attr', 'href')
+            .then((url) => {
+              cy.log(`URL captured: ${url}`);
+              const magicLink = url; // Store the captured URL in a variable
+              cy.visit(magicLink, { log: true });
+              capturedUrl = magicLink;
+              cy.get(':nth-child(1) > .wallet-button').click()
+              //cy.switchToMetamaskNotificationWindow()
+              //cy.acceptMetamaskAccess()
+              //cy.switchToCypressWindow()
+            });
+        });
+    });
+  });
