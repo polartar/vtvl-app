@@ -13,7 +13,7 @@ describe("email test spec", () => {
       // setting the passwordless service origin and
       // passing the email address as an argument
 
-        cy.origin("http://localhost:3000", { args: email }, (email) => {
+        cy.origin("https://qa-v2.vtvl.io/", { args: email }, (email) => {
         // connecting to the login page of
         // the passwordless service
           cy.visit("/onboarding/sign-up")

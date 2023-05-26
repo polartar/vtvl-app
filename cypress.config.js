@@ -16,7 +16,7 @@ module.exports = defineConfig({
       synpressPlugins(on, config)
       require("cypress-localstorage-commands/plugin")(on, config)
     },
-    baseUrl: "https://localhost:3000",
+    baseUrl: "https://qa-v2.vtvl.io/",
     supportFile: "cypress/support/e2e.js",
   },
 })
