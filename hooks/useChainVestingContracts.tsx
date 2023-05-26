@@ -11,7 +11,7 @@ import { IVesting } from 'types/models';
 import { IRecipientDoc } from 'types/models/recipient';
 import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
-import { isV2 } from 'utils/multicall';
+import { getVestingContractABI, isV2 } from 'utils/multicall';
 
 import { useShallowState } from './useShallowState';
 
@@ -83,7 +83,7 @@ export default function useChainVestingContracts(
               {
                 reference: `multicall-${vestingContract.data.address}-${recipient.walletAddress}`,
                 contractAddress: vestingContract.data.address,
-                abi: isV2(vestingContract.data.updatedAt) ? VTVL2_VESTING_ABI.abi : VTVL_VESTING_ABI.abi,
+                abi: getVestingContractABI(vestingContract.data.updatedAt),
                 calls: [
                   {
                     //   // This gets the claimable amount by the recipient
