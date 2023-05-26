@@ -30,7 +30,6 @@ const Summary: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { mintFormState, updateMintFormState, updateTokenId } = useTokenContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
-
   const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply, burnable } = mintFormState;
 
   const [loading, setLoading] = useState(false);

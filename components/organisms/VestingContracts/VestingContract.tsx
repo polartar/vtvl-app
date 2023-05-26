@@ -283,24 +283,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
               </button>
             </div>
           )}
-        {availableRevokings &&
-          availableRevokings.length > 0 &&
-          vestingContractsInfo &&
-          vestingContractsInfo.reserved.gt(ethers.BigNumber.from(0)) &&
-          (!withdrawTransactions || !withdrawTransactions.length) && (
-            <div className="mb-3 w-full px-6 py-3 bg-warning-100 border border-warning-500 rounded-lg flex items-center justify-between">
-              <div>
-                <div className="font-bold text-sm text-[#344054]">Unallocated tokens</div>
-                <div className="text-label text-sm">
-                  You can now transfer the remaining locked tokens from revoked schedules to your project's wallet by
-                  clicking on <b>"Transfer tokens"</b>.
-                </div>
-              </div>
-              <button className="secondary small whitespace-nowrap" onClick={handleWithdraw}>
-                Transfer tokens
-              </button>
-            </div>
-          )}
+
         <div className="flex justify-between">
           <Typography size="title" variant="inter" className=" font-semibold text-neutral-900 ">
             Contract
