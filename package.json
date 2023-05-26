@@ -14,7 +14,10 @@
     "format:fix": "prettier --write --ignore-path .gitignore .",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "cypress:run": "env-cmd cypress run --browser chrome --headed",
+    "start:server": "serve ../../node_modules/@metamask/test-dapp/dist -p 3000",
+    "test": "start-server-and-test 'yarn start:server' http-get://qa-v2.vtvl.io/ 'yarn cypress:run'"
   },
   "dependencies": {
     "@date-io/date-fns": "^2.16.0",
@@ -118,6 +121,13 @@
     "storybook-addon-next": "^1.6.9",
     "tsconfig-paths-webpack-plugin": "^4.0.0",
     "typescript": "4.8.3",
-    "webpack": "^5.74.0"
+    "webpack": "^5.74.0",
+    "@synthetixio/synpress": "^3.7.0",
+    "cypress": "^12.7.0",
+    "cypress-iframe": "^1.0.1",
+    "cypress-localstorage-commands": "^2.2.3",
+    "env-cmd": "^10.1.0",
+    "serve": "^14.2.0",
+    "start-server-and-test": "^2.0.0"
   }
 }
