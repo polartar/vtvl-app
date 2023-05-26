@@ -10,10 +10,13 @@ describe("email test spec", () => {
     cy.get('.row:nth-child(8) tr:nth-child(2) code')
       .invoke("text")
       .then((email) => {
-        const magicLinkDomain = "https://qa-v2.vtvl.io/"
-        cy.origin(magicLinkDomain, { args: { email } }, ({ email }) => {
-          cy.visit("/onboarding/sign-up")
+      // setting the passwordless service origin and
+      // passing the email address as an argument
 
+        cy.origin("https://qa-v2.vtvl.io/", { args: email }, (email) => {
+        // connecting to the login page of
+        // the passwordless service
+          cy.visit("/onboarding/sign-up")
           // typing the email address in the email input
           cy.get('.input-component__input').type(email)
           cy.get('.text-xs > .flex-row > .flex').click()
@@ -26,10 +29,10 @@ describe("email test spec", () => {
       })
 
     // visiting Ethereal Mail again
-    cy.visit("https://ethereal.email/")
-    cy.wait(5000)
-    cy.contains("Messages").click()
-    cy.contains("Login to VTVL").click()
+    cy.visit("https://ethereal.email/messages")
+    cy.wait(5000) // email takes more or less 5s
+    cy.reload() // refresh page to get email
+    cy.contains("Login to VTVL").click() //click on email
 
     cy.get('#message > iframe')
       .should('be.visible')
@@ -40,10 +43,10 @@ describe("email test spec", () => {
           .invoke('attr', 'href')
           .then((url) => {
             cy.log(`URL captured: ${url}`)
-            const magicLink = url // Store the captured URL in a variable
-            cy.visit(magicLink, { log: true })
-            capturedUrl = magicLink
+            cy.visit(url, { log: true }) // Visit the captured URL in the current tab/window
+            capturedUrl = url // Store the captured URL in the variable
             cy.get(':nth-child(1) > .wallet-button').click()
+            // commands for connecting the wallet later
             //cy.switchToMetamaskNotificationWindow()
             //cy.acceptMetamaskAccess()
             //cy.switchToCypressWindow()
