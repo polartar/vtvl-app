@@ -13,6 +13,10 @@ const CLIFF_AMOUNT_INDEX = 6;
 export function isV2(deployedAt: number) {
   return deployedAt >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT);
 }
+
+export function getVestingContractABI(deployedAt: number) {
+  return isV2(deployedAt) ? VTVL2_VESTING_ABI.abi : VTVL_VESTING_ABI.abi;
+}
 /**
  * Create multicall class instance
  */
@@ -39,7 +43,7 @@ export const getVestingDetailsFromContracts = async (
       {
         reference: `withdrawn-${contract.data.address}`,
         contractAddress: contract.data.address,
-        abi: isV2(contract.data.updatedAt) ? VTVL2_VESTING_ABI.abi : VTVL_VESTING_ABI.abi,
+        abi: getVestingContractABI(contract.data.updatedAt),
         calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator] }]
       },
       {
