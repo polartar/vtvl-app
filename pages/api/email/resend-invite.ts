@@ -51,9 +51,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return res.status(403).json({ message: 'Not authorized email' });
     }
 
-    const emailLink = encodeURI(
-      `${PUBLIC_DOMAIN_NAME}/magic-link-verification?redir=${encodeURIComponent('/member?token=' + token)}`
-    );
+    const emailLink = `${PUBLIC_DOMAIN_NAME}/magic-link-verification?redir=${encodeURIComponent(
+      '/member?token=' + token
+    )}`;
     await SendMail({
       to: payload.email,
       data: { emailLink, orgName: payload.orgName, name: payload.name, ...emailTemplate },

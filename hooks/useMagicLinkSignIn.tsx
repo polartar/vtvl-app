@@ -34,6 +34,7 @@ export default function useMagicLinkSignIn(callback?: () => void) {
   const { completeOnboarding } = useOnboardingContext();
   const router = useRouter();
   const [isExpired, setIsExpired] = useState(false);
+  let timeout: NodeJS.Timeout;
 
   const signInWithMagicLink = async (member: IMember, newUser: boolean) => {
     try {
@@ -49,7 +50,7 @@ export default function useMagicLinkSignIn(callback?: () => void) {
     }
   };
 
-  useEffect(() => {
+  const initializeMagicLinkSigning = async () => {
     // Sign in when found
     const params: any = new URL(window.location.toString());
     const name = params.searchParams.get('name');
@@ -61,8 +62,16 @@ export default function useMagicLinkSignIn(callback?: () => void) {
     if (orgId) member.org_id = orgId;
     if (name || orgId) member.companyEmail = email;
     if (email) {
-      signInWithMagicLink(member, newUser);
+      await signInWithMagicLink(member, newUser);
     }
+  };
+
+  useEffect(() => {
+    // Ensure that initialization only happens once by debouncing it
+    timeout = setTimeout(initializeMagicLinkSigning, 600);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, []);
 
   return { isExpired };

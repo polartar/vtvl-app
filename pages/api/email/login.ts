@@ -12,11 +12,9 @@ type Data = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const { email, newUser, websiteName, websiteEmail, emailTemplate } = req.body;
-  const url = encodeURI(
-    `${PUBLIC_DOMAIN_NAME}/magic-link-verification?email=${email}&newUser=${newUser}&redir=${encodeURIComponent(
-      newUser === true ? `/onboarding/select-user-type` : `/dashboard`
-    )}`
-  );
+  const url = `${PUBLIC_DOMAIN_NAME}/magic-link-verification?email=${email}&newUser=${newUser}&redir=${encodeURIComponent(
+    newUser === true ? `/onboarding/select-user-type` : `/dashboard`
+  )}`;
 
   const actionCodeSettings = {
     url,
