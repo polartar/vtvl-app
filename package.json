@@ -117,7 +117,6 @@
     "cypress": "^12.7.0",
     "cypress-iframe": "^1.0.1",
     "cypress-localstorage-commands": "^2.2.3",
-    "cypress-mailosaur": "^2.13.0",
     "env-cmd": "^10.1.0",
     "eslint": "8.24.0",
     "eslint-config-next": "12.3.1",

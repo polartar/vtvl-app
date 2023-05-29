@@ -1,106 +1,56 @@
-describe('Sign up - Magic link', () => {
-  const serverId = 'mpbo6qs9';
-  const testEmail = `${Date.now()}@${serverId}.mailosaur.net`;
-  let passwordResetLink;
+import 'cypress-iframe'
 
-  // Function to extract the link from the email body
-function extractLinkFromEmail(body) {
-  // Implement your logic to extract the link from the email body
-  // You can use regular expressions, HTML parsing libraries, or other methods depending on the email format
-  // For example, if the link is within an <a> tag, you can use a regular expression to extract it
-  const regex = /<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1/;
-  const match = body.match(regex);
-  if (match && match[2]) {
-    return match[2];
-  }
-  return null; // Return null if no link is found
-}
+describe("email test spec", () => {
+  let capturedUrl // Declare the capturedUrl variable
 
-  it('Sign up', () => {
-    cy.visit('/onboarding/sign-up');
-    cy.get('.input-component__input').type(testEmail);
-    cy.get('.text-xs > .flex-row > .flex').click();
-    cy.contains('Create account').click();
-    cy.wait(30000)
+  it("should log in", () => {
+    // connecting to the temporary email provider
+    cy.visit("https://ethereal.email/create")
+    cy.get('.btn').click()
+    cy.get('.row:nth-child(8) tr:nth-child(2) code')
+      .invoke("text")
+      .then((email) => {
+      // setting the passwordless service origin and
+      // passing the email address as an argument
 
-  });
-/*
-  it('Gets a Magic Link email', () => {
-    cy.mailosaurGetMessage(serverId, {
-      sentTo: testEmail
-    }).then(email => {
-      expect(email.subject).to.equal('Login to VTVL');
-      passwordResetLink = email.text.links[0].href;
-      cy.log(passwordResetLink);
-      cy.get('body')
-        .find('a:contains("Sign in now!")')
-        .invoke('attr', 'href')
-        .then((passwordResetLink) => {
-          cy.log(`URL captured: ${passwordResetLink}`);
-          cy.visit(passwordResetLink, { log: true });
-        });
-    });
-  });
-});*/
+        cy.origin("https://qa-v2.vtvl.io/", { args: email }, (email) => {
+        // connecting to the login page of
+        // the passwordless service
+          cy.visit("/onboarding/sign-up")
+          // typing the email address in the email input
+          cy.get('.input-component__input').type(email)
+          cy.get('.text-xs > .flex-row > .flex').click()
 
-  // Fetch the email message
- /* cy.mailosaurSearchMessages(serverId, {
-    sentTo: testEmail,
-    subject: 'Login to VTVL'
-  }).then(messages => {
-    // Check if any matching messages were found
-    if (messages.length > 0) {
-      const email = messages[0];
+          // clicking the "Create account" button to trigger
+          // the email workflow
 
-      // Extract the link URL from the email body
-      passwordResetLink = extractLinkFromEmail(email.body);
-      cy.log(passwordResetLink);
-    } else {
-      // Handle the scenario when no matching email is found
-      cy.log('No matching email found.');
-    } 
+          cy.contains('Create account').click()
+        })
+      })
 
-    cy.mailosaurGetMessage(serverId, {
-      sentTo: testEmail
-    }).then(email => {
-      cy.wait(30000)
-      expect(email.subject).to.equal('Login to VTVL');
-      passwordResetLink = email.text.links[0].href;
-      cy.log(passwordResetLink);
-      cy.wait(30000)
+    // visiting Ethereal Mail again
+    cy.visit("https://ethereal.email/messages")
+    cy.wait(5000) // email takes more or less 5s
+    cy.reload() // refresh page to get email
+    cy.contains("Login to VTVL").click() //click on email
 
-  if (passwordResetLink) {
-    cy.visit({
-      url: passwordResetLink,
-      log: true
-    });
-  } else {
-    cy.log('No link found in the email body.');
-  }
-  cy.wait(30000)
-
-});
-});
-
-});
-*/
-
-it('Verify email and visit the link', () => {
-  cy.mailosaurGetMessage(serverId, {
-    sentTo: testEmail
-  }).then(email => {
-    cy.wait(30000);
-    expect(email.subject).to.equal('Login to VTVL');
-    passwordResetLink = email.text.links[0].href;
-    cy.log(passwordResetLink);
-    cy.wait(30000);
-
-    if (passwordResetLink) {
-      cy.visit(passwordResetLink, { log: true });
-    } else {
-      cy.log('No link found in the email body.');
-    }
-    cy.wait(30000);
-  });
-});
-});
+    cy.get('#message > iframe')
+      .should('be.visible')
+      .then(($iframe) => {
+        const $body = $iframe.contents().find('body')
+        cy.wrap($body)
+          .find('a:contains("Sign in now!")')
+          .invoke('attr', 'href')
+          .then((url) => {
+            cy.log(`URL captured: ${url}`)
+            cy.visit(url, { log: true }) // Visit the captured URL in the current tab/window
+            capturedUrl = url // Store the captured URL in the variable
+            cy.get(':nth-child(1) > .wallet-button').click()
+            // commands for connecting the wallet later
+            //cy.switchToMetamaskNotificationWindow()
+            //cy.acceptMetamaskAccess()
+            //cy.switchToCypressWindow()
+          })
+      })
+  })
+})

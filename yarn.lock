@@ -2,8 +2,13 @@
 # yarn lockfile v1
 
 
-"@adraffy/ens-normalize@1.9.0", "@adraffy/ens-normalize@https://github.com/ricmoo/ens-normalize.js":
+"@adraffy/ens-normalize@1.9.0":
   version "1.9.0"
+  resolved "git+https://github.com/ricmoo/ens-normalize.js.git#2d040533e57e4f25f9a7cc4715e219658ad454b5"
+
+"@adraffy/ens-normalize@https://github.com/ricmoo/ens-normalize.js":
+  version "1.9.0"
+  uid "2d040533e57e4f25f9a7cc4715e219658ad454b5"
   resolved "https://github.com/ricmoo/ens-normalize.js#2d040533e57e4f25f9a7cc4715e219658ad454b5"
 
 "@ampproject/remapping@^2.1.0":
@@ -8073,11 +8078,6 @@ cypress-localstorage-commands@^2.2.3:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/cypress-localstorage-commands/-/cypress-localstorage-commands-2.2.3.tgz#ef5b736226b8316b7d948e30bc4b94a157cfa025"
   integrity sha512-EUEaHzbstw9AsEheIqr+RyXuxIzUS64nBBwl+Q4/mSdzfXpfcaV1nrHF+6H9zbTuFVTc+oWu6eC1l8aSjiWW6w==
-
-cypress-mailosaur@^2.13.0:
-  version "2.13.0"
-  resolved "https://registry.yarnpkg.com/cypress-mailosaur/-/cypress-mailosaur-2.13.0.tgz#c4941a430e276e0eb05056a6e9a45bc5fff9d950"
-  integrity sha512-xdv2994VkGH79Ag+OY2V1Tkr9Uy9p5wE+3u+SB6nnJEvEDIT5cVPsxVJxr91THwR34NWoS3zQBt5ai5ZVZ/1/w==
 
 cypress-wait-until@^1.7.2:
   version "1.7.2"
