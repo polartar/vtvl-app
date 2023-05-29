@@ -8,6 +8,7 @@ module.exports = defineConfig({
   pageLoadTimeout: 30000,
   requestTimeout: 30000,
   e2e: {
+    MAILOSAUR_API_KEY: "your-key-here",
     experimentalRunAllSpecs: true,
     experimentalWebKitSupport: true,
     experimentalOriginDependencies: true,
