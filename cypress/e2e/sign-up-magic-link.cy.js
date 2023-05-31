@@ -1,56 +1,124 @@
 import 'cypress-iframe'
 
 describe("email test spec", () => {
-  let capturedUrl // Declare the capturedUrl variable
-
-  it("should log in", () => {
-    // connecting to the temporary email provider
+let dataToWrite
+let filePath = '.credentials.txt'
+let email
+let password
+let magiclink
+  it('Create and save email and password in environment variables', () => {
     cy.visit("https://ethereal.email/create")
     cy.get('.btn').click()
-    cy.get('.row:nth-child(8) tr:nth-child(2) code')
-      .invoke("text")
-      .then((email) => {
-      // setting the passwordless service origin and
-      // passing the email address as an argument
+    cy.get('body').invoke('text').then((text) => {
+      const emailRegex = /Username\s+([\w.-]+@[a-zA-Z_-]+?\.[a-zA-Z]{2,6})/
+      const passwordRegex = /Password\s+([^\s]+)/
+      const emailMatch = text.match(emailRegex)
+      const passwordMatch = text.match(passwordRegex)
+  
+      if (emailMatch) {
+        const email = emailMatch[1]
+        //cy.log('Extracted email:', email)
+        //Cypress.env('email', email) // Save email in environment variable
+        dataToWrite = email
+      } else {
+        cy.log('Email not found on the page.')
+      }
+  
+      if (passwordMatch) {
+        const password = passwordMatch[1]
+        //cy.log('Extracted password:', password)
+        //cy.wait(5000)
+        dataToWrite = dataToWrite + '\n' + password
 
-        cy.origin("https://qa-v2.vtvl.io/", { args: email }, (email) => {
-        // connecting to the login page of
-        // the passwordless service
-          cy.visit("/onboarding/sign-up")
-          // typing the email address in the email input
-          cy.get('.input-component__input').type(email)
-          cy.get('.text-xs > .flex-row > .flex').click()
+        //Cypress.env('password', password) // Save password in environment variable
+      } else {
+        cy.log('Password not found on the page.')
+      }
+      //const dataToWrite = email + '\n' + password
+      cy.log('Extracted data:', dataToWrite)
+      cy.writeFile(filePath, dataToWrite)
 
-          // clicking the "Create account" button to trigger
-          // the email workflow
 
-          cy.contains('Create account').click()
-        })
-      })
+    })
+  
+})
 
-    // visiting Ethereal Mail again
-    cy.visit("https://ethereal.email/messages")
-    cy.wait(5000) // email takes more or less 5s
-    cy.reload() // refresh page to get email
-    cy.contains("Login to VTVL").click() //click on email
+  it("Sign up in app", () => {
+    cy.visit('/onboarding/sign-up')
 
-    cy.get('#message > iframe')
+    cy.readFile(filePath).then((fileContents) => {
+      // Split the file contents into an array of lines
+      const lines = fileContents.split('\n')
+    
+      // Extract the variables from the lines
+      email = lines[0]
+      password = lines[1]
+    
+      // Use the variables as needed
+      cy.log('Email:', email)
+      cy.log('Password:', password)
+
+      cy.get('.input-component__input').type(email)
+      cy.get('.text-xs > .flex-row > .flex').click()
+      cy.contains('Create account').click()
+      cy.wait(5000)
+    })
+  })
+
+  it("Confirm email", () => {
+    cy.visit('https://ethereal.email/login')
+    cy.readFile(filePath).then((fileContents) => {
+      // Split the file contents into an array of lines
+      const lines = fileContents.split('\n')
+    
+      // Extract the variables from the lines
+      email = lines[0]
+      password = lines[1]
+    
+      // Use the variables as needed
+      cy.log('Email:', email)
+      cy.log('Password:', password)
+
+      cy.get('#address').type(email)
+      cy.get('#password').type(password)
+      cy.get('.btn:nth-child(1)').click()
+      cy.visit('https://ethereal.email/messages')
+      cy.contains("Login to VTVL").click()
+      cy.get('#message > iframe')
       .should('be.visible')
       .then(($iframe) => {
         const $body = $iframe.contents().find('body')
         cy.wrap($body)
-          .find('a:contains("Sign in now!")')
-          .invoke('attr', 'href')
-          .then((url) => {
-            cy.log(`URL captured: ${url}`)
-            cy.visit(url, { log: true }) // Visit the captured URL in the current tab/window
-            capturedUrl = url // Store the captured URL in the variable
-            cy.get(':nth-child(1) > .wallet-button').click()
-            // commands for connecting the wallet later
-            //cy.switchToMetamaskNotificationWindow()
-            //cy.acceptMetamaskAccess()
-            //cy.switchToCypressWindow()
+        .find('a:contains("Sign in now!")')
+        .invoke('attr', 'href')
+        .then((url) => {
+          cy.log(`URL captured: ${url}`)
+          magiclink = url // Store the captured URL in a variable
+          cy.writeFile(filePath, magiclink)
+
+           cy.visit(magiclink, { log: true })
+           //capturedUrl = magicLink
+          //Cypress.env('magicLink', magiclink)
+          //cy.saveLocalStorage()
           })
-      })
+        })
+    })
+  })
+
+it("Use magic link", () => {
+  cy.readFile(filePath).then((fileContents) => {
+    const lines = fileContents.split('\n')
+    magiclink = lines[0]
+    cy.restoreLocalStorage()
+    cy.wait(5000)
+    cy.visit('/dashboard')
+    cy.wait(5000)
+    cy.get(':nth-child(1) > .wallet-button').click()
+    cy.wait(5000)
+    cy.switchToMetamaskWindow()
+    cy.acceptMetamaskAccess()
+    cy.switchToCypressWindow() 
+    cy.wait(6000)
+    })
   })
 })
