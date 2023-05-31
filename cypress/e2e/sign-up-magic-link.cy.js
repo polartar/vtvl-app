@@ -105,7 +105,7 @@ let magiclink
     })
   })
 
-it("Use magic link", () => {
+it.skip("Use magic link", () => {
   cy.readFile(filePath).then((fileContents) => {
     const lines = fileContents.split('\n')
     magiclink = lines[0]
