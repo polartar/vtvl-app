@@ -21,7 +21,7 @@ jobs:
           fluxbox &
         env:
           DISPLAY: :0.0
-          
+
       - name: Create env file
         run: |
           touch .env
@@ -29,13 +29,13 @@ jobs:
           echo NETWORK_NAME="goerli" >> .env
           echo SECRET_WORDS="test test test test test test test test test test test junk" >> .env
           cat .env
-          
+
       - name: Read .env file
         id: envfile
         uses: juliangruber/read-file-action@v1
         with:
           path: ./.env
-          
+
       - name: Echo .env
         run: echo "${{ steps.envfile.outputs.content }}"
       - name: Wait for Comment
@@ -57,15 +57,15 @@ jobs:
                 console.log('Maximum iterations reached!');
                 return;
               }
-  
+
               const { data: comments } = await github.issues.listComments({
                 owner,
                 repo,
                 issue_number: issueNumber
               });
-  
+
               commentFound = comments.some(comment => comment.body.includes(commentContent));
-  
+
             if (!commentFound) {
             counter++; // increment counter variable
             console.log(`Waiting for comment... (iteration ${counter})`);
@@ -85,8 +85,8 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body-includes: 'Learn more about'
-         
-      - run:  |
+
+      - run: |
           PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git.*')
           echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
         shell: bash
@@ -98,7 +98,7 @@ jobs:
 
       - name: Install dependencies
         run: yarn
-        
+
       - name: Cypress tests
         uses: cypress-io/github-action@v5.7.2
         with:
@@ -108,7 +108,7 @@ jobs:
           wait-on-timeout: 300
         env:
           DISPLAY: :0.0
-          
+
       - name: Upload video of tests 📷
         uses: actions/upload-artifact@v2
         if: always()
