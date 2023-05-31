@@ -87,12 +87,12 @@ jobs:
           body-includes: 'Learn more about'
          
       - run:  |
-          PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git-*')
+          PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git.*')
           echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
         shell: bash
       - name: Set environment variable
         run: |
-          export PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git-*')
+          export PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git.*')
           sed -i "s|https://qa-v2.vtvl.io/|$PREVIEW_URL|g" ./cypress.config.js
           cat ./cypress.config.js
           
