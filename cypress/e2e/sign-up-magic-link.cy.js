@@ -1,6 +1,11 @@
 import 'cypress-iframe'
 
-describe("email test spec", () => {
+describe("email test spec", () => { 
+  afterEach(() => {
+  cy.disconnectMetamaskWalletFromAllDapps()
+  cy.resetMetamaskAccount()
+})
+  
 let dataToWrite
 let filePath = '.credentials.txt'
 let email
@@ -37,15 +42,11 @@ let magiclink
       //const dataToWrite = email + '\n' + password
       cy.log('Extracted data:', dataToWrite)
       cy.writeFile(filePath, dataToWrite)
-
-
     })
-  
 })
 
   it("Sign up in app", () => {
     cy.visit('/onboarding/sign-up')
-
     cy.readFile(filePath).then((fileContents) => {
       // Split the file contents into an array of lines
       const lines = fileContents.split('\n')
@@ -95,30 +96,9 @@ let magiclink
           cy.log(`URL captured: ${url}`)
           magiclink = url // Store the captured URL in a variable
           cy.writeFile(filePath, magiclink)
-
            cy.visit(magiclink, { log: true })
-           //capturedUrl = magicLink
-          //Cypress.env('magicLink', magiclink)
-          //cy.saveLocalStorage()
-          })
         })
-    })
-  })
-
-it.skip("Use magic link", () => {
-  cy.readFile(filePath).then((fileContents) => {
-    const lines = fileContents.split('\n')
-    magiclink = lines[0]
-    cy.restoreLocalStorage()
-    cy.wait(5000)
-    cy.visit('/dashboard')
-    cy.wait(5000)
-    cy.get(':nth-child(1) > .wallet-button').click()
-    cy.wait(5000)
-    cy.switchToMetamaskWindow()
-    cy.acceptMetamaskAccess()
-    cy.switchToCypressWindow() 
-    cy.wait(6000)
+      })
     })
   })
 })
