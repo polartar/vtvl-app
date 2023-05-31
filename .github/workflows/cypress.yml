@@ -1,0 +1,117 @@
+name: Cypress Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  cypress:
+    name: Run Cypress Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🔖
+        uses: actions/checkout@v2
+
+      - name: Install linux deps
+        run: |
+          sudo apt-get install --no-install-recommends -y fluxbox xvfb
+
+      - name: Run xvfb and fluxbox
+        run: Xvfb :0 -screen 0 1024x768x24 -listen tcp -ac &
+          fluxbox &
+        env:
+          DISPLAY: :0.0
+          
+      - name: Create env file
+        run: |
+          touch .env
+          echo CYPRESS_REMOTE_DEBUGGING_PORT="9222" >> .env
+          echo NETWORK_NAME="goerli" >> .env
+          echo SECRET_WORDS="test test test test test test test test test test test junk" >> .env
+          cat .env
+          
+      - name: Read .env file
+        id: envfile
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./.env
+          
+      - name: Echo .env
+        run: echo "${{ steps.envfile.outputs.content }}"
+      - name: Wait for Comment
+        id: wait-for-comment
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = context.payload.pull_request.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const commentContent = 'Learn more about';
+
+            let commentFound = false;
+            let counter = 0; // initialize counter variable
+
+            async function waitForComment() {
+              if (counter >= 10) { // check if maximum iterations have been reached
+                console.log('Maximum iterations reached!');
+                return;
+              }
+  
+              const { data: comments } = await github.issues.listComments({
+                owner,
+                repo,
+                issue_number: issueNumber
+              });
+  
+              commentFound = comments.some(comment => comment.body.includes(commentContent));
+  
+            if (!commentFound) {
+            counter++; // increment counter variable
+            console.log(`Waiting for comment... (iteration ${counter})`);
+            await new Promise(resolve => setTimeout(resolve, 30000));
+            await waitForComment();
+              }
+            }
+
+            await waitForComment();
+
+            console.log('Comment found!');
+            console.log(`Comment ID: ${context.issue.number}`);
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: 'Learn more about'
+         
+      - run:  |
+          PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git-*')
+          echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
+        shell: bash
+      - name: Set environment variable
+        run: |
+          export PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git-*')
+          sed -i "s|https://qa-v2.vtvl.io/|$PREVIEW_URL|g" ./cypress.config.js
+          cat ./cypress.config.js
+          
+      - name: Install dependencies
+        run: yarn
+        
+      - name: Cypress tests
+        uses: cypress-io/github-action@v5.7.2
+        with:
+          working-directory: ./
+          install: false
+          command: yarn cypress:run
+          wait-on-timeout: 300
+        env:
+          DISPLAY: :0.0
+          
+      - name: Upload video of tests 📷
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress
+          path: cypress/videos
