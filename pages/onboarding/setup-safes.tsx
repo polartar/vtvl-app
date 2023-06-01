@@ -78,7 +78,7 @@ const YourSafesPage: NextPage = () => {
           Need help with what exactly is Safe?{' '}
           <a
             className="text-primary-900"
-            href="https://help.gnosis-safe.io/en/collections/2289028-getting-started"
+            href="https://help.safe.global/en/articles/40869-what-is-safe"
             target="_blank">
             Give me more info
           </a>
