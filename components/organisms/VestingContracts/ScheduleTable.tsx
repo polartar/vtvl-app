@@ -947,6 +947,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
                 {getRevoked(recipient.walletAddress) && (
                   <Chip
                     rounded
+                    className="text-xs"
                     label={`Revoked on ${format(
                       new Date((getRevoked(recipient.walletAddress) as IRevokingDoc).data.updatedAt * 1000),
                       'dd MMM yyyy'
