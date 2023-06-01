@@ -47,7 +47,7 @@ jobs:
             const issueNumber = context.payload.pull_request.number;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const commentContent = 'Learn more about';
+            const commentContent = 'Ready';
 
             let commentFound = false;
             let counter = 0; // initialize counter variable
