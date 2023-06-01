@@ -8,6 +8,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
+import ERC20ABI from 'contracts/abi/ERC20.json';
 import VestingABI from 'contracts/abi/VtvlVesting.json';
 import { ethers } from 'ethers';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
@@ -38,12 +39,13 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     vestingContracts: allVestingContracts,
     recipients: allRecipients
   } = useDashboardContext();
+  const { mintFormState } = useTokenContext();
   const [revokings, setRevokings] = useState<IRevokingDoc[]>();
 
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
-  const { mintFormState } = useTokenContext();
   const { setTransactionStatus: setTransactionLoaderStatus } = useTransactionLoaderContext();
 
+  const [withdrawAmount, setWithdrawAmount] = useState(ethers.BigNumber.from(0));
   const [withdrawTransactions, setWithdrawTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
 
   const router = useRouter();
@@ -151,11 +153,11 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           return;
         }
 
-        const ADMIN_WITHDRAW_FUNCTION = 'function withdrawAdmin(uint112 _amountRequested)';
+        const ADMIN_WITHDRAW_FUNCTION = 'function withdrawAdmin(uint256 _amountRequested)';
         const ABI = [ADMIN_WITHDRAW_FUNCTION];
         const vestingContractInterface = new ethers.utils.Interface(ABI);
         const adminWithdrawEncoded = vestingContractInterface.encodeFunctionData('withdrawAdmin', [
-          vestingContractsInfo?.reserved
+          withdrawAmount.toString()
         ]);
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -199,7 +201,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           organizationId: organizationId,
           chainId,
           vestingIds: [],
-          withdrawAmount: ethers.utils.formatUnits(vestingContractsInfo!.reserved, mintFormState?.decimals || 18),
+          withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimals || 18),
           vestingContractId: vestingContracts[0].id
         };
         const transactionId = await createTransaction(transactionData);
@@ -214,7 +216,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           }
         ]);
       } else {
-        const withdrawTransaction = await vestingContract.withdrawAdmin(vestingContractsInfo?.reserved);
+        const withdrawTransaction = await vestingContract.withdrawAdmin(withdrawAmount);
         const transactionData: ITransaction = {
           hash: withdrawTransaction.hash,
           safeHash: '',
@@ -226,7 +228,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           organizationId: organizationId,
           chainId,
           vestingIds: [],
-          withdrawAmount: ethers.utils.formatUnits(vestingContractsInfo!.reserved, mintFormState?.decimals || 18),
+          withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimals || 18),
           vestingContractId: vestingContracts[0].id
         };
         const transactionId = await createTransaction(transactionData);
@@ -257,25 +259,45 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     if (vestingContracts && vestingContracts.length > 0 && chainId) {
       const vestingContractAddress = vestingContracts[0].data.address;
       fetchTransactionsByQuery(
-        ['address', 'chainId', 'type'],
-        ['==', '==', '=='],
-        [vestingContractAddress, chainId, 'ADMIN_WITHDRAW']
+        ['address', 'chainId', 'type', 'status'],
+        ['==', '==', '==', '=='],
+        [vestingContractAddress, chainId, 'ADMIN_WITHDRAW', 'PENDING']
       ).then((res) => setWithdrawTransactions(res));
     }
   }, [vestingContracts, chainId]);
 
+  useEffect(() => {
+    if (
+      mintFormState.address &&
+      vestingContracts &&
+      vestingContracts.length > 0 &&
+      chainId &&
+      library &&
+      vestingSchedulesInfo &&
+      vestingSchedulesInfo.length > 0
+    ) {
+      const tokenContract = new ethers.Contract(mintFormState.address, ERC20ABI, library.getSigner());
+      tokenContract.balanceOf(vestingContracts[0].data.address).then((res: ethers.BigNumber) => {
+        setWithdrawAmount(
+          ethers.BigNumber.from(res).sub(
+            vestingSchedulesInfo[0]?.numTokensReservedForVesting ?? ethers.BigNumber.from(0)
+          )
+        );
+      });
+    }
+  }, [vestingContracts, chainId, mintFormState, library, vestingSchedulesInfo]);
+
   return (
     <div className="w-full">
       <div className="mb-9">
-        {vestingContractsInfo &&
-          vestingContractsInfo.reserved.gt(ethers.BigNumber.from(0)) &&
+        {withdrawAmount &&
+          withdrawAmount.gt(ethers.BigNumber.from(0)) &&
           (!withdrawTransactions || !withdrawTransactions.length) && (
             <div className="mb-3 w-full px-6 py-3 bg-warning-100 border border-warning-500 rounded-lg flex items-center justify-between">
               <div>
                 <div className="font-bold text-sm text-[#344054]">Unallocated tokens</div>
                 <div className="text-label text-sm">
-                  The unallocated {formatNumber(+ethers.utils.formatEther(vestingContractsInfo.reserved))} is ready to
-                  be withdrawn.
+                  The unallocated {formatNumber(+ethers.utils.formatEther(withdrawAmount))} is ready to be withdrawn.
                 </div>
               </div>
               <button className="secondary small whitespace-nowrap" onClick={handleWithdraw}>
@@ -317,7 +339,11 @@ export default function VestingContract({ vestingContractId }: { vestingContract
       </div>
 
       {vestingContractsInfo && (
-        <ContractsProfile vestingContractsInfo={[vestingContractsInfo]} count={vestings.length} title="Schedule" />
+        <ContractsProfile
+          vestingContractsInfo={[{ ...vestingContractsInfo, reserved: withdrawAmount }]}
+          count={vestings.length}
+          title="Schedule"
+        />
       )}
 
       {vestingContracts[0] && (

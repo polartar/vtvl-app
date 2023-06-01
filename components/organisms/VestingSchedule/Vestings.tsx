@@ -61,6 +61,12 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
 
       return arr.filter((_v, index) => results[index]);
     };
+    const ethAdapter = new EthersAdapter({
+      ethers: ethers,
+      signer: library?.getSigner(0)
+    });
+    const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address || '' });
+    const threshold = await safeSdk.getThreshold();
 
     return vestings && vestings.length > 0
       ? await asyncFilter(vestings, async (vesting: any) => {
@@ -109,7 +115,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
             );
           }
           if (filter.status === IStatus.Execute) {
-            if (safeTx && currentSafe?.threshold && safeTx.signatures.size >= currentSafe?.threshold && !isFund) {
+            if (safeTx && threshold && safeTx.signatures.size >= threshold && !isFund) {
               return true;
             }
 
@@ -142,8 +148,14 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
             .lt(ethers.utils.parseEther(vesting.data.details.amountToBeVested.toString())) &&
           vesting.data.status !== 'LIVE';
       }
+      const ethAdapter = new EthersAdapter({
+        ethers: ethers,
+        signer: library?.getSigner(0)
+      });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address || '' });
+      const threshold = await safeSdk.getThreshold();
 
-      if (safeTx && currentSafe?.threshold && safeTx.signatures.size >= currentSafe?.threshold && !isFund) {
+      if (safeTx && threshold && safeTx.signatures.size >= threshold && !isFund) {
         executeCount++;
       }
 

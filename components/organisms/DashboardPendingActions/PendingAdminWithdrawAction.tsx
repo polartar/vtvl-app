@@ -72,11 +72,17 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
   const initializeStatus = async () => {
     if (data && data.safeHash && currentSafe && account) {
       const safeTx = await fetchSafeTransactionFromHash(data.safeHash);
+      const ethAdapter = new EthersAdapter({
+        ethers: ethers,
+        signer: library?.getSigner(0)
+      });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+      const threshold = await safeSdk.getThreshold();
       if (safeTx) {
         setSafeTransaction(safeTx);
-        if (safeTx.signatures.size >= currentSafe?.threshold) {
+        if (safeTx.signatures.size >= threshold) {
           setTransactionStatus('EXECUTABLE');
-          setStatus('AUTHORIZATION_REQUIRED');
+          setStatus('EXECUTABLE');
         } else if (safeTx.signatures.has(account.toLowerCase())) {
           setTransactionStatus('WAITING_APPROVAL');
           setStatus('AUTHORIZATION_REQUIRED');
@@ -124,6 +130,8 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(data?.safeHash as string));
         await fetchDashboardData();
+        setTransactionStatus('WAITING_APPROVAL');
+        setStatus('AUTHORIZATION_REQUIRED');
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
@@ -192,7 +200,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
     initializeStatus();
   }, [data, currentSafe, account]);
 
-  return (
+  return transactionStatus !== 'SUCCESS' ? (
     <div className="flex bg-white text-[#667085] text-xs">
       <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center w-36 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
@@ -240,7 +248,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         )}
       </div>
     </div>
-  );
+  ) : null;
 };
 
 export default PendingAdminWithdrawAction;

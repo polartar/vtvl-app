@@ -33,7 +33,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
       pendingTransactions,
       setIsCloseAvailable
     }),
-    [transactionStatus, pendingTransactions, setTransactionStatus]
+    [transactionStatus, pendingTransactions, setTransactionStatus, transactions]
   );
 
   useEffect(() => {
