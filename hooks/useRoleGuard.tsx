@@ -23,14 +23,12 @@ const useRoleGuard = (options: RoleGuardOptions) => {
 
   const updateRoleGuardState = async () => {
     const persistedUser = await getCache();
-    console.log('INITIAL CACHE CHECK', persistedUser);
     // Check if user exists
     if (persistedUser) {
       const stringAuth = JSON.stringify(auth);
       const stringCache = JSON.stringify(persistedUser);
       // Only update the states if there is an update.
       if (stringAuth !== stringCache) {
-        console.log('UPDATE STATE FROM CACHE CHANGES', persistedUser);
         await setAuth(persistedUser);
       }
     }
@@ -44,20 +42,15 @@ const useRoleGuard = (options: RoleGuardOptions) => {
   // Watch for route changes
   useEffect(() => {
     // Only run this if auth is present already
-    console.log('AUTH', auth);
     if (auth) {
       const { user, roleOverride, isAuthenticated } = auth;
-      console.log('USER + ROLE OVERRIDE', user, roleOverride);
 
       const handleRouteChanges = (url: string) => {
-        console.log('URL', url);
         // Check if the current route is protected.
         const currentRouteIsProtected = options.routes.find((route) => route.path === url);
 
         // Do nothing if the route is not protected.
         if (!currentRouteIsProtected) return;
-
-        console.log('PAGE IS PROTECTED', currentRouteIsProtected, user);
 
         // When not authenticated, make sure to block the user
         if (!isAuthenticated) {
@@ -74,8 +67,6 @@ const useRoleGuard = (options: RoleGuardOptions) => {
             user?.memberInfo?.type ||
             '';
 
-          console.log('USER ROLE', userRole);
-
           // For protected routes, filter out all the allowedRoutes for that particular user role.
           // If the user is a founder, they are able to switch role into investor.
           const allowedRoutes = options.routes.filter((route) => route.allowedRoles.includes(userRole));
@@ -91,7 +82,6 @@ const useRoleGuard = (options: RoleGuardOptions) => {
               : recipientRoles.includes(userRole)
               ? '/claim-portal'
               : options.fallbackPath;
-            console.log('FALLBACK', fallbackTo, userRole, user);
             router.push(fallbackTo);
           }
           return;

@@ -412,7 +412,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       user &&
       user?.memberInfo &&
       user.memberInfo.type &&
-      !['/recipient/schedule', '/recipient/confirm'].includes(router.pathname) &&
+      !['/recipient/schedule', '/recipient/confirm', '/magic-link-verification'].includes(router.pathname) &&
       SidebarProps[user?.memberInfo?.type]
   );
 
@@ -458,7 +458,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       '/404',
       '/not-found',
       '/terms',
-      '/privacypolicy'
+      '/privacypolicy',
+      '/magic-link-verification'
     ];
 
     if (!hideConnectModalOnRoutes.includes(router.pathname) && !active && !account) {
