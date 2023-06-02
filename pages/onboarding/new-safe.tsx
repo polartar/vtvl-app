@@ -9,6 +9,7 @@ import Safe from '@gnosis.pm/safe-core-sdk';
 import AuthContext, { useAuthContext } from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
+import { useModal } from 'hooks/useModal';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
@@ -18,6 +19,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { createOrUpdateSafe, fetchSafeByAddress } from 'services/db/safe';
 import { deploySafe, getSafeInfo } from 'services/gnosois';
+import { SafeSupportedChains } from 'types/constants/supported-chains';
 
 interface Owner {
   name: string;
@@ -37,6 +39,7 @@ const NewSafePage: NextPage = () => {
   const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
   const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
   const { query, push: routerPush } = useRouter();
+  const { ModalWrapper, showModal, hideModal } = useModal({});
 
   const [importedSafe, setImportedSafe] = useState<Safe>();
   const [owners, setOwners] = useState<{ name: string; address: string; email: string }[]>([
@@ -242,6 +245,11 @@ const NewSafePage: NextPage = () => {
     setFormMessage('');
 
     try {
+      if (!chainId || !SafeSupportedChains.find((c) => c === chainId)) {
+        showModal();
+        return;
+      }
+
       const values = getValues();
       const owners = values.owners.map((o) => o.address);
       if (!active) {
@@ -308,6 +316,14 @@ const NewSafePage: NextPage = () => {
       return;
     }
   };
+
+  useEffect(() => {
+    if (!chainId || !SafeSupportedChains.find((c) => c === chainId)) {
+      showModal();
+    } else {
+      hideModal();
+    }
+  }, [chainId]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
