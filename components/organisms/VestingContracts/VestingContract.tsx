@@ -26,6 +26,7 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { ITransaction } from 'types/models';
 import { IRevokingDoc } from 'types/models/revoking';
 import { IVestingDoc } from 'types/models/vesting';
+import { isV2 } from 'utils/multicall';
 import { formatNumber } from 'utils/token';
 import { string } from 'yup';
 
@@ -153,7 +154,9 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           return;
         }
 
-        const ADMIN_WITHDRAW_FUNCTION = 'function withdrawAdmin(uint256 _amountRequested)';
+        const ADMIN_WITHDRAW_FUNCTION = isV2(vestingContracts[0].data.updatedAt)
+          ? 'function withdrawAdmin(uint256 _amountRequested)'
+          : 'function withdrawAdmin(112 _amountRequested)';
         const ABI = [ADMIN_WITHDRAW_FUNCTION];
         const vestingContractInterface = new ethers.utils.Interface(ABI);
         const adminWithdrawEncoded = vestingContractInterface.encodeFunctionData('withdrawAdmin', [
