@@ -35,7 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         return res.status(200).json({ message: err.message });
       }
 
-      const emailLink = PUBLIC_DOMAIN_NAME + '/recipient/create?token=' + token;
+      const emailLink = `${PUBLIC_DOMAIN_NAME}/magic-link-verification?redir=${encodeURIComponent(
+        '/recipient/create?token=' + token
+      )}`;
       try {
         await SendMail({
           to: email,

@@ -6,6 +6,9 @@ const nextConfig = {
   env: {
     VERCEL_ENV: process.env.VERCEL_ENV
   },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production'
+  },
   reactStrictMode: true,
   swcMinify: true,
   webpack(config) {

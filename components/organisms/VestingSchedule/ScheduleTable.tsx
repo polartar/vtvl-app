@@ -125,10 +125,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
     if (transaction && transaction.data.safeHash && currentSafe && account) {
       const safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
+      const ethAdapter = new EthersAdapter({
+        ethers: ethers,
+        signer: library?.getSigner(0)
+      });
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+      const threshold = await safeSdk.getThreshold();
 
       if (safeTx) {
         setSafeTransaction(safeTx);
-        if (safeTx.signatures.size >= currentSafe?.threshold) {
+        if (safeTx.signatures.size >= threshold) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({

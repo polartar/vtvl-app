@@ -279,3 +279,5 @@ export const AllChains = devSupportedChains;
 
 export const SupportedChains =
   env === 'production' ? prodSupportedChains : env === 'demo' ? demoSupportedChains : devSupportedChains;
+
+export const SafeSupportedChains = [1, 5, 56, 137];

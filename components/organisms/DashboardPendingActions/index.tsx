@@ -62,7 +62,8 @@ export const TRANSACTION_STATUS_MAPPING: { [key in ITransactionStatus]: string }
 const DashboardPendingActions = () => {
   const { chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
-  const { vestingContracts, vestings, revokings, transactions } = useDashboardContext();
+  const { vestingContracts, vestings, revokings } = useDashboardContext();
+  const { transactions } = useTransactionLoaderContext();
 
   const [pendingVestingContracts, setPendingVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
   const [pendingVestings, setPendingVestings] = useState<{ id: string; data: IVesting }[]>([]);

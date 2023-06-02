@@ -4,17 +4,20 @@ import EmptyState from '@components/atoms/EmptyState/EmptyState';
 // import BackButton from '@components/atoms/BackButton/BackButton';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
 import { Typography } from '@components/atoms/Typography/Typography';
+import UnsupportedChainModal from '@components/organisms/UnsupportedChainModal';
 import { useAuthContext } from '@providers/auth.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 // import AuthContext from '@providers/auth.context';
 // import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
+import { useModal } from 'hooks/useModal';
 import Router from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import { fetchOrg } from 'services/db/organization';
 import { createOrUpdateSafe, fetchSafeByAddress } from 'services/db/safe';
 import { fetchSafes, getSafeInfo } from 'services/gnosois';
+import { SafeSupportedChains } from 'types/constants/supported-chains';
 
 import SafeForm from './SafeForm';
 
@@ -31,6 +34,7 @@ export default function GonsisSafe() {
   const { currentSafe: importedSafe, setCurrentSafe, user, organizationId, setCurrentSafeId } = useAuthContext();
   const [step, setStep] = useState<keyof typeof STEP_GUIDES>(1);
   const { showLoading, hideLoading } = useLoaderContext();
+  const { ModalWrapper, showModal, hideModal } = useModal({});
 
   useEffect(() => {
     // if (!inProgress) startOnboarding(Step.SafeSetup);
@@ -144,6 +148,12 @@ export default function GonsisSafe() {
     }
   };
 
+  useEffect(() => {
+    if (!chainId || !SafeSupportedChains.find((c) => c === chainId)) {
+      showModal();
+    }
+  }, [chainId]);
+
   return (
     <div className="w-full flex gap-6">
       <div className="w-[400px] ml-6">
@@ -156,6 +166,9 @@ export default function GonsisSafe() {
         </Typography>
       </div>
       <div className="w-full p-6">{renderStep()}</div>
+      <ModalWrapper>
+        <UnsupportedChainModal hideModal={hideModal} />
+      </ModalWrapper>
     </div>
   );
 }
