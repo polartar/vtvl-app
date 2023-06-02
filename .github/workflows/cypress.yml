@@ -84,7 +84,7 @@ jobs:
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body-includes: 'Learn more about'
+          body-includes: 'Ready'
 
       - run: |
           PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git.*')
