@@ -200,6 +200,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
     initializeStatus();
   }, [data, currentSafe, account]);
 
+
   return transactionStatus !== 'SUCCESS' ? (
     <div className="flex bg-white text-[#667085] text-xs">
       <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
