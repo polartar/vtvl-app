@@ -88,7 +88,11 @@ const UnsupportedChainModal: React.FC<IUnsupportedChainModalProps> = ({ hideModa
   return (
     <div className="p-6 rounded-3xl border border-[#d0d5dd] bg-white">
       <div className="p-2 w-full">
-        <h1 className="text-center text-[#101828] text-3xl font-semibold">0x1abc...123a</h1>
+        {account ? (
+          <h1 className="text-center text-[#101828] text-3xl font-semibold">
+            {account.slice(0, 6)}...{account.slice(4)}
+          </h1>
+        ) : null}
         <div className="px-2 py-1 bg-[#fee2e2] text-[#ef4444] text-xs rounded-8 text-center mt-2">
           Your wallet is on an unsupported chain by Safe. <br />
           Please select a supported chain to proceed with creating a new Safe wallet.
@@ -96,7 +100,7 @@ const UnsupportedChainModal: React.FC<IUnsupportedChainModalProps> = ({ hideModa
       </div>
       <div className="mt-5 flex items-center justify-between">
         <div className="text-sm text-[#192126] font-medium">Current Network</div>
-        <div className="text-sm text-[#344054]">{SupportedChains[chainId as SupportedChainId].title}</div>
+        <div className="text-sm text-[#344054]">{SupportedChains[chainId as SupportedChainId]?.title}</div>
       </div>
       <div className="relative w-full mt-5" tabIndex={0} onBlur={() => setShowNetworks(false)}>
         <div
