@@ -35,24 +35,18 @@ export const useOrganizationsFromIds = (organizationIds: string[]) => {
 };
 
 // NEW API INTEGRATION
-const useOrgStore = create<OrganizationsStoreState & OrgStoreActions>((set) => ({
+const useOrgStore = create<OrgStoreState & OrgStoreActions>((set) => ({
   organizations: [],
-  save: (payload) => set(payload),
-  clear: () => set([])
+  save: (payload) => set({ organizations: payload }),
+  clear: () => set({ organizations: [] })
 }));
 
-type OrganizationsStoreState = {
-  organizations: OrgStoreState[];
-};
-
 type OrgStoreState = {
-  id: string;
-  name: string;
-  email: string;
+  organizations: IOrganizationResponse[];
 };
 
 type OrgStoreActions = {
-  save: (payload: IOrganizationResponse) => void;
+  save: (payload: IOrganizationResponse[]) => void;
   clear: () => void;
 };
 
