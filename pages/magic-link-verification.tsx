@@ -1,6 +1,6 @@
 import Button from '@components/atoms/Button/Button';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
-import useMagicLinkSignIn from 'hooks/useMagicLinkSignIn';
+import useMagicLinkSignIn from '@hooks/useMagicLinkSignIn';
 import Lottie from 'lottie-react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';

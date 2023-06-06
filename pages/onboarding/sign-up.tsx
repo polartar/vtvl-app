@@ -1,3 +1,4 @@
+import useAuth from '@api-hooks/useAuth';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
@@ -5,6 +6,7 @@ import { Typography } from '@components/atoms/Typography/Typography';
 import Consent from '@components/molecules/Consent/Consent';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
+import { AUTH_REDIRECT_URI, USE_NEW_API } from '@utils/constants';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
@@ -23,6 +25,7 @@ const SignUpPage: NextPage = () => {
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const router = useRouter();
   const [isSignup, setIsSignup] = useState(false);
+  const { signupWithEmail } = useAuth();
 
   useEffect(() => {
     startOnboarding(Step.SignUp);
@@ -84,7 +87,11 @@ const SignUpPage: NextPage = () => {
         return;
       }
 
-      await sendLoginLink(values.memberEmail);
+      if (USE_NEW_API) {
+        await signupWithEmail({ email: values.memberEmail, redirectUri: AUTH_REDIRECT_URI });
+      } else {
+        await sendLoginLink(values.memberEmail);
+      }
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);

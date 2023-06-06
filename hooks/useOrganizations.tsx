@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { fetchOrg } from 'services/db/organization';
 import { IOrganization } from 'types/models';
 import { QUERY_KEYS } from 'utils/queries';
+import { create } from 'zustand';
 
 export const useOrganizationsFromIds = (organizationIds: string[]) => {
   // Fetch organizations by organizationIds
@@ -32,3 +33,29 @@ export const useOrganizationsFromIds = (organizationIds: string[]) => {
     [isLoadingOrganizations, organizations]
   );
 };
+
+// NEW API INTEGRATION
+const useOrgStore = create<OrganizationsStoreState & OrgStoreActions>((set) => ({
+  organizations: [],
+  save: (payload) => set(payload),
+  clear: () => set([])
+}));
+
+type OrganizationsStoreState = {
+  organizations: OrgStoreState[];
+};
+
+type OrgStoreState = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+type OrgStoreActions = {
+  save: (payload: IOrganizationResponse) => void;
+  clear: () => void;
+};
+
+export const getOrgStore = () => useOrgStore.getState();
+
+export const useOrganization = useOrgStore;

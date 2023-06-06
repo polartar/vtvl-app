@@ -458,8 +458,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       '/404',
       '/not-found',
       '/terms',
-      '/privacypolicy',
-      '/magic-link-verification'
+      '/privacypolicy'
     ];
 
     if (!hideConnectModalOnRoutes.includes(router.pathname) && !active && !account) {

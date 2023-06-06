@@ -89,7 +89,8 @@
     "tailwind-merge": "^1.10.0",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "yarn": "^1.22.19",
-    "yup": "^0.32.11"
+    "yup": "^0.32.11",
+    "zustand": "^4.3.8"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",

@@ -4,6 +4,7 @@ interface GoogleAuthCallbackRequest {
 
 interface GoogleAuthLoginRequest {
   code: string;
+  redirectUri: string;
 }
 
 interface AuthResponse {
@@ -13,6 +14,8 @@ interface AuthResponse {
 
 interface AuthWithEmailRequest {
   email: string;
+  redirectUri: string;
+  platform?: string;
 }
 
 interface VerifyEmailRequest {

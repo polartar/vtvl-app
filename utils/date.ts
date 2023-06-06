@@ -10,3 +10,6 @@ export const timestampToDateString = (milliseconds: number) => {
   const sp = formattedDate.split(' ');
   return `${sp[1]} ${sp[0]}, ${sp[2]}`;
 };
+
+export const toUTCString = (date = new Date()): UTCString =>
+  date.toISOString().replace('T', ' ').replace(/\..*$/, ' UTC') as UTCString;

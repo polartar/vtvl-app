@@ -45,8 +45,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
     '/404',
     '/not-found',
     '/terms',
-    '/privacypolicy',
-    '/magic-link-verification'
+    '/privacypolicy'
   ].every((o) => pathname !== o);
 
   const renderVTVLLogo = () => {
