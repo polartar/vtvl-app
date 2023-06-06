@@ -1,5 +1,5 @@
+import AuthApiService from '@api-services/AuthApiService';
 import { useAuth as useAuthStore } from '@hooks/useAuth';
-import AuthApiService from 'api-services/AuthApiService';
 import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 

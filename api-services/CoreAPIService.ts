@@ -1,6 +1,6 @@
+import { getAuthStore } from '@hooks/useAuth';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
-import { getAuthStore } from 'hooks/useAuth';
 
 const API = process.env.NEXT_PUBLIC_VTVL_API;
 

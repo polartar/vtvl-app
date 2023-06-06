@@ -1,5 +1,5 @@
+import OrganizationApiService from '@api-services/OrganizationApiService';
 import { useOrganization as useOrgstore } from '@hooks/useOrganizations';
-import OrganizationApiService from 'api-services/OrganizationApiService';
 import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
