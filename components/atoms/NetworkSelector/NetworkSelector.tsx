@@ -1,4 +1,6 @@
-import { useWeb3React } from '@web3-react/core';
+import MetamaskUnsupportedChainModal from '@components/organisms/MetamaskUnsupportedChainModal';
+import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core';
+import { useModal } from 'hooks/useModal';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useRef, useState } from 'react';
 import Fade from 'react-reveal/Fade';
@@ -10,14 +12,20 @@ import { toHex } from 'utils/web3';
 import Button from '../Button/Button';
 
 const NetworkSelector = () => {
-  const { library, account, active, chainId } = useWeb3React();
+  const { library, account, active, chainId, error } = useWeb3React();
+  const { ModalWrapper, showModal, hideModal } = useModal({});
   const [showNetworks, setShowNetworks] = useState(false);
   const [selectedNetwork, setSelectedNetwork] = useState<{ id: number; icon: string; title: string; code: string }>();
   const promptToast = useRef(null);
 
   // Detect and auto-select the selectedNetwork state
   useEffect(() => {
-    if (!active || !chainId) setShowNetworks(false);
+    if (!active || !chainId) {
+      setShowNetworks(false);
+    }
+    if (error instanceof UnsupportedChainIdError) {
+      showModal();
+    }
     if (chainId) {
       if (SUPPORTED_CHAIN_IDS.find((c) => c === chainId)) {
         setSelectedNetwork({
@@ -46,7 +54,7 @@ const NetworkSelector = () => {
         setSelectedNetwork(undefined);
       }
     }
-  }, [active, chainId]);
+  }, [active, chainId, error]);
 
   const promptNetworkChange = async (network: any) => {
     // By default closes the network options and existing prompt
@@ -165,7 +173,11 @@ const NetworkSelector = () => {
         </div>
       )}
     </div>
-  ) : null;
+  ) : (
+    <ModalWrapper>
+      <MetamaskUnsupportedChainModal hideModal={hideModal} />
+    </ModalWrapper>
+  );
 };
 
 export default NetworkSelector;

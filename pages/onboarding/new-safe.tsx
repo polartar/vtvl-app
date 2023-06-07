@@ -5,10 +5,13 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import Hint from '@components/atoms/Hint/Hint';
 import { Typography } from '@components/atoms/Typography/Typography';
+import MetamaskUnsupportedChainModal from '@components/organisms/MetamaskUnsupportedChainModal';
+import UnsupportedChainModal from '@components/organisms/UnsupportedChainModal';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import AuthContext, { useAuthContext } from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
-import { useWeb3React } from '@web3-react/core';
+import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core';
+import { useModal } from 'hooks/useModal';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
@@ -18,6 +21,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { createOrUpdateSafe, fetchSafeByAddress } from 'services/db/safe';
 import { deploySafe, getSafeInfo } from 'services/gnosois';
+import { SafeSupportedChains } from 'types/constants/supported-chains';
 
 interface Owner {
   name: string;
@@ -31,12 +35,14 @@ type ConfirmationForm = {
 };
 
 const NewSafePage: NextPage = () => {
-  const { active, library, chainId } = useWeb3React();
+  const { active, library, chainId, error } = useWeb3React();
   const { fetchSafe } = useAuthContext();
   const { user } = useContext(AuthContext);
   const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
   const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
   const { query, push: routerPush } = useRouter();
+  const { ModalWrapper: ModalWrapper1, showModal: showModal1, hideModal: hideModal1 } = useModal({});
+  const { ModalWrapper: ModalWrapper2, showModal: showModal2, hideModal: hideModal2 } = useModal({});
 
   const [importedSafe, setImportedSafe] = useState<Safe>();
   const [owners, setOwners] = useState<{ name: string; address: string; email: string }[]>([
@@ -242,6 +248,15 @@ const NewSafePage: NextPage = () => {
     setFormMessage('');
 
     try {
+      if (error instanceof UnsupportedChainIdError) {
+        showModal2();
+        return;
+      }
+      if (!chainId || !SafeSupportedChains.find((c) => c === chainId)) {
+        showModal1();
+        return;
+      }
+
       const values = getValues();
       const owners = values.owners.map((o) => o.address);
       if (!active) {
@@ -308,6 +323,20 @@ const NewSafePage: NextPage = () => {
       return;
     }
   };
+
+  useEffect(() => {
+    if (error instanceof UnsupportedChainIdError) {
+      showModal2();
+      hideModal1();
+      return;
+    }
+    hideModal2();
+    if (!chainId || !SafeSupportedChains.find((c) => c === chainId)) {
+      showModal1();
+    } else {
+      hideModal1();
+    }
+  }, [chainId, error]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
@@ -490,6 +519,12 @@ const NewSafePage: NextPage = () => {
           </Button>
         </div>
       </Form>
+      <ModalWrapper1>
+        <UnsupportedChainModal hideModal={hideModal1} />
+      </ModalWrapper1>
+      <ModalWrapper2>
+        <MetamaskUnsupportedChainModal hideModal={hideModal2} />
+      </ModalWrapper2>
     </div>
   );
 };
