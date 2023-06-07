@@ -49,7 +49,7 @@ const ERROR_EMPTY_STATE = {
 export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialState, onReturn, onContinue }) => {
   const { vestingContracts } = useDashboardContext();
   const { scheduleMode } = useVestingContext();
-  const { safe } = useAuthContext();
+  const { currentSafe } = useAuthContext();
 
   const [form, setForm] = useShallowState({
     scheduleName: '',
@@ -67,7 +67,7 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
           ({
             label: contract.data.name ?? contract.data.address,
             value: contract.id,
-            safe: safe || ''
+            safe: currentSafe?.safe_name || ''
           } as VestingContractOption)
       ) ?? [],
     [vestingContracts]
