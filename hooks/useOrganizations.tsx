@@ -52,4 +52,14 @@ type OrgStoreActions = {
 
 export const getOrgStore = () => useOrgStore.getState();
 
-export const useOrganization = useOrgStore;
+export const useOrganization = () => {
+  const save = useOrgStore(({ save }) => save);
+  const clear = useOrgStore(({ clear }) => clear);
+  const organizations = useOrgStore(({ organizations }) => organizations);
+
+  return {
+    save,
+    clear,
+    organizations
+  };
+};

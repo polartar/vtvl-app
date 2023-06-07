@@ -92,7 +92,6 @@ export default function useMagicLinkSignIn(callback?: () => void) {
           const signature = await library.provider.request({
             method: 'personal_sign',
             params: [SIGN_MESSAGE_TEMPLATE(account, currentDate), account]
-            // jsonrpc: '2.0'
           });
 
           console.log('SIGNATURE BEFORE CONNECT WALLET', signature);
