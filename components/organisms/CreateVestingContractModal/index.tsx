@@ -4,6 +4,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 import { createVestingContract } from 'services/db/vestingContract';
 
 interface ICreateVestingContractModal {
@@ -51,10 +52,16 @@ const CreateVestingContractModal: React.FC<ICreateVestingContractModal> = ({ hid
         // fetchDashboardVestingContract();
         setLoading(false);
         hideModal();
+        toast.success(
+          <>
+            Contract <strong>{contractName}</strong> created!
+          </>
+        );
       }
     } catch (err) {
       console.log('handleCreateVestingContract - ', err);
       setError('Something went wrong. Try again later.');
+      // toast.error('Cannot create new contract');
     }
   };
 
