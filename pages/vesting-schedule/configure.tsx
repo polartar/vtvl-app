@@ -1262,13 +1262,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           }}
                         />
                       )}
-                      renderDay={(_, dayProps) => (
+                      renderDay={(day, dayProps) => (
                         <Day
                           {...{
-                            selectedDay: dayProps[0],
-                            day: _,
-                            selectedStartDate: startDateTime.value,
-                            selectedEndDate: endDateTime.value
+                            selectedDay: dayProps[0] as Date,
+                            day: day as Date,
+                            selectedStartDate: startDateTime.value as Date,
+                            selectedEndDate: endDateTime.value as Date
                           }}
                           onDaySelect={(date, complete) => handleDateTimeChange(date, 'startDate')}
                           outsideCurrentMonth={false}
@@ -1298,13 +1298,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           }}
                         />
                       )}
-                      renderDay={(_, dayProps) => (
+                      renderDay={(day, dayProps) => (
                         <Day
                           {...{
-                            selectedDay: dayProps[0],
-                            day: _,
-                            selectedStartDate: startDateTime.value,
-                            selectedEndDate: endDateTime.value
+                            selectedDay: dayProps[0] as Date,
+                            day: day as Date,
+                            selectedStartDate: startDateTime.value as Date,
+                            selectedEndDate: endDateTime.value as Date
                           }}
                           onDaySelect={(date, complete) => handleDateTimeChange(date, 'endDate')}
                           outsideCurrentMonth={false}
