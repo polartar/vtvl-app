@@ -1,6 +1,7 @@
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
+import Day from '@components/atoms/Day/Day';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import Checkbox from '@components/atoms/FormControls/Checkbox/Checkbox';
 import Form from '@components/atoms/FormControls/Form/Form';
@@ -544,7 +545,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     if (organizationId) {
       fetchVestingTemplatesByQuery('organizationId', '==', organizationId).then((res) => {
         // Update option list for the template
-        const transformedDatas = res.map((record) => {
+        const transformedDatas = res.map((record: { id: string; data: IVestingTemplate }) => {
           // Due to dates are typed as Timestamps in firebase, we need to use a function for that.
           const actualDateTime = getActualDateTime(record.data.details);
           return {
@@ -1261,6 +1262,19 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           }}
                         />
                       )}
+                      renderDay={(_, dayProps) => (
+                        <Day
+                          {...{
+                            selectedDay: dayProps[0],
+                            day: _,
+                            selectedStartDate: startDateTime.value,
+                            selectedEndDate: endDateTime.value
+                          }}
+                          onDaySelect={(date, complete) => handleDateTimeChange(date, 'startDate')}
+                          outsideCurrentMonth={false}
+                          showDaysOutsideCurrentMonth={true}
+                        />
+                      )}
                     />
                   </LocalizationProvider>
                 </div>
@@ -1282,6 +1296,19 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                             // setShowEndDatePicker(true);
                             setActiveStep(0);
                           }}
+                        />
+                      )}
+                      renderDay={(_, dayProps) => (
+                        <Day
+                          {...{
+                            selectedDay: dayProps[0],
+                            day: _,
+                            selectedStartDate: startDateTime.value,
+                            selectedEndDate: endDateTime.value
+                          }}
+                          onDaySelect={(date, complete) => handleDateTimeChange(date, 'endDate')}
+                          outsideCurrentMonth={false}
+                          showDaysOutsideCurrentMonth={true}
                         />
                       )}
                     />
