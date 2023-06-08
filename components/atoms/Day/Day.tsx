@@ -36,7 +36,12 @@ const CustomPickersDay = styled(PickersDay, {
     borderBottomRightRadius: '50%',
     backgroundColor: 'var(--primary-900)',
     color: 'var(--neutral-50)'
-  })
+  }),
+  '&:disabled, &[disabled]': {
+    '&, &:hover, &:focus': {
+      backgroundColor: 'transparent !important'
+    }
+  }
 })) as React.ComponentType<CustomPickerDayProps>;
 
 // A custom day render for the calendar pickers

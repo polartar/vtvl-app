@@ -23,9 +23,7 @@ import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import { injected } from 'connectors';
-import add from 'date-fns/add';
-import differenceInHours from 'date-fns/differenceInHours';
-import differenceInSeconds from 'date-fns/differenceInSeconds';
+import { add, addDays, differenceInHours, differenceInSeconds, isAfter, isBefore, subDays } from 'date-fns';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
@@ -1253,6 +1251,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       onChange={(newValue) => {
                         handleDateTimeChange(newValue, 'startDate');
                       }}
+                      maxDate={endDateTime.value ? subDays(endDateTime.value, 1) : null}
                       renderInput={(params) => (
                         <TextField
                           {...params}
@@ -1273,6 +1272,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           onDaySelect={(date, complete) => handleDateTimeChange(date, 'startDate')}
                           outsideCurrentMonth={false}
                           showDaysOutsideCurrentMonth={true}
+                          disabled={day && endDateTime.value ? isAfter(day, endDateTime.value) : false}
                         />
                       )}
                     />
@@ -1289,6 +1289,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                       onChange={(newValue) => {
                         handleDateTimeChange(newValue, 'endDate');
                       }}
+                      minDate={startDateTime.value ? addDays(startDateTime.value, 1) : null}
                       renderInput={(params) => (
                         <TextField
                           {...params}
@@ -1309,6 +1310,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                           onDaySelect={(date, complete) => handleDateTimeChange(date, 'endDate')}
                           outsideCurrentMonth={false}
                           showDaysOutsideCurrentMonth={true}
+                          disabled={day && startDateTime.value ? isBefore(day, startDateTime.value) : false}
                         />
                       )}
                     />
