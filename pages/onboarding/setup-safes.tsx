@@ -3,25 +3,39 @@ import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import Hint from '@components/atoms/Hint/Hint';
 import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
 import { Typography } from '@components/atoms/Typography/Typography';
+import MetamaskUnsupportedChainModal from '@components/organisms/MetamaskUnsupportedChainModal';
+import UnsupportedChainModal from '@components/organisms/UnsupportedChainModal';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
-import { useWeb3React } from '@web3-react/core';
+import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core';
+import { useModal } from 'hooks/useModal';
 import { NextPage } from 'next';
 import Router from 'next/router';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
 import React, { useContext, useEffect, useState } from 'react';
 import { fetchSafes } from 'services/gnosois';
+import { SafeSupportedChains } from 'types/constants/supported-chains';
 
 const YourSafesPage: NextPage = () => {
-  const { active, account, chainId, library } = useWeb3React();
+  const { active, account, chainId, library, error } = useWeb3React();
   const { user } = useContext(AuthContext);
   const { onPrevious, onNext, inProgress, startOnboarding } = useContext(OnboardingContext);
+  const { ModalWrapper: ModalWrapper1, showModal: showModal1, hideModal: hideModal1 } = useModal({});
+  const { ModalWrapper: ModalWrapper2, showModal: showModal2, hideModal: hideModal2 } = useModal({});
   const [safes, setSafes] = useState<string[]>();
   const [importSafeError, setImportSafeError] = useState();
 
   useEffect(() => {
     if (!inProgress) startOnboarding(Step.SafeSetup);
+    if (error instanceof UnsupportedChainIdError) {
+      showModal1();
+    }
     if (account && library && chainId) {
+      if (!SafeSupportedChains.find((c) => c === chainId)) {
+        showModal2();
+        return;
+      }
+      hideModal2();
       (async () => {
         try {
           const resp = await fetchSafes(library, account, chainId);
@@ -33,7 +47,7 @@ const YourSafesPage: NextPage = () => {
         }
       })();
     }
-  }, [account]);
+  }, [account, library, chainId, error]);
 
   const importSafe = async (address: string) => {
     Router.push({
@@ -64,7 +78,7 @@ const YourSafesPage: NextPage = () => {
           Need help with what exactly is Safe?{' '}
           <a
             className="text-primary-900"
-            href="https://help.gnosis-safe.io/en/collections/2289028-getting-started"
+            href="https://help.safe.global/en/articles/40869-what-is-safe"
             target="_blank">
             Give me more info
           </a>
@@ -120,6 +134,12 @@ const YourSafesPage: NextPage = () => {
           </button>
         </div>
       </div>
+      <ModalWrapper1>
+        <MetamaskUnsupportedChainModal hideModal={hideModal1} />
+      </ModalWrapper1>
+      <ModalWrapper2>
+        <UnsupportedChainModal hideModal={hideModal2} />
+      </ModalWrapper2>
     </div>
   );
 };

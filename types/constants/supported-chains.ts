@@ -149,7 +149,7 @@ export const demoSupportedChains: ChainsType = {
     code: 'MATIC',
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
-    multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
+    multisigTxUrl: ''
   },
   [SupportedChainId.OKC_TESTNET]: {
     id: 65,
@@ -253,7 +253,7 @@ export const devSupportedChains: ChainsType = {
     code: 'MATIC',
     rpc: 'https://rpc-mumbai.maticvigil.com',
     explorer: 'https://mumbai.polygonscan.com',
-    multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
+    multisigTxUrl: ''
   },
   [SupportedChainId.OKC_TESTNET]: {
     id: 65,
