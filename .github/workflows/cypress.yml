@@ -86,10 +86,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body-includes: 'This is now deployed and ready to test at:'
 
-      - run: |
-          PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o ' https://vtvl-v2-*')
-          echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
-        shell: bash
       - name: Set environment variable
         run: |
           export PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o ' https://vtvl-v2-[^ )]*')
