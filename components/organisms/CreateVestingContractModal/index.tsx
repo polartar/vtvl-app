@@ -61,7 +61,6 @@ const CreateVestingContractModal: React.FC<ICreateVestingContractModal> = ({ hid
     } catch (err) {
       console.log('handleCreateVestingContract - ', err);
       setError('Something went wrong. Try again later.');
-      // toast.error('Cannot create new contract');
     }
   };
 
