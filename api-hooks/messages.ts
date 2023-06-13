@@ -22,9 +22,9 @@ export const ERROR_MESSAGES = {
 export const SUCCESS_MESSAGES = {
   EN: {
     /* Auth */
-    SEND_LOGIN_EMAIL: 'Login email is successfully sent',
-    SEND_SIGN_UP_EMAIL: 'SignUp email is successfully sent',
-    LOGIN: 'Logged in successfully',
+    SEND_LOGIN_EMAIL: 'Please check your email for the link to login',
+    SEND_SIGN_UP_EMAIL: 'Please check your email for the link to login',
+    LOGIN: 'Log in successful',
     WALLET_CONNECT: 'Wallet connected',
 
     /* ORGANIZATIONS */

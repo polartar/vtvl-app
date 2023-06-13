@@ -1,5 +1,6 @@
 import useAuth from '@api-hooks/useAuth';
 import useOrganization from '@api-hooks/useOrganization';
+import { getOrgStore } from '@hooks/useOrganizations';
 import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useOnboardingContext } from '@providers/onboarding.context';
@@ -43,6 +44,7 @@ export default function useMagicLinkSignIn(callback?: () => void) {
   let timeout: NodeJS.Timeout;
   const { validateVerificationCode, connectWallet } = useAuth();
   const { getOrganizations } = useOrganization();
+  const { organizations } = getOrgStore();
   const { active, account, library } = useWeb3React();
 
   const signInWithMagicLink = async (member: IMember, newUser: boolean) => {
@@ -100,8 +102,20 @@ export default function useMagicLinkSignIn(callback?: () => void) {
           // Ensure wallet is validated
           // Identify which url should the user be redirected to based on his/her current role
           // Probably get the details of the user and check there
-          await getOrganizations();
-          // router.push('/dashboard');
+          try {
+            await getOrganizations();
+            if (organizations && organizations.length) {
+              // Has an associated organization, therefore is an existing user
+            } else {
+              // No associated org, new user
+              // redirect to account setup
+              // POST /organization
+              router.push('/onboarding/account-setup');
+            }
+            console.log('useMAGIC organizations', organizations);
+          } catch (err) {
+            console.log('ERror organization', err);
+          }
         } else throw validation;
       } catch (err) {
         console.log('ERROR', err);
