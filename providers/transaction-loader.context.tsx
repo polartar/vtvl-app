@@ -50,12 +50,10 @@ export function TransactionLoaderContextProvider({ children }: any) {
             id: change.doc.id,
             data
           });
-          if (data.status === 'PENDING') {
-            tmpPendingTransactions.push({
-              id: change.doc.id,
-              data
-            });
-          }
+          tmpPendingTransactions.push({
+            id: change.doc.id,
+            data
+          });
         } else if (change.type === 'modified') {
           const data = change.doc.data();
           allTransactions = allTransactions.map((transaction) => {
@@ -82,8 +80,8 @@ export function TransactionLoaderContextProvider({ children }: any) {
         }
       });
 
-      setTransactions(allTransactions.slice());
-      setPendingTransactions(tmpPendingTransactions.slice());
+      setTransactions([...allTransactions]);
+      setPendingTransactions([...tmpPendingTransactions]);
     });
 
     return () => {
