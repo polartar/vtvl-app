@@ -54,7 +54,6 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const {
     // fetchDashboardVestingContract,
     vestingContracts,
-    transactions,
     // fetchDashboardTransactions,
     fetchDashboardData,
     vestings,
@@ -64,6 +63,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   } = useDashboardContext();
   const {
     pendingTransactions,
+    transactions,
     transactionStatus: transactionLoaderStatus,
     setTransactionStatus: setTransactionLoaderStatus,
     setIsCloseAvailable
@@ -162,14 +162,20 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
       if (safeTx) {
         setSafeTransaction(safeTx);
-        if (safeTx.signatures.size >= threshold) {
+        const approvers = transaction.data.approvers ? [...transaction.data.approvers] : [];
+        safeTx.signatures.forEach((signature) => {
+          if (!approvers.find((approver) => approver === signature.signer)) {
+            approvers.push(signature.signer);
+          }
+        });
+        if (approvers.length >= threshold) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
             ...vestingsStatus,
             [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
           });
-        } else if (safeTx.signatures.has(account.toLowerCase())) {
+        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('WAITING_APPROVAL');
           setVestingsStatus({
@@ -576,7 +582,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
             chainId,
-            vestingIds: [vestingId]
+            vestingIds: [vestingId],
+            approvers: [account]
           });
           await updateVesting(
             {
@@ -663,7 +670,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const handleApproveTransaction = async () => {
     try {
       setIsCloseAvailable(false);
-      if (currentSafe?.address && chainId && transaction) {
+      if (currentSafe?.address && chainId && transaction && account) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -689,7 +696,13 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.safeHash as string));
-        await fetchDashboardData();
+        await updateTransaction(
+          {
+            ...transaction.data,
+            approvers: transaction.data.approvers ? [...transaction.data.approvers, account] : [account]
+          },
+          transaction.id
+        );
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
