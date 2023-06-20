@@ -36,5 +36,6 @@ export const WEBSITE_EMAIL = 'no-reply@vtvl.io';
 
 export const FACTORY_CONTRACTS: { [key: number]: string } = {
   5: '0x48CC6FFb03B14Cbf6315e99c8bfa42642848d7AA',
-  12009: '0xF4c7E49ebc9B6Cb38711BA977Ca9478ba1d59dA1'
+  12009: '0xF4c7E49ebc9B6Cb38711BA977Ca9478ba1d59dA1',
+  7701: '0xf3644a8896A51b947Dd29CD3e91aE0cbF4dC785A'
 };
