@@ -299,7 +299,7 @@ export const devSupportedChains: ChainsType = {
   [SupportedChainId.CANTO_TESTMET]: {
     id: 7701,
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/21516.png',
-    title: 'Cantos chain',
+    title: 'Cantos Chain',
     code: 'CANTO',
     rpc: 'https://canto-testnet.plexnode.wtf',
     explorer: 'https://testnet.tuber.build/',
