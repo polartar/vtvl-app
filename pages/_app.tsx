@@ -14,8 +14,10 @@ import { VestingContextProvider } from '@providers/vesting.context';
 // react-query imports
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Web3ReactProvider } from '@web3-react/core';
+import { AnimatePresence, motion } from 'framer-motion';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
+import { useRouter } from 'next/router';
 import { TransactionLoaderContextProvider } from 'providers/transaction-loader.context';
 import React, { ReactElement, ReactNode, useEffect } from 'react';
 // Todo: Arvin #18 - Explore styles that can be customized / override to conform with VTVL branding.
@@ -51,6 +53,7 @@ function getLibrary(provider: any): Web3Provider {
 // const Web3ReactProviderReloaded = createWeb3ReactRoot('network')
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+  const router = useRouter();
   useEffect(() => {
     hotjar.initialize(Number(process.env.NEXT_PUBLIC_HOTJAR_HJID), Number(process.env.NEXT_PUBLIC_HOTJAR_HJSV));
   }, []);
@@ -75,7 +78,9 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                           <TeammateContextProvider>
                             <ClaimTokensContextProvider>
                               <RecipientContextProvider>
-                                <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                                <AnimatePresence mode="wait">
+                                  <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                                </AnimatePresence>
                                 <ToastContainer autoClose={6000} style={{ top: '6rem', right: '1rem' }} />
                               </RecipientContextProvider>
                             </ClaimTokensContextProvider>

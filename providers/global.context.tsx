@@ -1,5 +1,6 @@
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import { useShallowState } from 'hooks/useShallowState';
+import { useRouter } from 'next/router';
 import React, { PropsWithChildren, createContext, useCallback, useContext, useEffect } from 'react';
 import { fetchWebsiteByDomain } from 'services/db/website';
 import { IWebsite } from 'types/models';
@@ -58,6 +59,7 @@ export const useGlobalContext = () => useContext(GlobalContext);
 
 export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [state, setState] = useShallowState<GlobalContextState>(initialState);
+  const router = useRouter();
 
   /**
    * initialization() function is used to initially pick up if the current hostname has an existing record in our firebase database.
@@ -143,7 +145,7 @@ export const GlobalContextProvider: React.FC<PropsWithChildren> = ({ children })
   // TODO improve loading state
   return (
     <GlobalContext.Provider value={state}>
-      {state.isLoading ? <PageLoader loader="global" /> : children}
+      {state.isLoading && router.pathname !== '/' ? <PageLoader loader="global" /> : children}
     </GlobalContext.Provider>
   );
 };

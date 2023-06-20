@@ -12,13 +12,14 @@ import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
+import { motion } from 'framer-motion';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useLoaderContext } from 'providers/loader.context';
 import React, { useContext, useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { toast } from 'react-toastify';
-import { WEBSITE_NAME } from 'utils/constants';
+import { NO_CONNECT_WALLET_MODAL_PAGES, WEBSITE_NAME } from 'utils/constants';
 
 import AuthContext from '../../../providers/auth.context';
 
@@ -446,22 +447,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     // 3. onboarding/member-login
     // 4. onboarding/
     // 5. onboarding/connect-wallet
-    const hideConnectModalOnRoutes = [
-      '/onboarding/sign-up',
-      '/onboarding/login',
-      '/onboarding',
-      '/onboarding/member-login',
-      '/onboarding/connect-wallet',
-      '/expired',
-      '/recipient/create',
-      '/recipient/schedule',
-      '/404',
-      '/not-found',
-      '/terms',
-      '/privacypolicy'
-    ];
-
-    if (!hideConnectModalOnRoutes.includes(router.pathname) && !active && !account) {
+    if (!NO_CONNECT_WALLET_MODAL_PAGES.includes(router.pathname) && !active && !account) {
       setConnectWalletModal(true);
     } else {
       setConnectWalletModal(false);
@@ -490,26 +476,35 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
             ? renderFavicons(assets.logoFavicon.src)
             : renderFavicons('/favicon.ico')}
         </Head>
-        <Header
-          connected={active}
-          user={user}
-          onLogout={() => logOut()}
-          toggleSideBar={toggleSideBar}
-          // onLogin={() => setUser({ name: 'Jane Doe' })}
-          // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
-        />
-        <Layout className="flex flex-row w-full">
-          {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
-          <div className="relative">
-            {loading && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
-            <Main
-              sidebarIsExpanded={sidebarIsExpanded}
-              sidebarIsShown={displaySideBar}
-              className="flex flex-col items-center pt-7">
-              {props.children}
-            </Main>
-          </div>
-        </Layout>
+        {router.pathname !== '/' ? (
+          <Header
+            connected={active}
+            user={user}
+            onLogout={() => logOut()}
+            toggleSideBar={toggleSideBar}
+            // onLogin={() => setUser({ name: 'Jane Doe' })}
+            // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
+          />
+        ) : null}
+        <motion.div
+          key={router.route}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ y: -20 }}
+          transition={{ duration: 0.3 }}>
+          <Layout className="flex flex-row w-full">
+            {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
+            <div className="relative">
+              {loading && router.pathname !== '/' && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
+              <Main
+                sidebarIsExpanded={sidebarIsExpanded}
+                sidebarIsShown={displaySideBar}
+                className={`flex flex-col items-center ${router.pathname !== '/' ? 'pt-7' : ''}`}>
+                {props.children}
+              </Main>
+            </div>
+          </Layout>
+        </motion.div>
       </Container>
       <Modal isOpen={connectWalletModal} style={modalStyles}>
         <ConnectWalletOptionsProps onConnect={handleWalletConnection} />

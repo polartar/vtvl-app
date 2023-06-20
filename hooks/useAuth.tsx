@@ -15,7 +15,10 @@ const useAuthStore = create(
         set({
           accessToken: '',
           refreshToken: ''
-        })
+        }),
+
+      userId: '',
+      saveUser: (userId: string) => set({ userId })
     }),
     { name: 'vtvl-auth' }
   )
@@ -24,9 +27,11 @@ const useAuthStore = create(
 type AuthStoreState = {
   accessToken: string;
   refreshToken: string;
+  userId: string;
 };
 
 type AuthStoreActions = {
+  saveUser: (userId: string) => void;
   save: (payload: AuthResponse) => void;
   clear: () => void;
 };
@@ -38,11 +43,14 @@ export const useAuth = () => {
   const clear = useAuthStore(({ clear }) => clear);
   const accessToken = useAuthStore(({ accessToken }) => accessToken);
   const refreshToken = useAuthStore(({ refreshToken }) => refreshToken);
-
+  const userId = useAuthStore(({ userId }) => userId);
+  const saveUser = useAuthStore(({ saveUser }) => saveUser);
   return {
     save,
     clear,
     accessToken,
-    refreshToken
+    refreshToken,
+    userId,
+    saveUser
   };
 };

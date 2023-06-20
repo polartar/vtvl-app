@@ -5,8 +5,6 @@ import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useOnboardingContext } from '@providers/onboarding.context';
 import { USE_NEW_API } from '@utils/constants';
-import { toUTCString } from '@utils/date';
-import { SIGN_MESSAGE_TEMPLATE } from '@utils/web3';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
@@ -78,44 +76,17 @@ export default function useMagicLinkSignIn(callback?: () => void) {
   };
 
   const useNewAPISigning = async () => {
-    console.log('USING NEW API for login', account, library);
     // Sign in when found
     const params: any = new URL(window.location.toString());
     const email = params.searchParams.get('email')?.replace(' ', '+');
     const code = params.searchParams.get('code');
-    if (!library || !account) return;
-    if (email) {
+    console.log('USING NEW API for login', email, code);
+    if (email && code) {
       try {
         const validation = await validateVerificationCode({ code, email });
         console.log('VALIDATING', validation);
-        if (validation && active && account) {
-          // Should be doing the wallet signing
-          const currentDate = toUTCString(new Date());
-          const signature = await library.provider.request({
-            method: 'personal_sign',
-            params: [SIGN_MESSAGE_TEMPLATE(account, currentDate), account]
-          });
-
-          console.log('SIGNATURE BEFORE CONNECT WALLET', signature);
-          await connectWallet({ address: account, signature, utcTime: currentDate });
-          // Redirect to the declared page
-          // Ensure wallet is validated
-          // Identify which url should the user be redirected to based on his/her current role
-          // Probably get the details of the user and check there
-          try {
-            await getOrganizations();
-            if (organizations && organizations.length) {
-              // Has an associated organization, therefore is an existing user
-            } else {
-              // No associated org, new user
-              // redirect to account setup
-              // POST /organization
-              router.push('/onboarding/account-setup');
-            }
-            console.log('useMAGIC organizations', organizations);
-          } catch (err) {
-            console.log('ERror organization', err);
-          }
+        if (validation) {
+          router.push('/v2/auth/connect');
         } else throw validation;
       } catch (err) {
         console.log('ERROR', err);
@@ -130,7 +101,6 @@ export default function useMagicLinkSignIn(callback?: () => void) {
   };
 
   useEffect(() => {
-    console.log('USE EFFECT YOW', account, library);
     // Ensure that initialization only happens once by debouncing it
     timeout = setTimeout(initializeMagicLinkSigning, 600);
     return () => {

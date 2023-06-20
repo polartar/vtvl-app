@@ -1,15 +1,10 @@
-import useAuth from '@api-hooks/useAuth';
+import useAuthAPI from '@api-hooks/useAuth';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
-import AuthContext from '@providers/auth.context';
-import { useGlobalContext } from '@providers/global.context';
-import OnboardingContext, { States, Step } from '@providers/onboarding.context';
-import { REDIRECT_URIS, USE_NEW_API } from '@utils/constants';
-import { NextPage } from 'next';
+import { REDIRECT_URIS } from '@utils/constants';
 import { useRouter } from 'next/router';
-import { useContext, useEffect } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { emailPattern } from 'types/constants/validation-patterns';
@@ -18,19 +13,7 @@ type LoginForm = {
   memberEmail: string;
 };
 
-const MemberLoginPage: NextPage = () => {
-  const { teammateSignIn, sendLoginLink, signInWithGoogle, allowSignIn } = useContext(AuthContext);
-  const { onNext, startOnboarding } = useContext(OnboardingContext);
-  const {
-    website: { features }
-  } = useGlobalContext();
-  const router = useRouter();
-  const { loginWithEmail } = useAuth();
-
-  useEffect(() => {
-    startOnboarding(Step.SignUp);
-  }, []);
-
+const LoginPage = () => {
   const {
     control,
     handleSubmit,
@@ -42,40 +25,28 @@ const MemberLoginPage: NextPage = () => {
     }
   });
 
-  const googleSignIn = async () => {
-    const newLogin = await signInWithGoogle();
-    if (newLogin) {
-      if (newLogin?.isOnboarding) {
-        startOnboarding(Step.UserTypeSetup);
-      }
-      onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
-    }
-  };
+  const router = useRouter();
+
+  const { loginWithEmail, getGoogleAuthCallback } = useAuthAPI();
 
   const onSubmit: SubmitHandler<LoginForm> = async () => {
     const values = getValues();
     try {
-      const params: any = new URL(window.location.toString() || '');
-      const type = params.searchParams.get('type');
-      const orgId = params.searchParams.get('orgId');
-
-      if (type && orgId) {
-        // invited member
-        await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
-        router.push('/onboarding/member');
-        return;
-      }
-
-      if (USE_NEW_API) {
-        await loginWithEmail({ email: values.memberEmail, redirectUri: REDIRECT_URIS.AUTH_EMAIL });
-      } else {
-        await sendLoginLink(values.memberEmail);
-      }
+      await loginWithEmail({ email: values.memberEmail, redirectUri: REDIRECT_URIS.AUTH_EMAIL });
       return;
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);
       return;
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const redirect = await getGoogleAuthCallback({ redirectUri: REDIRECT_URIS.AUTH_GOOGLE_CALLBACK });
+      window.location.href = redirect;
+    } catch (error) {
+      console.log('Error getting google redirect', error);
     }
   };
 
@@ -92,7 +63,7 @@ const MemberLoginPage: NextPage = () => {
         className="w-full my-6 flex flex-col items-center">
         <button
           type="button"
-          onClick={async () => await googleSignIn()}
+          onClick={handleGoogleSignIn}
           className="line flex flex-row items-center justify-center gap-2.5 w-full rounded-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign in with Google
@@ -127,20 +98,16 @@ const MemberLoginPage: NextPage = () => {
             </Button>
           </div>
         </div>
-        {!features?.auth?.memberOnly && (
-          <>
-            <hr className="border-t border-neutral-200 w-full mb-6" />
-            <div className="flex flex-row items-center gap-5 justify-center font-medium text-xs text-neutral-800 text-center ">
-              Don&apos;t have an account?{' '}
-              <button type="button" className="primary small" onClick={() => router.replace('/onboarding/sign-up')}>
-                Create an account
-              </button>
-            </div>
-          </>
-        )}
+        <hr className="border-t border-neutral-200 w-full mb-6" />
+        <div className="flex flex-row items-center gap-5 justify-center font-medium text-xs text-neutral-800 text-center ">
+          Don&apos;t have an account?{' '}
+          <button type="button" className="primary small" onClick={() => router.replace('/auth/register')}>
+            Create an account
+          </button>
+        </div>
       </Form>
     </div>
   );
 };
 
-export default MemberLoginPage;
+export default LoginPage;

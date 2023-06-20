@@ -5,16 +5,21 @@
 export const ERROR_MESSAGES = {
   EN: {
     /* Auth */
-    EMAIL_VERIFICATION_FAILED: 'Email code is not valid',
-    GOOGLE_LOGIN_FAILED: 'Google auth code is not valid',
+    EMAIL_VERIFICATION_FAILED: 'It looks like your magic link is not valid anymore. Please try again',
+    GOOGLE_LOGIN_FAILED: "Logging in with Google didn't work this time. Please try again",
 
-    SEND_LOGIN_EMAIL: 'Login with email has failed',
-    SEND_SIGN_UP_EMAIL: 'Signup with email has failed',
+    NETWORK: 'Oops! Something went wrong. Please check with VTVL administrators',
 
-    WALLET_CONNECT: 'Wallet not connected',
+    SEND_LOGIN_EMAIL: 'Oops! Sending magic link failed. Please make sure you are registered',
+    SEND_SIGN_UP_EMAIL: 'Oops! Sending magic link failed. Please check with VTVL administrators',
+
+    WALLET_CONNECT: 'Oh no! Your wallet failed to connect with VTVL. Please try again',
 
     /* ORGANIZATIONS */
-    GET_ORGANIZATIONS: 'Cannot get organizations'
+    GET_ORGANIZATIONS: 'Cannot get organizations',
+    CREATE_ORGANIZATION: 'Cannot create organization',
+    GET_MEMBERS: 'Cannot get members',
+    CREATE_MEMBER: 'Cannot create member'
     /* */
   }
 } as const;
@@ -24,11 +29,14 @@ export const SUCCESS_MESSAGES = {
     /* Auth */
     SEND_LOGIN_EMAIL: 'Please check your email for the link to login',
     SEND_SIGN_UP_EMAIL: 'Please check your email for the link to login',
-    LOGIN: 'Log in successful',
-    WALLET_CONNECT: 'Wallet connected',
+    LOGIN: 'Alright!',
+    WALLET_CONNECT: 'Wallet connected!',
 
     /* ORGANIZATIONS */
-    GET_ORGANIZATIONS: 'Organizations found'
+    GET_ORGANIZATIONS: 'Organizations found',
+    CREATE_ORGANIZATION: 'Organization created',
+    GET_MEMBERS: 'Members found!',
+    CREATE_MEMBER: 'Member created!'
     /* */
   }
 } as const;

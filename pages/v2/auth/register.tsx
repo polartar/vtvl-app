@@ -1,36 +1,25 @@
-import useAuth from '@api-hooks/useAuth';
+import useAuthAPI from '@api-hooks/useAuth';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import Consent from '@components/molecules/Consent/Consent';
-import AuthContext from '@providers/auth.context';
-import OnboardingContext, { Step } from '@providers/onboarding.context';
-import { REDIRECT_URIS, USE_NEW_API } from '@utils/constants';
-import { NextPage } from 'next';
+import { REDIRECT_URIS } from '@utils/constants';
 import { useRouter } from 'next/router';
-import { useContext, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { fetchMemberByEmail } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
+
+/**
+ * This is the registration page the uses the new API and updated flows
+ */
 
 type LoginForm = {
   memberEmail: string;
 };
 
-const SignUpPage: NextPage = () => {
-  const { teammateSignIn, sendLoginLink, signInWithGoogle, agreedOnConsent, setAgreedOnConsent, allowSignIn } =
-    useContext(AuthContext);
-  const { onNext, startOnboarding } = useContext(OnboardingContext);
-  const router = useRouter();
-  const [isSignup, setIsSignup] = useState(false);
-  const { signupWithEmail } = useAuth();
-
-  useEffect(() => {
-    startOnboarding(Step.SignUp);
-  }, []);
-
+const RegisterPage = () => {
   const {
     control,
     handleSubmit,
@@ -42,37 +31,22 @@ const SignUpPage: NextPage = () => {
     }
   });
 
-  const googleSignIn = async () => {
-    try {
-      setIsSignup(true);
-      const newLogin = await signInWithGoogle();
+  const [formError, setFormError] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
+  const [formMessage, setFormMessage] = useState('');
 
-      if (newLogin?.isFirstLogin) {
-        startOnboarding(Step.SignUp);
-      }
-      onNext({ userId: newLogin?.uuid, isFirstTimeUser: newLogin?.isFirstLogin });
-      setIsSignup(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const [isSignup, setIsSignup] = useState(false);
 
-  const onGoogleSignUp = async () => {
-    if (!agreedOnConsent) {
-      setFormError(true);
-      setFormMessage('You must accept the terms and conditions to create an account.');
-      return;
-    }
-    await googleSignIn();
-  };
+  const router = useRouter();
+
+  const [agreedOnConsent, setAgreedOnConsent] = useState(false);
+
+  const { signupWithEmail, getGoogleAuthCallback } = useAuthAPI();
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     try {
       setFormSuccess(false);
       const values = getValues();
-      const params: any = new URL(window.location.toString() || '');
-      const type = params.searchParams.get('type');
-      const orgId = params.searchParams.get('orgId');
 
       if (!agreedOnConsent) {
         setFormError(true);
@@ -80,38 +54,21 @@ const SignUpPage: NextPage = () => {
         return;
       }
 
-      if (type && orgId) {
-        // invited member
-        await teammateSignIn(values.memberEmail, type, orgId, window.location.toString());
-        router.push('/onboarding/member');
-        return;
-      }
-
-      if (USE_NEW_API) {
-        await signupWithEmail({ email: values.memberEmail, redirectUri: REDIRECT_URIS.AUTH_EMAIL });
-      } else {
-        await sendLoginLink(values.memberEmail);
-      }
+      await signupWithEmail({ email: values.memberEmail, redirectUri: REDIRECT_URIS.AUTH_EMAIL });
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);
     }
   };
 
-  const [formError, setFormError] = useState(false);
-  const [formSuccess, setFormSuccess] = useState(false);
-  const [formMessage, setFormMessage] = useState('');
-  const handleAgree = (checked: boolean) => {
-    setAgreedOnConsent(checked);
-  };
-
-  useEffect(() => {
-    if (agreedOnConsent === true) {
-      setFormError(false);
-      setFormSuccess(true);
-      setFormMessage('');
+  const handleGoogleSignUp = async () => {
+    try {
+      const redirect = await getGoogleAuthCallback({ redirectUri: REDIRECT_URIS.AUTH_GOOGLE_CALLBACK });
+      window.location.href = redirect;
+    } catch (error) {
+      console.log('Error getting google redirect', error);
     }
-  }, [agreedOnConsent]);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
@@ -129,7 +86,7 @@ const SignUpPage: NextPage = () => {
         className="w-full my-6 flex flex-col items-center">
         <button
           type="button"
-          onClick={onGoogleSignUp}
+          onClick={handleGoogleSignUp}
           className="line flex flex-row items-center justify-center gap-2.5 w-full rounded-full">
           <img src="/icons/google.svg" alt="Google" className="w-8 h-8" />
           Sign up with Google
@@ -159,7 +116,7 @@ const SignUpPage: NextPage = () => {
                 />
               )}
             />
-            <Consent variant="check" className="mt-5" onAgree={handleAgree} />
+            <Consent variant="check" className="mt-5" onAgree={setAgreedOnConsent} />
             <Button
               className="secondary mt-5 mx-auto"
               type="submit"
@@ -177,7 +134,7 @@ const SignUpPage: NextPage = () => {
             className="primary small"
             onClick={() => {
               setAgreedOnConsent(false);
-              router.replace('/onboarding/member-login');
+              router.replace('/auth/login');
             }}>
             Login
           </button>
@@ -187,4 +144,4 @@ const SignUpPage: NextPage = () => {
   );
 };
 
-export default SignUpPage;
+export default RegisterPage;

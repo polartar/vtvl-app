@@ -40,6 +40,34 @@ export const FACTORY_CONTRACTS: { [key: number]: string } = {
 };
 export const PLATFORM_NAME = 'app';
 
-export const AUTH_REDIRECT_URI = `${PUBLIC_DOMAIN_NAME}/magic-link-verification`;
+export const REDIRECT_URIS = {
+  AUTH_EMAIL: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`),
+  AUTH_GOOGLE_CALLBACK: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/google`),
+  AUTH_GOOGLE_LOGIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/connect`)
+};
 
 export const USE_NEW_API = process.env.NEXT_PUBLIC_ENABLE_API_INTEGRATION || false;
+
+export const NO_CONNECT_WALLET_BUTTON_PAGES = [
+  '/',
+  '/v2/auth/register',
+  '/v2/auth/login',
+  '/v2/auth/connect',
+  '/v2/auth/verify',
+  '/onboarding/connect-wallet',
+  '/onboarding',
+  '/404',
+  '/not-found',
+  '/terms',
+  '/privacypolicy'
+];
+
+export const NO_CONNECT_WALLET_MODAL_PAGES = [
+  ...NO_CONNECT_WALLET_BUTTON_PAGES,
+  '/onboarding/sign-up',
+  '/onboarding/login',
+  '/onboarding/member-login',
+  '/expired',
+  '/recipient/create',
+  '/recipient/schedule'
+];

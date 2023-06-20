@@ -1,12 +1,14 @@
 import OrganizationApiService from '@api-services/OrganizationApiService';
+import { useAuth } from '@hooks/useAuth';
 import { useOrganization as useOrgstore } from '@hooks/useOrganizations';
 import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from './messages';
 
-const useOrganization = () => {
-  const { save: saveOrg, clear: clearOrg } = useOrgstore();
+const useOrgAPI = () => {
+  const { save: saveOrg, add: addOrg, clear: clearOrg } = useOrgstore();
+  const { saveUser } = useAuth();
 
   const getOrganizations = useCallback(() => {
     return OrganizationApiService.getOrganizations()
@@ -20,12 +22,50 @@ const useOrganization = () => {
       });
   }, []);
 
+  const createOrganization = useCallback((payload: IOrganizationRequest) => {
+    return OrganizationApiService.createOrganization(payload)
+      .then((res) => {
+        console.log('ORGANIZATION CREATE DATA', res);
+        saveUser(res.userId);
+        addOrg(res);
+        toast.success(SUCCESS_MESSAGES.EN.CREATE_ORGANIZATION);
+      })
+      .catch((error) => {
+        console.log('AUTH LOGIN ERROR', error);
+        toast.error(ERROR_MESSAGES.EN.CREATE_ORGANIZATION);
+      });
+  }, []);
+
+  // Organization Member API hooks
+  const getMembers = useCallback((id: string) => {
+    return OrganizationApiService.getMembers(id)
+      .then((res) => {
+        console.log('ORGANIZATION MEMBERS DATA', res);
+      })
+      .catch((error) => {
+        toast.error(ERROR_MESSAGES.EN.GET_MEMBERS);
+      });
+  }, []);
+
+  const createMember = useCallback((payload: IOrgMemberRequest) => {
+    return OrganizationApiService.createMember(payload)
+      .then((res) => {
+        console.log('ORGANIZATION MEMBER CREATE DATA', res);
+      })
+      .catch((error) => {
+        toast.error(ERROR_MESSAGES.EN.CREATE_MEMBER);
+      });
+  }, []);
+
   return useMemo(
     () => ({
-      getOrganizations
+      getOrganizations,
+      createOrganization,
+      getMembers,
+      createMember
     }),
     []
   );
 };
 
-export default useOrganization;
+export default useOrgAPI;
