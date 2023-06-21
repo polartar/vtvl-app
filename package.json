@@ -24,6 +24,7 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@ethersproject/providers": "^5.7.1",
+    "@faker-js/faker": "^8.0.2",
     "@gnosis.pm/safe-apps-react-sdk": "^4.6.2",
     "@gnosis.pm/safe-core-sdk": "^3.0.0",
     "@gnosis.pm/safe-ethers-lib": "^1.6.1",
