@@ -1,6 +1,6 @@
 import 'cypress-iframe';
 import faker from '@faker-js/faker';
-const randomName = faker.name.findName();
+const randomName = faker.internet.userName();
 const randomCompanyName = faker.lorem.word();
 const randomWalletAddress =faker.finance.ethereumAddress();
 
