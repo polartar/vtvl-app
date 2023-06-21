@@ -1,5 +1,5 @@
 import 'cypress-iframe';
-import faker from '@faker-js/faker';
+import '@faker-js/faker';
 
 const randomName = faker.person.fullName();
 const randomCompanyName = faker.lorem.word();
