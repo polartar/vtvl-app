@@ -101,7 +101,7 @@ jobs:
         run: yarn
 
       - name: Install dependencies
-        run: yarn add @faker-js/faker -D
+        run: yarn add @faker-js/faker --dev
 
       - name: Cypress tests
         uses: cypress-io/github-action@v5.7.2
