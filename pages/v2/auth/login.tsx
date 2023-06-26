@@ -44,6 +44,7 @@ const LoginPage = () => {
   const handleGoogleSignIn = async () => {
     try {
       const redirect = await getGoogleAuthCallback({ redirectUri: REDIRECT_URIS.AUTH_GOOGLE_CALLBACK });
+      console.log('REDIRECT FROM API', redirect);
       window.location.href = redirect;
     } catch (error) {
       console.log('Error getting google redirect', error);

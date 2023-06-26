@@ -57,12 +57,23 @@ const useOrgAPI = () => {
       });
   }, []);
 
+  const inviteMember = useCallback((payload: IOrgMemberInviteRequest) => {
+    return OrganizationApiService.inviteMember(payload)
+      .then((res) => {
+        console.log('MEMBER INVITED', payload.name);
+      })
+      .catch((error) => {
+        toast.error(ERROR_MESSAGES.EN.INVITE_MEMBER);
+      });
+  }, []);
+
   return useMemo(
     () => ({
       getOrganizations,
       createOrganization,
       getMembers,
-      createMember
+      createMember,
+      inviteMember
     }),
     []
   );

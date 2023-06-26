@@ -1,5 +1,6 @@
 import useAuthAPI from '@api-hooks/useAuth';
 import useOrgAPI from '@api-hooks/useOrganization';
+import useUserAPI from '@api-hooks/useUser';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
@@ -20,7 +21,7 @@ import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 import { IUserType } from 'types/models/member';
 import { ITeamRole } from 'types/models/settings';
-import { WEBSITE_NAME } from 'utils/constants';
+import { REDIRECT_URIS, WEBSITE_NAME } from 'utils/constants';
 
 interface Contributor {
   name: string;
@@ -39,7 +40,8 @@ const AccountSetupPage: NextPage = () => {
   const { userId } = useAuth();
   const { organizations } = useOrganization();
   const { logout } = useAuthAPI();
-  const { createMember, createOrganization } = useOrgAPI();
+  const { updateUserProfile } = useUserAPI();
+  const { createMember, createOrganization, inviteMember } = useOrgAPI();
   const router = useRouter();
 
   const {
@@ -115,13 +117,17 @@ const AccountSetupPage: NextPage = () => {
     setFormMessage('');
 
     try {
+      // Update the user profile name
+      const userProfile = await updateUserProfile({ name: data.name });
+      // Create an organization under the user
       const orgId = await createOrganization({
-        name: data.name,
+        name: data.company,
         email: data.companyEmail
       });
 
       console.log('Create organization', userId, organizations);
 
+      // Add the same user as a member
       const addMember = await createMember({
         organizationId: organizations[0].id,
         members: [userId]
@@ -129,23 +135,18 @@ const AccountSetupPage: NextPage = () => {
 
       console.log('Create organization', orgId, addMember);
 
-      // if (values.contributors && values.contributors.length > 0) {
-      //   values.contributors.map(async (contributor) => {
-      //     await addInvitee({
-      //       name: contributor.name,
-      //       email: contributor.email,
-      //       org_id: user.memberInfo?.org_id || org_id || '',
-      //       type: ITeamRole.Manager
-      //     });
-      //     await sendTeammateInvite(
-      //       contributor.email,
-      //       'manager',
-      //       contributor.name,
-      //       values.company,
-      //       user.memberInfo?.org_id || org_id
-      //     );
-      //   });
-      // }
+      // Add every other users as member for invitation
+      if (values.contributors && values.contributors.length > 0) {
+        values.contributors.map(async (contributor) => {
+          await inviteMember({
+            organizationId: organizations[0].id,
+            name: contributor.name,
+            email: contributor.email,
+            role: ITeamRole.Manager,
+            redirectUri: REDIRECT_URIS.INVITE_MEMBER
+          });
+        });
+      }
       setFormSuccess(true);
     } catch (error) {
       console.error(error);

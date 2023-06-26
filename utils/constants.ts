@@ -41,9 +41,11 @@ export const FACTORY_CONTRACTS: { [key: number]: string } = {
 export const PLATFORM_NAME = 'app';
 
 export const REDIRECT_URIS = {
+  AUTH_REGISTER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/register`),
   AUTH_EMAIL: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`),
-  AUTH_GOOGLE_CALLBACK: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/google`),
-  AUTH_GOOGLE_LOGIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/connect`)
+  AUTH_GOOGLE_CALLBACK: encodeURI(`${PUBLIC_DOMAIN_NAME}/auth/google`),
+  AUTH_GOOGLE_LOGIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/connect`),
+  INVITE_MEMBER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`)
 };
 
 export const USE_NEW_API = process.env.NEXT_PUBLIC_ENABLE_API_INTEGRATION || false;
@@ -54,6 +56,8 @@ export const NO_CONNECT_WALLET_BUTTON_PAGES = [
   '/v2/auth/login',
   '/v2/auth/connect',
   '/v2/auth/verify',
+  '/v2/auth/google',
+  '/auth/google',
   '/onboarding/connect-wallet',
   '/onboarding',
   '/404',

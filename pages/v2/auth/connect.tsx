@@ -1,5 +1,6 @@
 import useAuth from '@api-hooks/useAuth';
 import useOrganization from '@api-hooks/useOrganization';
+import useUserAPI from '@api-hooks/useUser';
 import Carousel from '@components/atoms/Carousel/Carousel';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ConnectWalletOptions from '@components/molecules/ConnectWalletOptions/ConnectWalletOptions';
@@ -45,6 +46,7 @@ const Vesting = styled.div<{ background?: string }>`
 const ConnectWalletPage: NextPage = () => {
   const { active, account, activate, library } = useWeb3React();
   const { connectWallet } = useAuth();
+  const { getUserProfile } = useUserAPI();
   const { getOrganizations } = useOrganization();
   const { organizations } = getOrgStore();
   const [activated, setActivated] = useState(false);
@@ -74,6 +76,9 @@ const ConnectWalletPage: NextPage = () => {
             });
             await connectWallet({ address: account, signature, utcTime: currentDate });
 
+            // Get me
+            const profile = await getUserProfile();
+            console.log('USER PROFILE', profile);
             // Ensure wallet is validated
             // Identify which url should the user be redirected to based on his/her current role
             // Probably get the details of the user and check there

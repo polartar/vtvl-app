@@ -92,6 +92,8 @@ export default function useMagicLinkSignIn(callback?: () => void) {
         console.log('ERROR', err);
         setIsExpired(true);
       }
+    } else {
+      setIsExpired(true);
     }
   };
 

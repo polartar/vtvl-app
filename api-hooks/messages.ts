@@ -15,11 +15,16 @@ export const ERROR_MESSAGES = {
 
     WALLET_CONNECT: 'Oh no! Your wallet failed to connect with VTVL. Please try again',
 
+    /** PROFILE */
+    GET_PROFILE: 'Cannot get user profile :(',
+    UPDATE_PROFILE: 'Update user profile failed!',
+
     /* ORGANIZATIONS */
     GET_ORGANIZATIONS: 'Cannot get organizations',
     CREATE_ORGANIZATION: 'Cannot create organization',
     GET_MEMBERS: 'Cannot get members',
-    CREATE_MEMBER: 'Cannot create member'
+    CREATE_MEMBER: 'Cannot create member',
+    INVITE_MEMBER: 'Cannot invite member'
     /* */
   }
 } as const;

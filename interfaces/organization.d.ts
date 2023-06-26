@@ -11,3 +11,11 @@ interface IOrgMemberRequest {
   organizationId: string;
   members: string[];
 }
+
+interface IOrgMemberInviteRequest {
+  organizationId: string;
+  name: string;
+  email: string;
+  role: string;
+  redirectUri: string;
+}
