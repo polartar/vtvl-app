@@ -62,7 +62,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
   const {
     vestingContracts,
-    transactions,
     fetchDashboardData,
     vestings,
     vestingsStatus,
@@ -73,6 +72,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   } = useDashboardContext();
   const { editSchedule, deleteSchedulePrompt, setShowDeleteModal } = useVestingContext();
   const {
+    transactions,
     pendingTransactions,
     transactionStatus: transactionLoaderStatus,
     setTransactionStatus: setTransactionLoaderStatus,
@@ -164,14 +164,20 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         });
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const threshold = await safeSdk.getThreshold();
-        if (safeTx.signatures.size >= threshold) {
+        const approvers = transaction.data.approvers ? [...transaction.data.approvers] : [];
+        safeTx.signatures.forEach((signature) => {
+          if (!approvers.find((approver) => approver === signature.signer)) {
+            approvers.push(signature.signer);
+          }
+        });
+        if (approvers.length >= threshold) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
             ...vestingsStatus,
             [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
           });
-        } else if (safeTx.signatures.has(account.toLowerCase())) {
+        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('WAITING_APPROVAL');
           setVestingsStatus({
@@ -598,7 +604,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
             chainId,
-            vestingIds: [vestingId]
+            vestingIds: [vestingId],
+            approvers: [account]
           });
           await updateVesting(
             {
@@ -686,7 +693,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   const handleApproveTransaction = async () => {
     try {
       setIsCloseAvailable(false);
-      if (currentSafe?.address && chainId && transaction) {
+      if (currentSafe?.address && chainId && transaction && account) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -712,8 +719,15 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.safeHash as string));
-        await fetchDashboardData();
+        await updateTransaction(
+          {
+            ...transaction.data,
+            approvers: transaction.data.approvers ? [...transaction.data.approvers, account] : [account]
+          },
+          transaction.id
+        );
         toast.success('Approved successfully.');
+        setTransactionStatus('EXECUTABLE');
         setTransactionLoaderStatus('SUCCESS');
       }
     } catch (err) {
@@ -867,7 +881,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             className="secondary small whitespace-nowrap"
             onClick={handleCreateSignTransaction}
             disabled={transactionLoaderStatus === 'IN_PROGRESS' || hasNoWalletAddress}>
-            Create &amp; sign
+            Deploy schedule
           </button>
         )}
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (

@@ -26,3 +26,14 @@ export const truncateEmail = (email: string) => {
   }
   return `${head}@${splitted[1]}`;
 };
+
+export const getParamFromEvent = (
+  interf: ethers.utils.Interface,
+  transaction: any,
+  eventName: string,
+  paramIndex: number
+) => {
+  const logs = transaction.logs.filter((l: any) => l.topics.includes(ethers.utils.id(eventName)));
+  const event = interf.parseLog(logs[0]);
+  return event.args[paramIndex];
+};

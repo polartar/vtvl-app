@@ -6,6 +6,7 @@ function parseBoolean(envValue: string | undefined, defaultValue = 'false') {
 
 // Function ABIs
 export const REVOKE_CLAIM_FUNCTION_ABI = 'function revokeClaim(address _recipient)';
+export const CREATE_VESTING_CONTRACT_ABI = 'function createVestingContract(address _tokenAddress)';
 export const INVITEE_EXPIRED_TIME = Number(process.env.NEXT_PUBLIC_INVITEE_EXPIRED_TIME) || 3600 * 6; // 6 hours
 // Uses the declared NEXT_PUBLIC_DOMAIN_NAME for develop, staging, production
 // and uses the VERCEL_URL for vercel previews to make vercel deployments testable
@@ -32,3 +33,8 @@ export const CACHE_KEY = 'vtvl_cache';
 // Email related data
 export const WEBSITE_NAME = 'VTVL';
 export const WEBSITE_EMAIL = 'no-reply@vtvl.io';
+
+export const FACTORY_CONTRACTS: { [key: number]: string } = {
+  5: '0x48CC6FFb03B14Cbf6315e99c8bfa42642848d7AA',
+  12009: '0x41d3f5e5744df065B34bc30be2021DDf8Ff72480'
+};

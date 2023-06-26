@@ -177,7 +177,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         title: 'Support',
         icon: '/icons/support.svg',
         hoverIcon: '/icons/support-hover.svg',
-        route: 'https://app.gitbook.com/o/ZU2c5iaF4aXyvh8Ii9QB/s/tslbhiJoCUNqnvkdNUVE/introduction/',
+        route: 'https://vtvl.gitbook.io/gettingstarted/introduction/setting-up-your-wallet',
         isExternal: true,
         available: true
       },
@@ -239,7 +239,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         title: 'Support',
         icon: '/icons/support.svg',
         hoverIcon: '/icons/support-hover.svg',
-        route: 'https://app.gitbook.com/o/ZU2c5iaF4aXyvh8Ii9QB/s/tslbhiJoCUNqnvkdNUVE/introduction/',
+        route: 'https://vtvl.gitbook.io/gettingstarted/introduction/setting-up-your-wallet',
         isExternal: true,
         available: true
       },

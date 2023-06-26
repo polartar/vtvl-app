@@ -20,8 +20,12 @@ import { compareAddresses } from 'utils';
 const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, data }) => {
   const { account, chainId, library } = useWeb3React();
   const { currentSafe } = useAuthContext();
-  const { vestingContracts, transactions, vestings, recipients, fetchDashboardData } = useDashboardContext();
-  const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const { vestingContracts, vestings, recipients, fetchDashboardData } = useDashboardContext();
+  const {
+    setTransactionStatus: setTransactionLoaderStatus,
+    setIsCloseAvailable,
+    transactions
+  } = useTransactionLoaderContext();
 
   const transaction = useMemo(
     () => transactions.find((t) => t.id === data.transactionId && t.data.status === 'PENDING'),
@@ -75,10 +79,16 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
       const threshold = await safeSdk.getThreshold();
       if (safeTx) {
         setSafeTransaction(safeTx);
-        if (safeTx.signatures.size >= threshold) {
+        const approvers = transaction.data.approvers ? [...transaction.data.approvers] : [];
+        safeTx.signatures.forEach((signature) => {
+          if (!approvers.find((approver) => approver === signature.signer)) {
+            approvers.push(signature.signer);
+          }
+        });
+        if (approvers.length >= threshold) {
           setTransactionStatus('EXECUTABLE');
           setStatus('AUTHORIZATION_REQUIRED');
-        } else if (safeTx.signatures.has(account.toLowerCase())) {
+        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
           setTransactionStatus('WAITING_APPROVAL');
           setStatus('AUTHORIZATION_REQUIRED');
         } else {
@@ -151,7 +161,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
     try {
       setIsCloseAvailable(false);
 
-      if (currentSafe?.address && chainId && transaction) {
+      if (currentSafe?.address && chainId && transaction && account) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -184,7 +194,13 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.safeHash as string));
-        await fetchDashboardData();
+        await updateTransaction(
+          {
+            ...transaction.data,
+            approvers: transaction.data.approvers ? [...transaction.data.approvers, account] : [account]
+          },
+          id
+        );
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }

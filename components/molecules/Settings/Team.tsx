@@ -95,13 +95,13 @@ const Team = () => {
   const isMemberExist = (email: string) => {
     const existingMember = teammates.find((member) => member.email === email);
     if (existingMember) {
-      toast.error('This member already exists');
+      toast.warning(`${existingMember.name} is already a member`);
       return true;
     }
 
     const pendingMember = pendingTeammates.find((member) => member.email === email);
     if (pendingMember) {
-      toast.error('This member is already invited');
+      toast.warning(`${pendingMember.name} is already invited`);
       return true;
     }
     return false;
@@ -127,10 +127,14 @@ const Team = () => {
           await sendTeammateInvite(member.email, member.type, member.name, companyName, user.memberInfo?.org_id);
           await addInvitee(invitee);
         }
-        toast.success('Invited email successfully');
+        if (data.members && data.members.length) {
+          toast.success(
+            `${data.members.length > 1 ? data.members.length + ' members' : data.members[0].name} invited!`
+          );
+        }
         reset();
       } catch (err: any) {
-        toast.error('Something went wrong. ' + err.message);
+        toast.error('Member invitation failed: ' + err.message);
       } finally {
         setIsInviting(false);
       }

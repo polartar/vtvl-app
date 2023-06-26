@@ -5,6 +5,7 @@ import styled from '@emotion/styled';
 import AuthContext from '@providers/auth.context';
 import { useClaimTokensContext } from '@providers/claim-tokens.context';
 import Router, { useRouter } from 'next/router';
+import ChevronIcon from 'public/icons/collapse-btn.svg';
 import React, { Fragment, useContext, useEffect } from 'react';
 
 import { Colors } from '../../CommonStyles';

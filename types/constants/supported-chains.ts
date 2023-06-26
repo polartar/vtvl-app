@@ -13,7 +13,8 @@ export enum SupportedChainId {
   CRONOS_TESTNET = 338,
   OKC_MAINNET = 66,
   OKC_TESTNET = 65,
-  BASE_GOERLI = 84531
+  BASE_GOERLI = 84531,
+  SATOSHI_MAINNET = 12009
 }
 
 export const PROD_SUPPORTED_CHAIN_IDS = [
@@ -23,7 +24,8 @@ export const PROD_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.AVALANCHE,
   SupportedChainId.FANTOM,
   SupportedChainId.CRONOS,
-  SupportedChainId.OKC_MAINNET
+  SupportedChainId.OKC_MAINNET,
+  SupportedChainId.SATOSHI_MAINNET
 ];
 
 export const DEMO_SUPPORTED_CHAIN_IDS = [
@@ -44,7 +46,8 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.GOERLI,
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
-  SupportedChainId.BASE_GOERLI
+  SupportedChainId.BASE_GOERLI,
+  SupportedChainId.SATOSHI_MAINNET
 ];
 
 export const SUPPORTED_CHAIN_IDS =
@@ -127,6 +130,15 @@ export const prodSupportedChains: ChainsType = {
     code: 'OKT',
     rpc: 'https://exchainrpc.okex.org',
     explorer: 'https://www.oklink.com/en/okc',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.SATOSHI_MAINNET]: {
+    id: 12009,
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/9022.png',
+    title: 'Satoshi Chain',
+    code: 'SATS',
+    rpc: 'https://mainnet-rpc.satoshichain.io',
+    explorer: 'https://satoshiscan.io',
     multisigTxUrl: ''
   }
 };
@@ -271,6 +283,15 @@ export const devSupportedChains: ChainsType = {
     code: 'BASE',
     rpc: 'https://goerli.base.org/',
     explorer: 'https://goerli.basescan.org',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.SATOSHI_MAINNET]: {
+    id: 12009,
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/9022.png',
+    title: 'Satoshi Chain',
+    code: 'SATS',
+    rpc: 'https://mainnet-rpc.satoshichain.io',
+    explorer: 'https://satoshiscan.io',
     multisigTxUrl: ''
   }
 };

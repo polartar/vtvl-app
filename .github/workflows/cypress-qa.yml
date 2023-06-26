@@ -1,0 +1,58 @@
+name: Cypress Tests - QA env
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  cypress:
+    name: Run Cypress Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🔖
+        uses: actions/checkout@v2
+
+      - name: Install linux deps
+        run: |
+          sudo apt-get install --no-install-recommends -y fluxbox xvfb
+
+      - name: Run xvfb and fluxbox
+        run: Xvfb :0 -screen 0 1024x768x24 -listen tcp -ac &
+          fluxbox &
+        env:
+          DISPLAY: :0.0
+
+      - name: Create env file
+        run: |
+          touch .env
+          echo CYPRESS_REMOTE_DEBUGGING_PORT="9222" >> .env
+          echo NETWORK_NAME="goerli" >> .env
+          echo SECRET_WORDS="test test test test test test test test test test test junk" >> .env
+          cat .env
+
+      - name: Read .env file
+        id: envfile
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./.env
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Cypress tests
+        uses: cypress-io/github-action@v5.7.2
+        with:
+          working-directory: ./
+          install: false
+          command: yarn cypress:run
+          wait-on-timeout: 300
+        env:
+          DISPLAY: :0.0
+
+      - name: Upload video of tests 📷
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress
+          path: cypress/videos

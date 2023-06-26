@@ -128,19 +128,6 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
         <div className="max-w-sm mx-auto">
           <Wallets wallets={wallets} />
         </div>
-        {!features?.auth?.memberOnly && (
-          <div className="mt-7 mb-4 text-xs text-neutral-600 font-medium flex flex-row items-center justify-center gap-10">
-            <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
-              What is Wallet?
-            </a>
-            <div>
-              <span>Can&apos;t find your wallet?</span>&nbsp;
-              <a className="font-bold text-primary-900 no-underline" href="#" onClick={() => {}}>
-                Suggest Wallet
-              </a>
-            </div>
-          </div>
-        )}
         <Consent className="mt-6" />
       </div>
       <Modal isOpen={ledgerModalShow} style={modalStyles}>
