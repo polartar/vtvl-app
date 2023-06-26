@@ -32,6 +32,7 @@
     "@mui/material": "^5.10.12",
     "@mui/x-date-pickers": "^5.0.7",
     "@sendgrid/mail": "^7.7.0",
+    "@sentry/nextjs": "^7.56.0",
     "@svgr/webpack": "^6.4.0",
     "@szhsin/react-menu": "^3.2.1",
     "@tanstack/react-query": "^4.28.0",

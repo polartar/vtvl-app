@@ -369,21 +369,19 @@ export function DashboardContextProvider({ children }: any) {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'modified') {
           const vestingInfo = change.doc.data();
-          if (vestingInfo.status === 'LIVE') {
-            const newVestings = vestings.map((vesting) => {
-              if (vesting.id === change.doc.id) {
-                toast.success('Added schedules successfully.');
-
-                return {
-                  id: vesting.id,
-                  data: vestingInfo
-                };
+          const newVestings = vestings.map((vesting) => {
+            if (vesting.id === change.doc.id) {
+              if (vestingInfo.status === 'LIVE') {
+                toast.success(`Added schedules successfully. ${vestingInfo.name}`);
               }
-              return vesting;
-            });
-
-            setVestings(newVestings);
-          }
+              return {
+                id: vesting.id,
+                data: vestingInfo
+              };
+            }
+            return vesting;
+          });
+          setVestings(newVestings);
         }
       });
     });

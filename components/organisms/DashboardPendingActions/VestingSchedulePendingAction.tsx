@@ -72,8 +72,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   } = useDashboardContext();
   const { editSchedule, deleteSchedulePrompt, setShowDeleteModal } = useVestingContext();
   const {
-    pendingTransactions,
     transactions,
+    pendingTransactions,
     transactionStatus: transactionLoaderStatus,
     setTransactionStatus: setTransactionLoaderStatus,
     setIsCloseAvailable
@@ -727,6 +727,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           transaction.id
         );
         toast.success('Approved successfully.');
+        setTransactionStatus('EXECUTABLE');
         setTransactionLoaderStatus('SUCCESS');
       }
     } catch (err) {
