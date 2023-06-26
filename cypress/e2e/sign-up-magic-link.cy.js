@@ -103,23 +103,21 @@ describe('email test spec', () => {
     });
   });
 
-  it("Use magic link", () => {
+  it('Use magic link', () => {
     cy.readFile(filePath).then((fileContents) => {
-      const lines = fileContents.split('\n')
-      magiclink = lines[0]
-      cy.visit('/')
-      cy.wait(500)
-      cy.visit(magiclink)
-      cy.wait(8000)
-      cy.get(':nth-child(1) > .wallet-button').click()
-      cy.wait(5000)
-      cy.switchToMetamaskWindow()
-      cy.acceptMetamaskAccess()
-      cy.switchToCypressWindow()
-      cy.wait(6000)
-      cy.contains('Continue').click()
+      const lines = fileContents.split('\n');
+      magiclink = lines[0];
+      cy.visit('/');
+      cy.wait(500);
+      cy.visit(magiclink);
+      cy.wait(8000);
+      cy.get(':nth-child(1) > .wallet-button').click();
+      cy.wait(5000);
+      cy.switchToMetamaskWindow();
+      cy.acceptMetamaskAccess();
+      cy.switchToCypressWindow();
+      cy.wait(6000);
+      cy.contains('Continue').click();
     });
   });
 });
-
-
