@@ -74,7 +74,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   const {
     transactions,
     pendingTransactions,
-    transactions,
     transactionStatus: transactionLoaderStatus,
     setTransactionStatus: setTransactionLoaderStatus,
     setIsCloseAvailable
