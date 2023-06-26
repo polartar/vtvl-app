@@ -47,7 +47,7 @@ jobs:
             const issueNumber = context.payload.pull_request.number;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const commentContent = 'Learn more about';
+            const commentContent = 'This is now deployed and ready to test at:';
 
             let commentFound = false;
             let counter = 0; // initialize counter variable
@@ -84,16 +84,17 @@ jobs:
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body-includes: 'Learn more about'
+          body-includes: 'This is now deployed and ready to test at:'
 
       - run: |
-          PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git.*')
+          PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-[^\ ]*')
           echo "PREVIEW_URL=$PREVIEW_URL" >> $GITHUB_ENV
         shell: bash
+
       - name: Set environment variable
         run: |
-          export PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-app-git[^ )]*')
-          sed -i "s#https://qa-v2.vtvl.io#$PREVIEW_URL#g" ./cypress.config.js
+          export PREVIEW_URL=$(echo "${{ steps.fc.outputs.comment-body }}" | grep -o 'https://vtvl-v2-[^\ ]*')
+          sed -i "s#https://qa-v2.vtvl.io#${PREVIEW_URL%%]*}#g" ./cypress.config.js
           cat ./cypress.config.js
 
       - name: Install dependencies

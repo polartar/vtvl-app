@@ -7,6 +7,8 @@ import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import { useEffect } from 'react';
+import { toast } from 'react-toastify';
+import { MESSAGES } from 'utils/messages';
 
 const TeamWelcome: NextPage = () => {
   const { library } = useWeb3React();
@@ -40,9 +42,11 @@ const TeamWelcome: NextPage = () => {
       console.log('Import token successful');
       // await refreshUser();
       await completeOnboarding();
+      toast.success(MESSAGES.WALLET.ACCEPT_IMPORT_TOKEN);
     } catch (error) {
       // on reject, just close the prompt and do nothing
       console.error('Error importing token', error);
+      toast.error(MESSAGES.WALLET.REJECT);
     }
   };
 

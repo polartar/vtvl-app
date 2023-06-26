@@ -79,8 +79,8 @@ const MintingToken: NextPageWithLayout = () => {
   const onSubmit: SubmitHandler<FormTypes> = (data) => {
     if (
       Number(data.initialSupply) <= 0 ||
-      Number(data.maxSupply) <= 0 ||
-      Number(data.maxSupply) < Number(data.initialSupply)
+      (data.supplyCap === 'LIMITED' &&
+        (Number(data.maxSupply) <= 0 || Number(data.maxSupply) < Number(data.initialSupply)))
     ) {
       return;
     }
@@ -298,7 +298,9 @@ const MintingToken: NextPageWithLayout = () => {
                           ? 'Please enter amount to mint'
                           : initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED'
                           ? 'Amount to mint should be smaller than the maximum amount'
-                          : 'Please input valid amount'
+                          : Number(initialSupply.value) <= 0
+                          ? 'Please input valid amount'
+                          : ''
                       }
                       {...field}
                     />
@@ -310,7 +312,9 @@ const MintingToken: NextPageWithLayout = () => {
                     color={+initialSupply.value < +maxSupply.value ? 'secondary' : 'default'}
                     onClick={handleMaxMintAmouont}
                     className={`absolute right-6 cursor-pointer ${
-                      initialSupply.value > maxSupply.value || errors.initialSupply ? 'bottom-9' : 'bottom-2'
+                      initialSupply.value > maxSupply.value || errors.initialSupply || Number(initialSupply.value) <= 0
+                        ? 'bottom-9'
+                        : 'bottom-2'
                     }`}
                   />
                 ) : null}

@@ -63,7 +63,7 @@ const TeamTable = ({
         user.memberInfo?.org_id,
         selectedMember.id
       );
-      toast.success('Resent email successfully');
+      toast.success(`${selectedMember.name} re-invited`);
     } catch (err) {
       toast.error('Something went wrong while resending email');
     }

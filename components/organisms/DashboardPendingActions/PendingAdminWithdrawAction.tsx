@@ -80,10 +80,16 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
       const threshold = await safeSdk.getThreshold();
       if (safeTx) {
         setSafeTransaction(safeTx);
-        if (safeTx.signatures.size >= threshold) {
+        const approvers = data.approvers ? [...data.approvers] : [];
+        safeTx.signatures.forEach((signature) => {
+          if (!approvers.find((approver) => approver === signature.signer)) {
+            approvers.push(signature.signer);
+          }
+        });
+        if (approvers.length >= threshold) {
           setTransactionStatus('EXECUTABLE');
           setStatus('EXECUTABLE');
-        } else if (safeTx.signatures.has(account.toLowerCase())) {
+        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
           setTransactionStatus('WAITING_APPROVAL');
           setStatus('AUTHORIZATION_REQUIRED');
         } else {
@@ -98,7 +104,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
     try {
       setIsCloseAvailable(false);
 
-      if (currentSafe?.address && chainId && data) {
+      if (currentSafe?.address && chainId && data && account) {
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
@@ -129,7 +135,13 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(data?.safeHash as string));
-        await fetchDashboardData();
+        await updateTransaction(
+          {
+            ...data,
+            approvers: data.approvers ? [...data.approvers, account] : [account]
+          },
+          id
+        );
         setTransactionStatus('WAITING_APPROVAL');
         setStatus('AUTHORIZATION_REQUIRED');
         toast.success('Approved successfully.');

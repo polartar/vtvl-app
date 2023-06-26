@@ -33,7 +33,6 @@ interface IDashboardData {
   revokings: { id: string; data: IRevoking }[];
   recipients: IRecipientDoc[];
   vestingContracts: { id: string; data: IVestingContract }[];
-  transactions: { id: string; data: ITransaction }[];
   ownershipTransfered: boolean;
   insufficientBalance: boolean;
   depositAmount: string;
@@ -50,7 +49,6 @@ interface IDashboardData {
   safeTransactions: { [key: string]: SafeTransaction };
   // fetchDashboardVestingContract: () => void;
   fetchDashboardVestings: () => void;
-  fetchDashboardTransactions: () => void;
   setOwnershipTransfered: (v: boolean) => void;
   fetchDashboardData: () => void;
   setRemoveOwnership: (v: boolean) => void;
@@ -76,7 +74,6 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingContracts, setVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
 
   const [revokings, setRevokings] = useState<{ id: string; data: IRevoking }[]>([]);
-  const [transactions, setTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
   const [removeOwnership, setRemoveOwnership] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
@@ -126,22 +123,6 @@ export function DashboardContextProvider({ children }: any) {
     }
   }, [organizationId, chainId]);
 
-  /* Fetch all transactions by organizationId and chainId */
-  const fetchDashboardTransactions = useCallback(async () => {
-    setTransactionsLoading(true);
-    try {
-      const res = await fetchTransactionsByQuery(
-        ['organizationId', 'chainId'],
-        ['==', '=='],
-        [organizationId, chainId]
-      );
-      setTransactions(res);
-    } catch (err) {
-      console.log('fetchDashboardTransactions - ', err);
-    }
-    setTransactionsLoading(false);
-  }, [organizationId, chainId]);
-
   /* Fetch all recipients by organizationId and chainId */
   const fetchDashboardRecipients = useCallback(async () => {
     try {
@@ -157,21 +138,14 @@ export function DashboardContextProvider({ children }: any) {
     if (organizationId && chainId) {
       showLoading();
       try {
-        await Promise.all([
-          fetchDashboardVestings(),
-          fetchDashboardTransactions(),
-          fetchDashboardRevokings(),
-          fetchDashboardRecipients()
-        ]);
+        await Promise.all([fetchDashboardVestings(), fetchDashboardRevokings(), fetchDashboardRecipients()]);
       } catch (err) {
         console.log('fetchDashboardData - ', err);
         setVestings([]);
-        setTransactions([]);
       }
       hideLoading();
     } else {
       setVestings([]);
-      setTransactions([]);
       setRevokings([]);
     }
   }, [organizationId, chainId]);
@@ -364,10 +338,10 @@ export function DashboardContextProvider({ children }: any) {
             }
             return vesting;
           });
-          setVestingContracts(tmpVestingContracts.slice());
+          setVestingContracts([...tmpVestingContracts]);
         }
       });
-      setVestingContracts(tmpVestingContracts);
+      setVestingContracts([...tmpVestingContracts]);
     });
 
     return () => {
@@ -395,21 +369,19 @@ export function DashboardContextProvider({ children }: any) {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'modified') {
           const vestingInfo = change.doc.data();
-          if (vestingInfo.status === 'LIVE') {
-            const newVestings = vestings.map((vesting) => {
-              if (vesting.id === change.doc.id) {
-                toast.success('Added schedules successfully.');
-
-                return {
-                  id: vesting.id,
-                  data: vestingInfo
-                };
+          const newVestings = vestings.map((vesting) => {
+            if (vesting.id === change.doc.id) {
+              if (vestingInfo.status === 'LIVE') {
+                toast.success(`Added schedules successfully. ${vestingInfo.name}`);
               }
-              return vesting;
-            });
-
-            setVestings(newVestings);
-          }
+              return {
+                id: vesting.id,
+                data: vestingInfo
+              };
+            }
+            return vesting;
+          });
+          setVestings(newVestings);
         }
       });
     });
@@ -439,7 +411,6 @@ export function DashboardContextProvider({ children }: any) {
       revokings,
       recipients,
       vestingContracts,
-      transactions,
       ownershipTransfered,
       insufficientBalance,
       depositAmount,
@@ -455,7 +426,6 @@ export function DashboardContextProvider({ children }: any) {
       recipientTokenDetails,
       safeTransactions,
       fetchDashboardVestings,
-      fetchDashboardTransactions,
       setOwnershipTransfered,
       fetchDashboardData,
       setRemoveOwnership,
@@ -465,7 +435,6 @@ export function DashboardContextProvider({ children }: any) {
     [
       vestings,
       recipients,
-      transactions,
       ownershipTransfered,
       insufficientBalance,
       depositAmount,

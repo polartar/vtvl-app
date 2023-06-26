@@ -29,6 +29,7 @@ yarn-error.log*
 .env
 .env*.local
 .env.development
+.env.prod
 
 # vercel
 .vercel
@@ -41,3 +42,5 @@ next-env.d.ts
 .npmrc
 
 storybook-static
+# Sentry Auth Token
+.sentryclirc

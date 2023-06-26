@@ -315,7 +315,14 @@ const NewSafePage: NextPage = () => {
       return await onNext({ safeAddress: safe.getAddress() });
     } catch (error) {
       console.error('error getting safe info ', error);
-      setFormMessage(`Multisig error: ${(error as any)?.message}`);
+      // setFormMessage(`Multisig error: ${(error as any)?.message}`);
+      if (((error as any)?.message as string).includes('user rejected transaction')) {
+        setFormMessage(`Multisig error: User rejected transaction.`);
+      } else if (((error as any)?.message as string).includes('invalid address')) {
+        setFormMessage(`Multisig error: Invalid arguments.`);
+      } else {
+        setFormMessage(`Multisig error: Something went wrong. Try again.`);
+      }
       setFormError(true);
       if (!importedSafe) {
         setTransactionStatus('ERROR');
