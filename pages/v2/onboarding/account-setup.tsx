@@ -128,12 +128,16 @@ const AccountSetupPage: NextPage = () => {
       console.log('Create organization', userId, organizations);
 
       // Add the same user as a member
-      const addMember = await createMember({
-        organizationId: organizations[0].id,
-        members: [userId]
-      });
+      /**
+       * @dev NO need to create new member here.
+       * The organization creator will be the member of that organization as a founder.
+       */
+      // const addMember = await createMember({
+      //   organizationId: organizations[0].id,
+      //   members: [userId]
+      // });
 
-      console.log('Create organization', orgId, addMember);
+      // console.log('Create organization', orgId, addMember);
 
       // Add every other users as member for invitation
       if (values.contributors && values.contributors.length > 0) {

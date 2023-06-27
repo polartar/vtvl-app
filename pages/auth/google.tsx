@@ -4,7 +4,7 @@ const GoogleCallback = () => {
   useGoogleAuth();
   return (
     <div>
-      <h1>Google callback heree</h1>
+      <h1>Redirecting to connect wallet page...</h1>
     </div>
   );
 };

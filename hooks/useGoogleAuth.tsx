@@ -15,15 +15,11 @@ export default function useGoogleAuth() {
       const code = decodeURIComponent(params.searchParams.get('code'));
       console.log('Google Sign in', params, code);
 
-      const signing = await loginWithGoogle({ code, redirectUri: REDIRECT_URIS.AUTH_GOOGLE_LOGIN });
-      // Redirect to connect wallet page after verifying the code from google login
-      console.log('GOOGLE SIGNING STATUS', signing);
-      if (signing !== undefined) {
-        router.push(REDIRECT_URIS.AUTH_GOOGLE_LOGIN);
-      } else throw signing;
+      await loginWithGoogle({ code, redirectUri: REDIRECT_URIS.AUTH_GOOGLE_CALLBACK });
+      router.push(REDIRECT_URIS.AUTH_GOOGLE_LOGIN);
     } catch (error) {
       console.log('Google signin: Something went wrong', error);
-      router.push(REDIRECT_URIS.AUTH_REGISTER);
+      router.push(REDIRECT_URIS.AUTH_GOOGLE_LOGIN);
     }
   };
 
