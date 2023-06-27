@@ -11,17 +11,17 @@ import { useOrganization } from '@hooks/useOrganizations';
 import AuthContext from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
+import { REDIRECT_URIS, WEBSITE_NAME } from '@utils/constants';
 import { NextPage } from 'next';
 import { Router, useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 import { IUserType } from 'types/models/member';
-import { ITeamRole } from 'types/models/settings';
-import { REDIRECT_URIS, WEBSITE_NAME } from 'utils/constants';
+import { IRole, ITeamRole } from 'types/models/settings';
 
 interface Contributor {
   name: string;
@@ -109,6 +109,23 @@ const AccountSetupPage: NextPage = () => {
   // Add a contributor to the list
   const addContributor = () => append({ name: '', email: '' });
 
+  const handleSaveContributors = useCallback(
+    async (contributors: Contributor[]) => {
+      if (contributors && contributors.length && organizations && organizations.length) {
+        contributors.map(async (contributor) => {
+          await inviteMember({
+            organizationId: organizations[0].id,
+            name: contributor.name,
+            email: contributor.email,
+            role: IRole.MANAGER,
+            redirectUri: REDIRECT_URIS.INVITE_MEMBER
+          });
+        });
+      }
+    },
+    [organizations]
+  );
+
   // Should always return a promise to resolve in order to make the isSubmitting work
   const onSubmit: SubmitHandler<AccountForm> = async (data) => {
     const values = getValues();
@@ -141,17 +158,11 @@ const AccountSetupPage: NextPage = () => {
 
       // Add every other users as member for invitation
       if (values.contributors && values.contributors.length > 0) {
-        values.contributors.map(async (contributor) => {
-          await inviteMember({
-            organizationId: organizations[0].id,
-            name: contributor.name,
-            email: contributor.email,
-            role: ITeamRole.Manager,
-            redirectUri: REDIRECT_URIS.INVITE_MEMBER
-          });
-        });
+        await handleSaveContributors(values.contributors);
       }
       setFormSuccess(true);
+      // Update later with reusable onboarding steps
+      router.push('/v2/onboarding/setup-safes');
     } catch (error) {
       console.error(error);
       setFormError(true);
