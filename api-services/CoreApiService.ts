@@ -23,7 +23,7 @@ const handleError = (error: AxiosError) => {
   throw error;
 };
 
-class MainApiService {
+class CoreApiService {
   get = async <R>(url: string, params: AnyObject = {}) =>
     axios
       .request<R>({
@@ -81,4 +81,4 @@ class MainApiService {
       .catch(handleError);
 }
 
-export default new MainApiService();
+export default new CoreApiService();
