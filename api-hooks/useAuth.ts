@@ -1,4 +1,4 @@
-import AuthApiService from '@api-services/AuthApiService';
+import AuthenticationApiService from '@api-services/AuthenticationApiService';
 import { useAuth as useAuthStore } from '@hooks/useAuth';
 import { TOAST_NOTIFICATION_IDS } from '@utils/constants';
 import { useCallback, useMemo } from 'react';
@@ -12,7 +12,7 @@ const useAuthAPI = () => {
   /* Email Login & Signup */
 
   const loginWithEmail = useCallback((payload: AuthWithEmailRequest) => {
-    return AuthApiService.loginWithEmail(payload)
+    return AuthenticationApiService.loginWithEmail(payload)
       .then((res) => {
         console.log('LOGIN WITH EMAIL DATA', res);
         toast.success(SUCCESS_MESSAGES.EN.SEND_LOGIN_EMAIL, { toastId: TOAST_NOTIFICATION_IDS.SUCCESS });
@@ -27,7 +27,7 @@ const useAuthAPI = () => {
   }, []);
 
   const signupWithEmail = useCallback((payload: AuthWithEmailRequest) => {
-    return AuthApiService.signupWithEmail(payload)
+    return AuthenticationApiService.signupWithEmail(payload)
       .then((res) => {
         console.log('SIGN UP WITH EMAIL DATA', res);
         toast.success(SUCCESS_MESSAGES.EN.SEND_SIGN_UP_EMAIL, { toastId: TOAST_NOTIFICATION_IDS.SUCCESS });
@@ -38,7 +38,7 @@ const useAuthAPI = () => {
   }, []);
 
   const validateVerificationCode = useCallback((payload: VerifyEmailRequest) => {
-    return AuthApiService.validateVerificationCode(payload)
+    return AuthenticationApiService.validateVerificationCode(payload)
       .then((res) => {
         console.log('VALIDATE CODE DATA', res);
         saveAuth(res);
@@ -53,10 +53,10 @@ const useAuthAPI = () => {
 
   /* Google login */
 
-  const getGoogleAuthCallback = useCallback(AuthApiService.getGoogleAuthCallback, []);
+  const getGoogleAuthCallback = useCallback(AuthenticationApiService.getGoogleAuthCallback, []);
 
   const loginWithGoogle = useCallback((payload: GoogleAuthLoginRequest) => {
-    return AuthApiService.googleAuthLogin(payload)
+    return AuthenticationApiService.googleAuthLogin(payload)
       .then((res) => {
         console.log('LOGIN WITH GOOGLE DATA', res);
         saveAuth(res);
@@ -75,7 +75,7 @@ const useAuthAPI = () => {
 
   /* Connect wallet */
   const connectWallet = useCallback((payload: ConnectWalletRequest) => {
-    return AuthApiService.connectWallet(payload)
+    return AuthenticationApiService.connectWallet(payload)
       .then((res) => {
         console.log('CONNECT WALLET DATA', res);
         saveAuth(res);

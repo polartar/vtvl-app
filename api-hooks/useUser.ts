@@ -17,7 +17,7 @@ const useUserAPI = () => {
         // toast.success(SUCCESS_MESSAGES.EN.SEND_LOGIN_EMAIL);
         return res;
       })
-      .catch((error) => {
+      .catch((error: any) => {
         console.log('USER PROFILE ERROR', error);
         if (error?.code === 'ERR_NETWORK')
           toast.error(ERROR_MESSAGES.EN.NETWORK, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
@@ -31,7 +31,7 @@ const useUserAPI = () => {
       .then((res: any) => {
         save({ email, userId, name: payload.name });
       })
-      .catch((error) => {
+      .catch((error: any) => {
         console.log('ERROR UPDATING USER PROFILE', error);
         toast.error(ERROR_MESSAGES.EN.UPDATE_PROFILE, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       });

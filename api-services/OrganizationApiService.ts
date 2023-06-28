@@ -1,4 +1,4 @@
-import CoreApiService from '@api-services/CoreApiService';
+import MainApiService from '@api-services/MainApiService';
 import { PLATFORM_NAME } from '@utils/constants';
 import {
   IOrgMemberInviteRequest,
@@ -9,18 +9,18 @@ import {
 
 class OrganizationApiService {
   // Organization APIs
-  getOrganizations = () => CoreApiService.get<IOrganizationResponse[]>(`/organization/${PLATFORM_NAME}`);
+  getOrganizations = () => MainApiService.get<IOrganizationResponse[]>(`/organization/${PLATFORM_NAME}`);
   createOrganization = (payload: IOrganizationRequest) =>
-    CoreApiService.post<IOrganizationResponse>('/organization', payload);
+    MainApiService.post<IOrganizationResponse>('/organization', payload);
 
   // Organization Member APIs
-  getMembers = (orgId: string) => CoreApiService.get(`/organization/${orgId}/members`);
+  getMembers = (orgId: string) => MainApiService.get(`/organization/${orgId}/members`);
 
   createMember = (payload: IOrgMemberRequest) =>
-    CoreApiService.post(`/organization/${payload.organizationId}/members/${PLATFORM_NAME}`, payload);
+    MainApiService.post(`/organization/${payload.organizationId}/members/${PLATFORM_NAME}`, payload);
 
   inviteMember = (payload: IOrgMemberInviteRequest) =>
-    CoreApiService.post(`/organization/${payload.organizationId}/invite/${PLATFORM_NAME}`, payload);
+    MainApiService.post(`/organization/${payload.organizationId}/invite/${PLATFORM_NAME}`, payload);
 }
 
 export default new OrganizationApiService();

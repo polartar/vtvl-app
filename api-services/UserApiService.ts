@@ -1,8 +1,8 @@
-import CoreApiService from '@api-services/CoreApiService';
+import MainApiService from '@api-services/MainApiService';
 
 class UserApiService {
-  getProfile = () => CoreApiService.get<string>('/auth/me');
-  updateProfile = (payload: { name: string }) => CoreApiService.put<string>('/user', payload);
+  getProfile = () => MainApiService.get<string>('/auth/me');
+  updateProfile = (payload: { name: string }) => MainApiService.put<string>('/user', payload);
 }
 
 export default new UserApiService();
