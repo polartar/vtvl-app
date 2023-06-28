@@ -1,3 +1,4 @@
+import { USE_NEW_API } from '@utils/constants';
 import { ILocalStorage } from 'interfaces/locaStorage';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
@@ -9,7 +10,7 @@ import { useShallowState } from './useShallowState';
 
 export type Route = {
   path: string;
-  allowedRoles: IUserType[];
+  allowedRoles: IUserType[] | IRole[];
 };
 
 type RoleGuardOptions = {
@@ -22,14 +23,16 @@ const useRoleGuard = (options: RoleGuardOptions) => {
   const [auth, setAuth] = useShallowState<ILocalStorage | null>(null);
 
   const updateRoleGuardState = async () => {
-    const persistedUser = await getCache();
-    // Check if user exists
-    if (persistedUser) {
-      const stringAuth = JSON.stringify(auth);
-      const stringCache = JSON.stringify(persistedUser);
-      // Only update the states if there is an update.
-      if (stringAuth !== stringCache) {
-        await setAuth(persistedUser);
+    if (!USE_NEW_API) {
+      const persistedUser = await getCache();
+      // Check if user exists
+      if (persistedUser) {
+        const stringAuth = JSON.stringify(auth);
+        const stringCache = JSON.stringify(persistedUser);
+        // Only update the states if there is an update.
+        if (stringAuth !== stringCache) {
+          await setAuth(persistedUser);
+        }
       }
     }
   };
@@ -42,7 +45,7 @@ const useRoleGuard = (options: RoleGuardOptions) => {
   // Watch for route changes
   useEffect(() => {
     // Only run this if auth is present already
-    if (auth) {
+    if (auth && !USE_NEW_API) {
       const { user, roleOverride, isAuthenticated } = auth;
 
       const handleRouteChanges = (url: string) => {

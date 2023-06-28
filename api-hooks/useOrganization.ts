@@ -1,6 +1,8 @@
 import OrganizationApiService from '@api-services/OrganizationApiService';
 import { useAuth } from '@hooks/useAuth';
 import { useOrganization as useOrgstore } from '@hooks/useOrganizations';
+import { TOAST_NOTIFICATION_IDS } from '@utils/constants';
+import { IOrgMemberInviteRequest, IOrgMemberRequest, IOrganizationRequest } from 'interfaces/organization';
 import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
@@ -15,10 +17,11 @@ const useOrgAPI = () => {
       .then((res) => {
         console.log('ORGANIZATION DATA', res);
         saveOrg(res);
+        return res;
       })
       .catch((error) => {
         console.log('ORGANIZATION ERROR', error);
-        toast.error(ERROR_MESSAGES.EN.GET_ORGANIZATIONS);
+        toast.error(ERROR_MESSAGES.EN.GET_ORGANIZATIONS, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       });
   }, []);
 
@@ -28,11 +31,12 @@ const useOrgAPI = () => {
         console.log('ORGANIZATION CREATE DATA', res);
         saveUser(res.userId);
         addOrg(res);
-        toast.success(SUCCESS_MESSAGES.EN.CREATE_ORGANIZATION);
+        toast.success(SUCCESS_MESSAGES.EN.CREATE_ORGANIZATION, { toastId: TOAST_NOTIFICATION_IDS.SUCCESS });
+        return res;
       })
       .catch((error) => {
         console.log('AUTH LOGIN ERROR', error);
-        toast.error(ERROR_MESSAGES.EN.CREATE_ORGANIZATION);
+        toast.error(ERROR_MESSAGES.EN.CREATE_ORGANIZATION, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       });
   }, []);
 
@@ -41,9 +45,10 @@ const useOrgAPI = () => {
     return OrganizationApiService.getMembers(id)
       .then((res) => {
         console.log('ORGANIZATION MEMBERS DATA', res);
+        return res;
       })
       .catch((error) => {
-        toast.error(ERROR_MESSAGES.EN.GET_MEMBERS);
+        toast.error(ERROR_MESSAGES.EN.GET_MEMBERS, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       });
   }, []);
 
@@ -51,9 +56,10 @@ const useOrgAPI = () => {
     return OrganizationApiService.createMember(payload)
       .then((res) => {
         console.log('ORGANIZATION MEMBER CREATE DATA', res);
+        return res;
       })
       .catch((error) => {
-        toast.error(ERROR_MESSAGES.EN.CREATE_MEMBER);
+        toast.error(ERROR_MESSAGES.EN.CREATE_MEMBER, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       });
   }, []);
 
@@ -61,9 +67,10 @@ const useOrgAPI = () => {
     return OrganizationApiService.inviteMember(payload)
       .then((res) => {
         console.log('MEMBER INVITED', payload.name);
+        return res;
       })
       .catch((error) => {
-        toast.error(ERROR_MESSAGES.EN.INVITE_MEMBER);
+        toast.error(ERROR_MESSAGES.EN.INVITE_MEMBER, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       });
   }, []);
 

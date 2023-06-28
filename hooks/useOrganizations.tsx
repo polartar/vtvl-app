@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { IOrganizationResponse } from 'interfaces/organization';
 import { useMemo } from 'react';
 import { fetchOrg } from 'services/db/organization';
 import { IOrganization } from 'types/models';
@@ -40,7 +41,7 @@ const useOrgStore = create(
   persist<OrgStoreState & OrgStoreActions>(
     (set) => ({
       organizations: [],
-      save: (payload) => set({ organizations: payload }),
+      save: (payload) => set({ organizations: [...payload] }),
       add: (payload) => set((state: OrgStoreState) => ({ organizations: [payload, ...state.organizations] })),
       clear: () => set({ organizations: [] })
     }),
@@ -61,10 +62,10 @@ type OrgStoreActions = {
 export const getOrgStore = () => useOrgStore.getState();
 
 export const useOrganization = () => {
-  const add = useOrgStore(({ add }) => add);
-  const save = useOrgStore(({ save }) => save);
-  const clear = useOrgStore(({ clear }) => clear);
-  const organizations = useOrgStore(({ organizations }) => organizations);
+  const add = useOrgStore(({ add }: OrgStoreActions) => add);
+  const save = useOrgStore(({ save }: OrgStoreActions) => save);
+  const clear = useOrgStore(({ clear }: OrgStoreActions) => clear);
+  const organizations = useOrgStore(({ organizations }: OrgStoreState) => organizations);
 
   return {
     save,

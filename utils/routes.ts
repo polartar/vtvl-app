@@ -1,5 +1,6 @@
 import { Route } from 'hooks/useRoleGuard';
 import { IUserType } from 'types/models/member';
+import { IRole } from 'types/models/settings';
 
 export const allRoles: IUserType[] = [
   'admin',
@@ -14,7 +15,19 @@ export const allRoles: IUserType[] = [
 ];
 export const managerRoles: IUserType[] = ['founder', 'manager', 'manager2'];
 export const recipientRoles: IUserType[] = ['investor', 'employee', 'advisor'];
-export const guestRoles: IUserType[] = ['anonymous', ''];
+export const guestRoles: IUserType[] | IRole[] = ['anonymous', ''];
+
+export const allRolesV2: IRole[] = [
+  IRole.FOUNDER,
+  IRole.ADVISOR,
+  IRole.EMPLOYEE,
+  IRole.INVESTOR,
+  IRole.MANAGER,
+  IRole.OPERATOR
+];
+
+export const managerRolesV2: IRole[] = [IRole.FOUNDER, IRole.MANAGER, IRole.OPERATOR];
+export const recipientRolesV2: IRole[] = [IRole.INVESTOR, IRole.EMPLOYEE, IRole.ADVISOR];
 
 // List of routes in VTVL app.
 // Developer may need to add items here if it is protected and new to the platform.
@@ -34,6 +47,7 @@ export const platformRoutes: Route[] = [
   // { path: '/onboarding/setup-safes', allowedRoles: ['founder'] },
   // { path: '/onboarding/sign-up', allowedRoles: [...guestRoles] },
   // Dashboard routes
+  { path: '/v2/dashboard', allowedRoles: managerRolesV2 },
   { path: '/dashboard', allowedRoles: [...managerRoles] },
   { path: '/dashboard/import-token', allowedRoles: ['founder'] },
   { path: '/dashboard/mint-supply', allowedRoles: ['founder'] },

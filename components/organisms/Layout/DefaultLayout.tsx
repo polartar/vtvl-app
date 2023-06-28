@@ -7,6 +7,7 @@ import ConnectWalletOptionsProps from '@components/molecules/ConnectWalletOption
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
+import { useUser } from '@hooks/useUser';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext from '@providers/onboarding.context';
@@ -19,7 +20,7 @@ import { useLoaderContext } from 'providers/loader.context';
 import React, { useContext, useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { toast } from 'react-toastify';
-import { NO_CONNECT_WALLET_MODAL_PAGES, WEBSITE_NAME } from 'utils/constants';
+import { NO_CONNECT_WALLET_MODAL_PAGES, NO_SIDEBAR_PAGES, USE_NEW_API, WEBSITE_NAME } from 'utils/constants';
 
 import AuthContext from '../../../providers/auth.context';
 
@@ -84,6 +85,9 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   });
   const [connectWalletModal, setConnectWalletModal] = useState(false);
   const router = useRouter();
+
+  // NEW API implementation
+  const { role: userRole } = useUser();
 
   /**
    * SIDEBAR ITEMS BASED ON USER ROLES
@@ -406,16 +410,14 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     }
   };
 
-  const displaySideBar = Boolean(
-    // MOCK DISPLAY
-    // true
-    !inProgress &&
-      user &&
-      user?.memberInfo &&
-      user.memberInfo.type &&
-      !['/recipient/schedule', '/recipient/confirm', '/magic-link-verification'].includes(router.pathname) &&
-      SidebarProps[user?.memberInfo?.type]
-  );
+  const displaySideBar =
+    (USE_NEW_API
+      ? userRole && SidebarProps[userRole.toLowerCase()]
+      : Boolean(
+          // MOCK DISPLAY
+          // true
+          !inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type]
+        )) && !NO_SIDEBAR_PAGES.includes(router.pathname);
 
   const handleWalletConnection = () => {
     setConnectWalletModal(false);
@@ -426,17 +428,24 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   }, []);
 
   useEffect(() => {
-    if (user && user.memberInfo && user.memberInfo.type) {
-      if (user.memberInfo.type === 'founder' && roleOverride) {
-        // set the sidebar items into the switched role
-        setSidebarProperties({ ...SidebarProps[roleOverride] });
-      } else {
-        // Normally set the sidebar itesm to corresponding user type
-        setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
+    if (USE_NEW_API) {
+      console.log('NEW API for sidebar');
+      if (userRole) {
+        setSidebarProperties({ ...SidebarProps[userRole.toLowerCase()] });
       }
     } else {
-      // For testing purposes only
-      setSidebarProperties({ ...SidebarProps.employee });
+      if (user && user.memberInfo && user.memberInfo.type) {
+        if (user.memberInfo.type === 'founder' && roleOverride) {
+          // set the sidebar items into the switched role
+          setSidebarProperties({ ...SidebarProps[roleOverride] });
+        } else {
+          // Normally set the sidebar itesm to corresponding user type
+          setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
+        }
+      } else {
+        // For testing purposes only
+        setSidebarProperties({ ...SidebarProps.employee });
+      }
     }
   }, [user, currentSafe, roleOverride]);
 

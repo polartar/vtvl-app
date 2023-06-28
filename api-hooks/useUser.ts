@@ -1,5 +1,6 @@
 import UserApiService from '@api-services/UserApiService';
 import { useUser } from '@hooks/useUser';
+import { TOAST_NOTIFICATION_IDS } from '@utils/constants';
 import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
@@ -14,11 +15,14 @@ const useUserAPI = () => {
         console.log('USER PROFILE DATA', res);
         save({ userId: res.user.id, name: res.user.name || '', email: res.user.email });
         // toast.success(SUCCESS_MESSAGES.EN.SEND_LOGIN_EMAIL);
+        return res;
       })
       .catch((error) => {
         console.log('USER PROFILE ERROR', error);
-        if (error?.code === 'ERR_NETWORK') toast.error(ERROR_MESSAGES.EN.NETWORK);
-        if (error?.request?.status === 400) toast.error(ERROR_MESSAGES.EN.SEND_LOGIN_EMAIL);
+        if (error?.code === 'ERR_NETWORK')
+          toast.error(ERROR_MESSAGES.EN.NETWORK, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
+        if (error?.request?.status === 400)
+          toast.error(ERROR_MESSAGES.EN.SEND_LOGIN_EMAIL, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       });
   }, []);
 
@@ -29,7 +33,7 @@ const useUserAPI = () => {
       })
       .catch((error) => {
         console.log('ERROR UPDATING USER PROFILE', error);
-        toast.error(ERROR_MESSAGES.EN.UPDATE_PROFILE);
+        toast.error(ERROR_MESSAGES.EN.UPDATE_PROFILE, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       });
   }, []);
 

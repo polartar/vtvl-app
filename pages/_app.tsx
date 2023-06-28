@@ -1,6 +1,7 @@
 import ThemeLoader from '@components/atoms/ThemeLoader/ThemeLoader';
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { Web3Provider } from '@ethersproject/providers';
+import { useAuth } from '@hooks/useAuth';
 import { AuthContextProvider } from '@providers/auth.context';
 import { ClaimTokensContextProvider } from '@providers/claim-tokens.context';
 import { DashboardContextProvider } from '@providers/dashboard.context';
@@ -54,6 +55,8 @@ function getLibrary(provider: any): Web3Provider {
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const router = useRouter();
+  const { checkAccessTokenValidity } = useAuth();
+
   useEffect(() => {
     hotjar.initialize(Number(process.env.NEXT_PUBLIC_HOTJAR_HJID), Number(process.env.NEXT_PUBLIC_HOTJAR_HJSV));
   }, []);
@@ -62,6 +65,10 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   // Use the layout defined at the page level, if available
   // Make way for the contextAPI to update the sidebar and connected states of the user in the default layout.
   const getLayout = Component.getLayout ?? ((page) => page);
+
+  useEffect(() => {
+    checkAccessTokenValidity();
+  }, []);
 
   return (
     <>

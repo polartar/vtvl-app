@@ -7,7 +7,9 @@ import ConnectWalletOptions from '@components/molecules/ConnectWalletOptions/Con
 import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
 import { getOrgStore } from '@hooks/useOrganizations';
+import { useUser } from '@hooks/useUser';
 import { useGlobalContext } from '@providers/global.context';
+import { REDIRECT_URIS } from '@utils/constants';
 import { toUTCString } from '@utils/date';
 import { SIGN_MESSAGE_TEMPLATE } from '@utils/web3';
 import { useWeb3React } from '@web3-react/core';
@@ -47,6 +49,7 @@ const ConnectWalletPage: NextPage = () => {
   const { active, account, activate, library } = useWeb3React();
   const { connectWallet } = useAuth();
   const { getUserProfile } = useUserAPI();
+  const { save: saveUser } = useUser();
   const { getOrganizations } = useOrganization();
   const { organizations } = getOrgStore();
   const [activated, setActivated] = useState(false);
@@ -83,16 +86,18 @@ const ConnectWalletPage: NextPage = () => {
             // Identify which url should the user be redirected to based on his/her current role
             // Probably get the details of the user and check there
             try {
-              await getOrganizations();
-              if (!organizations?.length) {
+              const orgs = await getOrganizations();
+              if (orgs && orgs.length) {
+                // Has an associated organization, there fore is an existing user
+                saveUser({ organizationId: orgs[0].organizationId, role: orgs[0].role });
+                router.push(REDIRECT_URIS.MAIN);
+              } else {
                 // No associated org, new user
                 // redirect to account setup
                 // POST /organization
-                router.push('/v2/onboarding/account-setup');
-              } else {
-                // Has an associated organization, therefore is an existing user
+                router.push(REDIRECT_URIS.SETUP_ACCOUNT);
               }
-              console.log('useMAGIC organizations', organizations);
+              console.log('useMAGIC organizations', organizations, orgs);
             } catch (err) {
               console.log('ERror organization', err);
             }

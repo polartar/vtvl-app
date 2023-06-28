@@ -1,3 +1,7 @@
+import { useAuth } from '@hooks/useAuth';
+import { useOrganization } from '@hooks/useOrganizations';
+import { useUser } from '@hooks/useUser';
+import { USE_NEW_API } from '@utils/constants';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import {
@@ -133,6 +137,10 @@ export function AuthContextProvider({ children }: any) {
 
   const { inProgress } = useOnboardingContext();
   const router = useRouter();
+
+  const { clear: clearAuth } = useAuth();
+  const { clear: clearUser } = useUser();
+  const { clear: clearOrg } = useOrganization();
 
   // Sets the recipient if it is found
   useEffect(() => {
@@ -560,17 +568,25 @@ export function AuthContextProvider({ children }: any) {
   }, []);
 
   const logOut = useCallback(async () => {
-    // sign out from firebase
-    await signOut(auth);
-    // remove user state
-    setUser(undefined);
-    // unauthorize user
-    setIsAuthenticated(false);
-    // remove persistent user states
-    setCache({ user: undefined, roleOverride: undefined, isAuthenticated: undefined });
-    // update auth and role guard states
-    updateRoleGuardState();
-    Router.replace('/onboarding');
+    if (USE_NEW_API) {
+      // Use new API methods
+      clearAuth();
+      clearUser();
+      clearOrg();
+      Router.replace('/v2/auth/login');
+    } else {
+      // sign out from firebase
+      await signOut(auth);
+      // remove user state
+      setUser(undefined);
+      // unauthorize user
+      setIsAuthenticated(false);
+      // remove persistent user states
+      setCache({ user: undefined, roleOverride: undefined, isAuthenticated: undefined });
+      // update auth and role guard states
+      updateRoleGuardState();
+      Router.replace('/onboarding');
+    }
   }, []);
 
   const fetchSafe = useCallback(() => {

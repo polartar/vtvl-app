@@ -1,5 +1,11 @@
 import CoreApiService from '@api-services/CoreApiService';
 import { PLATFORM_NAME } from '@utils/constants';
+import {
+  IOrgMemberInviteRequest,
+  IOrgMemberRequest,
+  IOrganizationRequest,
+  IOrganizationResponse
+} from 'interfaces/organization';
 
 class OrganizationApiService {
   // Organization APIs

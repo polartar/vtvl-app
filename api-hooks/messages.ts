@@ -15,6 +15,8 @@ export const ERROR_MESSAGES = {
 
     WALLET_CONNECT: 'Oh no! Your wallet failed to connect with VTVL. Please try again',
 
+    TOKEN_EXPIRED: 'Oops! looks like your access has expired, please log in again',
+
     /** PROFILE */
     GET_PROFILE: 'Cannot get user profile :(',
     UPDATE_PROFILE: 'Update user profile failed!',

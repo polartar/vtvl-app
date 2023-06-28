@@ -41,11 +41,22 @@ export const FACTORY_CONTRACTS: { [key: number]: string } = {
 export const PLATFORM_NAME = 'app';
 
 export const REDIRECT_URIS = {
+  AUTH_LOGIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/login`),
   AUTH_REGISTER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/register`),
   AUTH_EMAIL: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`),
   AUTH_GOOGLE_CALLBACK: encodeURI(`${PUBLIC_DOMAIN_NAME}/auth/google`),
   AUTH_GOOGLE_LOGIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/connect`),
-  INVITE_MEMBER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`)
+  INVITE_MEMBER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`),
+  SETUP_ACCOUNT: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/onboarding/account-setup`),
+  MAIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/dashboard`)
+};
+
+export const TOAST_NOTIFICATION_IDS = {
+  SUCCESS: 'notif-success',
+  ERROR: 'notif-error',
+  WARNING: 'notif-warning',
+  INFO: 'notif-info',
+  ANY: 'notif-any'
 };
 
 export const USE_NEW_API = process.env.NEXT_PUBLIC_ENABLE_API_INTEGRATION || false;
@@ -75,3 +86,5 @@ export const NO_CONNECT_WALLET_MODAL_PAGES = [
   '/recipient/create',
   '/recipient/schedule'
 ];
+
+export const NO_SIDEBAR_PAGES = ['/recipient/schedule', '/recipient/confirm', '/magic-link-verification'];
