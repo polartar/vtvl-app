@@ -447,7 +447,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         setSidebarProperties({ ...SidebarProps.employee });
       }
     }
-  }, [user, currentSafe, roleOverride]);
+  }, [userRole, user, currentSafe, roleOverride]);
 
   useEffect(() => {
     // Check if the user has a wallet connected on all of the pages except:

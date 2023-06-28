@@ -11,7 +11,7 @@ type UserStoreState = {
 };
 
 type UserStoreActions = {
-  save: (payload: UserStoreState) => void;
+  save: (payload: Partial<UserStoreState>) => void;
   clear: () => void;
 };
 
@@ -23,13 +23,10 @@ const useUserStore = create(
       userId: '',
       organizationId: '',
       role: '',
-      save: (payload) =>
+      save: (payload: Partial<UserStoreState>) =>
         set((state: UserStoreState) => ({
-          name: payload.name || state.name,
-          email: payload.email || state.email,
-          userId: payload.userId || state.userId,
-          organizationId: payload.organizationId || state.organizationId,
-          role: payload.role || state.role
+          ...state,
+          ...payload
         })),
       clear: () =>
         set({

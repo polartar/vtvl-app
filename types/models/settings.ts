@@ -4,6 +4,7 @@ export enum ITeamRole {
 }
 
 export enum IRole {
+  ADMIN = 'ADMIN',
   FOUNDER = 'FOUNDER',
   INVESTOR = 'INVESTOR',
   ADVISOR = 'ADVISOR',

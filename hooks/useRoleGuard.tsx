@@ -3,6 +3,7 @@ import { ILocalStorage } from 'interfaces/locaStorage';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { IUserType } from 'types/models/member';
+import { IRole } from 'types/models/settings';
 import { getCache } from 'utils/localStorage';
 import { managerRoles, recipientRoles } from 'utils/routes';
 
@@ -10,7 +11,8 @@ import { useShallowState } from './useShallowState';
 
 export type Route = {
   path: string;
-  allowedRoles: IUserType[] | IRole[];
+  allowedRoles: IUserType[];
+  allowedRolesV2: IRole[];
 };
 
 type RoleGuardOptions = {
