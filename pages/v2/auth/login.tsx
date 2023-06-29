@@ -102,7 +102,7 @@ const LoginPage = () => {
         <hr className="border-t border-neutral-200 w-full mb-6" />
         <div className="flex flex-row items-center gap-5 justify-center font-medium text-xs text-neutral-800 text-center ">
           Don&apos;t have an account?{' '}
-          <button type="button" className="primary small" onClick={() => router.replace('/auth/register')}>
+          <button type="button" className="primary small" onClick={() => router.replace(REDIRECT_URIS.AUTH_REGISTER)}>
             Create an account
           </button>
         </div>

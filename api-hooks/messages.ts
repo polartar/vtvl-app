@@ -41,7 +41,8 @@ export const SUCCESS_MESSAGES = {
 
     /* ORGANIZATIONS */
     GET_ORGANIZATIONS: 'Organizations found',
-    CREATE_ORGANIZATION: 'Organization created',
+    // CREATE_ORGANIZATION: 'Organization created',
+    CREATE_ORGANIZATION: 'Welcome to VTVL!',
     GET_MEMBERS: 'Members found!',
     CREATE_MEMBER: 'Member created!'
     /* */

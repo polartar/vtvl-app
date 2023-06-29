@@ -8,6 +8,7 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuth } from '@hooks/useAuth';
 import { useOrganization } from '@hooks/useOrganizations';
+import { useUser } from '@hooks/useUser';
 import AuthContext from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
@@ -41,6 +42,7 @@ const AccountSetupPage: NextPage = () => {
   const { organizations } = useOrganization();
   const { logout } = useAuthAPI();
   const { updateUserProfile } = useUserAPI();
+  const { save: saveUser } = useUser();
   const { createMember, createOrganization, inviteMember } = useOrgAPI();
   const router = useRouter();
 
@@ -110,11 +112,11 @@ const AccountSetupPage: NextPage = () => {
   const addContributor = () => append({ name: '', email: '' });
 
   const handleSaveContributors = useCallback(
-    async (contributors: Contributor[]) => {
-      if (contributors && contributors.length && organizations && organizations.length) {
+    async (contributors: Contributor[], organizationId?: string) => {
+      if (contributors && contributors.length && ((organizations && organizations.length) || organizationId)) {
         contributors.map(async (contributor) => {
           await inviteMember({
-            organizationId: organizations[0].id,
+            organizationId: organizationId || organizations[0].id,
             name: contributor.name,
             email: contributor.email,
             role: IRole.MANAGER,
@@ -137,12 +139,17 @@ const AccountSetupPage: NextPage = () => {
       // Update the user profile name
       const userProfile = await updateUserProfile({ name: data.name });
       // Create an organization under the user
-      const orgId = await createOrganization({
+      const newOrganization = await createOrganization({
         name: data.company,
         email: data.companyEmail
       });
 
-      console.log('Create organization', userId, organizations);
+      console.log('Create organization', userId, organizations, data);
+
+      if (newOrganization) {
+        // Save the user data when possible
+        saveUser({ organizationId: newOrganization.id, role: IRole.FOUNDER });
+      }
 
       // Add the same user as a member
       /**
@@ -157,8 +164,8 @@ const AccountSetupPage: NextPage = () => {
       // console.log('Create organization', orgId, addMember);
 
       // Add every other users as member for invitation
-      if (values.contributors && values.contributors.length > 0) {
-        await handleSaveContributors(values.contributors);
+      if (data.contributors && data.contributors.length) {
+        await handleSaveContributors(values.contributors, newOrganization ? newOrganization.organizationId : undefined);
       }
       setFormSuccess(true);
       // Update later with reusable onboarding steps

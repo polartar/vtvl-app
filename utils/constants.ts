@@ -87,4 +87,12 @@ export const NO_CONNECT_WALLET_MODAL_PAGES = [
   '/recipient/schedule'
 ];
 
-export const NO_SIDEBAR_PAGES = ['/recipient/schedule', '/recipient/confirm', '/magic-link-verification'];
+export const NO_SIDEBAR_PAGES = [
+  '/recipient/schedule',
+  '/recipient/confirm',
+  '/magic-link-verification',
+  '/v2/auth/login',
+  '/v2/auth/register',
+  '/v2/onboarding/account-setup',
+  '/v2/onboarding/setup-safes'
+];
