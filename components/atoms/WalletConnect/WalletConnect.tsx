@@ -1,6 +1,7 @@
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import React, { useContext, useState } from 'react';
+import { toast } from 'react-toastify';
 import { twMerge } from 'tailwind-merge';
 import { connectionAssets } from 'types/constants/shared';
 import { truncateAddress } from 'utils/web3';
@@ -19,12 +20,17 @@ const WalletConnect = ({ account, connected }: Props) => {
   const [expanded, setExpanded] = useState(false);
 
   // Function intended for the overall clickable area of the connect wallet button
-  const handleClick = () => {
+  const handleClick = async () => {
     // User is logged in and wallet is connected
     if (account && connected) {
       setExpanded((prev) => !prev);
     } else {
-      activate(injected);
+      try {
+        await activate(injected);
+        toast.success(`Your wallet ${account} is now connected`);
+      } catch (err) {
+        toast.error('Connect wallet failed!');
+      }
     }
   };
 

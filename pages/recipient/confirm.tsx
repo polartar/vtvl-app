@@ -14,6 +14,7 @@ import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchVesting } from 'services/db/vesting';
+import { MESSAGES } from 'utils/messages';
 
 const RecipientCreate: NextPage = () => {
   const { account, library } = useWeb3React();
@@ -51,9 +52,11 @@ const RecipientCreate: NextPage = () => {
         params: [message, account],
         jsonrpc: '2.0'
       });
+      toast.success(MESSAGES.WALLET.SIGNED);
     } catch (err) {
       setTransactionStatus('ERROR');
       setIsSubmitting(false);
+      toast.error(MESSAGES.WALLET.REJECT);
       return;
     }
     try {

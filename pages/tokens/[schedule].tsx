@@ -20,8 +20,10 @@ import LockIcon from 'public/icons/lock.svg';
 import UnlockIcon from 'public/icons/unlock.svg';
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';
+import { toast } from 'react-toastify';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { fetchVesting } from 'services/db/vesting';
+import { MESSAGES } from 'utils/messages';
 import { formatDate, formatTime, getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import { getChartData, getCliffAmount, getCliffDateTime, getNextUnlock, getReleaseFrequencyLabel } from 'utils/vesting';
@@ -112,8 +114,10 @@ const MyTokenSchedule: NextPageWithLayout = () => {
           }
         }
       });
+      toast.success(MESSAGES.WALLET.ACCEPT_IMPORT_TOKEN);
     } catch (error) {
       console.error(error);
+      toast.success(MESSAGES.WALLET.REJECT);
     }
   };
 
