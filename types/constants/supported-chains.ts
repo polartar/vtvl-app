@@ -14,8 +14,7 @@ export enum SupportedChainId {
   OKC_MAINNET = 66,
   OKC_TESTNET = 65,
   BASE_GOERLI = 84531,
-  SATOSHI_MAINNET = 12009,
-  CANTO_TESTMET = 7701
+  SATOSHI_MAINNET = 12009
 }
 
 export const PROD_SUPPORTED_CHAIN_IDS = [
@@ -48,8 +47,7 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
-  SupportedChainId.SATOSHI_MAINNET,
-  SupportedChainId.CANTO_TESTMET
+  SupportedChainId.SATOSHI_MAINNET
 ];
 
 export const SUPPORTED_CHAIN_IDS =
@@ -294,15 +292,6 @@ export const devSupportedChains: ChainsType = {
     code: 'SATS',
     rpc: 'https://mainnet-rpc.satoshichain.io',
     explorer: 'https://satoshiscan.io',
-    multisigTxUrl: ''
-  },
-  [SupportedChainId.CANTO_TESTMET]: {
-    id: 7701,
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/21516.png',
-    title: 'Cantos Chain',
-    code: 'CANTO',
-    rpc: 'https://canto-testnet.plexnode.wtf',
-    explorer: 'https://testnet.tuber.build/',
     multisigTxUrl: ''
   }
 };
