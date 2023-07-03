@@ -1,9 +1,9 @@
-import 'cypress-iframe';
 import { faker } from '@faker-js/faker';
+import 'cypress-iframe';
 
-const randomName = faker.name.firstName()
+const randomName = faker.name.firstName();
 const randomCompanyName = faker.lorem.word();
-const randomWalletAddress =faker.finance.ethereumAddress();
+const randomWalletAddress = faker.finance.ethereumAddress();
 
 describe('email test spec', () => {
   afterEach(() => {
@@ -101,45 +101,45 @@ describe('email test spec', () => {
     });
   });
 
-  it("Use magic link and perform user actions", () => {
+  it('Use magic link and perform user actions', () => {
     cy.readFile(filePath).then((fileContents) => {
-      const lines = fileContents.split('\n')
-      magiclink = lines[0]
-      cy.visit('/')
-      cy.wait(500)
-      cy.visit(magiclink)
-      cy.wait(2000)
-      cy.get(':nth-child(1) > .wallet-button').click()
-      cy.wait(2000)
+      const lines = fileContents.split('\n');
+      magiclink = lines[0];
+      cy.visit('/');
+      cy.wait(500);
+      cy.visit(magiclink);
+      cy.wait(2000);
+      cy.get(':nth-child(1) > .wallet-button').click();
+      cy.wait(2000);
 
       // connect to wallet
-      cy.switchToMetamaskWindow()
-      cy.acceptMetamaskAccess()
-      cy.switchToCypressWindow()
-      cy.wait(2000)
+      cy.switchToMetamaskWindow();
+      cy.acceptMetamaskAccess();
+      cy.switchToCypressWindow();
+      cy.wait(2000);
 
-      cy.get('label.card-radio')  // Select the label element
-        .contains("I'm a founder of a web3 project")  // Find the element containing the founder text
-        .click();  // Click on the element
-      cy.contains('Continue').click()
-      cy.get('input[name="name"]')  // Select the name element
-        .type(randomName);  // Enter a random name
-      cy.get('input[name="company"]')  // Select the company name element
-        .type(randomCompanyName);  // Enter a random company name
-      cy.contains('Continue').click()
+      cy.get('label.card-radio') // Select the label element
+        .contains("I'm a founder of a web3 project") // Find the element containing the founder text
+        .click(); // Click on the element
+      cy.contains('Continue').click();
+      cy.get('input[name="name"]') // Select the name element
+        .type(randomName); // Enter a random name
+      cy.get('input[name="company"]') // Select the company name element
+        .type(randomCompanyName); // Enter a random company name
+      cy.contains('Continue').click();
 
       // create new safe
-      cy.contains("Create new Safe").click()
-      cy.get('input[name="organizationName"]')  // Select the org name element
-        .type(randomCompanyName);  // Enter a random org name
-      cy.get('input[name="owners\\.0\\.name"]')  // Select the owner name element
-        .type(randomName);  // Enter random owner name
-      cy.get('input[name="owners\\.0\\.address"]')  // Select the wallet address element
-        .type(randomWalletAddress);  // Enter fake random owner wallet address
+      cy.contains('Create new Safe').click();
+      cy.get('input[name="organizationName"]') // Select the org name element
+        .type(randomCompanyName); // Enter a random org name
+      cy.get('input[name="owners\\.0\\.name"]') // Select the owner name element
+        .type(randomName); // Enter random owner name
+      cy.get('input[name="owners\\.0\\.address"]') // Select the wallet address element
+        .type(randomWalletAddress); // Enter fake random owner wallet address
       cy.get('input[placeholder="Enter owner email"][name="owners.0.email"]') // Select the email address element
-        .type('a');  // Enter email
-      cy.get('button[type="submit"]')  // Select the submit button
-        .click();  // Click on the button
+        .type('a'); // Enter email
+      cy.get('button[type="submit"]') // Select the submit button
+        .click(); // Click on the button
     });
   });
 });

@@ -1,5 +1,7 @@
 import { useRouter } from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { auth } from 'services/auth/firebase';
+import { fetchMember } from 'services/db/member';
 
 import AuthContext from './auth.context';
 import { useGlobalContext } from './global.context';
@@ -89,8 +91,11 @@ export function OnboardingContextProvider({ children }: any) {
     const foundingMembers = ['founder', 'manager', 'manager2'];
     setInProgress(false);
     await refreshUser();
-    if (user?.memberInfo?.type) {
-      router.replace(!foundingMembers.includes(user?.memberInfo?.type) ? '/claim-portal' : '/dashboard');
+    const user = auth.currentUser;
+    if (!user) return;
+    const memberInfo = await fetchMember(user.uid);
+    if (memberInfo?.type) {
+      router.replace(!foundingMembers.includes(memberInfo?.type) ? '/claim-portal' : '/dashboard');
     }
   };
 
