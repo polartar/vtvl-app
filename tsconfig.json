@@ -26,7 +26,7 @@
       "@api-hooks/*": ["api-hooks/*"],
       "@utils/*": ["utils/*"],
       "@hooks/*": ["hooks/*"],
-      "@store/*": ["store/*"],
+      "@store/*": ["store/*"]
     },
     "outDir": "./dist",
     "incremental": true
