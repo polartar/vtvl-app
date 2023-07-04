@@ -29,6 +29,8 @@ describe('email test spec', () => {
 
         if (emailMatch) {
           const email = emailMatch[1];
+          //cy.log('Extracted email:', email)
+          //Cypress.env('email', email) // Save email in environment variable
           dataToWrite = email;
         } else {
           cy.log('Email not found on the page.');
@@ -36,10 +38,15 @@ describe('email test spec', () => {
 
         if (passwordMatch) {
           const password = passwordMatch[1];
+          //cy.log('Extracted password:', password)
+          //cy.wait(5000)
           dataToWrite = dataToWrite + '\n' + password;
+
+          //Cypress.env('password', password) // Save password in environment variable
         } else {
           cy.log('Password not found on the page.');
         }
+        //const dataToWrite = email + '\n' + password
         cy.log('Extracted data:', dataToWrite);
         cy.writeFile(filePath, dataToWrite);
       });
