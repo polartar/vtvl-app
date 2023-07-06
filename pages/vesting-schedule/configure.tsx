@@ -364,7 +364,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     newValue: OnChangeValue<IVestingTemplate, false>,
     actionMeta: ActionMeta<IVestingTemplate>
   ) => {
-    console.log('Changing value', newValue, actionMeta);
+    console.log('Changing vaule', newValue, actionMeta);
     if (actionMeta.action === 'clear') {
       // remove selection
       tSetValue('template', null);

@@ -20,7 +20,7 @@ export interface DT {
   email?: string;
   name?: string;
   resetLink?: string;
-  emailConfirmLink?: string;
+  emailComfirmLink?: string;
 }
 
 export interface SendMailProps {
@@ -43,7 +43,7 @@ export default async function SendMail({
   data
 }: SendMailProps) {
   try {
-    if (!to) return "Receiver's email is needed";
+    if (!to) return "Reciever's email is needed";
     if (!templateId) return ' Email template is needed';
 
     const dynamicTemplateData = { ...data, subject, ...emailTemplate };

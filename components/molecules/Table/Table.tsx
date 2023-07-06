@@ -50,14 +50,14 @@ const Table = ({
     label: 'Batch transactions',
     onBatchProcessClick: () => {}
   },
-  // Default data
+  // Default datas
   columns,
   data,
   pagination = false,
   exports = false,
   getTrProps = () => {}
 }: any) => {
-  // Table features -- initially has pagination and default column data
+  // Table features -- initially has pagination and default column datas
   let tableFeatures = useTable(
     {
       columns,

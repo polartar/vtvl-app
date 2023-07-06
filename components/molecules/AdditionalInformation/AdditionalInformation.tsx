@@ -20,7 +20,7 @@ const AdditionalInformation = ({ activities = [], ...props }: IActivityFeedProps
             {activity.icon === 'warning' ? <WarningIcon className="w-6 h-6 fill-current text-warning-500" /> : null}
           </div>
           <div>
-            <p className="paragraph-small text-neutral-500">{activity.text}</p>
+            <p className="paragraphy-small text-neutral-500">{activity.text}</p>
           </div>
         </div>
       ))}

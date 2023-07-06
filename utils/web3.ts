@@ -19,12 +19,12 @@ export const BNToAmountString = (v: ethers.BigNumber, decimals = 2) => {
 export const truncateEmail = (email: string) => {
   if (!email) return 'No Email';
 
-  const split = email.split('@');
-  let head = split[0];
+  const splitted = email.split('@');
+  let head = splitted[0];
   if (head.length > 6) {
     head = `${head.slice(0, 2)}...${head.slice(head.length - 2, head.length)}`;
   }
-  return `${head}@${split[1]}`;
+  return `${head}@${splitted[1]}`;
 };
 
 export const getParamFromEvent = (

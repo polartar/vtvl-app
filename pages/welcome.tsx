@@ -69,7 +69,7 @@ const TeamWelcome: NextPage = () => {
       <h1 className="h2 font-medium text-center mt-3">
         Hello, {user?.memberInfo?.name || user?.memberInfo?.email || 'you'}!
       </h1>
-      <p className="paragraph-small neutral-text mt-4 mb-8">
+      <p className="paragraphy-small neutral-text mt-4 mb-8">
         You're almost there! Let's start claiming your tokens. To get started, first let's add{' '}
         {mintFormState.symbol || mintFormState.name || 'Token'} to your wallet by clicking "
         <strong>Import {mintFormState.symbol || mintFormState.name || 'Token'} to your wallet</strong>"
