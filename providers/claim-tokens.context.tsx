@@ -26,7 +26,7 @@ const ClaimTokensContext = createContext({} as IClaimTokensData);
 /**
  * Provider for the Claim tokens context
  * This will store the current users claimable tokens and their details
- * along with the vesting schedule details tied from the claimable tokens possbile on different organizations.
+ * along with the vesting schedule details tied from the claimable tokens possible on different organizations.
  *
  * What should we store here?
  * - Claimable tokens list

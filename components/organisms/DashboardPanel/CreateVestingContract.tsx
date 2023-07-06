@@ -74,7 +74,7 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
   const { account, library, activate, chainId } = useWeb3React();
   const { currentSafe, organizationId } = useAuthContext();
   const { mintFormState } = useTokenContext();
-  const { vestings, setOwnershipTransfered, setRemoveOwnership } = useDashboardContext();
+  const { vestings, setOwnershipTransferred, setRemoveOwnership } = useDashboardContext();
   const { pendingTransactions, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
 
   const [activeVestingIndex, setActiveVestingIndex] = useState(0);
@@ -184,7 +184,7 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
           setTransactionStatus('IN_PROGRESS');
           await transactionResponse.wait();
           setStatus('success');
-          setOwnershipTransfered(true);
+          setOwnershipTransferred(true);
           setTransactionStatus('SUCCESS');
         }
       }
