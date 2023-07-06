@@ -1,4 +1,4 @@
-import { ILocalStorage } from 'interfaces/locaStorage';
+import { ILocalStorage } from 'interfaces/localStorage';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { IUserType } from 'types/models/member';
@@ -80,8 +80,8 @@ const useRoleGuard = (options: RoleGuardOptions) => {
             const fallbackTo = managerRoles.includes(userRole)
               ? '/dashboard'
               : recipientRoles.includes(userRole)
-              ? '/claim-portal'
-              : options.fallbackPath;
+                ? '/claim-portal'
+                : options.fallbackPath;
             router.push(fallbackTo);
           }
           return;
