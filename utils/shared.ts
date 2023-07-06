@@ -134,9 +134,9 @@ export const getUserTokenDetails = async (
     vestingContractAddress: '',
     lockedTokens: new Decimal(0)
   };
-  // Start getting datas when the selected schedule is present
+  // Start getting data when the selected schedule is present
   if (selectedSchedule && selectedSchedule.data) {
-    // Compute datas that are currently not available
+    // Compute data that are currently not available
     const { cliffDuration, lumpSumReleaseAfterCliff, amountToBeVested, startDateTime, endDateTime, releaseFrequency } =
       selectedSchedule.data.details;
     // Get the cliff date so we can proceed
@@ -194,7 +194,7 @@ export const getUserTokenDetails = async (
           ? sub(timeStamp || new Date(), { seconds: 10 })
           : new Date();
 
-      // Simultaneously query below datas in preparation for computations
+      // Simultaneously query below data in preparation for computations
       const [totalAllocatedToUser, totalClaimableByUser, totalVestedToUser, tokenName, tokenSymbol] = await Promise.all(
         [
           vestingContract.finalVestedAmount(userWalletAddress),

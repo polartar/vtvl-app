@@ -259,7 +259,7 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
                     />
                   )}
                 />
-                <span className="paragraphy-small-medium text-neutral-800">out of {options} owner(s)</span>
+                <span className="paragraph-small-medium text-neutral-800">out of {options} owner(s)</span>
               </div>
             </div>
           </div>

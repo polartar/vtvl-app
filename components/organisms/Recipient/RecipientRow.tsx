@@ -144,7 +144,7 @@ const RecipientRow: React.FC<{
           </div>
           <div className="flex items-center w-52 py-3">
             <Copy text={newRecipient.data.walletAddress || ''}>
-              <p className="paragraphy-small ">
+              <p className="paragraph-small ">
                 {newRecipient.data.walletAddress?.slice(0, 5)}...{newRecipient.data.walletAddress?.slice(-4)}
               </p>
             </Copy>

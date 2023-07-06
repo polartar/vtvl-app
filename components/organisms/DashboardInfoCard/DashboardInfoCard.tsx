@@ -18,7 +18,7 @@ const DashboardInfoCard = (props: IDashboardScheduleProps) => {
     <div className="panel">
       {props.icon ? <img src={props.icon} className="w-5 h-5 mb-2.5" /> : null}
       <h3 className="h5 font-semibold text-neutral-900 inter">{props.title}</h3>
-      <p className="paragraphy-small-medium text-neutral-500 mb-12">{props.description}</p>
+      <p className="paragraph-small-medium text-neutral-500 mb-12">{props.description}</p>
       <div className="px-10">
         <EmptyState
           title={props.emptyTitle}

@@ -56,7 +56,7 @@ export default function VestingContractCard({
         </div>
         {address ? (
           <Copy text={address || ''}>
-            <p className="paragraphy-small ">
+            <p className="paragraph-small ">
               {address.slice(0, 5)}...{address.slice(-4)}
             </p>
           </Copy>
