@@ -29,7 +29,7 @@ export const useMyRecipes = () => {
   const myVestingIds = useMemo(
     () =>
       removeDuplication(
-        myRecipes?.map((recipie) => recipie.data.vestingId)?.filter((vestingId) => Boolean(vestingId))
+        myRecipes?.map((recipe) => recipe.data.vestingId)?.filter((vestingId) => Boolean(vestingId))
       ) ?? [],
     [myRecipes]
   );
@@ -37,15 +37,15 @@ export const useMyRecipes = () => {
   const myOrganizationIds = useMemo(
     () =>
       removeDuplication(
-        myRecipes?.map((recipie) => recipie.data.organizationId)?.filter((organizationId) => Boolean(organizationId))
+        myRecipes?.map((recipe) => recipe.data.organizationId)?.filter((organizationId) => Boolean(organizationId))
       ) ?? [],
     [myRecipes]
   );
 
   const schedulesByOrganization = useMemo(
     () =>
-      myRecipes?.reduce((result, recipie) => {
-        const organizationId = recipie.data.organizationId;
+      myRecipes?.reduce((result, recipe) => {
+        const organizationId = recipe.data.organizationId;
         return {
           ...result,
           [organizationId]: Number(result[organizationId] ?? 0) + 1
