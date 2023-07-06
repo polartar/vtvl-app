@@ -33,7 +33,7 @@ interface IDashboardData {
   revokings: { id: string; data: IRevoking }[];
   recipients: IRecipientDoc[];
   vestingContracts: { id: string; data: IVestingContract }[];
-  ownershipTransfered: boolean;
+  ownershipTransferred: boolean;
   insufficientBalance: boolean;
   depositAmount: string;
   vestingsLoading: boolean;
@@ -49,7 +49,7 @@ interface IDashboardData {
   safeTransactions: { [key: string]: SafeTransaction };
   // fetchDashboardVestingContract: () => void;
   fetchDashboardVestings: () => void;
-  setOwnershipTransfered: (v: boolean) => void;
+  setOwnershipTransferred: (v: boolean) => void;
   fetchDashboardData: () => void;
   setRemoveOwnership: (v: boolean) => void;
   setVestingsStatus: (v: { [key: string]: IVestingStatus }) => void;
@@ -74,7 +74,7 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingContracts, setVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
 
   const [revokings, setRevokings] = useState<{ id: string; data: IRevoking }[]>([]);
-  const [ownershipTransfered, setOwnershipTransfered] = useState(false);
+  const [ownershipTransferred, setOwnershipTransferred] = useState(false);
   const [removeOwnership, setRemoveOwnership] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
@@ -280,7 +280,7 @@ export function DashboardContextProvider({ children }: any) {
                 address: currentRecipient.data.walletAddress,
                 // Ensure that the totalAllocation for each recipient is divided by the number of recipients
                 totalAllocation: totalAllocation,
-                // Set recipient's claimed and unclaimed datas
+                // Set recipient's claimed and unclaimed data
                 claimed: claimedAmount,
                 unclaimed: claimableAmount,
                 lockedTokens
@@ -411,7 +411,7 @@ export function DashboardContextProvider({ children }: any) {
       revokings,
       recipients,
       vestingContracts,
-      ownershipTransfered,
+      ownershipTransferred,
       insufficientBalance,
       depositAmount,
       vestingsLoading,
@@ -426,7 +426,7 @@ export function DashboardContextProvider({ children }: any) {
       recipientTokenDetails,
       safeTransactions,
       fetchDashboardVestings,
-      setOwnershipTransfered,
+      setOwnershipTransferred,
       fetchDashboardData,
       setRemoveOwnership,
       setVestingsStatus,
@@ -435,7 +435,7 @@ export function DashboardContextProvider({ children }: any) {
     [
       vestings,
       recipients,
-      ownershipTransfered,
+      ownershipTransferred,
       insufficientBalance,
       depositAmount,
       vestingsLoading,

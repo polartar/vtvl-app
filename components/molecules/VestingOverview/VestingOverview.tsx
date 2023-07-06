@@ -40,36 +40,36 @@ const VestingOverview = ({
     <>
       <div className="grid sm:grid-cols-4 md:grid-cols-8 gap-3 xl:gap-6">
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Total schedules</p>
-          <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
+          <p className="paragraph-tiny-medium neutral-text mb-6">Total schedules</p>
+          <div className="flex flex-row items-center gap-2 paragraph-large-semibold text-neutral-900">
             <SchedulesIcon className="w-6 h-6" />
             {totalSchedules}
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Pending fundings</p>
-          <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
+          <p className="paragraph-tiny-medium neutral-text mb-6">Pending fundings</p>
+          <div className="flex flex-row items-center gap-2 paragraph-large-semibold text-neutral-900">
             <SchedulesIcon className="w-6 h-6" />
             {pendingSchedules}
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Pending deployments</p>
-          <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
+          <p className="paragraph-tiny-medium neutral-text mb-6">Pending deployments</p>
+          <div className="flex flex-row items-center gap-2 paragraph-large-semibold text-neutral-900">
             <ApprovalsIcon className="w-6 h-6" />
             {pendingDeployments}
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Pending approvals</p>
-          <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
+          <p className="paragraph-tiny-medium neutral-text mb-6">Pending approvals</p>
+          <div className="flex flex-row items-center gap-2 paragraph-large-semibold text-neutral-900">
             <ApprovalsIcon className="w-6 h-6" />
             {pendingApprovals}
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Recipients</p>
-          <div className="paragraphy-large-semibold text-neutral-900">
+          <p className="paragraph-tiny-medium neutral-text mb-6">Recipients</p>
+          <div className="paragraph-large-semibold text-neutral-900">
             <div className="row-center mb-6">
               <RecipientsIcon className="w-6 h-6" />
               {totalRecipients}
@@ -82,8 +82,8 @@ const VestingOverview = ({
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">In progress</p>
-          <div className="paragraphy-large-semibold text-neutral-900">
+          <p className="paragraph-tiny-medium neutral-text mb-6">In progress</p>
+          <div className="paragraph-large-semibold text-neutral-900">
             <div className="row-center mb-6">
               <ProgressCircle value={progress.current} max={progress.total} />
               {progress.current}/{progress.total}
@@ -96,18 +96,18 @@ const VestingOverview = ({
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Remaining</p>
-          <div className="paragraphy-large-semibold text-neutral-900">
+          <p className="paragraph-tiny-medium neutral-text mb-6">Remaining</p>
+          <div className="paragraph-large-semibold text-neutral-900">
             {formatNumber(remainingAllocation)} {token}
           </div>
         </div>
         <div>
-          <p className="paragraphy-tiny-medium neutral-text mb-6">Total supply</p>
-          <div className="paragraphy-large-semibold text-neutral-900">
+          <p className="paragraph-tiny-medium neutral-text mb-6">Total supply</p>
+          <div className="paragraph-large-semibold text-neutral-900">
             <p className="mb-2">
               {formatNumber(totalAllocation)} {token}
             </p>
-            <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(totalAllocation)}</div>
+            <div className="paragraph-small-semibold text-success-500">= ${convertToUSD(totalAllocation)}</div>
           </div>
         </div>
       </div>

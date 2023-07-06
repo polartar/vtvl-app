@@ -331,7 +331,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
           {vestingContracts[0]?.data.address ? (
             <Copy text={vestingContracts[0]?.data.address || ''}>
-              <p className="paragraphy-small ">
+              <p className="paragraph-small ">
                 {vestingContracts[0]?.data.address.slice(0, 5)}...{vestingContracts[0]?.data.address.slice(-4)}
               </p>
             </Copy>

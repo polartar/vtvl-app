@@ -103,8 +103,8 @@ const DashboardVestingSummary: NextPageWithLayout = () => {
 
   const SuccessToast = () => (
     <div>
-      <p className="paragraphy-small-medium">Amount vested updated!</p>
-      <p className="paragraphy-small">
+      <p className="paragraph-small-medium">Amount vested updated!</p>
+      <p className="paragraph-small">
         New total vested amount is {amountToBeVested.value} {mintFormState.symbol || 'Token'}
       </p>
     </div>

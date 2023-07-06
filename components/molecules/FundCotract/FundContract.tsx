@@ -18,14 +18,14 @@ const FundContract: React.FC<IFundContractProps> = ({ symbol, address, amount, .
           <span>Contract Address</span>
         </label>
         <Copy text={address}>
-          <p className="paragraphy-tiny-medium neutral-text">{address}</p>
+          <p className="paragraph-tiny-medium neutral-text">{address}</p>
         </Copy>
       </div>
       <div>
         <label>
           <span>Amount needed</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{formatNumber(+amount)}</p>
+        <p className="paragraph-tiny-medium neutral-text">{formatNumber(+amount)}</p>
       </div>
     </div>
   );

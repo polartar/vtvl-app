@@ -160,7 +160,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
     <div className="w-full">
       <div className="max-w-4xl xl:max-w-full">
         <h1 className="text-neutral-900 mb-2">Schedule-001</h1>
-        <p className="paragraphy-small text-neutral-500 mb-4">
+        <p className="paragraph-small text-neutral-500 mb-4">
           Withdraw your <strong>{mintFormState.symbol || 'Token'}</strong> tokens from this vesting schedule.
         </p>
         <div className="grid md:grid-cols-12 gap-6">
@@ -186,7 +186,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     y={'51%'}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className="paragraphy-medium-medium fill-neutral-900">
+                    className="paragraph-medium-medium fill-neutral-900">
                     {formatNumber(10000)} {mintFormState.symbol || 'Token'}
                   </text>
                   <text
@@ -225,29 +225,29 @@ const MyTokenSchedule: NextPageWithLayout = () => {
               <VestingProgress duration="32 days left" progress={50} />
               <div className="grid grid-cols-4 gap-3 my-6">
                 <div>
-                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Withdrawn</p>
-                  <div className="paragraphy-small-semibold text-neutral-600 row-center">
+                  <p className="paragraph-small-medium text-neutral-500 mb-2">Withdrawn</p>
+                  <div className="paragraph-small-semibold text-neutral-600 row-center">
                     <div className="w-3 h-3 rounded-full bg-secondary-900"></div>
                     {formatNumber(1000)} {mintFormState.symbol || 'Token'}
                   </div>
                 </div>
                 <div>
-                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Unclaimed</p>
-                  <div className="paragraphy-small-semibold text-neutral-600 row-center">
+                  <p className="paragraph-small-medium text-neutral-500 mb-2">Unclaimed</p>
+                  <div className="paragraph-small-semibold text-neutral-600 row-center">
                     <div className="w-3 h-3 rounded-full bg-primary-900"></div>
                     {formatNumber(500)} {mintFormState.symbol || 'Token'}
                   </div>
                 </div>
                 <div>
-                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Remaining</p>
-                  <div className="paragraphy-small-semibold text-neutral-600 row-center">
+                  <p className="paragraph-small-medium text-neutral-500 mb-2">Remaining</p>
+                  <div className="paragraph-small-semibold text-neutral-600 row-center">
                     <div className="w-3 h-3 rounded-full bg-success-500"></div>
                     {formatNumber(9630)} {mintFormState.symbol || 'Token'}
                   </div>
                 </div>
                 <div>
-                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Next unlock</p>
-                  <div className="paragraphy-small-semibold text-neutral-600">
+                  <p className="paragraph-small-medium text-neutral-500 mb-2">Next unlock</p>
+                  <div className="paragraph-small-semibold text-neutral-600">
                     {/*
                       Add the current date here plus the end date time of the vesting schedule 
                       OR probably be the date time of the next linear release
@@ -266,14 +266,14 @@ const MyTokenSchedule: NextPageWithLayout = () => {
               </div>
               <div className="grid grid-cols-2 border-t border-b border-gray-200 py-6 mb-6">
                 <div>
-                  <p className="paragraphy-small-medium text-neutral-500 mb-2">Start</p>
+                  <p className="paragraph-small-medium text-neutral-500 mb-2">Start</p>
                   <div className="flex flex-row items-start gap-2 text-xs font-semibold text-neutral-600">
                     <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
                     {format(new Date(2022, 9, 26, 11, 7), 'LLL d, yyyy - h:mm aa')}
                   </div>
                 </div>
                 <div>
-                  <p className="paragraphy-small-medium text-neutral-500 mb-2">End</p>
+                  <p className="paragraph-small-medium text-neutral-500 mb-2">End</p>
                   <div className="flex flex-row items-start gap-2 text-xs font-semibold text-neutral-600">
                     <img src="/icons/calendar-clock.svg" className="w-5 h-5" alt="Cliff" />
                     {format(new Date(2022, 11, 26, 11, 7), 'LLL d, yyyy - h:mm aa')}
@@ -314,7 +314,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     <p className="text-xxs text-neutral-500">
                       <strong>{mintFormState.symbol || 'Token'}/USD</strong> Price
                     </p>
-                    <p className="paragraphy-large-semibold text-neutral-900">${formatNumber(0.493627)}</p>
+                    <p className="paragraph-large-semibold text-neutral-900">${formatNumber(0.493627)}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -349,7 +349,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <p className="paragraphy-small-semibol text-secondary-900 mb-5">
+            <p className="paragraph-small-semibol text-secondary-900 mb-5">
               {mintFormState.symbol || 'Token'} holders
             </p>
             <h3 className="font-semibold text-neutral-900 inter mb-5">Additional Information</h3>

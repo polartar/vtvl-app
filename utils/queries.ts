@@ -1,7 +1,7 @@
 export const QUERY_KEYS = {
   RECIPIENT: {
     ALL: 'get-all-recipients',
-    MINE: 'get-my-recipies'
+    MINE: 'get-my-recipes'
   },
   ORGANIZATION: {
     FROM_IDS: 'get-organizations-from-ids'
