@@ -39,8 +39,8 @@ const ActivityFeed = ({ activities = [], ...props }: IActivityFeedProps) => {
             {activity.icon === 'warning' ? <WarningIcon className="w-6 h-6 fill-current text-warning-500" /> : null}
           </div>
           <div>
-            <p className="paragraphy-small-medium text-neutral-700">{activity.text}</p>
-            <p className="paragraphy-tiny-medium text-neutral-400">{renderDate(activity.date)}</p>
+            <p className="paragraph-small-medium text-neutral-700">{activity.text}</p>
+            <p className="paragraph-tiny-medium text-neutral-400">{renderDate(activity.date)}</p>
           </div>
         </div>
       ))}

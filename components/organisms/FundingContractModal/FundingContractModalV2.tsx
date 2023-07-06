@@ -166,7 +166,7 @@ const FundingContractModal = ({
           <Form isSubmitting={isSubmitting} onSubmit={handleSubmit(onSubmit)}>
             <h2 className="h5 mb-3 text-neutral-800 font-medium">Fund schedule</h2>
             <h3 className="h6 text-neutral-800 font-medium">Select wallet</h3>
-            <p className="paragraphy-small neutral-text mb-3">Select the wallet to fund the schedule</p>
+            <p className="paragraph-small neutral-text mb-3">Select the wallet to fund the schedule</p>
             <Controller
               name="selectedFundSource"
               control={control}
@@ -205,7 +205,7 @@ const FundingContractModal = ({
             {selectedFundSource.value ? (
               <div className="pt-5 mt-5 border-t border-neutral-200">
                 <h3 className="h6 text-neutral-800 font-medium">Select funding amount</h3>
-                <p className="paragraphy-small neutral-text mb-3">How much would you like to fund your schedule?</p>
+                <p className="paragraph-small neutral-text mb-3">How much would you like to fund your schedule?</p>
                 <Controller
                   name="fundingMethod"
                   control={control}
@@ -313,7 +313,7 @@ const FundingContractModal = ({
                       />
                       <div className="row-center mt-2">
                         <CopyIcon className="fill-current h-4" />
-                        <p className="paragraphy-small neutral-text">{vestingContract.data.address}</p>
+                        <p className="paragraph-small neutral-text">{vestingContract.data.address}</p>
                       </div>
                     </div>
                   </Copy>

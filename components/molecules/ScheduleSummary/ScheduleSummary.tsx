@@ -7,31 +7,31 @@ const ScheduleSummary = (props: IScheduleSummaryProps) => {
         <label>
           <span>Schedule name</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{props.name || '--'}</p>
+        <p className="paragraph-tiny-medium neutral-text">{props.name || '--'}</p>
       </div>
       <div>
         <label>
           <span>Token per user</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{props.tokenPerUser}</p>
+        <p className="paragraph-tiny-medium neutral-text">{props.tokenPerUser}</p>
       </div>
       <div>
         <label>
           <span>Beneficiaries</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{props.beneficiaries}</p>
+        <p className="paragraph-tiny-medium neutral-text">{props.beneficiaries}</p>
       </div>
       <div>
         <label>
           <span>Total Period</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{props.totalPeriod}</p>
+        <p className="paragraph-tiny-medium neutral-text">{props.totalPeriod}</p>
       </div>
       <div>
         <label>
           <span>Created by</span>
         </label>
-        <p className="paragraphy-tiny-medium neutral-text">{props.createdBy}</p>
+        <p className="paragraph-tiny-medium neutral-text">{props.createdBy}</p>
       </div>
     </div>
   );

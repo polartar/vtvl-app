@@ -149,7 +149,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
         message={message}
         onSubmit={handleSubmit(onSubmit)}
         className="w-full my-6">
-        <span className="paragraphy-medium-medium text-neutral-700">Token address</span>
+        <span className="paragraph-medium-medium text-neutral-700">Token address</span>
         <p className="text-sm text-neutral-500 mb-2">
           Please confirm the token address below to make sure it's the correct token.
         </p>
