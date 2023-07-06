@@ -4,6 +4,7 @@ import 'cypress-iframe';
 const randomName = faker.name.firstName();
 const randomCompanyName = faker.lorem.word();
 const randomWalletAddress = faker.finance.ethereumAddress();
+const randomEmail = faker.internet.email()
 
 describe('email test spec', () => {
   afterEach(() => {
@@ -29,8 +30,6 @@ describe('email test spec', () => {
 
         if (emailMatch) {
           const email = emailMatch[1];
-          //cy.log('Extracted email:', email)
-          //Cypress.env('email', email) // Save email in environment variable
           dataToWrite = email;
         } else {
           cy.log('Email not found on the page.');
@@ -38,8 +37,6 @@ describe('email test spec', () => {
 
         if (passwordMatch) {
           const password = passwordMatch[1];
-          //cy.log('Extracted password:', password)
-          //cy.wait(5000)
           dataToWrite = dataToWrite + '\n' + password;
 
           //Cypress.env('password', password) // Save password in environment variable
@@ -144,7 +141,7 @@ describe('email test spec', () => {
       cy.get('input[name="owners\\.0\\.address"]') // Select the wallet address element
         .type(randomWalletAddress); // Enter fake random owner wallet address
       cy.get('input[placeholder="Enter owner email"][name="owners.0.email"]') // Select the email address element
-        .type('a'); // Enter email
+        .type(randomEmail); // Enter email
       cy.get('button[type="submit"]') // Select the submit button
         .click(); // Click on the button
     });
