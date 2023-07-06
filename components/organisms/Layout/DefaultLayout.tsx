@@ -444,7 +444,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // set the sidebar items into the switched role
         setSidebarProperties({ ...SidebarProps[roleOverride] });
       } else {
-        // Normally set the sidebar itesm to corresponding user type
+        // Normally set the sidebar items to corresponding user type
         setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
       }
     } else {
