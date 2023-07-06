@@ -32,7 +32,7 @@ const defaultValues: IAdditionalSupply = {
   additionalTokensText: ''
 };
 
-const MintSupply: NextPageWithLayout = () => {
+const MintSuppy: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
   const { transactionStatus, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
@@ -282,7 +282,7 @@ const MintSupply: NextPageWithLayout = () => {
   );
 };
 
-MintSupply.getLayout = function getLayout(page: ReactElement) {
+MintSuppy.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Dashboard', route: '/dashboard' },
@@ -295,4 +295,4 @@ MintSupply.getLayout = function getLayout(page: ReactElement) {
   );
 };
 
-export default MintSupply;
+export default MintSuppy;

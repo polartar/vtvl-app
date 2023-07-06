@@ -16,7 +16,7 @@ const ConfirmationSuccess: NextPageWithLayout = () => {
         image={<Lottie animationData={SuccessAnimation} style={{ width: '106px' }} />}
         imageSize="small"
         imageBlend={false}
-        title={`Vesting schedule successfully ${scheduleMode.edit ? 'updated' : 'configured'}!`}
+        title={`Vesting schedule succesfully ${scheduleMode.edit ? 'updated' : 'configured'}!`}
         description="Go to your dashboard to proceed">
         {/* <button type="button" className="primary flex" onClick={() => Router.push(`/vesting-schedule`)}>
           View schedules

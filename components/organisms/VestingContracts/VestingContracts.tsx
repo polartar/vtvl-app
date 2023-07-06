@@ -85,7 +85,7 @@ export default function VestingContracts() {
             {token.name}
           </Typography>
           <Copy text={token?.address || ''}>
-            <p className="paragraph-small ">
+            <p className="paragraphy-small ">
               {token.address.slice(0, 5)}...{token.address.slice(-4)}
             </p>
           </Copy>

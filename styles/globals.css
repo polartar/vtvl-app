@@ -706,52 +706,52 @@
     @apply flex flex-row items-center gap-2;
   }
   /* Paragraph styles */
-  .paragraph-large-bold {
+  .paragraphy-large-bold {
     @apply text-lg font-bold;
   }
-  .paragraph-large-semibold {
+  .paragraphy-large-semibold {
     @apply text-lg font-semibold;
   }
-  .paragraph-large-medium {
+  .paragraphy-large-medium {
     @apply text-lg font-medium;
   }
-  .paragraph-large {
+  .paragraphy-large {
     @apply text-lg font-normal;
   }
-  .paragraph-medium-bold {
+  .paragraphy-medium-bold {
     @apply text-base font-bold;
   }
-  .paragraph-medium-semibold {
+  .paragraphy-medium-semibold {
     @apply text-base font-semibold;
   }
-  .paragraph-medium-medium {
+  .paragraphy-medium-medium {
     @apply text-base font-medium;
   }
-  .paragraph-medium {
+  .paragraphy-medium {
     @apply text-base font-normal;
   }
-  .paragraph-small-bold {
+  .paragraphy-small-bold {
     @apply text-sm font-bold;
   }
-  .paragraph-small-semibold {
+  .paragraphy-small-semibold {
     @apply text-sm font-semibold;
   }
-  .paragraph-small-medium {
+  .paragraphy-small-medium {
     @apply text-sm font-medium;
   }
-  .paragraph-small {
+  .paragraphy-small {
     @apply text-sm font-normal;
   }
-  .paragraph-tiny-bold {
+  .paragraphy-tiny-bold {
     @apply text-xs font-bold;
   }
-  .paragraph-tiny-semibold {
+  .paragraphy-tiny-semibold {
     @apply text-xs font-semibold;
   }
-  .paragraph-tiny-medium {
+  .paragraphy-tiny-medium {
     @apply text-xs font-medium;
   }
-  .paragraph-tiny {
+  .paragraphy-tiny {
     @apply text-xs font-normal;
   }
   .neutral-text {
