@@ -1,4 +1,4 @@
-import { ILocalStorage } from 'interfaces/locaStorage';
+import { ILocalStorage } from 'interfaces/localStorage';
 
 import { CACHE_KEY } from './constants';
 
