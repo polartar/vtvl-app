@@ -17,7 +17,7 @@ const ContractOverview = ({
         <label>
           <span>Token name</span>
         </label>
-        <p className="paragraph-tiny-medium neutral-text">{tokenName}</p>
+        <p className="paragraphy-tiny-medium neutral-text">{tokenName}</p>
       </div>
       <div>
         <label>
@@ -29,7 +29,7 @@ const ContractOverview = ({
         <label>
           <span>Supply cap</span>
         </label>
-        <p className="paragraph-tiny-medium neutral-text">
+        <p className="paragraphy-tiny-medium neutral-text">
           {(supplyCap === 'UNLIMITED' && maxSupply) || !supplyCap ? 'Unknown' : supplyCap}
         </p>
       </div>
@@ -37,7 +37,7 @@ const ContractOverview = ({
         <label>
           <span>Maximum supply</span>
         </label>
-        <p className="paragraph-tiny-medium neutral-text">
+        <p className="paragraphy-tiny-medium neutral-text">
           {(supplyCap === 'UNLIMITED' && maxSupply) || !supplyCap || supplyCap === 'LIMITED'
             ? formatNumber(maxSupply)
             : supplyCap === 'UNLIMITED'
@@ -50,7 +50,7 @@ const ContractOverview = ({
           <span>Token address</span>
         </label>
         <Copy text={address}>
-          <p className="paragraph-tiny-medium neutral-text">{address}</p>
+          <p className="paragraphy-tiny-medium neutral-text">{address}</p>
         </Copy>
       </div>
     </div>

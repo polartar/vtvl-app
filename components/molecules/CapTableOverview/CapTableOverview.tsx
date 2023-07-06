@@ -32,53 +32,53 @@ const CapTableOverview = ({
     <>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <div>
-          <p className="paragraph-tiny-medium neutral-text mb-6">Schedules</p>
-          <div className="flex flex-row items-center gap-2 paragraph-large-semibold text-neutral-900">
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Schedules</p>
+          <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
             <SchedulesIcon className="w-6 h-6" />
             {schedules}
           </div>
         </div>
         <div>
-          <p className="paragraph-tiny-medium neutral-text mb-6">Total recipients</p>
-          <div className="flex flex-row items-center gap-2 paragraph-large-semibold text-neutral-900">
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Total recipients</p>
+          <div className="flex flex-row items-center gap-2 paragraphy-large-semibold text-neutral-900">
             <RecipientsIcon className="w-6 h-6" />
             {totalRecipients}
           </div>
         </div>
         <div>
-          <p className="paragraph-tiny-medium neutral-text mb-6">Withdrawn</p>
-          <div className="paragraph-large-semibold text-neutral-900">
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Withdrawn</p>
+          <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
               {formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(claimed))))} {token}
             </p>
-            {/* <div className="paragraph-small-semibold text-success-500">= ${convertToUSD(claimed)}</div> */}
+            {/* <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(claimed)}</div> */}
           </div>
         </div>
         <div>
-          <p className="paragraph-tiny-medium neutral-text mb-6">Unclaimed</p>
-          <div className="paragraph-large-semibold text-neutral-900">
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Unclaimed</p>
+          <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
               {formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(unclaimed))))} {token}
             </p>
-            {/* <div className="paragraph-small-semibold text-success-500">= ${convertToUSD(unclaimed)}</div> */}
+            {/* <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(unclaimed)}</div> */}
           </div>
         </div>
         {/* <div>
-          <p className="paragraph-tiny-medium neutral-text mb-6">Total withdrawn</p>
-          <div className="paragraph-large-semibold text-neutral-900">
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Total withdrawn</p>
+          <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
               {formatNumber(+totalWithdrawn.toString())} {token}
             </p>
-            <div className="paragraph-small-semibold text-success-500">= ${convertToUSD(totalWithdrawn)}</div>
+            <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(totalWithdrawn)}</div>
           </div>
         </div> */}
         <div>
-          <p className="paragraph-tiny-medium neutral-text mb-6">Total allocation</p>
-          <div className="paragraph-large-semibold text-neutral-900">
+          <p className="paragraphy-tiny-medium neutral-text mb-6">Total allocation</p>
+          <div className="paragraphy-large-semibold text-neutral-900">
             <p className="mb-2">
               {formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(totalAllocation))))} {token}
             </p>
-            {/* <div className="paragraph-small-semibold text-success-500">= ${convertToUSD(totalAllocation)}</div> */}
+            {/* <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(totalAllocation)}</div> */}
           </div>
         </div>
       </div>

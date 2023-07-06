@@ -253,7 +253,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
           <div className="grid md:grid-cols-12 gap-6">
             <div className="md:col-span-7">
               <h1 className="text-neutral-900 mb-2">{selectedSchedule?.data.name}</h1>
-              <p className="paragraph-small text-neutral-500 mb-4">
+              <p className="paragraphy-small text-neutral-500 mb-4">
                 Withdraw your <strong>{userTokenDetails.symbol || 'Token'}</strong> tokens from this vesting schedule.
               </p>
               <div className="panel">
@@ -272,7 +272,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                       y={'51%'}
                       textAnchor="middle"
                       dominantBaseline="middle"
-                      className="paragraph-medium-medium fill-neutral-900">
+                      className="paragraphy-medium-medium fill-neutral-900">
                       {formatNumber(userTokenDetails.totalAllocation)} {userTokenDetails.symbol || 'Token'}
                     </text>
                     <text
@@ -323,8 +323,8 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 my-6 border-b border-gray-200 pb-6">
                   <div className="border-b border-gray-200 pb-3 lg:border-0 lg:pb-0">
-                    <p className="paragraph-small-medium text-neutral-500 mb-2">Withdrawn</p>
-                    <div className="paragraph-small-semibold text-neutral-600 flex flex-row gap-1">
+                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Withdrawn</p>
+                    <div className="paragraphy-small-semibold text-neutral-600 flex flex-row gap-1">
                       <div className="mt-1 w-3 h-3 rounded-full bg-secondary-900 flex-shrink-0"></div>
                       <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
                         {formatNumber(userTokenDetails.claimedAmount, 6)} {userTokenDetails.symbol || 'Token'}
@@ -332,8 +332,8 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     </div>
                   </div>
                   <div className="border-b border-gray-200 pb-3 lg:border-0 lg:pb-0">
-                    <p className="paragraph-small-medium text-neutral-500 mb-2">Unclaimed</p>
-                    <div className="paragraph-small-semibold text-neutral-600 flex flex-row gap-1">
+                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Unclaimed</p>
+                    <div className="paragraphy-small-semibold text-neutral-600 flex flex-row gap-1">
                       <div className="mt-1 w-3 h-3 rounded-full bg-primary-900 flex-shrink-0"></div>
                       <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
                         {formatNumber(userTokenDetails.claimableAmount, 6)} {userTokenDetails.symbol || 'Token'}
@@ -341,8 +341,8 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     </div>
                   </div>
                   <div className="border-b border-gray-200 pb-3 sm:border-0 sm:pb-0">
-                    <p className="paragraph-small-medium text-neutral-500 mb-2">Remaining</p>
-                    <div className="paragraph-small-semibold text-neutral-600 flex flex-row gap-1">
+                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Remaining</p>
+                    <div className="paragraphy-small-semibold text-neutral-600 flex flex-row gap-1">
                       <div className="mt-1 w-3 h-3 rounded-full bg-success-500 flex-shrink-0"></div>
                       <span className={`${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
                         {formatNumber(userTokenDetails.remainingAmount, 6)} {userTokenDetails.symbol || 'Token'}
@@ -350,8 +350,8 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     </div>
                   </div>
                   <div>
-                    <p className="paragraph-small-medium text-neutral-500 mb-2">Next unlock</p>
-                    <div className="paragraph-small-semibold text-neutral-600">
+                    <p className="paragraphy-small-medium text-neutral-500 mb-2">Next unlock</p>
+                    <div className="paragraphy-small-semibold text-neutral-600">
                       {/*
                       Add the current date here plus the end date time of the vesting schedule 
                       OR probably be the date time of the next linear release
@@ -393,7 +393,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
             </div>
             <div className="md:col-span-5">
               <h2 className="h1 text-neutral-900 mb-2">Token summary</h2>
-              <p className="paragraph-small text-neutral-500 mb-4">
+              <p className="paragraphy-small text-neutral-500 mb-4">
                 Here is the summary of your <strong>{userTokenDetails.symbol}</strong> tokens.
               </p>
               <div className="panel p-0 grid sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">

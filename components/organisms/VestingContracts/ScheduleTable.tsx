@@ -945,7 +945,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               <div className="flex items-center w-36 py-3">{recipient.name}</div>
               <div className="flex items-center w-52 py-3">
                 <Copy text={recipient.walletAddress}>
-                  <p className="paragraph-small ">
+                  <p className="paragraphy-small ">
                     {recipient.walletAddress.slice(0, 5)}...{recipient.walletAddress.slice(-4)}
                   </p>
                 </Copy>
