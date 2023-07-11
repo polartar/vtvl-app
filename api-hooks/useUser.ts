@@ -1,5 +1,5 @@
 import UserApiService from '@api-services/UserApiService';
-import { useUser } from '@hooks/useUser';
+import { useUser } from '@store/useUser';
 import { TOAST_NOTIFICATION_IDS } from '@utils/constants';
 import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';

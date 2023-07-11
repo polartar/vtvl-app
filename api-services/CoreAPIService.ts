@@ -1,4 +1,4 @@
-import { getAuthStore } from '@hooks/useAuth';
+import { getAuthStore } from '@store/useAuth';
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
 

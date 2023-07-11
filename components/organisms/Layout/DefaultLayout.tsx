@@ -7,11 +7,11 @@ import ConnectWalletOptionsProps from '@components/molecules/ConnectWalletOption
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
-import { useUser } from '@hooks/useUser';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useVestingContext } from '@providers/vesting.context';
+import { useUser } from '@store/useUser';
 import { useWeb3React } from '@web3-react/core';
 import { motion } from 'framer-motion';
 import useEagerConnect from 'hooks/useEagerConnect';

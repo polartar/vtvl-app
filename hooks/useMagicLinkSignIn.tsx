@@ -1,9 +1,9 @@
 import useAuth from '@api-hooks/useAuth';
 import useOrganization from '@api-hooks/useOrganization';
-import { getOrgStore } from '@hooks/useOrganizations';
 import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useOnboardingContext } from '@providers/onboarding.context';
+import { getOrgStore } from '@store/useOrganizations';
 import { USE_NEW_API } from '@utils/constants';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
