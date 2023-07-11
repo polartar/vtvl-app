@@ -1,4 +1,4 @@
-import CoreApiService from '@api-services/CoreApiService';
+import CoreApiService from '@api-services/CoreApiServiceTemp';
 
 class UserApiService {
   getProfile = () => CoreApiService.get<string>('/auth/me');
