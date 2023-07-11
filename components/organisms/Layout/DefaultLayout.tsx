@@ -7,11 +7,13 @@ import ConnectWalletOptionsProps from '@components/molecules/ConnectWalletOption
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
+import { useUser } from '@hooks/useUser';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext from '@providers/onboarding.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
+import { motion } from 'framer-motion';
 import useEagerConnect from 'hooks/useEagerConnect';
 import useInactiveListener from 'hooks/useInactiveListener';
 import Head from 'next/head';
@@ -20,7 +22,7 @@ import { useLoaderContext } from 'providers/loader.context';
 import React, { useContext, useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { toast } from 'react-toastify';
-import { WEBSITE_NAME } from 'utils/constants';
+import { NO_CONNECT_WALLET_MODAL_PAGES, NO_SIDEBAR_PAGES, USE_NEW_API, WEBSITE_NAME } from 'utils/constants';
 
 import AuthContext from '../../../providers/auth.context';
 
@@ -97,6 +99,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       setActivatingConnector(undefined);
     }
   }, [activatingConnector, connector]);
+  // NEW API implementation
+  const { role: userRole } = useUser();
 
   /**
    * SIDEBAR ITEMS BASED ON USER ROLES
@@ -419,16 +423,14 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     }
   };
 
-  const displaySideBar = Boolean(
-    // MOCK DISPLAY
-    // true
-    !inProgress &&
-      user &&
-      user?.memberInfo &&
-      user.memberInfo.type &&
-      !['/recipient/schedule', '/recipient/confirm', '/magic-link-verification'].includes(router.pathname) &&
-      SidebarProps[user?.memberInfo?.type]
-  );
+  const displaySideBar =
+    (USE_NEW_API
+      ? userRole && SidebarProps[userRole.toLowerCase()]
+      : Boolean(
+          // MOCK DISPLAY
+          // true
+          !inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type]
+        )) && !NO_SIDEBAR_PAGES.includes(router.pathname);
 
   const handleWalletConnection = () => {
     setConnectWalletModal(false);
@@ -439,19 +441,26 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   }, []);
 
   useEffect(() => {
-    if (user && user.memberInfo && user.memberInfo.type) {
-      if (user.memberInfo.type === 'founder' && roleOverride) {
-        // set the sidebar items into the switched role
-        setSidebarProperties({ ...SidebarProps[roleOverride] });
-      } else {
-        // Normally set the sidebar itesm to corresponding user type
-        setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
+    if (USE_NEW_API) {
+      console.log('NEW API for sidebar');
+      if (userRole) {
+        setSidebarProperties({ ...SidebarProps[userRole.toLowerCase()] });
       }
     } else {
-      // For testing purposes only
-      setSidebarProperties({ ...SidebarProps.employee });
+      if (user && user.memberInfo && user.memberInfo.type) {
+        if (user.memberInfo.type === 'founder' && roleOverride) {
+          // set the sidebar items into the switched role
+          setSidebarProperties({ ...SidebarProps[roleOverride] });
+        } else {
+          // Normally set the sidebar itesm to corresponding user type
+          setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
+        }
+      } else {
+        // For testing purposes only
+        setSidebarProperties({ ...SidebarProps.employee });
+      }
     }
-  }, [user, currentSafe, roleOverride]);
+  }, [userRole, user, currentSafe, roleOverride]);
 
   useEffect(() => {
     // Check if the user has a wallet connected on all of the pages except:
@@ -460,23 +469,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     // 3. onboarding/member-login
     // 4. onboarding/
     // 5. onboarding/connect-wallet
-    const hideConnectModalOnRoutes = [
-      '/onboarding/sign-up',
-      '/onboarding/login',
-      '/onboarding',
-      '/onboarding/member-login',
-      '/onboarding/connect-wallet',
-      '/expired',
-      '/recipient/create',
-      '/recipient/schedule',
-      '/404',
-      '/not-found',
-      '/terms',
-      '/privacypolicy',
-      '/magic-link-verification'
-    ];
-
-    if (!hideConnectModalOnRoutes.includes(router.pathname) && !active && !account) {
+    if (!NO_CONNECT_WALLET_MODAL_PAGES.includes(router.pathname) && !active && !account) {
       setConnectWalletModal(true);
     } else {
       setConnectWalletModal(false);
@@ -505,26 +498,35 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
             ? renderFavicons(assets.logoFavicon.src)
             : renderFavicons('/favicon.ico')}
         </Head>
-        <Header
-          connected={active}
-          user={user}
-          onLogout={() => logOut()}
-          toggleSideBar={toggleSideBar}
-          // onLogin={() => setUser({ name: 'Jane Doe' })}
-          // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
-        />
-        <Layout className="flex flex-row w-full">
-          {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
-          <div className="relative">
-            {loading && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
-            <Main
-              sidebarIsExpanded={sidebarIsExpanded}
-              sidebarIsShown={displaySideBar}
-              className="flex flex-col items-center pt-7">
-              {props.children}
-            </Main>
-          </div>
-        </Layout>
+        {router.pathname !== '/' ? (
+          <Header
+            connected={active}
+            user={user}
+            onLogout={() => logOut()}
+            toggleSideBar={toggleSideBar}
+            // onLogin={() => setUser({ name: 'Jane Doe' })}
+            // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
+          />
+        ) : null}
+        <motion.div
+          key={router.route}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ y: -20 }}
+          transition={{ duration: 0.3 }}>
+          <Layout className="flex flex-row w-full">
+            {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
+            <div className="relative">
+              {loading && router.pathname !== '/' && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
+              <Main
+                sidebarIsExpanded={sidebarIsExpanded}
+                sidebarIsShown={displaySideBar}
+                className={`flex flex-col items-center ${router.pathname !== '/' ? 'pt-7' : ''}`}>
+                {props.children}
+              </Main>
+            </div>
+          </Layout>
+        </motion.div>
       </Container>
       <Modal isOpen={connectWalletModal} style={modalStyles}>
         <ConnectWalletOptionsProps onConnect={handleWalletConnection} />

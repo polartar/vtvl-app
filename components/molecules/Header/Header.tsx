@@ -8,7 +8,7 @@ import Router, { useRouter } from 'next/router';
 import React from 'react';
 import Fade from 'react-reveal/Fade';
 import { IUser } from 'types/models';
-import { WEBSITE_NAME } from 'utils/constants';
+import { NO_CONNECT_WALLET_BUTTON_PAGES, WEBSITE_NAME } from 'utils/constants';
 
 interface HeaderProps {
   user: IUser | undefined;
@@ -39,15 +39,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
     Router.push(url);
   };
 
-  const displayWalletConnect = [
-    '/onboarding/connect-wallet',
-    '/onboarding',
-    '/404',
-    '/not-found',
-    '/terms',
-    '/privacypolicy',
-    '/magic-link-verification'
-  ].every((o) => pathname !== o);
+  const displayWalletConnect = NO_CONNECT_WALLET_BUTTON_PAGES.every((o) => pathname !== o);
 
   const renderVTVLLogo = () => {
     return (

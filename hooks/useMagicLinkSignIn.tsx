@@ -1,8 +1,13 @@
+import useAuth from '@api-hooks/useAuth';
+import useOrganization from '@api-hooks/useOrganization';
+import { getOrgStore } from '@hooks/useOrganizations';
 import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useOnboardingContext } from '@providers/onboarding.context';
+import { USE_NEW_API } from '@utils/constants';
+import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { IMember } from 'types/models';
 
 /**
@@ -35,6 +40,10 @@ export default function useMagicLinkSignIn(callback?: () => void) {
   const router = useRouter();
   const [isExpired, setIsExpired] = useState(false);
   let timeout: NodeJS.Timeout;
+  const { validateVerificationCode, connectWallet } = useAuth();
+  const { getOrganizations } = useOrganization();
+  const { organizations } = getOrgStore();
+  const { active, account, library } = useWeb3React();
 
   const signInWithMagicLink = async (member: IMember, newUser: boolean) => {
     try {
@@ -50,7 +59,7 @@ export default function useMagicLinkSignIn(callback?: () => void) {
     }
   };
 
-  const initializeMagicLinkSigning = async () => {
+  const useOldAPISigning = async () => {
     // Sign in when found
     const params: any = new URL(window.location.toString());
     const name = params.searchParams.get('name');
@@ -66,13 +75,40 @@ export default function useMagicLinkSignIn(callback?: () => void) {
     }
   };
 
+  const useNewAPISigning = async () => {
+    // Sign in when found
+    const params: any = new URL(window.location.toString());
+    const email = params.searchParams.get('email')?.replace(' ', '+');
+    const code = params.searchParams.get('code');
+    console.log('USING NEW API for login', email, code);
+    if (email && code) {
+      try {
+        const validation = await validateVerificationCode({ code, email });
+        console.log('VALIDATING', validation);
+        if (validation) {
+          router.push('/v2/auth/connect');
+        } else throw validation;
+      } catch (err) {
+        console.log('ERROR', err);
+        setIsExpired(true);
+      }
+    } else {
+      setIsExpired(true);
+    }
+  };
+
+  const initializeMagicLinkSigning = async () => {
+    if (USE_NEW_API) useNewAPISigning();
+    else useOldAPISigning();
+  };
+
   useEffect(() => {
     // Ensure that initialization only happens once by debouncing it
     timeout = setTimeout(initializeMagicLinkSigning, 600);
     return () => {
       clearTimeout(timeout);
     };
-  }, []);
+  }, [account, library]);
 
   return { isExpired };
 }

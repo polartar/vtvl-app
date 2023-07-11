@@ -31,12 +31,12 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      {
-        source: '/',
-        // If the website is white-labelled, we directly go to the connect wallet page
-        destination: '/onboarding',
-        permanent: true
-      },
+      // {
+      //   source: '/',
+      //   // If the website is white-labelled, we directly go to the connect wallet page
+      //   destination: '/',
+      //   permanent: true
+      // },
       {
         source: '/onboarding/setup-safes',
         destination: '/settings?tab=safe',

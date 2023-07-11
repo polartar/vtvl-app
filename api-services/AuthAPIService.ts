@@ -1,20 +1,23 @@
-import CoreAPIService from './CoreApiService';
+import CoreApiService from '@api-services/CoreApiService';
+import { PLATFORM_NAME } from '@utils/constants';
 
 class AuthApiService {
   getGoogleAuthCallback = (payload: GoogleAuthCallbackRequest) =>
-    CoreAPIService.post<string>('/auth/google-callback', payload);
+    CoreApiService.post<string>('/auth/google-callback', payload);
 
   googleAuthLogin = (payload: GoogleAuthLoginRequest) =>
-    CoreAPIService.post<AuthResponse>('/auth/google-login', payload);
+    CoreApiService.post<AuthResponse>('/auth/google-login', payload);
 
-  loginWithEmail = (payload: AuthWithEmailRequest) => CoreAPIService.post<string>('/auth/login', payload);
+  loginWithEmail = (payload: AuthWithEmailRequest) =>
+    CoreApiService.post<string>('/auth/login', { ...payload, platform: PLATFORM_NAME });
 
-  signupWithEmail = (payload: AuthWithEmailRequest) => CoreAPIService.post<string>('/auth/signup', payload);
+  signupWithEmail = (payload: AuthWithEmailRequest) =>
+    CoreApiService.post<string>('/auth/signup', { ...payload, platform: PLATFORM_NAME });
 
   validateVerificationCode = (payload: VerifyEmailRequest) =>
-    CoreAPIService.post<AuthResponse>('/auth/validate', payload);
+    CoreApiService.post<AuthResponse>('/auth/validate', payload);
 
-  connectWallet = (payload: ConnectWalletRequest) => CoreAPIService.post<AuthResponse>('/auth/wallet', payload);
+  connectWallet = (payload: ConnectWalletRequest) => CoreApiService.post<AuthResponse>('/auth/wallet', payload);
 }
 
 export default new AuthApiService();

@@ -1,12 +1,13 @@
-import Axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { getCookie } from 'utils/cookie';
+import { getAuthStore } from '@hooks/useAuth';
+import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios from 'axios';
 
 const API = process.env.NEXT_PUBLIC_VTVL_API;
 
-export const axiosClient = Axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  timeout: 15000
-});
+const headers = () => {
+  const { accessToken } = getAuthStore();
+  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+};
 
 const responseData = <T extends AxiosResponse<any, any>>(response: T) => response.data;
 
@@ -14,42 +15,32 @@ const handleError = (error: AxiosError) => {
   const status = error.response?.status;
 
   if (status == 401 || status == 403) {
-    // TODO add UNAUTHORIZED handler
-    return;
+    // clear auth data
+    getAuthStore().clear();
+    // TODO re-generate access token from refresh token
   }
 
   throw error;
 };
 
-const requestIntercepter = async (config: AxiosRequestConfig) => {
-  const authToken = getCookie('access_token');
-
-  if (authToken && config.headers) {
-    config.headers.Authorization = `Bearer ${authToken}`;
-  }
-
-  return config;
-};
-
-axiosClient.interceptors.request.use(requestIntercepter);
-
 class CoreApiService {
   get = async <R>(url: string, params: AnyObject = {}) =>
-    axiosClient
+    axios
       .request<R>({
         method: 'get',
-        url: `${API}/${url}`,
+        url: `${API}${url}`,
+        headers: headers(),
         params
       })
       .then<R>(responseData)
       .catch(handleError);
 
   post = async <R>(url: string, data: AnyObject = {}, { headers: headers_, ...config }: AxiosRequestConfig = {}) =>
-    axiosClient
+    axios
       .request<R>({
         method: 'post',
-        url: `${API}/${url}`,
-        headers: { ...headers_ },
+        url: `${API}${url}`,
+        headers: { ...headers(), ...headers_ },
         data,
         ...config
       })
@@ -57,30 +48,33 @@ class CoreApiService {
       .catch(handleError);
 
   put = async <R>(url: string, data: AnyObject) =>
-    axiosClient
+    axios
       .request<R>({
         method: 'put',
-        url: `${API}/${url}`,
+        url: `${API}${url}`,
+        headers: headers(),
         data
       })
       .then<R>(responseData)
       .catch(handleError);
 
   patch = async <R>(url: string, data: AnyObject = {}) =>
-    axiosClient
+    axios
       .request<R>({
         method: 'patch',
-        url: `${API}/${url}`,
+        url: `${API}${url}`,
+        headers: headers(),
         data
       })
       .then<R>(responseData)
       .catch(handleError);
 
   delete = async <R>(url: string, data: AnyObject = {}) =>
-    axiosClient
+    axios
       .request<R>({
         method: 'delete',
-        url: `${API}/${url}`,
+        url: `${API}${url}`,
+        headers: headers(),
         data
       })
       .then<R>(responseData)

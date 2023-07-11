@@ -21,7 +21,11 @@
       "@components/*": ["components/*"],
       "@contracts/*": ["contracts/*"],
       "@connectors/*": ["connectors/*"],
-      "@providers/*": ["providers/*"]
+      "@providers/*": ["providers/*"],
+      "@api-services/*": ["api-services/*"],
+      "@api-hooks/*": ["api-hooks/*"],
+      "@utils/*": ["utils/*"],
+      "@hooks/*": ["hooks/*"],
     },
     "outDir": "./dist",
     "incremental": true

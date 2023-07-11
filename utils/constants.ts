@@ -38,3 +38,61 @@ export const FACTORY_CONTRACTS: { [key: number]: string } = {
   5: '0x48CC6FFb03B14Cbf6315e99c8bfa42642848d7AA',
   12009: '0x41d3f5e5744df065B34bc30be2021DDf8Ff72480'
 };
+export const PLATFORM_NAME = 'app';
+
+export const REDIRECT_URIS = {
+  AUTH_LOGIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/login`),
+  AUTH_REGISTER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/register`),
+  AUTH_EMAIL: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`),
+  AUTH_GOOGLE_CALLBACK: encodeURI(`${PUBLIC_DOMAIN_NAME}/auth/google`),
+  AUTH_GOOGLE_LOGIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/connect`),
+  INVITE_MEMBER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`),
+  SETUP_ACCOUNT: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/onboarding/account-setup`),
+  MAIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/dashboard`)
+};
+
+export const TOAST_NOTIFICATION_IDS = {
+  SUCCESS: 'notif-success',
+  ERROR: 'notif-error',
+  WARNING: 'notif-warning',
+  INFO: 'notif-info',
+  ANY: 'notif-any'
+};
+
+export const USE_NEW_API = process.env.NEXT_PUBLIC_ENABLE_API_INTEGRATION || false;
+
+export const NO_CONNECT_WALLET_BUTTON_PAGES = [
+  '/',
+  '/v2/auth/register',
+  '/v2/auth/login',
+  '/v2/auth/connect',
+  '/v2/auth/verify',
+  '/v2/auth/google',
+  '/auth/google',
+  '/onboarding/connect-wallet',
+  '/onboarding',
+  '/404',
+  '/not-found',
+  '/terms',
+  '/privacypolicy'
+];
+
+export const NO_CONNECT_WALLET_MODAL_PAGES = [
+  ...NO_CONNECT_WALLET_BUTTON_PAGES,
+  '/onboarding/sign-up',
+  '/onboarding/login',
+  '/onboarding/member-login',
+  '/expired',
+  '/recipient/create',
+  '/recipient/schedule'
+];
+
+export const NO_SIDEBAR_PAGES = [
+  '/recipient/schedule',
+  '/recipient/confirm',
+  '/magic-link-verification',
+  '/v2/auth/login',
+  '/v2/auth/register',
+  '/v2/onboarding/account-setup',
+  '/v2/onboarding/setup-safes'
+];

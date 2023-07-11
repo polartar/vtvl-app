@@ -1,8 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
+import { IOrganizationResponse } from 'interfaces/organization';
 import { useMemo } from 'react';
 import { fetchOrg } from 'services/db/organization';
 import { IOrganization } from 'types/models';
 import { QUERY_KEYS } from 'utils/queries';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export const useOrganizationsFromIds = (organizationIds: string[]) => {
   // Fetch organizations by organizationIds
@@ -31,4 +34,43 @@ export const useOrganizationsFromIds = (organizationIds: string[]) => {
     }),
     [isLoadingOrganizations, organizations]
   );
+};
+
+// NEW API INTEGRATION
+const useOrgStore = create(
+  persist<OrgStoreState & OrgStoreActions>(
+    (set) => ({
+      organizations: [],
+      save: (payload) => set({ organizations: [...payload] }),
+      add: (payload) => set((state: OrgStoreState) => ({ organizations: [payload, ...state.organizations] })),
+      clear: () => set({ organizations: [] })
+    }),
+    { name: 'vtvl-organizations' }
+  )
+);
+
+type OrgStoreState = {
+  organizations: IOrganizationResponse[];
+};
+
+type OrgStoreActions = {
+  add: (payload: IOrganizationResponse) => void;
+  save: (payload: IOrganizationResponse[]) => void;
+  clear: () => void;
+};
+
+export const getOrgStore = () => useOrgStore.getState();
+
+export const useOrganization = () => {
+  const add = useOrgStore(({ add }: OrgStoreActions) => add);
+  const save = useOrgStore(({ save }: OrgStoreActions) => save);
+  const clear = useOrgStore(({ clear }: OrgStoreActions) => clear);
+  const organizations = useOrgStore(({ organizations }: OrgStoreState) => organizations);
+
+  return {
+    save,
+    add,
+    clear,
+    organizations
+  };
 };
