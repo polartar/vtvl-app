@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@utils/queries';
 import { IOrganizationResponse } from 'interfaces/organization';
 import { useMemo } from 'react';
 import { fetchOrg } from 'services/db/organization';
 import { IOrganization } from 'types/models';
-import { QUERY_KEYS } from 'utils/queries';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 

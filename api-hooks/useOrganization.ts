@@ -1,6 +1,6 @@
 import OrganizationApiService from '@api-services/OrganizationApiService';
-import { useAuth } from '@hooks/useAuth';
-import { useOrganization as useOrgstore } from '@hooks/useOrganizations';
+import { useAuth } from '@store/useAuth';
+import { useOrganization as useOrgstore } from '@store/useOrganizations';
 import { TOAST_NOTIFICATION_IDS } from '@utils/constants';
 import { IOrgMemberInviteRequest, IOrgMemberRequest, IOrganizationRequest } from 'interfaces/organization';
 import { useCallback, useMemo } from 'react';

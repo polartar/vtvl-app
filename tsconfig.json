@@ -15,7 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@assets/*": ["assets/*"],
       "@components/*": ["components/*"],
@@ -26,6 +26,7 @@
       "@api-hooks/*": ["api-hooks/*"],
       "@utils/*": ["utils/*"],
       "@hooks/*": ["hooks/*"],
+      "@store/*": ["store/*"],
     },
     "outDir": "./dist",
     "incremental": true

@@ -1,7 +1,6 @@
 import ThemeLoader from '@components/atoms/ThemeLoader/ThemeLoader';
 import DefaultLayout from '@components/organisms/Layout/DefaultLayout';
 import { Web3Provider } from '@ethersproject/providers';
-import { useAuth } from '@hooks/useAuth';
 import { AuthContextProvider } from '@providers/auth.context';
 import { ClaimTokensContextProvider } from '@providers/claim-tokens.context';
 import { DashboardContextProvider } from '@providers/dashboard.context';
@@ -12,6 +11,7 @@ import { RecipientContextProvider } from '@providers/recipient.context';
 import { TeammateContextProvider } from '@providers/teammate.context';
 import { TokenContextProvider } from '@providers/token.context';
 import { VestingContextProvider } from '@providers/vesting.context';
+import { useAuth } from '@store/useAuth';
 // react-query imports
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Web3ReactProvider } from '@web3-react/core';

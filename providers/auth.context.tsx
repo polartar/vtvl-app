@@ -1,6 +1,6 @@
-import { useAuth } from '@hooks/useAuth';
-import { useOrganization } from '@hooks/useOrganizations';
-import { useUser } from '@hooks/useUser';
+import { useAuth } from '@store/useAuth';
+import { useOrganization } from '@store/useOrganizations';
+import { useUser } from '@store/useUser';
 import { USE_NEW_API } from '@utils/constants';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
