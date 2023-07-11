@@ -1,9 +1,11 @@
+import TokenApiService from '@api-services/TokenApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import TokenDetails from '@components/atoms/TokenDetails/TokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useOrganization } from '@hooks/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
 import Router, { useRouter } from 'next/router';
@@ -21,10 +23,10 @@ interface IImportToken {
 
 const DashboardImportToken: NextPageWithLayout = () => {
   const { chainId } = useWeb3React();
-  const { organizationId } = useAuthContext();
   const router = useRouter();
+  const { organizationId } = useOrganization();
   const { updateMintFormState } = useTokenContext();
-
+  console.log({ organizationId });
   const defaultValues: IImportToken = {
     tokenAddress: ''
   };
@@ -56,20 +58,11 @@ const DashboardImportToken: NextPageWithLayout = () => {
       setMessage('Token address is invalid');
     } else if (tokenName && chainId) {
       setLoading(true);
-      await createToken({
-        name: tokenName,
-        symbol: tokenSymbol,
-        decimals: tokenDecimals,
-        address: tokenAddress.value,
-        logo: '',
+      await TokenApiService.importToken({
         organizationId: String(organizationId),
-        imported: true,
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000),
-        supplyCap: 'UNLIMITED',
-        status: 'SUCCESS',
         chainId,
-        burnable: false
+        logo: '',
+        address: tokenAddress.value
       });
       updateMintFormState({
         name: tokenName,

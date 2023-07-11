@@ -2,14 +2,21 @@ interface IToken {
   name: string;
   symbol: string;
   description?: string;
+  supplyCap?: 'LIMITED' | 'UNLIMITED';
+  initialSupply?: string;
   maxSupply?: string;
   chainId?: number;
   address?: string;
   logo?: string;
   transactionId?: string;
-  Transaction?: Transaction;
-  isDeployed: boolean;
-  isActive: boolean;
+  decimal?: number;
+  burnable?: boolean;
+  isDeployed?: boolean;
+  isActive?: boolean;
+  isImported?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  status?: 'PENDING' | 'SUCCESS' | 'FAILED';
 }
 
 interface IImportTokenRequest {
@@ -22,5 +29,21 @@ interface IImportTokenRequest {
 interface ICreateDeployedTokenRequest extends IImportTokenRequest {
   name: string;
   symbol: string;
-  isDeployed: boolean;
+  decimal: number;
+  description: string;
+  maxSupply: string;
+  supplyCap: 'LIMITED' | 'UNLIMITED';
+  burnable: boolean;
+  imported: boolean;
 }
+
+type ITokensResponse = {
+  organizationId: string;
+  organization: {
+    id: string;
+    name: string;
+    tokens: {
+      token: IToken;
+    }[];
+  };
+}[];

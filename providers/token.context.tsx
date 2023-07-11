@@ -1,4 +1,7 @@
+import TokenApiService from '@api-services/TokenApiService';
 import ERC20 from '@contracts/abi/ERC20.json';
+import { useAuth } from '@hooks/useAuth';
+import { useOrganization } from '@hooks/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
@@ -26,40 +29,33 @@ export interface IMintFormState {
 }
 
 interface ITokenContextData {
-  mintFormState: IMintFormState;
+  mintFormState: IToken;
   tokenId: string;
   isTokenLoading: boolean;
   updateMintFormState: (v: any) => void;
   updateTokenId: (v: string) => void;
 }
 
-const INITIAL_STATE: IMintFormState = {
+const INITIAL_STATE: IToken = {
+  id: '',
   name: '',
   symbol: '',
   logo: '',
-  supplyCap: 'UNLIMITED',
   maxSupply: '',
-  initialSupply: '',
-  decimals: 18,
   address: '',
-  imported: false,
-  createdAt: Math.floor(new Date().getTime() / 1000),
-  updatedAt: Math.floor(new Date().getTime() / 1000),
-  status: 'PENDING',
-  chainId: 0,
-  burnable: false,
-  burntAmount: 0
+  chainId: 0
 };
 
 const TokenContext = createContext({} as ITokenContextData);
 
 export function TokenContextProvider({ children }: any) {
+  const { userId } = useAuth();
+  const { organizationId } = useOrganization();
   const { chainId } = useWeb3React();
-  const { organizationId } = useAuthContext();
 
   const [isTokenLoading, setIsTokenLoading] = useState(true);
 
-  const [mintFormState, setMintFormState] = useState<IMintFormState>(INITIAL_STATE);
+  const [mintFormState, setMintFormState] = useState<IToken>(INITIAL_STATE);
 
   const [tokenId, setTokenId] = useState('');
 
@@ -75,7 +71,7 @@ export function TokenContextProvider({ children }: any) {
   );
 
   const getTokenDetailsFromBlockchain = async () => {
-    if (organizationId && mintFormState.address && SupportedChains[chainId as SupportedChainId]) {
+    if (mintFormState.address && SupportedChains[chainId as SupportedChainId]) {
       // Check blockchain for precise details
       // Rely on tokens collection from DB to have the token address itself
       // Because:
@@ -99,84 +95,40 @@ export function TokenContextProvider({ children }: any) {
 
         setMintFormState({
           ...mintFormState,
-          initialSupply: +totalSupply.toString() / 1e18,
           name,
-          symbol,
-          decimals
+          symbol
         });
       }
     }
   };
 
-  const fetchToken = async () => {
-    if (organizationId && chainId) {
-      fetchTokensByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId])
-        .then((res) => {
-          if (res) {
-            const token = res.find((token) => {
-              const data = token.data();
-              if (data && data.chainId) {
-                return data.chainId === chainId;
-              }
-              return false;
-            });
-            if (token && token.data()) {
-              const data = token.data();
-              setMintFormState((mintFormState) => ({
-                ...mintFormState,
-                address: data.address || '',
-                name: data.name || '',
-                symbol: data.symbol || '',
-                logo: data.logo || '',
-                supplyCap: data.supplyCap || ('UNLIMITED' as any),
-                maxSupply: data && data.maxSupply ? data.maxSupply : 0,
-                initialSupply: data && data.initialSupply ? data.initialSupply : 0,
-                decimals: 18,
-                imported: data?.imported || false,
-                createdAt: data?.createdAt ? data?.createdAt : Math.floor(new Date().getTime() / 1000),
-                updatedAt: data?.updatedAt ? data?.updatedAt : Math.floor(new Date().getTime() / 1000),
-                status: data?.status ? data?.status : 'PENDING',
-                tokenId: token.id,
-                chainId: data?.chainId || 0,
-                burnable: data.burnable || false,
-                burntAmount: data.burntAmount || 0
-              }));
-              setTokenId(token.id);
-            } else {
-              setMintFormState((prevState) => ({ ...INITIAL_STATE }));
-            }
-            setIsTokenLoading(false);
-            return false;
-          } else {
-            setMintFormState((prevState) => ({ ...INITIAL_STATE }));
-            setIsTokenLoading(false);
-          }
-        })
-        .catch((err) => {
-          setMintFormState((prevState) => ({ ...INITIAL_STATE }));
-          setIsTokenLoading(false);
-        });
-    } else {
-      setMintFormState((prevState) => ({ ...INITIAL_STATE }));
-      setIsTokenLoading(false);
-    }
-  };
-
+  // useEffect(() => {
+  //   console.log('Mint supply was updated', mintFormState);
+  //   // Consider the data from DB as Imported token when this condition is met.
+  //   if (
+  //     mintFormState.address &&
+  //     (!mintFormState.initialSupply || !mintFormState.maxSupply) &&
+  //     mintFormState.supplyCap === 'UNLIMITED'
+  //   ) {
+  //     getTokenDetailsFromBlockchain();
+  //   }
+  // }, [mintFormState.address]);
+  console.log({ userId, organizationId });
   useEffect(() => {
-    fetchToken();
-  }, [organizationId, chainId]);
-
-  useEffect(() => {
-    console.log('Mint supply was updated', mintFormState);
-    // Consider the data from DB as Imported token when this condition is met.
-    if (
-      mintFormState.address &&
-      (!mintFormState.initialSupply || !mintFormState.maxSupply) &&
-      mintFormState.supplyCap === 'UNLIMITED'
-    ) {
-      getTokenDetailsFromBlockchain();
+    if (userId && chainId && organizationId) {
+      TokenApiService.getTokens().then((res) => {
+        console.log({ res });
+        const data = res.filter(
+          (organization) =>
+            organization.organization.id === organizationId &&
+            organization.organization.tokens.filter((token) => token.token.chainId === chainId)
+        );
+        if (data && data.length > 0) {
+          setMintFormState(data[0].organization.tokens.filter((token) => token.token.chainId === chainId)[0].token);
+        }
+      });
     }
-  }, [mintFormState.address]);
+  }, [userId, chainId, organizationId]);
 
   return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;
 }
