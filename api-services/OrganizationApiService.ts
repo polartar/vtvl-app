@@ -1,4 +1,4 @@
-import CoreApiService from '@api-services/CoreApiServiceTemp';
+import CoreApiService from '@api-services/CoreApi';
 import { PLATFORM_NAME } from '@utils/constants';
 import {
   IOrgMemberInviteRequest,
