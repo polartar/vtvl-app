@@ -69,7 +69,7 @@ describe('email test spec', () => {
       cy.get('.input-component__input').type(email);
       cy.get('.text-xs > .flex-row > .flex').click();
       cy.contains('Create account').click();
-      cy.wait(10000);
+      cy.wait(5000);
     });
   });
 
