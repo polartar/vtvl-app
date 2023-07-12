@@ -10,10 +10,17 @@ const useUserAPI = () => {
   const { name, email, userId, save } = useUser();
 
   const getUserProfile = useCallback(() => {
+    // Ensure that after getting the profile, update the user state with it
     return UserApiService.getProfile()
       .then((res: any) => {
         console.log('USER PROFILE DATA', res);
-        save({ userId: res.user.id, name: res.user.name || '', email: res.user.email });
+        save({
+          userId: res.user.id,
+          name: res.user.name || '',
+          email: res.user.email,
+          walletAddress: res.wallet.address
+          // Add the chainId later when it is provided by the new API
+        });
         // toast.success(SUCCESS_MESSAGES.EN.SEND_LOGIN_EMAIL);
         return res;
       })
