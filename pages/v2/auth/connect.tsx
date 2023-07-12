@@ -18,7 +18,7 @@ import { injected } from 'connectors';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
-import { IUserType } from 'types/models/member';
+import { IUser, IUserType } from 'types/models/member';
 
 const OnboardingContainer = styled.div`
   display: grid;
