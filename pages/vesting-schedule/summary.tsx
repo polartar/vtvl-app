@@ -1,9 +1,11 @@
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
+import { getCliffAmount } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import Decimal from 'decimal.js';
@@ -78,24 +80,39 @@ const ScheduleSummary: NextPageWithLayout = () => {
           .map((recipient) => editRecipient(recipient.id, recipient.data))
       );
     } else {
-      const vestingId = await createVesting({
-        name: scheduleState.name,
-        details: { ...scheduleFormState },
+      const vesting = await VestingScheduleApiService.createVestingSchedule({
         organizationId: organizationId!,
-        status: 'INITIALIZED',
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000),
-        transactionId: '',
-        vestingContractId,
-        tokenAddress: mintFormState.address,
         tokenId,
-        chainId,
-        createdBy: user?.uid
+        vestingContractId: String(vestingContractId),
+        name: scheduleState.name,
+        startedAt: scheduleFormState.startDateTime,
+        endedAt: scheduleFormState.endDateTime,
+        releaseFrequencyType: scheduleFormState.releaseFrequency,
+        releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
+        cliffDurationType: scheduleFormState.cliffDuration,
+        cliffDuration: Number(scheduleFormState.cliffDurationNumber),
+        cliffAmount: 1111111,
+        amount: Number(scheduleFormState.amountToBeVested).toString()
       });
+      console.log({ vesting });
+      // const vestingId = await createVesting({
+      //   name: scheduleState.name,
+      //   details: { ...scheduleFormState },
+      //   organizationId: organizationId!,
+      //   status: 'INITIALIZED',
+      //   createdAt: Math.floor(new Date().getTime() / 1000),
+      //   updatedAt: Math.floor(new Date().getTime() / 1000),
+      //   transactionId: '',
+      //   vestingContractId,
+      //   tokenAddress: mintFormState.address,
+      //   tokenId,
+      //   chainId,
+      //   createdBy: user?.uid
+      // });
 
       const newRecipients = recipients.map(({ data: recipient }) =>
         createRecipient({
-          vestingId: String(vestingId),
+          vestingId: String(vesting.id),
           organizationId: String(organizationId),
           name: recipient.name,
           email: recipient.email,

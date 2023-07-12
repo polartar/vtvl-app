@@ -1,3 +1,4 @@
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
@@ -1050,25 +1051,45 @@ const ConfigureSchedule: NextPageWithLayout = () => {
           .map((recipient) => editRecipient(recipient.id, recipient.data))
       );
     } else {
-      const vestingId = await createVesting({
-        name: scheduleState.name,
-        details: { ...scheduleFormState },
+      const cliffAmount = getCliffAmount(
+        scheduleFormState.cliffDuration,
+        +lumpSumReleaseAfterCliff,
+        scheduleFormState.amountToBeVested
+      );
+      const vesting = await VestingScheduleApiService.createVestingSchedule({
         organizationId: organizationId!,
-        status: 'INITIALIZED',
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000),
-        transactionId: '',
-        vestingContractId,
-        tokenAddress: mintFormState.address,
         tokenId,
-        chainId,
-        createdBy: user?.uid
+        vestingContractId: String(vestingContractId),
+        name: scheduleState.name,
+        startedAt: scheduleFormState.startDateTime,
+        endedAt: scheduleFormState.endDateTime,
+        releaseFrequencyType: scheduleFormState.releaseFrequency,
+        releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
+        cliffDurationType: scheduleFormState.cliffDuration,
+        cliffDuration: Number(scheduleFormState.cliffDurationNumber),
+        cliffAmount,
+        amount: Number(scheduleFormState.amountToBeVested).toString()
       });
+      console.log({ vesting });
+      // const vestingId = await createVesting({
+      //   name: scheduleState.name,
+      //   details: { ...scheduleFormState },
+      //   organizationId: organizationId!,
+      //   status: 'INITIALIZED',
+      //   createdAt: Math.floor(new Date().getTime() / 1000),
+      //   updatedAt: Math.floor(new Date().getTime() / 1000),
+      //   transactionId: '',
+      //   vestingContractId,
+      //   tokenAddress: mintFormState.address,
+      //   tokenId,
+      //   chainId,
+      //   createdBy: user?.uid
+      // });
 
       const newRecipients = await Promise.all(
         recipients.map(async ({ data: recipient }) => {
           const id = await createRecipient({
-            vestingId: String(vestingId),
+            vestingId: String(vesting.id),
             organizationId: String(organizationId),
             name: recipient.name,
             email: recipient.email,
