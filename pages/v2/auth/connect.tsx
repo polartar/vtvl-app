@@ -60,7 +60,7 @@ const ConnectWalletPage: NextPage = () => {
     website: { assets, features }
   } = useGlobalContext();
   const router = useRouter();
-  const { setOrganizationId, setUser, user } = useAuthContext();
+  const { setOrganizationId, authenticateUser, user } = useAuthContext();
 
   // When a wallet is connected
   const handleConnectedState = () => {
@@ -96,19 +96,22 @@ const ConnectWalletPage: NextPage = () => {
                 saveUser({ organizationId: orgs[0].organizationId, role: orgs[0].role, chainId });
                 // Use context to save organization id and user information
                 setOrganizationId(orgs[0].organizationId);
-                setUser({
-                  ...user,
-                  memberInfo: {
-                    ...user?.memberInfo,
-                    id: profile.user.id,
-                    user_id: profile.user.id,
-                    name: profile.user.name,
-                    // Change the chainId later to be from the new api
-                    wallets: [{ walletAddress: profile.wallet.address, chainId }],
-                    org_id: orgs[0].organizationId,
-                    type: orgs[0].role.toLowerCase() as IUserType
-                  }
-                });
+                authenticateUser(
+                  {
+                    ...user,
+                    memberInfo: {
+                      ...user?.memberInfo,
+                      id: profile.user.id,
+                      user_id: profile.user.id,
+                      name: profile.user.name,
+                      // Change the chainId later to be from the new api
+                      wallets: [{ walletAddress: profile.wallet.address, chainId: chainId! }],
+                      org_id: orgs[0].organizationId,
+                      type: orgs[0].role.toLowerCase() as IUserType
+                    }
+                  } as IUser,
+                  orgs[0].role.toLowerCase() as IUserType
+                );
                 router.push(REDIRECT_URIS.MAIN);
               } else {
                 // No associated org, new user
