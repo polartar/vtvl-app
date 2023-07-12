@@ -8,6 +8,8 @@ type UserStoreState = {
   userId: string;
   organizationId: string;
   role: IRole | '';
+  walletAddress: string;
+  chainId: number;
 };
 
 type UserStoreActions = {
@@ -21,8 +23,10 @@ const useUserStore = create(
       name: '',
       email: '',
       userId: '',
+      walletAddress: '',
       organizationId: '',
       role: '',
+      chainId: 0,
       save: (payload: Partial<UserStoreState>) =>
         set((state: UserStoreState) => ({
           ...state,
@@ -34,7 +38,9 @@ const useUserStore = create(
           email: '',
           userId: '',
           organizationId: '',
-          role: ''
+          walletAddress: '',
+          role: '',
+          chainId: 0
         })
     }),
     { name: 'vtvl-user' }
@@ -50,6 +56,8 @@ export const useUser = () => {
   const email = useUserStore(({ email }: UserStoreState) => email);
   const userId = useUserStore(({ userId }: UserStoreState) => userId);
   const organizationId = useUserStore(({ organizationId }: UserStoreState) => organizationId);
+  const walletAddress = useUserStore(({ walletAddress }: UserStoreState) => walletAddress);
+  const chainId = useUserStore(({ chainId }: UserStoreState) => chainId);
   const role = useUserStore(({ role }: UserStoreState) => role);
 
   return {
@@ -59,6 +67,8 @@ export const useUser = () => {
     email,
     userId,
     organizationId,
+    walletAddress,
+    chainId,
     role
   };
 };

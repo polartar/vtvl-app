@@ -6,6 +6,7 @@ import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import ConnectWalletOptions from '@components/molecules/ConnectWalletOptions/ConnectWalletOptions';
 import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
+import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { getOrgStore } from '@store/useOrganizations';
 import { useUser } from '@store/useUser';
@@ -17,6 +18,7 @@ import { injected } from 'connectors';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+import { IUserType } from 'types/models/member';
 
 const OnboardingContainer = styled.div`
   display: grid;
@@ -46,7 +48,7 @@ const Vesting = styled.div<{ background?: string }>`
 `;
 
 const ConnectWalletPage: NextPage = () => {
-  const { active, account, activate, library } = useWeb3React();
+  const { active, account, activate, library, chainId } = useWeb3React();
   const { connectWallet } = useAuth();
   const { getUserProfile } = useUserAPI();
   const { save: saveUser } = useUser();
@@ -58,6 +60,7 @@ const ConnectWalletPage: NextPage = () => {
     website: { assets, features }
   } = useGlobalContext();
   const router = useRouter();
+  const { setOrganizationId, setUser, user } = useAuthContext();
 
   // When a wallet is connected
   const handleConnectedState = () => {
@@ -89,7 +92,23 @@ const ConnectWalletPage: NextPage = () => {
               const orgs = await getOrganizations();
               if (orgs && orgs.length) {
                 // Has an associated organization, there fore is an existing user
-                saveUser({ organizationId: orgs[0].organizationId, role: orgs[0].role });
+                // Change the chainId later to be from the new api
+                saveUser({ organizationId: orgs[0].organizationId, role: orgs[0].role, chainId });
+                // Use context to save organization id and user information
+                setOrganizationId(orgs[0].organizationId);
+                setUser({
+                  ...user,
+                  memberInfo: {
+                    ...user?.memberInfo,
+                    id: profile.user.id,
+                    user_id: profile.user.id,
+                    name: profile.user.name,
+                    // Change the chainId later to be from the new api
+                    wallets: [{ walletAddress: profile.wallet.address, chainId }],
+                    org_id: orgs[0].organizationId,
+                    type: orgs[0].role.toLowerCase() as IUserType
+                  }
+                });
                 router.push(REDIRECT_URIS.MAIN);
               } else {
                 // No associated org, new user
