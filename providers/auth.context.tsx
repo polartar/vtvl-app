@@ -53,7 +53,7 @@ export type TConnections = 'metamask' | 'walletconnect';
 export type AuthContextData = {
   isAuthenticated: boolean;
   roleOverride?: IUserType;
-  authenticateUser: (user: IUser) => void;
+  authenticateUser: (user: IUser, role?: IUserType) => void;
   switchRole: (role: IUserType) => void;
   user: IUser | undefined;
   currentSafe: ISafe | undefined;
@@ -572,7 +572,8 @@ export function AuthContextProvider({ children }: any) {
               email: userStore.email,
               name: userStore.name,
               org_id: userStore.organizationId,
-              wallets: [{ walletAddress: userStore.walletAddress, chainId: userStore.chainId }]
+              wallets: [{ walletAddress: userStore.walletAddress, chainId: userStore.chainId }],
+              type: userStore.role.toLowerCase() as IUserType
             }
           } as IUser,
           userStore.role.toLowerCase() as IUserType
