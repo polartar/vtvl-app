@@ -1,6 +1,6 @@
 import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
-import { useUser } from '@store/useUser';
+import { getUserStore, useUser } from '@store/useUser';
 import { USE_NEW_API } from '@utils/constants';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
@@ -140,6 +140,7 @@ export function AuthContextProvider({ children }: any) {
 
   const { clear: clearAuth } = useAuth();
   const { clear: clearUser } = useUser();
+  const userStore = getUserStore();
   const { clear: clearOrg } = useOrganization();
 
   // Sets the recipient if it is found
@@ -155,20 +156,22 @@ export function AuthContextProvider({ children }: any) {
 
   useEffect(() => {
     // Update the user for persisted data
-    const persistedUser = getCache();
-    if (persistedUser?.user) authenticateUser(persistedUser?.user, persistedUser?.roleOverride);
+    if (!USE_NEW_API) {
+      const persistedUser = getCache();
+      if (persistedUser?.user) authenticateUser(persistedUser?.user, persistedUser?.roleOverride);
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const memberInfo = await fetchMember(user.uid);
-        const persistedRoleOverride = getCache()?.roleOverride;
-        authenticateUser({ ...user, memberInfo });
-        if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IUserType);
-      }
-      setLoading(false);
-    });
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const memberInfo = await fetchMember(user.uid);
+          const persistedRoleOverride = getCache()?.roleOverride;
+          authenticateUser({ ...user, memberInfo });
+          if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IUserType);
+        }
+        setLoading(false);
+      });
 
-    return unsubscribe;
+      return unsubscribe;
+    }
   }, []);
 
   // This is used to determine which icons or assets to use across the app,
@@ -558,6 +561,25 @@ export function AuthContextProvider({ children }: any) {
 
   const refreshUser = useCallback(async (): Promise<void> => {
     setLoading(true);
+    if (USE_NEW_API) {
+      if (userStore.userId) {
+        // Authenticate the user based on the new api implementation
+        authenticateUser(
+          {
+            memberInfo: {
+              id: userStore.userId,
+              user_id: userStore.userId,
+              email: userStore.email,
+              name: userStore.name,
+              org_id: userStore.organizationId,
+              wallets: [{ walletAddress: userStore.walletAddress, chainId: userStore.chainId }]
+            }
+          } as IUser,
+          userStore.role.toLowerCase() as IUserType
+        );
+      }
+      return;
+    }
     const user = auth.currentUser;
     if (!user) return;
     const memberInfo = await fetchMember(user.uid);
@@ -567,12 +589,14 @@ export function AuthContextProvider({ children }: any) {
     setLoading(false);
   }, []);
 
-  const logOut = useCallback(async () => {
+  const logOut = async () => {
     if (USE_NEW_API) {
       // Use new API methods
       clearAuth();
       clearUser();
       clearOrg();
+      setUser(undefined);
+      setOrganizationId(undefined);
       Router.replace('/v2/auth/login');
     } else {
       // sign out from firebase
@@ -587,7 +611,7 @@ export function AuthContextProvider({ children }: any) {
       updateRoleGuardState();
       Router.replace('/onboarding');
     }
-  }, []);
+  };
 
   const fetchSafe = useCallback(() => {
     if (organizationId) {
