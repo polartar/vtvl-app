@@ -1056,19 +1056,22 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         +lumpSumReleaseAfterCliff,
         scheduleFormState.amountToBeVested
       );
+
       const vesting = await VestingScheduleApiService.createVestingSchedule({
-        organizationId: organizationId!,
+        organizationId: String(organizationId),
         tokenId,
         vestingContractId: String(vestingContractId),
         name: scheduleState.name,
-        startedAt: scheduleFormState.startDateTime,
-        endedAt: scheduleFormState.endDateTime,
+        startedAt: scheduleFormState.startDateTime?.toString() || '',
+        endedAt: scheduleFormState.endDateTime?.toString(),
         releaseFrequencyType: scheduleFormState.releaseFrequency,
         releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
         cliffDurationType: scheduleFormState.cliffDuration,
         cliffDuration: Number(scheduleFormState.cliffDurationNumber),
-        cliffAmount,
-        amount: Number(scheduleFormState.amountToBeVested).toString()
+        cliffAmount: cliffAmount.toString(),
+        amount: Number(scheduleFormState.amountToBeVested).toString(),
+        // recipes: recipients.map((recipient) => recipient.data)
+        recipes: []
       });
       console.log({ vesting });
       // const vestingId = await createVesting({
@@ -1086,43 +1089,43 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       //   createdBy: user?.uid
       // });
 
-      const newRecipients = await Promise.all(
-        recipients.map(async ({ data: recipient }) => {
-          const id = await createRecipient({
-            vestingId: String(vesting.id),
-            organizationId: String(organizationId),
-            name: recipient.name,
-            email: recipient.email,
-            allocations: String(recipient.allocations ?? 0),
-            walletAddress: recipient.walletAddress ?? '',
-            recipientType: String(recipient.recipientType),
-            status: recipient.walletAddress ? 'accepted' : 'delivered',
-            chainId
-          });
-          return {
-            id,
-            data: recipient
-          };
-        })
-      );
+      // const newRecipients = await Promise.all(
+      //   recipients.map(async ({ data: recipient }) => {
+      //     const id = await createRecipient({
+      //       vestingId: String(vesting.id),
+      //       organizationId: String(organizationId),
+      //       name: recipient.name,
+      //       email: recipient.email,
+      //       allocations: String(recipient.allocations ?? 0),
+      //       walletAddress: recipient.walletAddress ?? '',
+      //       recipientType: String(recipient.recipientType),
+      //       status: recipient.walletAddress ? 'accepted' : 'delivered',
+      //       chainId
+      //     });
+      //     return {
+      //       id,
+      //       data: recipient
+      //     };
+      //   })
+      // );
 
-      const noWalletRecipients = newRecipients
-        .filter((recipient) => !recipient.data.walletAddress)
-        .map((recipient) => ({
-          memberId: recipient.id,
-          email: recipient.data.email,
-          name: recipient.data.name,
-          orgId: organizationId
-        }));
+      // const noWalletRecipients = newRecipients
+      //   .filter((recipient) => !recipient.data.walletAddress)
+      //   .map((recipient) => ({
+      //     memberId: recipient.id,
+      //     email: recipient.data.email,
+      //     name: recipient.data.name,
+      //     orgId: organizationId
+      //   }));
 
-      await Promise.all(newRecipients);
+      // await Promise.all(newRecipients);
 
-      if (noWalletRecipients.length > 0) {
-        await sendRecipientInvite(noWalletRecipients, mintFormState.symbol);
-      }
-      await addNewMembers(
-        newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email)
-      );
+      // if (noWalletRecipients.length > 0) {
+      //   await sendRecipientInvite(noWalletRecipients, mintFormState.symbol);
+      // }
+      // await addNewMembers(
+      //   newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email)
+      // );
     }
     console.log('creating vesting schedule');
     // Redirect to the success page to notify the user
