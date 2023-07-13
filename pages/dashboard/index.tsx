@@ -4,12 +4,12 @@ import CreateVestingContractModal from '@components/organisms/CreateVestingContr
 import DashboardPendingActions from '@components/organisms/DashboardPendingActions';
 import DashboardVestingSummary from '@components/organisms/DashboardVestingSummary';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
-import { useAuth } from '@hooks/useAuth';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useAuth } from '@store/useAuth';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import ImportIcon from 'public/icons/import-icon.svg';

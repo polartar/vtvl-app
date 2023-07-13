@@ -6,7 +6,6 @@ import { IOwner, ISafe } from './safe';
 import { IToken } from './token';
 import { ITransaction } from './transaction';
 import { IVesting } from './vesting';
-import { IVestingContract } from './vestingContract';
 import { IVestingTemplate } from './vestingTemplate';
 
 export type {
@@ -20,7 +19,6 @@ export type {
   IVestingTemplate,
   IToken,
   IInvitee,
-  IVestingContract,
   ITransaction,
   IRevoking,
   IRecipient,

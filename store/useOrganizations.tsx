@@ -66,8 +66,8 @@ export const useOrganization = () => {
   const save = useOrgStore(({ save }: OrgStoreActions) => save);
   const clear = useOrgStore(({ clear }: OrgStoreActions) => clear);
   const organizations = useOrgStore(({ organizations }: OrgStoreState) => organizations);
-
-  const organizationId = organizations.length > 0 ? organizations[0].id : '';
+  console.log({ organizations });
+  const organizationId = organizations.length > 0 ? organizations[0].organization.id : '';
 
   return {
     save,

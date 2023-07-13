@@ -6,6 +6,7 @@ const API = process.env.NEXT_PUBLIC_VTVL_API;
 
 const headers = () => {
   const { accessToken } = getAuthStore();
+  console.log({ accessToken });
   return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 };
 

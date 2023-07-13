@@ -1,7 +1,7 @@
 import TokenApiService from '@api-services/TokenApiService';
 import ERC20 from '@contracts/abi/ERC20.json';
-import { useAuth } from '@hooks/useAuth';
-import { useOrganization } from '@hooks/useOrganizations';
+import { useAuth } from '@store/useAuth';
+import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
@@ -37,7 +37,6 @@ interface ITokenContextData {
 }
 
 const INITIAL_STATE: IToken = {
-  id: '',
   name: '',
   symbol: '',
   logo: '',
@@ -49,7 +48,7 @@ const INITIAL_STATE: IToken = {
 const TokenContext = createContext({} as ITokenContextData);
 
 export function TokenContextProvider({ children }: any) {
-  const { userId } = useAuth();
+  const { userId, accessToken } = useAuth();
   const { organizationId } = useOrganization();
   const { chainId } = useWeb3React();
 
@@ -115,20 +114,16 @@ export function TokenContextProvider({ children }: any) {
   // }, [mintFormState.address]);
   console.log({ userId, organizationId });
   useEffect(() => {
-    if (userId && chainId && organizationId) {
+    if (chainId && organizationId && accessToken) {
       TokenApiService.getTokens().then((res) => {
         console.log({ res });
-        const data = res.filter(
-          (organization) =>
-            organization.organization.id === organizationId &&
-            organization.organization.tokens.filter((token) => token.token.chainId === chainId)
-        );
+        const data = res.filter((token) => token.chainId === chainId);
         if (data && data.length > 0) {
-          setMintFormState(data[0].organization.tokens.filter((token) => token.token.chainId === chainId)[0].token);
+          setMintFormState(data[0]);
         }
       });
     }
-  }, [userId, chainId, organizationId]);
+  }, [chainId, organizationId, accessToken]);
 
   return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;
 }

@@ -21,7 +21,6 @@ import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVestingContract } from 'types/models';
 
 interface IndeterminateCheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
   indeterminate?: boolean;
@@ -134,7 +133,7 @@ const Table = ({
   const [loading, setLoading] = useState(false);
   const [fundingRequired, setFundingRequired] = useState(false);
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
-  const [vestingContractForFunding, setVestingContractForFunding] = useState<{ id: string; data: IVestingContract }>();
+  const [vestingContractForFunding, setVestingContractForFunding] = useState<IVestingContract>();
   const [depositAmount, setDepositAmount] = useState('0');
 
   const handleBatchProcess = () => {
@@ -160,7 +159,7 @@ const Table = ({
       setLoading(true);
       try {
         const TokenContract = new ethers.Contract(
-          mintFormState.address,
+          mintFormState.address ?? '',
           [
             // Read-Only Functions
             'function balanceOf(address owner) view returns (uint256)',
@@ -174,12 +173,12 @@ const Table = ({
           ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
         );
         const VestingContract = new ethers.Contract(
-          vestingContract?.data.address ?? '',
+          vestingContract?.address ?? '',
           VTVL_VESTING_ABI.abi,
           ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
         );
 
-        const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
+        const tokenBalance = await TokenContract.balanceOf(vestingContract?.address);
         // const tokenBalance = vestingContract?.data.balance || 0;
 
         const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
@@ -230,7 +229,7 @@ const Table = ({
         setIsCloseAvailable(false);
         setTransactionLoaderStatus('PENDING');
         const tokenContract = new ethers.Contract(
-          mintFormState.address,
+          mintFormState.address ?? '',
           [
             // Read-Only Functions
             'function balanceOf(address owner) view returns (uint256)',
@@ -246,17 +245,17 @@ const Table = ({
           library.getSigner()
         );
 
-        const allowance = await tokenContract.allowance(account, vestingContractForFunding?.data.address);
+        const allowance = await tokenContract.allowance(account, vestingContractForFunding?.address);
         if (allowance.lt(ethers.utils.parseEther(amount))) {
           const approveTx = await tokenContract.approve(
-            vestingContractForFunding?.data.address,
+            vestingContractForFunding?.address,
             ethers.utils.parseEther(amount).sub(allowance)
           );
           await approveTx.wait();
         }
 
         const fundTransaction = await tokenContract.transfer(
-          vestingContractForFunding?.data?.address,
+          vestingContractForFunding?.address,
           ethers.utils.parseEther(amount)
         );
         setTransactionLoaderStatus('IN_PROGRESS');
@@ -271,7 +270,7 @@ const Table = ({
           'event Transfer(address indexed from, address indexed to, uint amount)'
         ]);
         const transferEncoded = tokenContractInterface.encodeFunctionData('transfer', [
-          vestingContractForFunding?.data?.address,
+          vestingContractForFunding?.address,
           ethers.utils.parseEther(amount)
         ]);
         if (currentSafe?.address && account && chainId && organizationId) {
@@ -290,7 +289,7 @@ const Table = ({
             const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
             const txData = {
-              to: mintFormState.address,
+              to: mintFormState.address ?? '',
               data: transferEncoded,
               value: '0',
               nonce: nextNonce
@@ -311,7 +310,7 @@ const Table = ({
               hash: '',
               safeHash: txHash,
               status: 'PENDING',
-              to: vestingContractForFunding?.data?.address ?? '',
+              to: vestingContractForFunding?.address ?? '',
               type: 'FUNDING_CONTRACT',
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),

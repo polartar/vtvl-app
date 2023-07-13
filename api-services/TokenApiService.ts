@@ -6,7 +6,7 @@ class TokenApiService {
 
   importToken = (payload: IImportTokenRequest) => CoreApiService.post('/token/import', payload);
 
-  getTokens = () => CoreApiService.get<ITokensResponse>('/token');
+  getTokens = () => CoreApiService.get<IToken[]>('/token');
 
   // inviteMember = (payload: IOrgMemberInviteRequest) =>
   //   CoreApiService.post(`/organization/${payload.organizationId}/invite/${PLATFORM_NAME}`, payload);

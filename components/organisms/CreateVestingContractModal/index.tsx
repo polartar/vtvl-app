@@ -1,7 +1,9 @@
+import VestingContractApiService from '@api-services/VestingContractApiService';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
+import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -13,8 +15,8 @@ interface ICreateVestingContractModal {
 
 const CreateVestingContractModal: React.FC<ICreateVestingContractModal> = ({ hideModal }) => {
   const { chainId } = useWeb3React();
-  const { organizationId } = useAuthContext();
-  const { vestingContracts } = useDashboardContext();
+  const { organizationId } = useOrganization();
+  const { vestingContracts, updateVestingContract } = useDashboardContext();
   const { mintFormState } = useTokenContext();
 
   const [contractName, setContractName] = useState('');
@@ -31,25 +33,20 @@ const CreateVestingContractModal: React.FC<ICreateVestingContractModal> = ({ hid
         if (
           vestingContracts &&
           vestingContracts.length > 0 &&
-          vestingContracts.find((vestingContract) => vestingContract.data.name === contractName)
+          vestingContracts.find((vestingContract) => vestingContract.name === contractName)
         ) {
           setError('A contract with the same name already exists.');
           return;
         }
         setLoading(true);
-        const vestingContractId = await createVestingContract({
+        const vestingContract = await VestingContractApiService.createVestingContract({
           name: contractName,
-          status: 'INITIALIZED',
-          chainId: chainId ?? 0,
-          tokenAddress: mintFormState.address,
-          address: '',
-          deployer: '',
+          tokenId: mintFormState.id ?? '',
           organizationId,
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
-          transactionId: ''
+          chainId: chainId ?? 0
         });
         // fetchDashboardVestingContract();
+        updateVestingContract(vestingContract);
         setLoading(false);
         hideModal();
         toast.success(

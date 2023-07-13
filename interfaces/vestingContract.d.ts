@@ -10,11 +10,19 @@ interface IVestingContract {
   chainId: number;
   isDeployed: boolean;
   isActive: boolean;
+  status: 'PENDING' | 'SUCCESS' | 'FAILED' | 'INITIALIZED';
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ICreateVestingContractRequest {
   organizationId: string;
   tokenId: string;
   name: string;
+  chainId: number;
+}
+
+interface IDeployVestingContractRequest {
+  address: string;
   chainId: number;
 }

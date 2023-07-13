@@ -5,7 +5,7 @@ import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import TokenDetails from '@components/atoms/TokenDetails/TokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
-import { useOrganization } from '@hooks/useOrganizations';
+import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
 import Router, { useRouter } from 'next/router';
