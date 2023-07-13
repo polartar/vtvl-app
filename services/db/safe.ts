@@ -1,4 +1,8 @@
+// Cannot use api-hooks here, so we need to directly request from the api-services
+import SafeApiService from '@api-services/SafeApiService';
 import { WhereFilterOp, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where } from '@firebase/firestore';
+import { USE_NEW_API } from '@utils/constants';
+import { ISafeOwner } from 'interfaces/safe';
 import { safeCollection } from 'services/db/firestore';
 import { ISafe } from 'types/models';
 
@@ -25,6 +29,37 @@ export const updateSafe = async (safe: ISafe, id: string): Promise<void> => {
 };
 
 export const createOrUpdateSafe = async (safe: ISafe, ref?: string): Promise<string> => {
+  // New api integration before migrating states
+  if (USE_NEW_API) {
+    // Transform data being passed into a new api conformant format
+    const { org_id: organizationId, address, chainId, threshold: requiredConfirmations, owners, safe_name } = safe;
+    if (ref) {
+      await SafeApiService.updateSafeWallet({
+        safeId: ref,
+        organizationId,
+        address,
+        chainId,
+        name: safe_name || '',
+        requiredConfirmations,
+        owners: owners as ISafeOwner[]
+      });
+      // Return the id of the record
+      return ref;
+    }
+    // Add the safe wallet to DB
+    const adding = await SafeApiService.addSafeWallet({
+      organizationId,
+      address,
+      chainId,
+      name: safe_name || '',
+      requiredConfirmations,
+      owners: owners as ISafeOwner[]
+    });
+    // Return the id of the record
+    return adding.id || '';
+  }
+
+  // Old firebase implementation
   if (ref) {
     const safeRef = doc(safeCollection, ref);
     await setDoc(safeRef, safe);

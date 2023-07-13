@@ -3,6 +3,7 @@ import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
 import { ethers } from 'ethers';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
+import { IOwner, ISafe } from 'types/models';
 
 export type SafeTransaction = {
   to: string;
@@ -53,4 +54,32 @@ export const createSafeTransaction = async (
   });
 
   return { hash: txHash, nonce: nextNonce };
+};
+
+// This function is used to transform new api Safe response into the firebase Safe model
+export const transformSafes: (payload: {
+  safes: ISafeResponse[];
+  organizationId: string;
+  organizationName: string;
+  userId: string;
+}) => { id: string; data: ISafe }[] = ({ safes, organizationId, organizationName, userId }) => {
+  console.log('TRANSFORMING SAFE', safes);
+  return safes.map((safe) => {
+    return {
+      id: safe.id,
+      data: {
+        id: safe.id,
+        user_id: userId,
+        safe_name: safe.name,
+        org_name: organizationName,
+        org_id: organizationId,
+        address: safe.address,
+        chainId: safe.chainId,
+        owners: safe.safeOwners as IOwner[],
+        threshold: safe.requiredConfirmations,
+        createdAt: safe.createdAt,
+        updatedAt: safe.updatedAt
+      } as ISafe
+    };
+  });
 };

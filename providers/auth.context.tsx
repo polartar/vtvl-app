@@ -1,8 +1,10 @@
+import useSafeAPI from '@api-hooks/useSafe';
 import RecipientApiService from '@api-services/RecipientApiService';
 import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { getUserStore, useUser } from '@store/useUser';
 import { REDIRECT_URIS, USE_NEW_API } from '@utils/constants';
+import { transformSafes } from '@utils/safe';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import {
@@ -141,7 +143,10 @@ export function AuthContextProvider({ children }: any) {
   const { clear: clearAuth } = useAuth();
   const { clear: clearUser } = useUser();
   const userStore = getUserStore();
-  const { clear: clearOrg } = useOrganization();
+  const { clear: clearOrg, organizations } = useOrganization();
+  const { getSafeWalletsByOrganization } = useSafeAPI();
+
+  const [organizationName, setOrganizationName] = useState('');
 
   // Sets the recipient if it is found
   useEffect(() => {
@@ -628,9 +633,22 @@ export function AuthContextProvider({ children }: any) {
     }
   };
 
-  const fetchSafe = useCallback(() => {
+  const fetchSafe = useCallback(async () => {
     if (organizationId) {
-      fetchSafesByQuery(['org_id'], ['=='], [organizationId]).then((res) => setSafes(res));
+      if (USE_NEW_API) {
+        // Get safe wallets from new API and transform it to the old firebase format
+        const safesList = await getSafeWalletsByOrganization(organizationId);
+        const transformedSafes = transformSafes({
+          safes: safesList,
+          organizationId,
+          organizationName,
+          userId: user?.memberInfo?.id || ''
+        });
+        setSafes(transformedSafes);
+      } else {
+        // Just do the old firebase one
+        fetchSafesByQuery(['org_id'], ['=='], [organizationId]).then((res) => setSafes(res));
+      }
     }
   }, [organizationId]);
 
@@ -727,6 +745,10 @@ export function AuthContextProvider({ children }: any) {
   }, [user, recipient, agreedOnConsent]);
 
   useEffect(() => {
+    // Update organization name based on organizationId
+    const currentOrganization = organizations.find((org) => org.organizationId === organizationId);
+    if (currentOrganization) setOrganizationName(currentOrganization.organization.name);
+
     fetchSafe();
   }, [organizationId]);
 

@@ -26,7 +26,12 @@ export const ERROR_MESSAGES = {
     CREATE_ORGANIZATION: 'Cannot create organization',
     GET_MEMBERS: 'Cannot get members',
     CREATE_MEMBER: 'Cannot create member',
-    INVITE_MEMBER: 'Cannot invite member'
+    INVITE_MEMBER: 'Cannot invite member',
+
+    /* SAFE */
+    CREATE_SAFE: 'Cannot create safe',
+    UPDATE_SAFE: 'Cannot update safe',
+    GET_SAFE: 'Cannot get safe information'
     /* */
   }
 } as const;
@@ -44,7 +49,11 @@ export const SUCCESS_MESSAGES = {
     // CREATE_ORGANIZATION: 'Organization created',
     CREATE_ORGANIZATION: 'Welcome to VTVL!',
     GET_MEMBERS: 'Members found!',
-    CREATE_MEMBER: 'Member created!'
+    CREATE_MEMBER: 'Member created!',
+
+    /* SAFE */
+    CREATE_SAFE: 'Safe created!',
+    UPDATE_SAFE: 'Safe updated!'
     /* */
   }
 } as const;
