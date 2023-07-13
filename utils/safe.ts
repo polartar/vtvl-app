@@ -2,6 +2,7 @@ import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
 import { ethers } from 'ethers';
+import { ISafeResponse } from 'interfaces/safe';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IOwner, ISafe } from 'types/models';
 
