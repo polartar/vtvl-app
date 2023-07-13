@@ -5,10 +5,12 @@ import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetai
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
+import { REDIRECT_URIS } from '@utils/constants';
 import { getCliffAmount } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import Decimal from 'decimal.js';
+import { ECliffTypes, EReleaseFrequencyTypes } from 'interfaces/vestingSchedule';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
@@ -16,6 +18,7 @@ import { ReactElement } from 'react';
 import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
 import { createVestingContract } from 'services/db/vestingContract';
+import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { formatRecipientsDocToForm } from 'utils/recipients';
 import { formatNumber } from 'utils/token';
 
@@ -77,7 +80,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
       await Promise.all(
         recipients
           .filter((recipient) => Boolean(recipient.id))
-          .map((recipient) => editRecipient(recipient.id, recipient.data))
+          .map((recipient) => editRecipient(recipient.id, recipient))
       );
     } else {
       const vesting = await VestingScheduleApiService.createVestingSchedule({
@@ -85,14 +88,19 @@ const ScheduleSummary: NextPageWithLayout = () => {
         tokenId,
         vestingContractId: String(vestingContractId),
         name: scheduleState.name,
-        startedAt: scheduleFormState.startDateTime,
-        endedAt: scheduleFormState.endDateTime,
-        releaseFrequencyType: scheduleFormState.releaseFrequency,
+        startedAt: scheduleFormState.startDateTime?.toISOString(),
+        endedAt: scheduleFormState.endDateTime?.toISOString(),
+        originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
+        releaseFrequencyType: EReleaseFrequencyTypes.CONTINUOUS,
+        // releaseFrequencyType: scheduleFormState.releaseFrequency,
         releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
-        cliffDurationType: scheduleFormState.cliffDuration,
+        cliffDurationType: ECliffTypes.WEEKS,
+        // cliffDurationType: scheduleFormState.cliffDuration,
         cliffDuration: Number(scheduleFormState.cliffDurationNumber),
-        cliffAmount: 1111111,
-        amount: Number(scheduleFormState.amountToBeVested).toString()
+        cliffAmount: '1111111',
+        amount: Number(scheduleFormState.amountToBeVested).toString(),
+        recipes: [],
+        redirectUri: REDIRECT_URIS.RECIPIENT_INVITE
       });
       console.log({ vesting });
       // const vestingId = await createVesting({
@@ -110,20 +118,20 @@ const ScheduleSummary: NextPageWithLayout = () => {
       //   createdBy: user?.uid
       // });
 
-      const newRecipients = recipients.map(({ data: recipient }) =>
-        createRecipient({
-          vestingId: String(vesting.id),
-          organizationId: String(organizationId),
-          name: recipient.name,
-          email: recipient.email,
-          allocations: String(recipient.allocations ?? 0),
-          walletAddress: String(recipient.walletAddress),
-          recipientType: String(recipient.recipientType),
-          status: recipient.walletAddress ? 'accepted' : 'delivered'
-        })
-      );
+      // const newRecipients = recipients.map((recipient) =>
+      //   createRecipient({
+      //     vestingId: String(vesting.id),
+      //     organizationId: String(organizationId),
+      //     name: recipient.name,
+      //     email: recipient.email,
+      //     allocations: String(recipient.allocations ?? 0),
+      //     walletAddress: String(recipient.address),
+      //     recipientType: String(recipient.role),
+      //     status: recipient.address ? 'accepted' : 'delivered'
+      //   })
+      // );
 
-      await Promise.all(newRecipients);
+      // await Promise.all(newRecipients);
     }
 
     console.log('creating vesting schedule');
@@ -147,7 +155,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
           <span>Recipient(s)</span>
         </label>
         <div className="flex flex-row flex-wrap gap-2 pb-5 border-b border-neutral-200">
-          {recipients.map(({ data: recipient }) => (
+          {recipients.map((recipient) => (
             <Chip rounded label={recipient.name} color="random" />
           ))}
         </div>

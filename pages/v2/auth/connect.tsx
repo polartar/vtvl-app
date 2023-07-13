@@ -19,6 +19,7 @@ import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { IUser, IUserType } from 'types/models/member';
+import { IRole } from 'types/models/settings';
 
 const OnboardingContainer = styled.div`
   display: grid;
@@ -110,7 +111,7 @@ const ConnectWalletPage: NextPage = () => {
                       type: orgs[0].role.toLowerCase() as IUserType
                     }
                   } as IUser,
-                  orgs[0].role.toLowerCase() as IUserType
+                  orgs[0].role.toLowerCase() as IRole
                 );
                 router.push(REDIRECT_URIS.MAIN);
               } else {

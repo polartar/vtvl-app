@@ -1,17 +1,31 @@
+import { IVestingSchedule } from 'interfaces/vestingSchedule';
 import { SupportedChainId } from 'types/constants/supported-chains';
 
+import { IVesting } from './vesting';
+
+enum RecipeStatus {
+  ACCEPTED,
+  PENDING,
+  REVOKED
+}
 export interface IRecipient {
+  id: string;
   vestingId: string;
   organizationId: string;
   name: string;
   email: string;
   company?: string;
   allocations: string;
-  walletAddress: string;
-  recipientType: IRecipientTypeValue;
+  address: string;
+  role: IRecipientTypeValue;
   chainId?: SupportedChainId;
-  status?: 'accepted' | 'delivered' | '';
-  updatedAt?: number;
+  // status?: 'accepted' | 'delivered' | '';
+  status?: RecipeStatus;
+  updatedAt?: string;
+  createdAt?: string;
+  code?: string;
+  userId?: string;
+  vesting?: IVestingSchedule;
 }
 
 export interface IRecipientForm {
@@ -32,10 +46,10 @@ export interface IRecipientFormState {
   recipients: IRecipientForm[];
 }
 
-export interface IRecipientDoc {
-  id: string;
-  data: IRecipient;
-}
-export interface IRecipientData extends IRecipientDoc {
+// export interface IRecipientDoc {
+//   id: string;
+//   data: IRecipient;
+// }
+export interface IRecipientData extends IRecipient {
   checked?: boolean;
 }

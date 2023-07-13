@@ -3,16 +3,17 @@ import { useAuthContext } from '@providers/auth.context';
 import Router from 'next/router';
 import { useEffect, useState } from 'react';
 import { IUserType } from 'types/models/member';
+import { IRole } from 'types/models/settings';
 
 const SwitchRole = () => {
   const { user, switchRole } = useAuthContext();
-  const [newRole, setNewRole] = useState<IUserType>('');
+  const [newRole, setNewRole] = useState<IRole>(IRole.ANONYMOUS);
 
   useEffect(() => {
-    if (user?.memberInfo?.type === 'founder') {
-      setNewRole((newRole ? '' : 'investor') as IUserType);
+    if (user?.memberInfo?.role === IRole.FOUNDER) {
+      setNewRole((newRole ? '' : IRole.FOUNDER) as IRole);
     }
-  }, [user?.memberInfo?.type]);
+  }, [user?.memberInfo?.role]);
 
   const handleSwitchRole = () => {
     switchRole(newRole);

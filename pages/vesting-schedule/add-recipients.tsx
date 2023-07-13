@@ -12,10 +12,8 @@ import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
-import { fetchVestingsByQuery } from 'services/db/vesting';
-import { IRecipientDoc, IVesting } from 'types/models';
+import { IRecipient } from 'types/models';
 import { WEBSITE_NAME } from 'utils/constants';
-import { getRecipient } from 'utils/recipients';
 import { isEmptyArray } from 'utils/regex';
 
 const beneficiaryFields = [
@@ -163,8 +161,8 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
           .map((vesting) => vesting.id);
 
         const prevRecipients = allRecipients
-          .filter((recipient) => existingVestings.includes(recipient.data.vestingId))
-          .map((recipient) => recipient.data.walletAddress?.toLowerCase());
+          .filter((recipient) => existingVestings.includes(recipient.vestingId))
+          .map((recipient) => recipient.address?.toLowerCase());
 
         // To optimize later
         // Apply validation of this only on add form
@@ -188,15 +186,12 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
       updateRecipients?.(
         data.map((row: RecipientTableRow) => ({
-          id: String(''),
-          data: {
-            walletAddress: row.address,
-            name: row.name,
-            email: row.email,
-            allocations: row.allocations,
-            recipientType: row.type,
-            company: row.company
-          }
+          address: row.address,
+          name: row.name,
+          email: row.email,
+          allocations: row.allocations,
+          role: row.type,
+          company: row.company
         })) ?? []
       );
 
@@ -229,14 +224,14 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
       recipients.length
     ) {
       setRows(
-        recipients.map((record: IRecipientDoc) => ({
+        recipients.map((record: IRecipient) => ({
           id: record.id,
-          name: record.data.name,
-          address: record.data.walletAddress,
-          allocations: record.data.allocations,
-          email: String(record.data.email),
-          type: record.data.recipientType,
-          company: record.data.company
+          name: record.name,
+          address: record.address,
+          allocations: record.allocations,
+          email: String(record.email),
+          type: record.role,
+          company: record.company
         }))
       );
     }

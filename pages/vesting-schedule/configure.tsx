@@ -21,10 +21,12 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
+import { REDIRECT_URIS } from '@utils/constants';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import { injected } from 'connectors';
 import { add, addDays, differenceInHours, differenceInSeconds, isAfter, isBefore, subDays } from 'date-fns';
+import { ECliffTypes, EReleaseFrequencyTypes } from 'interfaces/vestingSchedule';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
@@ -70,7 +72,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const [formMessage, setFormMessage] = useState('');
 
   const totalAllocations = useMemo(
-    () => recipients?.reduce((val, recipient) => val + Number(recipient?.data.allocations ?? 0), 0),
+    () => recipients?.reduce((val, recipient) => val + Number(recipient?.allocations ?? 0), 0),
     [recipients]
   );
 
@@ -79,12 +81,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       recipients.map(
         (recipient) =>
           ({
-            walletAddress: recipient.data.walletAddress,
-            name: recipient.data.name,
-            email: recipient.data.email,
-            company: recipient.data.company,
-            recipientType: [getRecipient(String(recipient.data.recipientType))],
-            allocations: Number(recipient.data.allocations)
+            walletAddress: recipient.address,
+            name: recipient.name,
+            email: recipient.email,
+            company: recipient.company,
+            recipientType: [getRecipient(String(recipient.role))],
+            allocations: Number(recipient.allocations)
           } as IRecipientForm)
       ),
     [recipients]
@@ -1048,7 +1050,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       await Promise.all(
         recipients
           .filter((recipient) => Boolean(recipient.id))
-          .map((recipient) => editRecipient(recipient.id, recipient.data))
+          .map((recipient) => editRecipient(recipient.id, recipient))
       );
     } else {
       const cliffAmount = getCliffAmount(
@@ -1059,19 +1061,25 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
       const vesting = await VestingScheduleApiService.createVestingSchedule({
         organizationId: String(organizationId),
-        tokenId,
-        vestingContractId: String(vestingContractId),
+        tokenId: '64cbaead-bde4-46fd-9c92-e878bb6a2198', // need to update later
+        vestingContractId: '3e1d7fa3-8e8c-4d3a-b58e-47b61119622b', // need to update later
+        // tokenId,
+        // vestingContractId: String(vestingContractId),
         name: scheduleState.name,
-        startedAt: scheduleFormState.startDateTime?.toString() || '',
-        endedAt: scheduleFormState.endDateTime?.toString(),
-        releaseFrequencyType: scheduleFormState.releaseFrequency,
+        startedAt: scheduleFormState.startDateTime?.toISOString() || '',
+        endedAt: scheduleFormState.endDateTime?.toISOString(),
+        originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
+        releaseFrequencyType: EReleaseFrequencyTypes.CONTINUOUS, // need to update later
+        // releaseFrequencyType: scheduleFormState.releaseFrequency,
         releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
-        cliffDurationType: scheduleFormState.cliffDuration,
+        cliffDurationType: ECliffTypes.WEEKS, // need to update later
+        // cliffDurationType: scheduleFormState.cliffDuration,
         cliffDuration: Number(scheduleFormState.cliffDurationNumber),
         cliffAmount: cliffAmount.toString(),
         amount: Number(scheduleFormState.amountToBeVested).toString(),
         // recipes: recipients.map((recipient) => recipient.data)
-        recipes: []
+        recipes: recipients,
+        redirectUri: REDIRECT_URIS.RECIPIENT_INVITE
       });
       console.log({ vesting });
       // const vestingId = await createVesting({

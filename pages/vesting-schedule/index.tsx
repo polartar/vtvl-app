@@ -115,8 +115,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               data: {
                 ...vesting.data,
                 recipients: recipients
-                  .filter((recipient) => recipient.data.vestingId === vesting.id)
-                  .map((recipient) => recipient.data)
+                  .filter((recipient) => recipient.vestingId === vesting.id)
+                  .map((recipient) => recipient)
               }
             };
           })
@@ -136,7 +136,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         pendingSchedules += sched.data.status === 'WAITING_FUNDS' || sched.data.status === 'INITIALIZED' ? 1 : 0;
         pendingDeployments += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
         pendingApprovals += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
-        totalRecipients += recipients.filter((recipient) => recipient.data.vestingId === sched.id).length;
+        totalRecipients += recipients.filter((recipient) => recipient.vestingId === sched.id).length;
       });
 
       setVestingScheduleDataCounts({
@@ -363,8 +363,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                 </td>
                 <td className="group-last:border-b-0">
                   <div className="w-full py-2 text-center">
-                    {recipient.walletAddress ? (
-                      <Copy text={recipient.walletAddress}>{minifyAddress(recipient.walletAddress)}</Copy>
+                    {recipient.address ? (
+                      <Copy text={recipient.address}>{minifyAddress(recipient.address)}</Copy>
                     ) : (
                       <span>No Wallet</span>
                     )}

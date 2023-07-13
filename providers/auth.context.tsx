@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { getUserStore, useUser } from '@store/useUser';
@@ -33,7 +34,7 @@ import { fetchRecipientByQuery, fetchRecipientsByQuery } from 'services/db/recip
 import { createOrUpdateSafe, fetchSafeByQuery, fetchSafesByQuery } from 'services/db/safe';
 import { getSafeInfo } from 'services/gnosois';
 import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
-import { IUserType } from 'types/models/member';
+import { IRole } from 'types/models/settings';
 import { compareAddresses } from 'utils';
 import { getCache, setCache } from 'utils/localStorage';
 import { MESSAGES } from 'utils/messages';
@@ -52,9 +53,9 @@ export type TConnections = 'metamask' | 'walletconnect';
 
 export type AuthContextData = {
   isAuthenticated: boolean;
-  roleOverride?: IUserType;
-  authenticateUser: (user: IUser, role?: IUserType) => void;
-  switchRole: (role: IUserType) => void;
+  roleOverride?: IRole;
+  authenticateUser: (user: IUser, role?: IRole) => void;
+  switchRole: (role: IRole) => void;
   user: IUser | undefined;
   currentSafe: ISafe | undefined;
   currentSafeId: string;
@@ -69,10 +70,10 @@ export type AuthContextData = {
   signInWithGoogle: () => Promise<NewLogin | undefined>;
   anonymousSignIn: () => Promise<NewLogin | undefined>;
   registerNewMember: (
-    member: { name: string; email: string; companyEmail: string; type: IUserType },
+    member: { name: string; email: string; companyEmail: string; type: IRole },
     org: IOrganization
   ) => Promise<string | undefined>;
-  teammateSignIn: (email: string, type: IUserType, orgId: string, url: string) => Promise<void>;
+  teammateSignIn: (email: string, type: IRole, orgId: string, url: string) => Promise<void>;
   sendTeammateInvite: (
     email: string,
     type: string,
@@ -130,7 +131,7 @@ export function AuthContextProvider({ children }: any) {
   const [connection, setConnection] = useState<TConnections | undefined>();
 
   // User role switching from founder to investor and vice versa
-  const [roleOverride, setRoleOverride] = useState<IUserType>('');
+  const [roleOverride, setRoleOverride] = useState<IRole>(IRole.ANONYMOUS);
 
   // Adds the auth and role guard here
   const { updateRoleGuardState } = useRoleGuard({ routes: platformRoutes, fallbackPath: '/404' });
@@ -145,7 +146,7 @@ export function AuthContextProvider({ children }: any) {
 
   // Sets the recipient if it is found
   useEffect(() => {
-    if (chainId && user?.memberInfo?.email && user.memberInfo?.type == 'investor') {
+    if (chainId && user?.memberInfo?.email && user.memberInfo?.role == IRole.INVESTOR) {
       fetchRecipientsByQuery(['email', 'chainId'], ['==', '=='], [user.email, chainId]).then((response) => {
         if (response && response.length > 0) {
           setRecipient(response[0]);
@@ -165,7 +166,7 @@ export function AuthContextProvider({ children }: any) {
           const memberInfo = await fetchMember(user.uid);
           const persistedRoleOverride = getCache()?.roleOverride;
           authenticateUser({ ...user, memberInfo });
-          if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IUserType);
+          if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IRole);
         }
         setLoading(false);
       });
@@ -195,7 +196,7 @@ export function AuthContextProvider({ children }: any) {
   }, [library]);
 
   // Switch role feature
-  const switchRole = async (newRole: IUserType) => {
+  const switchRole = async (newRole: IRole) => {
     setRoleOverride(newRole);
 
     const updatedAuthData = { roleOverride: newRole };
@@ -206,9 +207,9 @@ export function AuthContextProvider({ children }: any) {
   };
 
   // A function to abstract all authentication from different authentication methods
-  const authenticateUser = async (user: IUser, role?: IUserType) => {
+  const authenticateUser = async (user: IUser, role?: IRole) => {
     await setCache({ user, isAuthenticated: true });
-    // Condition is used because a possible value is blank '' from IUserType
+    // Condition is used because a possible value is blank '' from IRole
     if (role !== undefined) {
       setRoleOverride(role);
       await setCache({ roleOverride: role });
@@ -239,10 +240,14 @@ export function AuthContextProvider({ children }: any) {
   const updateAuthState = useCallback(
     async (credential: UserCredential, isGuestMode = false) => {
       const additionalInfo = getAdditionalUserInfo(credential);
-      let recipientInfo = await fetchRecipientByQuery('email', '==', String(credential.user.email));
-      if (!recipientInfo) {
-        recipientInfo = await fetchRecipientByQuery('walletAddress', '==', String(account));
+      // let recipientInfo = await fetchRecipientByQuery('email', '==', String(credential.user.email));
+      let recipients = await RecipientApiService.getRecipes(`email=${credential.user.email}`);
+      if (!recipients || recipients.length === 0) {
+        // recipientInfo = await fetchRecipientByQuery('walletAddress', '==', String(account));
+        recipients = await RecipientApiService.getRecipes(`address=${account}`);
       }
+
+      const recipient = recipients.length === 0 ? undefined : recipients[0];
 
       setIsNewUser(Boolean(additionalInfo?.isNewUser));
       if (additionalInfo?.isNewUser) {
@@ -253,24 +258,24 @@ export function AuthContextProvider({ children }: any) {
           companyEmail: credential.user.email ?? '',
           name: credential.user.displayName ?? '',
           wallets: [],
-          type: recipientInfo?.data.recipientType ?? isGuestMode ? 'anonymous' : 'founder'
+          role: recipient?.role ?? isGuestMode ? IRole.ANONYMOUS : IRole.FOUNDER
         };
 
         if (account) {
           payload.wallets!.push({ walletAddress: account, chainId: chainId! });
         }
 
-        if (recipientInfo) {
+        if (recipient) {
           // If this user was already registered as a recipient
-          payload.org_id = recipientInfo.data.organizationId;
-          payload.name = recipientInfo.data.name;
-          payload.type = recipientInfo.data.recipientType as IUserType;
+          payload.org_id = recipient.organizationId;
+          payload.name = recipient.name;
+          payload.role = recipient.role as IRole;
           payload.wallets!.push({
-            walletAddress: recipientInfo.data.walletAddress,
-            chainId: recipientInfo.data.chainId!
+            walletAddress: recipient.address,
+            chainId: recipient.chainId!
           });
 
-          if (account && !compareAddresses(account, recipientInfo.data.walletAddress)) {
+          if (account && !compareAddresses(account, recipient.address)) {
             // TODO add handler if recipient wallet is not matched with current wallet
             // payload.wallets!.push({ walletAddress: recipientInfo.data.walletAddress, chainId: chainId! });
           }
@@ -285,7 +290,7 @@ export function AuthContextProvider({ children }: any) {
 
         return {
           isNewUser: Boolean(additionalInfo?.isNewUser) || !memberInfo?.org_id,
-          isOnboarding: Boolean(recipientInfo)
+          isOnboarding: Boolean(recipient)
         };
       }
       toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
@@ -328,7 +333,7 @@ export function AuthContextProvider({ children }: any) {
   };
 
   const registerNewMember = async (
-    member: { name: string; email: string; companyEmail: string; type: IUserType },
+    member: { name: string; email: string; companyEmail: string; type: IRole },
     org: IOrganization
   ): Promise<string | undefined> => {
     setLoading(true);
@@ -354,7 +359,7 @@ export function AuthContextProvider({ children }: any) {
         email: member.email || '',
         companyEmail: member.email || user.email || '',
         name: member.name || user.displayName || '',
-        type: member.type,
+        role: member.type,
         org_id,
         joined: Math.floor(new Date().getTime() / 1000)
       };
@@ -390,13 +395,13 @@ export function AuthContextProvider({ children }: any) {
       const memberInfo = member
         ? // Updating the type to support email invites on team member management.
           // By default uses the current user type of the member logging in.
-          { ...member, type: newSignUp.type || member.type }
+          { ...member, type: newSignUp.role || member.role }
         : // Next block is used when a new user is detected.
           {
             email: newSignUp.email || credential.user.email || '',
             companyEmail: newSignUp.email || credential.user.email || '',
             name: newSignUp.name || credential.user.displayName || '',
-            type: newSignUp.type,
+            type: newSignUp.role,
             org_id: newSignUp.org_id
           };
 
@@ -433,13 +438,13 @@ export function AuthContextProvider({ children }: any) {
       const memberInfo = member
         ? {
             ...member,
-            type: newSignUp.type
+            role: newSignUp.role
           }
         : {
             email: newSignUp.email || credential.user.email || '',
             companyEmail: newSignUp.email || credential.user.email || '',
             name: newSignUp.name || credential.user.displayName || '',
-            type: newSignUp.type,
+            role: newSignUp.role,
             org_id: newSignUp.org_id
           };
 
@@ -454,7 +459,7 @@ export function AuthContextProvider({ children }: any) {
     }
   };
 
-  const teammateSignIn = async (email: string, type: IUserType, orgId: string, url?: string): Promise<void> => {
+  const teammateSignIn = async (email: string, type: IRole, orgId: string, url?: string): Promise<void> => {
     setLoading(true);
     // first time user
     await setPersistence(auth, browserSessionPersistence);
@@ -478,14 +483,14 @@ export function AuthContextProvider({ children }: any) {
             email: credential.user.email || '',
             companyEmail: credential.user.email || '',
             name: credential.user.displayName || '',
-            type
+            role: type
           };
 
       if (account) memberInfo.wallets = [{ walletAddress: account, chainId: chainId! }];
 
       await newMember(credential.user.uid, {
         ...memberInfo,
-        type
+        role: type
       });
 
       if (additionalInfo?.isNewUser) setIsNewUser(additionalInfo.isNewUser);
@@ -549,7 +554,10 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     const credential = await signInAnonymously(auth);
     const additionalInfo = getAdditionalUserInfo(credential);
-    const userDetails: IUser = { ...credential.user, memberInfo: { type: 'anonymous', name: 'anonymous', org_id: '' } };
+    const userDetails: IUser = {
+      ...credential.user,
+      memberInfo: { role: IRole.ANONYMOUS, name: 'anonymous', org_id: '' }
+    };
 
     authenticateUser(userDetails);
 
@@ -573,10 +581,10 @@ export function AuthContextProvider({ children }: any) {
               name: userStore.name,
               org_id: userStore.organizationId,
               wallets: [{ walletAddress: userStore.walletAddress, chainId: userStore.chainId }],
-              type: userStore.role.toLowerCase() as IUserType
+              role: userStore.role.toLowerCase() as IRole
             }
           } as IUser,
-          userStore.role.toLowerCase() as IUserType
+          userStore.role.toLowerCase() as IRole
         );
       }
       return;
@@ -690,14 +698,14 @@ export function AuthContextProvider({ children }: any) {
     if (
       user &&
       user.memberInfo &&
-      user.memberInfo.type &&
-      user.memberInfo.type !== 'founder' &&
-      user.memberInfo.type !== 'manager' &&
-      user.memberInfo.type !== 'manager2' &&
+      user.memberInfo.role &&
+      user.memberInfo.role !== IRole.FOUNDER &&
+      user.memberInfo.role !== IRole.MANAGER &&
+      // user.memberInfo.role !== 'manager2' &&
       !inProgress &&
       !router.asPath.includes('welcome')
     ) {
-      if (user.memberInfo.type === 'investor' && (!recipient || (recipient && !recipient.data.walletAddress))) {
+      if (user.memberInfo.role === IRole.INVESTOR && (!recipient || (recipient && !recipient.data.walletAddress))) {
         Router.push('/recipient/schedule');
       } else if (isNewUser) {
         Router.push('/welcome');
