@@ -1069,15 +1069,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         startedAt: scheduleFormState.startDateTime?.toISOString() || '',
         endedAt: scheduleFormState.endDateTime?.toISOString(),
         originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
-        releaseFrequencyType: EReleaseFrequencyTypes.CONTINUOUS, // need to update later
-        // releaseFrequencyType: scheduleFormState.releaseFrequency,
+        releaseFrequencyType: scheduleFormState.releaseFrequency,
         releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
-        cliffDurationType: ECliffTypes.WEEKS, // need to update later
-        // cliffDurationType: scheduleFormState.cliffDuration,
+        cliffDurationType: scheduleFormState.cliffDuration,
         cliffDuration: Number(scheduleFormState.cliffDurationNumber),
         cliffAmount: cliffAmount.toString(),
         amount: Number(scheduleFormState.amountToBeVested).toString(),
-        // recipes: recipients.map((recipient) => recipient.data)
         recipes: recipients,
         redirectUri: REDIRECT_URIS.RECIPIENT_INVITE
       });

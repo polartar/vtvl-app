@@ -1,4 +1,5 @@
 // import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
+import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IRecipient } from 'types/models';
 import { IVestingStatus } from 'types/models/vesting';
 
@@ -38,9 +39,11 @@ export interface IVestingSchedule {
   startedAt?: string;
   endedAt?: string;
   originalEndedAt?: string;
-  releaseFrequencyType: EReleaseFrequencyTypes;
+  // releaseFrequencyType: EReleaseFrequencyTypes;
+  releaseFrequencyType: ReleaseFrequency;
   releaseFrequency: number;
-  cliffDurationType: ECliffTypes;
+  cliffDurationType: CliffDuration;
+  // cliffDurationType: ECliffTypes;
   cliffDuration: number;
   cliffAmount: string;
   amount: string;

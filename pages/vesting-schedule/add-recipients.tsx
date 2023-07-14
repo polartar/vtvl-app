@@ -159,11 +159,12 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
         const existingVestings = vestings
           .filter((vesting) => vesting.data.vestingContractId === scheduleState.vestingContractId)
           .map((vesting) => vesting.id);
-
+        console.log({ existingVestings });
         const prevRecipients = allRecipients
           .filter((recipient) => existingVestings.includes(recipient.vestingId))
           .map((recipient) => recipient.address?.toLowerCase());
-
+        console.log({ prevRecipients });
+        console.log(scheduleMode);
         // To optimize later
         // Apply validation of this only on add form
         if (!scheduleMode.edit) {
