@@ -3,6 +3,7 @@ import { injected } from '@connectors/index';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { IStatus, STATUS_MAPPING } from 'components/organisms/DashboardPendingActions';
 import VTVL_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
@@ -33,7 +34,8 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
   updateFilter
 }) => {
   const { account, chainId, activate, library } = useWeb3React();
-  const { currentSafe, organizationId } = useAuthContext();
+  const { currentSafe } = useAuthContext();
+  const { organizationId } = useOrganization();
   // const { fetchDashboardVestingContract } = useDashboardContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
@@ -81,7 +83,8 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
           address: vestingContract.address,
           chainId,
           status: currentSafe?.address ? 'PENDING' : 'SUCCESS',
-          isDeployed: true
+          isDeployed: true,
+          organizationId
         });
         updateVestingContract(res);
         setTransactionStatus('SUCCESS');
@@ -140,7 +143,8 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         const res = await VestingContractApiService.updateVestingContract(id, {
           address: vestingContract.address,
           chainId,
-          status: 'SUCCESS'
+          status: 'SUCCESS',
+          organizationId
         });
         updateVestingContract(res);
         setStatus('SUCCESS');

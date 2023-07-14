@@ -112,11 +112,9 @@ export function TokenContextProvider({ children }: any) {
   //     getTokenDetailsFromBlockchain();
   //   }
   // }, [mintFormState.address]);
-  console.log({ userId, organizationId });
   useEffect(() => {
     if (chainId && organizationId && accessToken) {
       TokenApiService.getTokens().then((res) => {
-        console.log({ res });
         const data = res.filter((token) => token.chainId === chainId);
         if (data && data.length > 0) {
           setMintFormState(data[0]);
