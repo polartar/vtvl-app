@@ -1,9 +1,7 @@
 import { IVestingSchedule } from 'interfaces/vestingSchedule';
 import { SupportedChainId } from 'types/constants/supported-chains';
 
-import { IVesting } from './vesting';
-
-enum RecipeStatus {
+export enum RecipeStatus {
   ACCEPTED,
   PENDING,
   REVOKED

@@ -147,7 +147,12 @@ export function AuthContextProvider({ children }: any) {
   // Sets the recipient if it is found
   useEffect(() => {
     if (chainId && user?.memberInfo?.email && user.memberInfo?.role == IRole.INVESTOR) {
-      fetchRecipientsByQuery(['email', 'chainId'], ['==', '=='], [user.email, chainId]).then((response) => {
+      // fetchRecipientsByQuery(['email', 'chainId'], ['==', '=='], [user.email, chainId]).then((response) => {
+      //   if (response && response.length > 0) {
+      //     setRecipient(response[0]);
+      //   }
+      // });
+      RecipientApiService.getRecipes(`email=${user.email}&chainId=${chainId}`).then((response) => {
         if (response && response.length > 0) {
           setRecipient(response[0]);
         }

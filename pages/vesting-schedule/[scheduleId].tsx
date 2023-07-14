@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
@@ -99,8 +100,6 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     // Get the schedule details
     try {
       const getVestingSchedule = await fetchVesting(scheduleId as string);
-      const recipientsData = await fetchRecipientsByQuery(['vestingId'], ['=='], [scheduleId]);
-      setRecipients(recipientsData);
 
       if (getVestingSchedule) {
         const actualDateTime = getActualDateTime(getVestingSchedule.details);

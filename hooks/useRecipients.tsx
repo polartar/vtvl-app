@@ -1,8 +1,8 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import { useAuthContext } from '@providers/auth.context';
 import { useQuery } from '@tanstack/react-query';
 import { useWeb3React } from '@web3-react/core';
 import { useMemo } from 'react';
-import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { IRecipientDoc } from 'types/models';
 import { QUERY_KEYS } from 'utils/queries';
 import { removeDuplication } from 'utils/shared';
@@ -19,8 +19,11 @@ export const useMyRecipes = () => {
     [QUERY_KEYS.RECIPIENT.MINE, chainId, account, email, recipient?.data.walletAddress],
     () =>
       email
-        ? fetchRecipientsByQuery(['chainId', 'walletAddress', 'email'], ['==', '==', '=='], [chainId, account, email])
-        : fetchRecipientsByQuery(['chainId', 'walletAddress'], ['==', '=='], [chainId, account]),
+        ? RecipientApiService.getRecipes(`chainId=${chainId}&walletAddress=${account}&email=${email}`)
+        : RecipientApiService.getRecipes(`chainId=${chainId}&walletAddress=${account}`),
+    // email
+    //   ? fetchRecipientsByQuery(['chainId', 'walletAddress', 'email'], ['==', '==', '=='], [chainId, account, email])
+    //   : fetchRecipientsByQuery(['chainId', 'walletAddress'], ['==', '=='], [chainId, account]),
     {
       enabled: !!chainId && !!account
     }

@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import RecipientRow from '@components/molecules/VestingSchedule/RecipientRow';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
@@ -22,8 +23,6 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { fetchRecipientsByQuery } from 'services/db/recipient';
-import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
@@ -794,7 +793,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
   useEffect(() => {
     if (id) {
-      fetchRecipientsByQuery(['vestingId'], ['=='], [id]).then((res) => setRecipients(res));
+      // fetchRecipientsByQuery(['vestingId'], ['=='], [id]).then((res) => setRecipients(res));
+      RecipientApiService.getRecipes(`vestingId=${id}`).then((res) => setRecipients(res));
     }
   }, [id]);
 
