@@ -4,6 +4,7 @@ export enum SupportedChainId {
   MAINNET = 1,
   GOERLI = 5,
   BINANCE = 56,
+  BINANCE_TESTNET = 97,
   POLYGON = 137,
   MUMBAI = 80001,
   AVALANCHE = 43113,
@@ -32,7 +33,8 @@ export const DEMO_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.GOERLI,
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
-  SupportedChainId.BASE_GOERLI
+  SupportedChainId.BASE_GOERLI,
+  SupportedChainId.BINANCE_TESTNET
 ];
 
 export const DEV_SUPPORTED_CHAIN_IDS = [
@@ -47,7 +49,8 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
-  SupportedChainId.SATOSHI_MAINNET
+  SupportedChainId.SATOSHI_MAINNET,
+  SupportedChainId.BINANCE_TESTNET
 ];
 
 export const SUPPORTED_CHAIN_IDS =
@@ -180,6 +183,15 @@ export const demoSupportedChains: ChainsType = {
     rpc: 'https://goerli.base.org/',
     explorer: 'https://goerli.basescan.org',
     multisigTxUrl: ''
+  },
+  [SupportedChainId.BINANCE_TESTNET]: {
+    id: 97,
+    icon: '/icons/chains/bsc.svg',
+    title: 'Binance Testnet',
+    code: 'BNB',
+    rpc: 'https://bsc-testnet.publicnode.com',
+    explorer: 'https://testnet.bscscan.com/',
+    multisigTxUrl: ''
   }
 };
 
@@ -292,6 +304,15 @@ export const devSupportedChains: ChainsType = {
     code: 'SATS',
     rpc: 'https://mainnet-rpc.satoshichain.io',
     explorer: 'https://satoshiscan.io',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.BINANCE_TESTNET]: {
+    id: 97,
+    icon: '/icons/chains/bsc.svg',
+    title: 'Binance Testnet',
+    code: 'BNB',
+    rpc: 'https://bsc-testnet.publicnode.com',
+    explorer: 'https://testnet.bscscan.com/',
     multisigTxUrl: ''
   }
 };
