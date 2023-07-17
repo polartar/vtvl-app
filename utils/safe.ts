@@ -58,6 +58,27 @@ export const createSafeTransaction = async (
 };
 
 // This function is used to transform new api Safe response into the firebase Safe model
+export const transformSafe: (payload: {
+  safe: ISafeResponse;
+  organizationId: string;
+  organizationName: string;
+  userId: string;
+}) => ISafe = ({ safe, organizationId, organizationName, userId }) => {
+  return {
+    id: safe.id,
+    user_id: userId,
+    safe_name: safe.name,
+    org_name: organizationName,
+    org_id: organizationId,
+    address: safe.address,
+    chainId: safe.chainId,
+    owners: safe.safeOwners as IOwner[],
+    threshold: safe.requiredConfirmations,
+    createdAt: safe.createdAt,
+    updatedAt: safe.updatedAt
+  } as ISafe;
+};
+
 export const transformSafes: (payload: {
   safes: ISafeResponse[];
   organizationId: string;
@@ -68,19 +89,7 @@ export const transformSafes: (payload: {
   return safes.map((safe) => {
     return {
       id: safe.id,
-      data: {
-        id: safe.id,
-        user_id: userId,
-        safe_name: safe.name,
-        org_name: organizationName,
-        org_id: organizationId,
-        address: safe.address,
-        chainId: safe.chainId,
-        owners: safe.safeOwners as IOwner[],
-        threshold: safe.requiredConfirmations,
-        createdAt: safe.createdAt,
-        updatedAt: safe.updatedAt
-      } as ISafe
+      data: { ...transformSafe({ safe, organizationId, organizationName, userId }) }
     };
   });
 };

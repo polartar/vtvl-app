@@ -1,4 +1,5 @@
 // import ArrowIcon from 'public/icons/arrow-small-left.svg';
+import SafeApiService from '@api-services/SafeApiService';
 import Button from '@components/atoms/Button/Button';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 // import BackButton from '@components/atoms/BackButton/BackButton';
@@ -8,6 +9,8 @@ import UnsupportedChainModal from '@components/organisms/UnsupportedChainModal';
 import { useAuthContext } from '@providers/auth.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { USE_NEW_API } from '@utils/constants';
+import { transformSafe } from '@utils/safe';
 // import AuthContext from '@providers/auth.context';
 // import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
@@ -31,7 +34,14 @@ export default function GonsisSafe() {
   const { account, chainId, library } = useWeb3React();
   // const { inProgress, startOnboarding } = useContext(OnboardingContext);
   const [safes, setSafes] = useState<string[]>();
-  const { currentSafe: importedSafe, setCurrentSafe, user, organizationId, setCurrentSafeId } = useAuthContext();
+  const {
+    currentSafe: importedSafe,
+    setCurrentSafe,
+    user,
+    organizationId,
+    organization,
+    setCurrentSafeId
+  } = useAuthContext();
   const [step, setStep] = useState<keyof typeof STEP_GUIDES>(1);
   const { showLoading, hideLoading } = useLoaderContext();
   const { ModalWrapper, showModal, hideModal } = useModal({});
@@ -53,7 +63,7 @@ export default function GonsisSafe() {
   }, [account]);
 
   const importSafe = async (address: string) => {
-    if (organizationId) {
+    if (organizationId && organization && user?.memberInfo?.id) {
       showLoading();
       try {
         const safe = await getSafeInfo(library, address);
@@ -61,16 +71,31 @@ export default function GonsisSafe() {
           throw 'Safe is not existed on-chain';
         }
 
-        const safeFromDB = await fetchSafeByAddress(address);
+        let safeFromDB = undefined;
+
+        if (USE_NEW_API) {
+          const newAPISafe = await SafeApiService.getSafeWalletsByAddress(address);
+          if (newAPISafe) {
+            safeFromDB = transformSafe({
+              safe: newAPISafe,
+              organizationId,
+              organizationName: organization.name,
+              userId: user?.memberInfo?.id || ''
+            });
+          }
+        } else {
+          safeFromDB = await fetchSafeByAddress(address);
+        }
+
         if (!safeFromDB) {
-          const organization = await fetchOrg(organizationId);
-          if (organization && safe) {
+          const findOrganization = USE_NEW_API ? organization : await fetchOrg(organizationId);
+          if (findOrganization && safe) {
             const owners = await safe.getOwners();
             const threshold = await safe.getThreshold();
             const safeId = await createOrUpdateSafe({
               user_id: user?.uid,
               org_id: user?.memberInfo?.org_id || '',
-              org_name: organization.name,
+              org_name: findOrganization.name,
               address: safe.getAddress(),
               chainId: chainId || 0,
               owners: owners.map((owner) => ({
@@ -83,7 +108,7 @@ export default function GonsisSafe() {
             setCurrentSafe({
               user_id: user?.uid,
               org_id: user?.memberInfo?.org_id || '',
-              org_name: organization.name,
+              org_name: findOrganization.name,
               address: safe.getAddress(),
               chainId: chainId || 0,
               owners: owners.map((owner) => ({

@@ -7,6 +7,7 @@ import styled from '@emotion/styled';
 import useAuth from '@hooks/useAuth';
 import { useGlobalContext } from '@providers/global.context';
 import { toUTCString } from '@utils/date';
+import { transformOrganization } from '@utils/organization';
 import { SIGN_MESSAGE_TEMPLATE } from '@utils/web3';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';

@@ -4,6 +4,7 @@ import { useAuthContext } from '@providers/auth.context';
 import { getOrgStore } from '@store/useOrganizations';
 import { useUser } from '@store/useUser';
 import { REDIRECT_URIS } from '@utils/constants';
+import { transformOrganization } from '@utils/organization';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
 import { IUser } from 'types/models';
@@ -20,7 +21,7 @@ export default function useAuth() {
   const { getOrganizations } = useOrganization(); // API hook
   const { organizations } = getOrgStore(); // Store
   const { save: saveUser } = useUser(); // Store
-  const { setOrganizationId, authenticateUser, user } = useAuthContext(); // Old context
+  const { setOrganizationId, setOrganization, authenticateUser, user } = useAuthContext(); // Old context
   const router = useRouter();
 
   const authorizeUser = async () => {
@@ -38,6 +39,7 @@ export default function useAuth() {
         saveUser({ organizationId: orgs[0].organizationId, role: orgs[0].role, chainId });
         // Use context to save organization id and user information
         setOrganizationId(orgs[0].organizationId);
+        setOrganization(transformOrganization(orgs[0]));
         authenticateUser(
           {
             ...user,

@@ -61,7 +61,8 @@ export type AuthContextData = {
   currentSafe: ISafe | undefined;
   currentSafeId: string;
   safes: { id: string; data: ISafe }[];
-  organizationId: string | undefined;
+  organizationId?: string;
+  organization?: IOrganization;
   connection?: TConnections;
   setConnection: (data?: TConnections) => void;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
@@ -102,6 +103,7 @@ export type AuthContextData = {
   setUser: (data: any) => void;
   setOrganizationId: (orgId: string) => void;
   recipient: IRecipient | undefined;
+  setOrganization: (organization: IOrganization) => void;
   setRecipient: (data: any) => void;
   allowSignIn: (userOrgId: string) => boolean;
 };
@@ -113,6 +115,7 @@ export function AuthContextProvider({ children }: any) {
   const { chainId, account, library } = useWeb3React();
   const [user, setUser] = useState<IUser | undefined>();
   const [organizationId, setOrganizationId] = useState<string | undefined>();
+  const [organization, setOrganization] = useState<IOrganization | undefined>();
   const [currentSafeId, setCurrentSafeId] = useState('');
   const [currentSafe, setCurrentSafe] = useState<ISafe | undefined>();
   const [safes, setSafes] = useState<{ id: string; data: ISafe }[]>([]);
@@ -663,6 +666,7 @@ export function AuthContextProvider({ children }: any) {
       currentSafeId,
       safes,
       organizationId,
+      organization,
       connection,
       setConnection,
       signUpWithEmail,
@@ -693,6 +697,7 @@ export function AuthContextProvider({ children }: any) {
       setAgreedOnConsent,
       setUser,
       setOrganizationId,
+      setOrganization,
       recipient,
       setRecipient,
       allowSignIn
@@ -708,6 +713,7 @@ export function AuthContextProvider({ children }: any) {
       showSideBar,
       sidebarIsExpanded,
       organizationId,
+      organization,
       currentSafe,
       agreedOnConsent,
       connection,
