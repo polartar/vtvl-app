@@ -9,7 +9,6 @@ import { RECIPIENTS_TYPES } from 'utils/constants';
 import { getRecipient } from 'utils/recipients';
 import { validate, validateDuplication, validateEVMAddress } from 'utils/regex';
 import { formatNumber } from 'utils/token';
-import { validate as validateSingleField } from 'utils/validator';
 
 import { EditableTypography } from './EditableTypography';
 import {
@@ -90,7 +89,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
   const handleChange = useCallback(
     (index: number, field: string) => (value: string | number) => {
       if (field === 'email') {
-        const recipient = allRecipients.find((r) => r.email === value);
+        const recipient = allRecipients.find((r) => r.user.email === value);
         if (recipient) {
           setRows((values) =>
             values.map((val, idx) =>
@@ -99,7 +98,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
                     ...val,
                     name: recipient.name,
                     address: recipient.address,
-                    email: recipient.email
+                    email: recipient.user.email
                   }
                 : val
             )

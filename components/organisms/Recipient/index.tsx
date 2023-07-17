@@ -79,7 +79,7 @@ export default function VestingContract() {
       if (
         filter.keyword &&
         !recipient.name?.toLowerCase().includes(filter.keyword.toLowerCase()) &&
-        !recipient.email?.toLowerCase().includes(filter.keyword.toLowerCase())
+        !recipient.user.email?.toLowerCase().includes(filter.keyword.toLowerCase())
       ) {
         return false;
       }
@@ -151,7 +151,7 @@ export default function VestingContract() {
     const inviteRecipients = recipients
       .filter((recipient) => recipient.checked)
       .map((recipient) => ({
-        email: recipient.email,
+        email: recipient.user.email,
         orgId: recipient.organizationId || '',
         name: recipient.name || '',
         memberId: recipient.id

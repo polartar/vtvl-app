@@ -1,6 +1,6 @@
 // import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
-import { IRecipient } from 'types/models';
+import { IRecipientInput } from 'types/models/recipient';
 import { IVestingStatus } from 'types/models/vesting';
 
 // interface IRecipient {
@@ -48,6 +48,6 @@ export interface IVestingSchedule {
   cliffAmount: string;
   amount: string;
   status?: IVestingStatus;
-  recipes: IRecipient[];
+  recipes: IRecipientInput[];
   redirectUri: string;
 }
