@@ -69,7 +69,6 @@ export default function VestingContract() {
     website: { name: websiteName, email: websiteEmail },
     emailTemplate
   } = useGlobalContext();
-
   useEffect(() => {
     setRecipients(initialRecipients);
   }, [initialRecipients]);
@@ -79,7 +78,7 @@ export default function VestingContract() {
       if (
         filter.keyword &&
         !recipient.name?.toLowerCase().includes(filter.keyword.toLowerCase()) &&
-        !recipient.user.email?.toLowerCase().includes(filter.keyword.toLowerCase())
+        !recipient.email?.toLowerCase().includes(filter.keyword.toLowerCase())
       ) {
         return false;
       }
@@ -151,7 +150,7 @@ export default function VestingContract() {
     const inviteRecipients = recipients
       .filter((recipient) => recipient.checked)
       .map((recipient) => ({
-        email: recipient.user.email,
+        email: recipient.email,
         orgId: recipient.organizationId || '',
         name: recipient.name || '',
         memberId: recipient.id

@@ -31,9 +31,10 @@ export interface IRecipient {
   vestingId: string;
   organizationId: string;
   name: string;
+  email: string;
   allocations: string;
   address: string;
-  role: IRecipientTypeValue;
+  role: IRole;
   chainId: SupportedChainId;
   // status?: 'accepted' | 'delivered' | '';
   status?: RecipeStatus;

@@ -84,7 +84,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
             walletAddress: recipient.address,
             name: recipient.name,
             email: recipient.email,
-            company: recipient.company,
+            // company: recipient.company,
             recipientType: [getRecipient(String(recipient.role))],
             allocations: Number(recipient.allocations)
           } as IRecipientForm)
