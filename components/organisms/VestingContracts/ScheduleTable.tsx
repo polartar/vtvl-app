@@ -78,7 +78,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     [data, transactions]
   );
   const vestingRecipients = useMemo(
-    () => recipients?.filter((recipient) => recipient.data.vestingId === id) ?? [],
+    () => recipients?.filter((recipient) => recipient.vestingId === id) ?? [],
     [recipients, id]
   );
 
@@ -459,7 +459,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           +vesting.details.amountToBeVested
         ) / totalRecipients;
       const vestingAmountPerUser = +vesting.details.amountToBeVested / totalRecipients - cliffAmountPerUser;
-      const addresses = vestingRecipients.map(({ data: recipient }) => recipient.walletAddress);
+      const addresses = vestingRecipients.map((recipient) => recipient.address);
 
       const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
 
@@ -508,7 +508,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         vesting.details.cliffDuration
       );
       const vestingReleaseIntervals = new Array(totalRecipients).fill(releaseFrequencyTimestamp);
-      const vestingLinearVestAmounts = vestingRecipients.map(({ data: recipient }) => {
+      const vestingLinearVestAmounts = vestingRecipients.map((recipient) => {
         const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
         // Computes how many tokens are left after cliff based on percentage
         const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
@@ -935,40 +935,40 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         <div className="flex items-center w-40 py-3">Allocation</div>
         <div className="flex items-center w-40 py-3">Status</div>
       </div>
-      {vestingRecipients.map(({ data: recipient }, index) => {
+      {vestingRecipients.map((recipient, index) => {
         if (index < 3 || isRecipientExpand) {
           return (
             <div
-              key={recipient.walletAddress}
+              key={recipient.address}
               className="flex  bg-[#eaecf0] text-[#667085] text-xs border-t border-[#d0d5dd]">
               <div className="flex items-center w-16 py-3"></div>
               <div className="flex items-center w-36 py-3">{recipient.name}</div>
               <div className="flex items-center w-52 py-3">
-                <Copy text={recipient.walletAddress}>
+                <Copy text={recipient.address}>
                   <p className="paragraphy-small ">
-                    {recipient.walletAddress.slice(0, 5)}...{recipient.walletAddress.slice(-4)}
+                    {recipient.address.slice(0, 5)}...{recipient.address.slice(-4)}
                   </p>
                 </Copy>
               </div>
               <div className="flex items-center w-52 py-3">
-                {formatValue(getRecipientInfo(recipient.walletAddress)?.withdrawn)}
+                {formatValue(getRecipientInfo(recipient.address)?.withdrawn)}
               </div>
               <div className="flex items-center w-40 py-3">
-                {formatValue(getRecipientInfo(recipient.walletAddress)?.unclaimed)}
+                {formatValue(getRecipientInfo(recipient.address)?.unclaimed)}
               </div>
               <div className="flex items-center w-32 py-3">
-                {formatValue(getRecipientInfo(recipient.walletAddress)?.locked)}
+                {formatValue(getRecipientInfo(recipient.address)?.locked)}
               </div>
               <div className="flex items-center w-40 py-3">
-                {formatValue(getRecipientInfo(recipient.walletAddress)?.allocation)}
+                {formatValue(getRecipientInfo(recipient.address)?.allocation)}
               </div>
               <div className="flex items-center w-40 py-3">
-                {getRevoked(recipient.walletAddress) && (
+                {getRevoked(recipient.address) && (
                   <Chip
                     rounded
                     className="text-xs"
                     label={`Revoked on ${format(
-                      new Date((getRevoked(recipient.walletAddress) as IRevokingDoc).data.updatedAt * 1000),
+                      new Date((getRevoked(recipient.address) as IRevokingDoc).data.updatedAt * 1000),
                       'dd MMM yyyy'
                     )}`}
                     color="dangerAlt"

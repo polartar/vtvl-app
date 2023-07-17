@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
@@ -36,7 +37,6 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import Select from 'react-select';
 import { toast } from 'react-toastify';
-import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
 import { createVestingContract } from 'services/db/vestingContract';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
@@ -1050,7 +1050,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       await Promise.all(
         recipients
           .filter((recipient) => Boolean(recipient.id))
-          .map((recipient) => editRecipient(recipient.id, recipient))
+          .map((recipient) => RecipientApiService.updateRecipient(recipient.id, recipient))
       );
     } else {
       const cliffAmount = getCliffAmount(

@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import Copy from '@components/atoms/Copy/Copy';
 import { EditableTypography } from '@components/molecules/RecipientTable';
@@ -7,7 +8,6 @@ import { formatEther } from 'ethers/lib/utils';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { editRecipient } from 'services/db/recipient';
 import { IRecipientData, RecipeStatus } from 'types/models/recipient';
 import { compareAddresses } from 'utils';
 import { validateEmail } from 'utils/validator';
@@ -76,7 +76,7 @@ const RecipientRow: React.FC<{
         email
       });
       setIsUpdating(true);
-      editRecipient(newRecipient.id, { ...newRecipient, email })
+      RecipientApiService.updateRecipient(newRecipient.id, { ...newRecipient, email })
         .then(() => {
           toast.success(`E-mail address successfully amended!`);
         })

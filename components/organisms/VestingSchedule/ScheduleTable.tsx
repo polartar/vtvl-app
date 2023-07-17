@@ -26,7 +26,7 @@ import { toast } from 'react-toastify';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipientDoc, ITransaction, IVesting } from 'types/models';
+import { IRecipient, ITransaction, IVesting } from 'types/models';
 import { compareAddresses } from 'utils';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -82,7 +82,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
-  const [recipients, setRecipients] = useState<IRecipientDoc[]>([]);
+  const [recipients, setRecipients] = useState<IRecipient[]>([]);
 
   const isFundAvailable = useCallback(() => {
     const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
@@ -427,7 +427,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           +vesting.details.amountToBeVested
         ) / recipients.length;
       const vestingAmountPerUser = +vesting.details.amountToBeVested / recipients.length - cliffAmountPerUser;
-      const addresses = recipients.map((recipient) => recipient.data.walletAddress);
+      const addresses = recipients.map((recipient) => recipient.address);
 
       const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
 
@@ -483,7 +483,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
         // Computes how many tokens are left after cliff based on percentage
         const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
-        return parseTokenAmount(Number(recipient.data.allocations) * percentage, 18);
+        return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
       });
       const vestingCliffAmounts = new Array(recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
 
@@ -794,7 +794,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   useEffect(() => {
     if (id) {
       // fetchRecipientsByQuery(['vestingId'], ['=='], [id]).then((res) => setRecipients(res));
-      RecipientApiService.getRecipes(`vestingId=${id}`).then((res) => setRecipients(res));
+      RecipientApiService.getRecipients(`vestingId=${id}`).then((res) => setRecipients(res));
     }
   }, [id]);
 
@@ -928,13 +928,13 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       {recipients.map((recipient, index) => {
         return (
           <RecipientRow
-            key={recipient.data.walletAddress}
-            name={recipient.data.name}
-            address={recipient.data.walletAddress}
-            withdrawn={formatValue(getRecipientInfo(recipient.data.walletAddress)?.withdrawn)}
-            unclaimed={formatValue(getRecipientInfo(recipient.data.walletAddress)?.unclaimed)}
-            locked={formatValue(getRecipientInfo(recipient.data.walletAddress)?.locked)}
-            allocations={recipient.data.allocations ? formatNumber(+recipient.data.allocations) : '0.00'}
+            key={recipient.address}
+            name={recipient.name}
+            address={recipient.address}
+            withdrawn={formatValue(getRecipientInfo(recipient.address)?.withdrawn)}
+            unclaimed={formatValue(getRecipientInfo(recipient.address)?.unclaimed)}
+            locked={formatValue(getRecipientInfo(recipient.address)?.locked)}
+            allocations={recipient.allocations ? formatNumber(+recipient.allocations) : '0.00'}
             vesting={data}
             vestingId={id}
           />

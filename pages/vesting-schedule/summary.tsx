@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Chip from '@components/atoms/Chip/Chip';
@@ -15,7 +16,6 @@ import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
-import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
 import { createVestingContract } from 'services/db/vestingContract';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
@@ -80,7 +80,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
       await Promise.all(
         recipients
           .filter((recipient) => Boolean(recipient.id))
-          .map((recipient) => editRecipient(recipient.id, recipient))
+          .map((recipient) => RecipientApiService.updateRecipient(recipient.id, recipient))
       );
     } else {
       const vesting = await VestingScheduleApiService.createVestingSchedule({

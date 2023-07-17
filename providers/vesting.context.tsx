@@ -4,7 +4,6 @@ import { useShallowState } from 'hooks/useShallowState';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
-import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { deleteVesting, fetchVesting, fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IRecipient, IVesting } from 'types/models';
@@ -140,7 +139,7 @@ export function VestingContextProvider({ children }: any) {
       showLoading();
 
       // const recipientsData = await fetchRecipientsByQuery(['vestingId'], ['=='], [id]);
-      const recipientsData = await RecipientApiService.getRecipes(`vestingId=${id}`);
+      const recipientsData = await RecipientApiService.getRecipients(`vestingId=${id}`);
 
       console.log('EDIT:::: EDIT INITIALIZED', id, data);
       updateScheduleStates(id, data);

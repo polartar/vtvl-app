@@ -2,6 +2,7 @@ import { addDoc, deleteDoc, doc, getDoc, getDocs, limit, query, setDoc, updateDo
 import axios from 'axios';
 import { inviteeCollection, memberCollection } from 'services/db/firestore';
 import { IInvitee, IMember } from 'types/models';
+import { IRole } from 'types/models/settings';
 
 export const fetchMember = async (id: string): Promise<IMember | undefined> => {
   const memberRef = doc(memberCollection, id);
@@ -46,7 +47,7 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
     email: member.email || '',
     name: member.name,
     companyEmail: invitee?.data().email || member.companyEmail || '',
-    type: member.type || 'anonymous',
+    role: member.role || IRole.ANONYMOUS,
     source: member.source || '',
     org_id: invitee?.data().org_id || member.org_id || '',
     joined: member.joined || Math.floor(new Date().getTime() / 1000),
@@ -58,7 +59,10 @@ export const newMember = async (uid: string, member: IMember): Promise<void> => 
 
   // send slack message
 
-  if (member.type === 'founder' && (!existingMember || (existingMember && existingMember.data().type !== 'founder'))) {
+  if (
+    member.role === IRole.FOUNDER &&
+    (!existingMember || (existingMember && existingMember.data().role !== IRole.FOUNDER))
+  ) {
     await axios.post(`/api/slack/add-member`, {
       email: member.email
     });

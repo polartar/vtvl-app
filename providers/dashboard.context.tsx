@@ -127,7 +127,7 @@ export function DashboardContextProvider({ children }: any) {
   const fetchDashboardRecipients = useCallback(async () => {
     try {
       // const res = await fetchRecipientsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]);
-      const res = await RecipientApiService.getRecipes(`organizationId=${organizationId}&chainId=${chainId}`);
+      const res = await RecipientApiService.getRecipients(`organizationId=${organizationId}&chainId=${chainId}`);
       setRecipients(res);
     } catch (err) {
       console.error('Fetching recipients data error in DashboardContext: ', err);

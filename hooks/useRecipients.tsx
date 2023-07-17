@@ -3,7 +3,7 @@ import { useAuthContext } from '@providers/auth.context';
 import { useQuery } from '@tanstack/react-query';
 import { useWeb3React } from '@web3-react/core';
 import { useMemo } from 'react';
-import { IRecipientDoc } from 'types/models';
+import { IRecipient } from 'types/models';
 import { QUERY_KEYS } from 'utils/queries';
 import { removeDuplication } from 'utils/shared';
 
@@ -15,12 +15,12 @@ export const useMyRecipes = () => {
   const { user, recipient } = useAuthContext();
   const email = user?.memberInfo?.email;
 
-  const { isLoading: isLoadingMyRecipes, data: myRecipes } = useQuery<IRecipientDoc[]>(
-    [QUERY_KEYS.RECIPIENT.MINE, chainId, account, email, recipient?.data.walletAddress],
+  const { isLoading: isLoadingMyRecipes, data: myRecipes } = useQuery<IRecipient[]>(
+    [QUERY_KEYS.RECIPIENT.MINE, chainId, account, email, recipient?.address],
     () =>
       email
-        ? RecipientApiService.getRecipes(`chainId=${chainId}&walletAddress=${account}&email=${email}`)
-        : RecipientApiService.getRecipes(`chainId=${chainId}&walletAddress=${account}`),
+        ? RecipientApiService.getRecipients(`chainId=${chainId}&walletAddress=${account}&email=${email}`)
+        : RecipientApiService.getRecipients(`chainId=${chainId}&walletAddress=${account}`),
     // email
     //   ? fetchRecipientsByQuery(['chainId', 'walletAddress', 'email'], ['==', '==', '=='], [chainId, account, email])
     //   : fetchRecipientsByQuery(['chainId', 'walletAddress'], ['==', '=='], [chainId, account]),
@@ -31,16 +31,15 @@ export const useMyRecipes = () => {
 
   const myVestingIds = useMemo(
     () =>
-      removeDuplication(
-        myRecipes?.map((recipie) => recipie.data.vestingId)?.filter((vestingId) => Boolean(vestingId))
-      ) ?? [],
+      removeDuplication(myRecipes?.map((recipie) => recipie.vestingId)?.filter((vestingId) => Boolean(vestingId))) ??
+      [],
     [myRecipes]
   );
 
   const myOrganizationIds = useMemo(
     () =>
       removeDuplication(
-        myRecipes?.map((recipie) => recipie.data.organizationId)?.filter((organizationId) => Boolean(organizationId))
+        myRecipes?.map((recipie) => recipie.organizationId)?.filter((organizationId) => Boolean(organizationId))
       ) ?? [],
     [myRecipes]
   );
@@ -48,7 +47,7 @@ export const useMyRecipes = () => {
   const schedulesByOrganization = useMemo(
     () =>
       myRecipes?.reduce((result, recipie) => {
-        const organizationId = recipie.data.organizationId;
+        const organizationId = recipie.organizationId;
         return {
           ...result,
           [organizationId]: Number(result[organizationId] ?? 0) + 1

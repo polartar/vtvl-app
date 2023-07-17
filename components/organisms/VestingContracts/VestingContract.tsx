@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import Copy from '@components/atoms/Copy/Copy';
 import { Typography } from '@components/atoms/Typography/Typography';
 import Safe from '@gnosis.pm/safe-core-sdk';
@@ -18,7 +19,6 @@ import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { updateRecipient } from 'services/db/recipient';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, fetchTransactionsByQuery, updateTransaction } from 'services/db/transaction';
@@ -89,11 +89,11 @@ export default function VestingContract({ vestingContractId }: { vestingContract
       return revokings.filter((revoking) => {
         const rc = allRecipients.find(
           (recipient) =>
-            recipient.data.vestingId === revoking.data.vestingId &&
-            recipient.data.walletAddress === revoking.data.recipient &&
-            vestings.map((vesting) => vesting.id).includes(recipient.data.vestingId)
+            recipient.vestingId === revoking.data.vestingId &&
+            recipient.address === revoking.data.recipient &&
+            vestings.map((vesting) => vesting.id).includes(recipient.vestingId)
         );
-        return rc && Number(rc.data.allocations) !== 0;
+        return rc && Number(rc.allocations) !== 0;
       });
     } else {
       return [];
@@ -133,10 +133,10 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     const vestingIds = allVestings
       .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
       .map((vesting) => vesting.id);
-    const availableRecipients = allRecipients.filter((recipient) => vestingIds.includes(recipient.data.vestingId));
+    const availableRecipients = allRecipients.filter((recipient) => vestingIds.includes(recipient.vestingId));
 
     availableRecipients.forEach((recipient) => {
-      updateRecipient(recipient.id, {
+      RecipientApiService.updateRecipient(recipient.id, {
         allocations: 0
       });
     });

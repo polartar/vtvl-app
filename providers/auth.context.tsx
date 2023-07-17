@@ -30,10 +30,9 @@ import { toast } from 'react-toastify';
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
-import { fetchRecipientByQuery, fetchRecipientsByQuery } from 'services/db/recipient';
 import { createOrUpdateSafe, fetchSafeByQuery, fetchSafesByQuery } from 'services/db/safe';
 import { getSafeInfo } from 'services/gnosois';
-import { IMember, IOrganization, IRecipientDoc, ISafe, IUser } from 'types/models';
+import { IMember, IOrganization, IRecipient, ISafe, IUser } from 'types/models';
 import { IRole } from 'types/models/settings';
 import { compareAddresses } from 'utils';
 import { getCache, setCache } from 'utils/localStorage';
@@ -100,7 +99,7 @@ export type AuthContextData = {
   setAgreedOnConsent: (data: any) => void;
   setUser: (data: any) => void;
   setOrganizationId: (orgId: string) => void;
-  recipient: IRecipientDoc | undefined;
+  recipient: IRecipient | undefined;
   setRecipient: (data: any) => void;
   allowSignIn: (userOrgId: string) => boolean;
 };
@@ -126,7 +125,7 @@ export function AuthContextProvider({ children }: any) {
     emailTemplate
   } = useGlobalContext();
 
-  const [recipient, setRecipient] = useState<IRecipientDoc>();
+  const [recipient, setRecipient] = useState<IRecipient>();
   // Stores the connection status whether the user is connected via metamask or other wallets
   const [connection, setConnection] = useState<TConnections | undefined>();
 
@@ -152,7 +151,7 @@ export function AuthContextProvider({ children }: any) {
       //     setRecipient(response[0]);
       //   }
       // });
-      RecipientApiService.getRecipes(`email=${user.email}&chainId=${chainId}`).then((response) => {
+      RecipientApiService.getRecipients(`email=${user.email}&chainId=${chainId}`).then((response) => {
         if (response && response.length > 0) {
           setRecipient(response[0]);
         }
@@ -246,10 +245,10 @@ export function AuthContextProvider({ children }: any) {
     async (credential: UserCredential, isGuestMode = false) => {
       const additionalInfo = getAdditionalUserInfo(credential);
       // let recipientInfo = await fetchRecipientByQuery('email', '==', String(credential.user.email));
-      let recipients = await RecipientApiService.getRecipes(`email=${credential.user.email}`);
+      let recipients = await RecipientApiService.getRecipients(`email=${credential.user.email}`);
       if (!recipients || recipients.length === 0) {
         // recipientInfo = await fetchRecipientByQuery('walletAddress', '==', String(account));
-        recipients = await RecipientApiService.getRecipes(`address=${account}`);
+        recipients = await RecipientApiService.getRecipients(`address=${account}`);
       }
 
       const recipient = recipients.length === 0 ? undefined : recipients[0];
@@ -710,7 +709,7 @@ export function AuthContextProvider({ children }: any) {
       !inProgress &&
       !router.asPath.includes('welcome')
     ) {
-      if (user.memberInfo.role === IRole.INVESTOR && (!recipient || (recipient && !recipient.data.walletAddress))) {
+      if (user.memberInfo.role === IRole.INVESTOR && (!recipient || (recipient && !recipient.address))) {
         Router.push('/recipient/schedule');
       } else if (isNewUser) {
         Router.push('/welcome');

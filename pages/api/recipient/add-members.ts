@@ -8,7 +8,7 @@
 // export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 //   const { emails } = req.body;
 
-//   const recipients = (await RecipientApiService.getRecipes()).filter((recipient) => emails.includes(recipient.data.email));
+//   const recipients = (await RecipientApiService.getRecipients()).filter((recipient) => emails.includes(recipient.data.email));
 //   const members = await fetchAllMembers();
 //   const memberEmails = members.map((member) => member.email);
 
