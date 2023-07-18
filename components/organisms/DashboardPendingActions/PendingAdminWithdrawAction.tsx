@@ -231,10 +231,14 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         {vestingContract?.data.name}
       </div>
       <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
-        <div className="flex gap-1.5 items-center">
-          <img className="w-4 h-4" src="icons/safe.png" />
-          Founders
-        </div>
+        {currentSafe ? (
+          <div className="flex gap-1.5 items-center">
+            <img className="w-4 h-4" src="icons/safe_wallet.svg" />
+            {currentSafe?.safe_name}&nbsp;{currentSafe?.address.slice(0, 4)}...{currentSafe?.address.slice(-4)}
+          </div>
+        ) : (
+          'N/A'
+        )}
       </div>
       <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         <div className="flex gap-1.5 items-center">{safeTransaction?.data.nonce}</div>
