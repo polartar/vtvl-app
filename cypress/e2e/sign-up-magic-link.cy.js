@@ -4,7 +4,7 @@ import 'cypress-iframe';
 const randomName = faker.name.firstName();
 const randomCompanyName = faker.lorem.word();
 const randomWalletAddress = faker.finance.ethereumAddress();
-const randomEmail = faker.internet.email()
+const randomEmail = faker.internet.email();
 
 describe('email test spec', () => {
   afterEach(() => {
