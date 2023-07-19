@@ -88,7 +88,7 @@ export function OnboardingContextProvider({ children }: any) {
     setCurrentStep(step);
   };
   const completeOnboarding = async () => {
-    const foundingMembers = ['founder', 'manager', 'manager2'];
+    const foundingMembers = ['founder', 'manager', 'operator'];
     setInProgress(false);
     await refreshUser();
     const user = auth.currentUser;

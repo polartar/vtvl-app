@@ -48,7 +48,8 @@ export const REDIRECT_URIS = {
   AUTH_GOOGLE_LOGIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/connect`),
   INVITE_MEMBER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`),
   SETUP_ACCOUNT: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/onboarding/account-setup`),
-  MAIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/dashboard`)
+  MAIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/dashboard`),
+  CLAIM: encodeURI(`${PUBLIC_DOMAIN_NAME}/claim-portal`)
 };
 
 export const TOAST_NOTIFICATION_IDS = {

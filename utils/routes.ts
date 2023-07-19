@@ -7,13 +7,13 @@ export const allRoles: IUserType[] = [
   'founder',
   'investor',
   'manager',
-  'manager2',
+  'operator',
   'employee',
   'advisor',
   'anonymous',
   ''
 ];
-export const managerRoles: IUserType[] = ['founder', 'manager', 'manager2'];
+export const managerRoles: IUserType[] = ['founder', 'manager', 'operator'];
 export const recipientRoles: IUserType[] = ['investor', 'employee', 'advisor'];
 export const guestRoles: IUserType[] | IRole[] = ['anonymous', ''];
 
@@ -68,11 +68,11 @@ export const platformRoutes: Route[] = [
   { path: '/vesting-schedule/summary', allowedRoles: [...managerRoles], allowedRolesV2: managerRolesV2 },
   { path: '/vesting-schedule/upload-csv', allowedRoles: [...managerRoles], allowedRolesV2: managerRolesV2 },
   // Cap table routes
-  { path: '/cap-table', allowedRoles: ['founder', 'manager2'], allowedRolesV2: [IRole.FOUNDER, IRole.OPERATOR] },
+  { path: '/cap-table', allowedRoles: ['founder', 'operator'], allowedRolesV2: [IRole.FOUNDER, IRole.OPERATOR] },
   // Claim portal routes
   {
     path: '/claim-portal',
-    allowedRoles: [...recipientRoles, 'manager2'],
+    allowedRoles: [...recipientRoles, 'operator'],
     allowedRolesV2: [...recipientRolesV2, IRole.OPERATOR]
   },
   // Notification routes
