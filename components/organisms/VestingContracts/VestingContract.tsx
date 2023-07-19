@@ -156,7 +156,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
         const ADMIN_WITHDRAW_FUNCTION = isV2(vestingContracts[0].data.updatedAt)
           ? 'function withdrawAdmin(uint256 _amountRequested)'
-          : 'function withdrawAdmin(112 _amountRequested)';
+          : 'function withdrawAdmin(uint112 _amountRequested)';
         const ABI = [ADMIN_WITHDRAW_FUNCTION];
         const vestingContractInterface = new ethers.utils.Interface(ABI);
         const adminWithdrawEncoded = vestingContractInterface.encodeFunctionData('withdrawAdmin', [

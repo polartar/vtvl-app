@@ -28,9 +28,8 @@ export const useMyRecipes = () => {
 
   const myVestingIds = useMemo(
     () =>
-      removeDuplication(
-        myRecipes?.map((recipe) => recipe.data.vestingId)?.filter((vestingId) => Boolean(vestingId))
-      ) ?? [],
+      removeDuplication(myRecipes?.map((recipe) => recipe.data.vestingId)?.filter((vestingId) => Boolean(vestingId))) ??
+      [],
     [myRecipes]
   );
 
