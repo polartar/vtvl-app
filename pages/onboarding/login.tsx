@@ -75,7 +75,7 @@ const LoginPage: NextPage = () => {
         </button>
         <div className="flex flex-row items-center justify-center gap-1 my-5">
           <hr className="border-t border-neutral-200 w-full grow" />
-          <span className="shrink-0 grow text-xs font-medium text-neutral-400">Or signin with your email</span>
+          <span className="shrink-0 grow text-xs font-medium text-neutral-400">Or sign in with your email</span>
           <hr className="border-t border-neutral-200 w-full grow" />
         </div>
         <div className="w-full my-6">

@@ -93,7 +93,7 @@ const MemberLoginPage: NextPage = () => {
         <div className="flex flex-row items-center justify-center gap-3 my-6 w-full">
           <hr className="border-t border-neutral-200 w-1/4 sm:w-1/3" />
           <span className="block text-xs w-1/2 sm:w-1/3 font-medium text-center text-neutral-400">
-            Or signin with your email
+            Or sign in with your email
           </span>
           <hr className="border-t border-neutral-200 w-1/4 sm:w-1/3" />
         </div>
