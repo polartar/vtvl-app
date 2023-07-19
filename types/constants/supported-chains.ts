@@ -119,7 +119,7 @@ export const prodSupportedChains: ChainsType = {
   [SupportedChainId.CRONOS]: {
     id: 25,
     icon: '/icons/chains/cronos.svg',
-    title: 'Cronos',
+    title: 'Cronos Mainnet Beta',
     code: 'CRO',
     rpc: 'https://evm.cronos.org',
     explorer: 'https://cronos.crypto.org/explorer',
@@ -129,7 +129,7 @@ export const prodSupportedChains: ChainsType = {
   [SupportedChainId.OKC_MAINNET]: {
     id: 66,
     icon: '/icons/chains/okc.png',
-    title: 'OKC Mainnet',
+    title: 'OKXChain Mainnet',
     code: 'OKT',
     rpc: 'https://exchainrpc.okex.org',
     explorer: 'https://www.oklink.com/en/okc',
@@ -169,7 +169,7 @@ export const demoSupportedChains: ChainsType = {
   [SupportedChainId.OKC_TESTNET]: {
     id: 65,
     icon: '/icons/chains/okc.png',
-    title: 'OKC Testnet',
+    title: 'OKExChain Testnet',
     code: 'OKT',
     rpc: 'https://exchaintestrpc.okex.org/',
     explorer: 'https://www.oklink.com/en/okc-test',
@@ -244,7 +244,7 @@ export const devSupportedChains: ChainsType = {
   [SupportedChainId.CRONOS]: {
     id: 25,
     icon: '/icons/chains/cronos.svg',
-    title: 'Cronos',
+    title: 'Cronos Mainnet Beta',
     code: 'CRO',
     rpc: 'https://evm.cronos.org',
     explorer: 'https://cronos.crypto.org/explorer',
@@ -254,7 +254,7 @@ export const devSupportedChains: ChainsType = {
   [SupportedChainId.OKC_MAINNET]: {
     id: 66,
     icon: '/icons/chains/okc.png',
-    title: 'OKC Mainnet',
+    title: 'OKXChain Mainnet',
     code: 'OKT',
     rpc: 'https://exchainrpc.okex.org',
     explorer: 'https://www.oklink.com/en/okc',
@@ -282,7 +282,7 @@ export const devSupportedChains: ChainsType = {
   [SupportedChainId.OKC_TESTNET]: {
     id: 65,
     icon: '/icons/chains/okc.png',
-    title: 'OKC Testnet',
+    title: 'OKExChain Testnet',
     code: 'OKT',
     rpc: 'https://exchaintestrpc.okex.org/',
     explorer: 'https://www.oklink.com/en/okc-test',
