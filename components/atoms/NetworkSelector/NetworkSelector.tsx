@@ -101,7 +101,18 @@ const NetworkSelector = () => {
           // Try to request to add the chain first
           await library.provider.request({
             method: 'wallet_addEthereumChain',
-            params: [{ chainId: toHex(id), chainName: title, rpcUrls: [rpc] }]
+            params: [
+              {
+                chainId: toHex(id),
+                chainName: title,
+                rpcUrls: [rpc],
+                nativeCurrency: {
+                  name: network.code,
+                  symbol: network.code,
+                  decimals: 18
+                }
+              }
+            ]
           });
           setSelectedNetwork({ id, icon, title, code });
           toast.success(`You've added and switched to ${title} network.`);
