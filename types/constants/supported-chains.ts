@@ -309,8 +309,8 @@ export const devSupportedChains: ChainsType = {
   [SupportedChainId.BINANCE_TESTNET]: {
     id: 97,
     icon: '/icons/chains/bsc.svg',
-    title: 'Binance Testnet',
-    code: 'BNB',
+    title: 'BNB Smart Chain Testnet',
+    code: 'tBNB',
     rpc: 'https://bsc-testnet.publicnode.com',
     explorer: 'https://testnet.bscscan.com/',
     multisigTxUrl: ''
