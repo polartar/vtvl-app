@@ -47,7 +47,51 @@ export interface IVestingSchedule {
   cliffDuration: number;
   cliffAmount: string;
   amount: string;
+  transactionId?: string;
   status?: IVestingStatus;
   recipes: IRecipientInput[];
   redirectUri: string;
+  vestingContract?: IVestingScheduleContract;
+  token?: IVestingScheduleToken;
+  createdAt?: string;
+  updatedAt?: string;
+  archive: boolean;
+  createdBy?: string;
+}
+
+export interface IVestingScheduleContract {
+  id: string;
+  firebaseId?: string;
+  createdAt: string;
+  updatedAt: string;
+  organizationId: string;
+  tokenId: string;
+  name: string;
+  address?: string;
+  chainId: number;
+  transactionId?: string;
+  isDeployed: boolean;
+  isActive: boolean;
+  status: string;
+}
+
+export interface IVestingScheduleToken {
+  id: string;
+  firebaseId?: string;
+  createdAt: string;
+  updatedAt: string;
+  name: string;
+  symbol: string;
+  decimal: number;
+  imported: boolean;
+  burnable: boolean;
+  description: string;
+  maxSupply: string;
+  supplyCap: string;
+  chainId: number;
+  address?: string;
+  logo: string;
+  transactionId?: string;
+  isDeployed: boolean;
+  isActive: boolean;
 }

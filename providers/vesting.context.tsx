@@ -1,4 +1,6 @@
 import RecipientApiService from '@api-services/RecipientApiService';
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
+import { USE_NEW_API } from '@utils/constants';
 import { useWeb3React } from '@web3-react/core';
 import { useShallowState } from 'hooks/useShallowState';
 import { useRouter } from 'next/router';
@@ -206,6 +208,13 @@ export function VestingContextProvider({ children }: any) {
     }
   };
 
+  const getVestingSchedules = async () => {
+    if (organizationId) {
+      const schedules = await VestingScheduleApiService.getVestingSchedules(organizationId);
+      setVestings(schedules);
+    }
+  };
+
   const value = useMemo(
     () => ({
       vestings,
@@ -251,20 +260,25 @@ export function VestingContextProvider({ children }: any) {
 
   useEffect(() => {
     if (organizationId && chainId) {
-      fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]).then((res) => {
-        // Check if the vesting schedules already has name, if none, generate one
-        if (res.length) {
-          const newVestings = res.map((schedule) => {
-            const newScheduleDetails = { ...schedule };
-            if (!schedule.data.name) {
-              newScheduleDetails.data.name = generateRandomName();
-              updateVesting({ ...newScheduleDetails.data }, schedule.id);
-            }
-            return newScheduleDetails;
-          });
-          setVestings(newVestings);
-        }
-      });
+      if (USE_NEW_API) {
+        getVestingSchedules();
+      } else {
+        fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]).then((res) => {
+          // Check if the vesting schedules already has name, if none, generate one
+          if (res.length) {
+            const newVestings = res.map((schedule) => {
+              const newScheduleDetails = { ...schedule };
+              if (!schedule.data.name) {
+                // Generate random name when there is no schedule name
+                newScheduleDetails.data.name = generateRandomName();
+                updateVesting({ ...newScheduleDetails.data }, schedule.id);
+              }
+              return newScheduleDetails;
+            });
+            setVestings(newVestings);
+          }
+        });
+      }
     }
   }, [organizationId, chainId]);
 

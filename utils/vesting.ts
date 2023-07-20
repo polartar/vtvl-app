@@ -1,3 +1,4 @@
+import { IScheduleFormState } from '@providers/vesting.context';
 import add from 'date-fns/add';
 import differenceInHours from 'date-fns/differenceInHours';
 import differenceInMinutes from 'date-fns/differenceInMinutes';
@@ -13,9 +14,13 @@ import format from 'date-fns/format';
 import formatDuration from 'date-fns/formatDuration';
 import getUnixTime from 'date-fns/getUnixTime';
 import intervalToDuration from 'date-fns/intervalToDuration';
+import parse from 'date-fns/parse';
 import sub from 'date-fns/sub';
 import Decimal from 'decimal.js';
+import { IVestingSchedule } from 'interfaces/vestingSchedule';
 import { CliffDuration, DateDurationOptionsPlural, ReleaseFrequency } from 'types/constants/schedule-configuration';
+import { IVesting } from 'types/models';
+import { IVestingStatus } from 'types/models/vesting';
 import { IChartDataTypes } from 'types/vesting';
 
 /**
@@ -522,4 +527,63 @@ export const getNextUnlock = (
       return frequencyTimestamp;
     }
   }
+};
+
+/**
+ * Function that translate Vesting Schedule schema from the NEW API into the OLD model.
+ */
+export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IVesting = (vestingSchedule) => {
+  const {
+    name,
+    organizationId,
+    tokenId,
+    vestingContractId,
+    createdAt,
+    updatedAt,
+    transactionId,
+    status,
+    token,
+    vestingContract,
+    archive,
+    createdBy,
+    startedAt,
+    endedAt,
+    originalEndedAt,
+    cliffDurationType,
+    cliffDuration,
+    cliffAmount,
+    amount
+  } = vestingSchedule;
+  return {
+    name,
+    organizationId,
+    tokenId,
+    vestingContractId,
+    createdAt,
+    updatedAt,
+    transactionId,
+    status: status as IVestingStatus,
+    tokenAddress: token?.address || '',
+    archive,
+    chainId: vestingContract?.chainId || 0,
+    createdBy
+    // details: {
+    //   startDateTime: parse(startedAt, 'YYYY-MM-DD', new Date()),
+    //   endDateTime: parse(endedAt, 'YYYY-MM-DD', new Date()),
+    //   originalEndDateTime: parse(originalEndedAt, 'YYYY-MM-DD', new Date()),
+    //   cliffDuration: cliffDurationType,
+    //   cliffDurationNumber: cliffDuration,
+    //   // cliffDurationOption?: DateDurationOptionValues | CliffDuration;
+    //   // lumpSumReleaseAfterCliff: string | number;
+    //   // releaseFrequency: ReleaseFrequency;
+    //   // releaseFrequencySelectedOption?: string;
+    //   // customReleaseFrequencyNumber?: number;
+    //   // customReleaseFrequencyOption?: string;
+    //   tokenId,
+    //   tokenAddress: token?.address || '',
+    //   amountToBeVested: amount,
+    //   // amountClaimed: number;
+    //   // amountUnclaimed: number;
+    // } as IScheduleFormState
+  };
 };
