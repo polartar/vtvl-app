@@ -78,7 +78,7 @@ export const prodSupportedChains: ChainsType = {
     code: 'ETH',
     rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     explorer: 'https://etherscan.io',
-    multisigTxUrl: 'https://safe-transaction.mainnet.gnosis.io'
+    multisigTxUrl: 'https://safe-transaction-mainnet.safe.global'
   },
   [SupportedChainId.BINANCE]: {
     id: 56,
@@ -203,7 +203,7 @@ export const devSupportedChains: ChainsType = {
     code: 'ETH',
     rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     explorer: 'https://etherscan.io',
-    multisigTxUrl: 'https://safe-transaction.mainnet.gnosis.io'
+    multisigTxUrl: 'https://safe-transaction-mainnet.safe.global'
   },
   [SupportedChainId.BINANCE]: {
     id: 56,
