@@ -271,7 +271,7 @@ export function DashboardContextProvider({ children }: any) {
               recipientsTokenDetails.push({
                 scheduleId,
                 name: currentRecipient.name,
-                company: currentRecipient.company ?? '',
+                // company: currentRecipient.company ?? '',
                 // Some data especially on the recipients collection saves the recipientType as string ie., 'employee', 'founder', etc.
                 // while in the old one, it uses the select components values ie [{ label: 'Employee', value: 'employee' }] etc.
                 recipientType: currentRecipient.role,

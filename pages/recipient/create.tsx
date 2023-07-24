@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
@@ -10,8 +11,7 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { fetchRecipient, updateRecipient } from 'services/db/recipient';
-import { IRecipient, IRecipientDoc } from 'types/models';
+import { IRecipient } from 'types/models';
 import { IUserType } from 'types/models/member';
 import { WEBSITE_NAME } from 'utils/constants';
 
@@ -22,8 +22,8 @@ const RecipientCreate: NextPage = () => {
   } = useGlobalContext();
 
   const router = useRouter();
-  const [recipient, setRecipient] = useState<IRecipientDoc>();
-  const [token, setToken] = useState();
+  const [recipient, setRecipient] = useState<IRecipient>();
+  // const [token, setToken] = useState();
   const {
     control,
     handleSubmit,
@@ -41,53 +41,85 @@ const RecipientCreate: NextPage = () => {
     const encryptToken = router.query.token;
 
     if (encryptToken) {
-      axios
-        .post('/api/token/getCustomToken', {
-          encryptToken: encryptToken
-        })
-        .then((res) => {
-          setToken(res.data.token);
-          fetchRecipient(res.data.memberId).then((response) => {
-            setRecipient({ id: res.data.memberId, data: response as IRecipient });
-
-            if (response) updateRecipient(res.data.memberId, { status: 'accepted' });
-
-            if (response?.name) {
-              setValue('name', response?.name);
-            }
-            if (res?.data.orgName) {
-              setValue('projectName', res?.data.orgName);
-            }
-            if (response?.email) {
-              setValue('companyEmail', response.email);
-            }
-          });
+      RecipientApiService.getRecipientByCode(encryptToken as string)
+        .then((response) => {
+          setRecipient(response);
+          if (response.name) {
+            setValue('name', response?.name);
+          }
+          if (response.orgName) {
+            setValue('projectName', response.orgName);
+          }
+          if (response.email) {
+            setValue('companyEmail', response.email);
+          }
         })
         .catch(async (err) => {
-          if (err.response.data.message === 'jwt expired') {
-            router.push({ pathname: '/expired', query: { loginToken: token } });
-          } else {
-            await toast.error('The token is invalid');
-          }
+          // if (err.response.data.message === 'jwt expired') {
+          //   router.push({ pathname: '/expired', query: { loginToken: token } });
+          // } else {
+          await toast.error('The token is invalid');
+          // }
         });
+      // axios
+      //   .post('/api/token/getCustomToken', {
+      //     encryptToken: encryptToken
+      //   })
+      //   .then((res) => {
+      //     setToken(res.data.token);
+      //     RecipientApiService.getRecipients(`id=${res.data.memberId}`).then(response => {
+      //       setRecipient({ id: res.data.memberId, data: response as IRecipient });
+
+      //       if (response) updateRecipient(res.data.memberId, { status: 'accepted' });
+
+      //       if (response?.name) {
+      //         setValue('name', response?.name);
+      //       }
+      //       if (res?.data.orgName) {
+      //         setValue('projectName', res?.data.orgName);
+      //       }
+      //       if (response?.email) {
+      //         setValue('companyEmail', response.email);
+      //       }
+      //     })
+      //     fetchRecipient(res.data.memberId).then((response) => {
+      //       setRecipient({ id: res.data.memberId, data: response as IRecipient });
+
+      //       if (response) updateRecipient(res.data.memberId, { status: 'accepted' });
+
+      //       if (response?.name) {
+      //         setValue('name', response?.name);
+      //       }
+      //       if (res?.data.orgName) {
+      //         setValue('projectName', res?.data.orgName);
+      //       }
+      //       if (response?.email) {
+      //         setValue('companyEmail', response.email);
+      //       }
+      //     });
+      //   })
+      //   .catch(async (err) => {
+      //     if (err.response.data.message === 'jwt expired') {
+      //       router.push({ pathname: '/expired', query: { loginToken: token } });
+      //     } else {
+      //       await toast.error('The token is invalid');
+      //     }
+      //   });
     }
   }, [router]);
 
   const onSubmit = async () => {
-    if (recipient?.id && token) {
-      const newRecipient = {
-        ...recipient?.data,
+    if (recipient?.id) {
+      // const newRecipient = {
+      //   ...recipient?.data,
 
-        org_id: recipient.data.organizationId,
-        type: 'investor' as IUserType
-      };
+      //   org_id: recipient.data.organizationId,
+      //   type: 'investor' as IUserType
+      // };
 
-      signUpWithToken(newRecipient, token);
-      setCurrentRecipient({
-        id: recipient.id,
-        data: newRecipient
-      });
-      setOrganizationId(newRecipient?.org_id);
+      // signUpWithToken(newRecipient, token);
+      setCurrentRecipient(recipient);
+      setOrganizationId(recipient?.organizationId);
     }
   };
 
@@ -101,7 +133,7 @@ const RecipientCreate: NextPage = () => {
       </div>
       <div className="panel  text-left">
         <Typography variant="inter" size="title" className="font-semibold">
-          {recipient?.data.name}
+          {recipient?.name}
         </Typography>
         <div className="flex items-center gap-3">
           <Image
@@ -111,7 +143,7 @@ const RecipientCreate: NextPage = () => {
             height={32}
             className=""
           />
-          <span>{recipient?.data.company}</span>
+          <span>{recipient?.orgName}</span>
         </div>
         <form className="w-full mb-6 border-0 border-t my-7" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid md:grid-cols-2 gap-5 mb-5 mt-7 ">

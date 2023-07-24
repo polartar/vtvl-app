@@ -7,6 +7,7 @@ class VestingScheduleApiService {
   createVestingSchedule = (payload: IVestingSchedule) => CoreApiServiceTemp.post<IVestingSchedule>('/vesting', payload);
   getVestingSchedules = (organizationId: string) =>
     CoreApiServiceTemp.get<IVestingSchedule[]>(`/vesting/organization/${organizationId}`);
+  getVestingSchedule = (id: string) => CoreApiServiceTemp.get<IVestingSchedule>(`/vesting/${id}`);
 }
 
 export default new VestingScheduleApiService();

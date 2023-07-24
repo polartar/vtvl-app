@@ -44,6 +44,7 @@ export interface IRecipient {
   userId: string;
   vesting: IVestingSchedule;
   user: IUser;
+  orgName?: string;
 }
 
 export interface IRecipientForm {

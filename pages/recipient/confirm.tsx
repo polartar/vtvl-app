@@ -1,34 +1,56 @@
+import RecipientApiService from '@api-services/RecipientApiService';
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useAuth as useAuthStore } from '@store/useAuth';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
+import { IVestingSchedule } from 'interfaces/vestingSchedule';
 import { NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { generateMessage } from 'pages/api/recipient/add-address';
+// import { generateMessage } from 'pages/api/recipient/add-address';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchVesting } from 'services/db/vesting';
 import { MESSAGES } from 'utils/messages';
 
+const generateMessage = (vesting: IVestingSchedule, address: string): string => {
+  const obj = {
+    name: vesting.name,
+    recipient: address,
+    organizationId: vesting.organizationId,
+    startDateTime: vesting.startedAt,
+    endDateTime: vesting.endedAt,
+    cliffDuration: vesting.cliffDuration,
+    cliffDurationNumber: vesting.cliffDuration,
+    // lumpSumReleaseAfterCliff: vesting.lumpSumReleaseAfterCliff,
+    releaseFrequency: vesting.releaseFrequency,
+    tokenId: vesting.tokenId,
+    amountToBeVested: vesting.amount
+  };
+  return JSON.stringify(obj);
+};
+
 const RecipientCreate: NextPage = () => {
   const { account, library } = useWeb3React();
-  const { recipient, setRecipient } = useAuthContext();
+  const { recipient } = useAuthContext();
+  const { save: saveAuth } = useAuthStore();
 
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setTransactionStatus } = useTransactionLoaderContext();
 
   useEffect(() => {
-    if (recipient && recipient.data && recipient.data.walletAddress) {
+    if (recipient && recipient && recipient.address) {
       router.push('/claim-portal');
     }
-  }, [recipient, router, recipient?.data.walletAddress]);
+  }, [recipient, router, recipient?.address]);
   const onSign = async () => {
     if (!account || !library) {
       return;
@@ -41,7 +63,8 @@ const RecipientCreate: NextPage = () => {
 
     let message;
 
-    const vesting = await fetchVesting(recipient?.data.vestingId || ''); //vestings.find((vesting) => vesting.id === recipient?.data.vestingId);
+    // const vesting = await fetchVesting(recipient?.vestingId || ''); //vestings.find((vesting) => vesting.id === recipient?.data.vestingId);
+    const vesting = await VestingScheduleApiService.getVestingSchedule(recipient?.vestingId || '');
 
     if (vesting) message = generateMessage(vesting, account);
 
@@ -60,19 +83,31 @@ const RecipientCreate: NextPage = () => {
       return;
     }
     try {
-      await axios.post('/api/recipient/add-address', {
-        signature,
-        recipientId: recipient?.id,
-        address: account
-      });
-      setRecipient({
-        id: recipient?.id,
-        data: {
-          ...recipient?.data,
-          walletAddress: account,
-          status: 'accepted'
+      const token = router.query.token;
+      const response = await RecipientApiService.acceptInvitation({
+        code: token as string,
+        wallet: {
+          address: account,
+          signature,
+          utcTime: new Date().getUTCDate().toString()
         }
       });
+
+      saveAuth(response);
+
+      // await axios.post('/api/recipient/add-address', {
+      //   signature,
+      //   recipientId: recipient?.id,
+      //   address: account
+      // });
+      // setRecipient({
+      //   id: recipient?.id,
+      //   data: {
+      //     ...recipient?.data,
+      //     walletAddress: account,
+      //     status: 'accepted'
+      //   }
+      // });
     } catch (err) {
       toast.error('The signature is invalid');
     }
