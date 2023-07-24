@@ -491,7 +491,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
 
       const cliffReleaseDate =
-        vesting.details.startDateTime && vesting.details.cliffDuration !== 'no-cliff'
+        vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
           ? getCliffDateTime(vestingStartTime, vesting.details.cliffDuration)
           : '';
       const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
@@ -503,7 +503,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
             )
           : 0;
-      const actualStartDateTime = vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vestingStartTime;
+      const actualStartDateTime = vesting.details.cliffDuration !== 'no_cliff' ? cliffReleaseDate : vestingStartTime;
       const vestingEndTimestamp =
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
@@ -532,7 +532,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       const vestingLinearVestAmounts = vestingRecipients.map((recipient) => {
         const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
         // Computes how many tokens are left after cliff based on percentage
-        const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
+        const percentage = 1 - (cliffDuration !== 'no_cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
         return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
       });
 

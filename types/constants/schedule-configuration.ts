@@ -1,7 +1,7 @@
 export type DateDurationOptions = 'hour' | 'day' | 'week' | 'month' | 'year';
 export type DateDurationOptionsPlural = `${DateDurationOptions}s`;
 export type DateDurationOptionValues = DateDurationOptions | DateDurationOptionsPlural;
-export type CliffDuration = 'no-cliff' | `${number}-${DateDurationOptionValues}`;
+export type CliffDuration = 'no_cliff' | `${number}-${DateDurationOptionValues}`;
 
 export type ReleaseFrequency =
   | 'continuous'
@@ -48,7 +48,7 @@ export const DATE_FREQ_TO_OPTION = {
 };
 
 export const CLIFFDURATION_TIMESTAMP: { [key in CliffDuration]: number } = {
-  'no-cliff': 0,
+  no_cliff: 0,
   // '1-minute': 60,
   '1-hour': 3600,
   '6-hours': 21600,

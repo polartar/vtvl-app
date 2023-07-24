@@ -470,13 +470,13 @@ const MyTokenSchedule: NextPageWithLayout = () => {
                     <span className={`text-sm text-neutral-500${isNextUnlockUpdated ? 'animate-pulse' : ''}`}>
                       Cliff
                     </span>
-                    {isCliffComplete && selectedSchedule.data.details.cliffDuration !== 'no-cliff' ? (
+                    {isCliffComplete && selectedSchedule.data.details.cliffDuration !== 'no_cliff' ? (
                       <Chip label="Finished" rounded color="successAlt" size="small" />
                     ) : null}
                   </div>
                   <div className="text-lg text-neutral-900">
                     <span className="capitalize">{selectedSchedule.data.details.cliffDuration.replace('-', ' ')}</span>
-                    {selectedSchedule.data.details.cliffDuration !== 'no-cliff' ? (
+                    {selectedSchedule.data.details.cliffDuration !== 'no_cliff' ? (
                       <>
                         /{formatNumber(userTokenDetails.cliffAmount, 6)} <strong>{userTokenDetails.symbol}</strong>
                       </>

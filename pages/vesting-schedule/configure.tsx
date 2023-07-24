@@ -59,7 +59,7 @@ interface CustomActionBarProps {
   field: CustomActionBarDateTimeField;
 }
 
-const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no-cliff';
+const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no_cliff';
 
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { organizationId, currentSafe, user } = useAuthContext();
@@ -231,7 +231,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   console.log('Lumpsum release', lumpSumReleaseAfterCliff.value);
 
   const cliffOptions = [
-    { label: 'No cliff', value: 'no-cliff' },
+    { label: 'No cliff', value: 'no_cliff' },
     // { label: 'Hours', value: 'hours' },
     // { label: 'Days', value: 'days' },
     { label: 'Weeks', value: 'weeks' },
@@ -267,14 +267,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
    * 1-week / 2-weeks
    * 1-day / 2-days
    * 1-hour / 2-hours
-   * no-cliff
+   * no_cliff
    *
    * cannot and should not contain 0 starting value like 0-day etc.
    */
   useEffect(() => {
     // Update the cliffDuration actual value based on these two inputs
     if (cliffDurationNumber.value && cliffDurationOption.value) {
-      if (cliffDurationOption.value === 'no-cliff') {
+      if (cliffDurationOption.value === 'no_cliff') {
         setValue('cliffDuration', cliffDurationOption.value);
       } else {
         const formattedLabel = formatCliffDurationOption(+cliffDurationNumber.value, cliffDurationOption.value);
@@ -284,7 +284,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
     // Trigger an error in the cliff duration when the number is 0 if there is a cliff
     clearErrors('cliffDurationNumber');
-    if (!+cliffDurationNumber.value && cliffDurationOption.value !== 'no-cliff') {
+    if (!+cliffDurationNumber.value && cliffDurationOption.value !== 'no_cliff') {
       setError('cliffDurationNumber', {
         type: 'custom',
         message: `Please enter number of ${cliffDurationOption.value}`
@@ -399,11 +399,11 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue('amountToBeVestedText', formatNumber(newDetails.amountToBeVested).toString());
 
     // Cliff duration checks
-    if (newDetails.cliffDuration === 'no-cliff') {
+    if (newDetails.cliffDuration === 'no_cliff') {
       setValue('cliffDurationNumber', 1);
-      setValue('cliffDurationOption', 'no-cliff');
+      setValue('cliffDurationOption', 'no_cliff');
     } else {
-      const cliffSplit = newDetails.cliffDuration.split('-');
+      const cliffSplit = newDetails.cliffDuration.split('_');
       const cliffOption = cliffSplit[1].charAt(cliffSplit[1].length - 1) !== 's' ? `${cliffSplit[1]}s` : cliffSplit[1];
       setValue('cliffDurationNumber', +cliffSplit[0]);
       setValue('cliffDurationOption', cliffOption as CliffDuration | DateDurationOptionValues);
@@ -766,7 +766,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         return false;
       }
 
-      if (cliffDuration.value !== 'no-cliff' && idealScheduleDuration > diffSeconds) {
+      if (cliffDuration.value !== 'no_cliff' && idealScheduleDuration > diffSeconds) {
         // Error
         setFormError(true);
         setFormSuccess(false);
@@ -963,7 +963,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   // Step 2 interaction -- Go to handleDateTimeChange
   // useEffect(() => {
   //   // Step 3 interaction
-  //   if (cliffDuration.value === 'no-cliff') {
+  //   if (cliffDuration.value === 'no_cliff') {
   //     goToActiveStep(3);
   //   }
   // }, [cliffDuration.value]);
@@ -1457,12 +1457,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     onFocus={() => setActiveStep(2)}
                     {...field}
                     onBlur={() => {
-                      if (cliffDurationOption.value === 'no-cliff') setActiveStep(5);
+                      if (cliffDurationOption.value === 'no_cliff') setActiveStep(5);
                     }}
                   />
                 )}
               />
-              {cliffDurationOption.value === 'no-cliff' ? null : (
+              {cliffDurationOption.value === 'no_cliff' ? null : (
                 <>
                   {/* Step 3 cliff duration value */}
                   <Controller

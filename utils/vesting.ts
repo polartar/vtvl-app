@@ -40,7 +40,7 @@ export const getDuration = (start: Date, end: Date): string => {
  * cliff is computed from (start date time) + cliff duration (2 mins, 1 hour, 1 month etc) - this point in time.
  */
 export const getCliffDateTime = (startDate: Date, cliffDuration: CliffDuration) => {
-  const durationInput = cliffDuration.split('-');
+  const durationInput = cliffDuration.split('_');
   const durationNumber = +durationInput[0];
   const durationDate = durationInput[1];
 
@@ -102,7 +102,7 @@ export const getCliffAmount = (
   amountAfterCliff: number,
   amountToBeVested: number
 ): number => {
-  if (amountAfterCliff && cliffDuration !== 'no-cliff') {
+  if (amountAfterCliff && cliffDuration !== 'no_cliff') {
     return +amountToBeVested * (+amountAfterCliff / 100);
   }
   return 0;
@@ -114,7 +114,7 @@ export const getCliffAmountDecimal = (
   amountAfterCliff: Decimal,
   amountToBeVested: Decimal
 ) => {
-  if (amountAfterCliff && cliffDuration !== 'no-cliff') {
+  if (amountAfterCliff && cliffDuration !== 'no_cliff') {
     return amountToBeVested.times(amountAfterCliff.div(new Decimal(100)));
   }
   return new Decimal(0);
@@ -132,7 +132,7 @@ export const getReleaseFrequencyTimestamp = (
 ) => {
   // When cliff duration is provide, get the cliff date time first as the actual start date
   const actualStartDateTime =
-    cliffDuration && cliffDuration !== 'no-cliff' ? getCliffDateTime(startDate, cliffDuration) : startDate;
+    cliffDuration && cliffDuration !== 'no_cliff' ? getCliffDateTime(startDate, cliffDuration) : startDate;
 
   const intervals = getNumberOfReleases(releaseFrequency, actualStartDateTime, endDate);
   const intervalSeconds =
@@ -408,7 +408,7 @@ export const getFrequencyDuration = (startDate: Date, releaseFrequency: ReleaseF
  */
 export const getChartData = ({ start, end, cliffDuration, cliffAmount, frequency, vestedAmount }: IChartDataTypes) => {
   const cliffDate = getCliffDateTime(start, cliffDuration);
-  const actualStart = cliffDuration !== 'no-cliff' ? cliffDate : start;
+  const actualStart = cliffDuration !== 'no_cliff' ? cliffDate : start;
   // const projectedEndDate = getProjectedEndDateTime(actualStart, end, numberOfReleases, frequency);
   const numberOfReleases = getNumberOfReleases(frequency, actualStart, end);
   const releaseAmount = getReleaseAmount(+vestedAmount, +cliffAmount, numberOfReleases);
@@ -424,7 +424,7 @@ export const getChartData = ({ start, end, cliffDuration, cliffAmount, frequency
   let currentDate = start;
 
   if (start && end && cliffDate) {
-    if (cliffDuration !== 'no-cliff') {
+    if (cliffDuration !== 'no_cliff') {
       // Set base on cliff
       cliffData.push({
         date: formatDateTime(currentDate),

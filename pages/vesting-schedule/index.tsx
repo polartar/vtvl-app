@@ -63,6 +63,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const router = useRouter();
   const { account, library, activate, chainId } = useWeb3React();
   const { organizationId, currentSafe, currentSafeId, setCurrentSafe } = useAuthContext();
+  console.log({ organizationId });
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
@@ -589,7 +590,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const vestingAmountPerUser = +vesting.details.amountToBeVested / vesting.recipients.length - cliffAmountPerUser;
         const addresses1 = vesting.recipients.map((recipient: any) => recipient.walletAddress);
         const cliffReleaseDate =
-          vesting.details.startDateTime && vesting.details.cliffDuration !== 'no-cliff'
+          vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
             ? getCliffDateTime(
                 new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
                 vesting.details.cliffDuration
@@ -605,7 +606,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               )
             : 0;
         const actualStartDateTime =
-          vesting.details.cliffDuration !== 'no-cliff'
+          vesting.details.cliffDuration !== 'no_cliff'
             ? cliffReleaseDate
             : new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
         const vestingEndTimestamp =

@@ -1,12 +1,10 @@
 import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import { Typography } from '@components/atoms/Typography/Typography';
+import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
-import { IEmailTemplate, useGlobalContext } from '@providers/global.context';
-import { useRecipientContext } from '@providers/recipient.context';
 import { useTokenContext } from '@providers/token.context';
 import { REDIRECT_URIS } from '@utils/constants';
-import axios from 'axios';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import Image from 'next/image';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -50,8 +48,9 @@ export default function VestingContract() {
     keyword: string;
     status: IStatus;
   }>({ keyword: '', status: IStatus.ALL });
-  const { recipients: initialRecipients } = useRecipientContext();
-  const [recipients, setRecipients] = useState<IRecipientData[]>(initialRecipients);
+  // const { recipients: initialRecipients } = useRecipientContext();
+  const { organizationId } = useAuthContext();
+  const [recipients, setRecipients] = useState<IRecipientData[]>([]);
   const { vestingContracts, vestings, recipients: allRecipients } = useDashboardContext();
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
     vestingContracts,
@@ -61,13 +60,14 @@ export default function VestingContract() {
   const [allChecked, setAllChecked] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const { mintFormState } = useTokenContext();
-  const {
-    website: { name: websiteName, email: websiteEmail },
-    emailTemplate
-  } = useGlobalContext();
+
+  // useState
+
   useEffect(() => {
-    setRecipients(initialRecipients);
-  }, [initialRecipients]);
+    RecipientApiService.getRecipients(`organizationId=${organizationId}`).then((res) => {
+      setRecipients(res);
+    });
+  }, [organizationId]);
 
   const filteredRecipients = useMemo(() => {
     return recipients.filter((recipient) => {

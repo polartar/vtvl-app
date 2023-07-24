@@ -93,17 +93,7 @@ const RecipientRow: React.FC<{
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      await sendRecipientInvite(
-        [
-          {
-            email: recipient.email,
-            name: recipient.name || '',
-            orgId: recipient.organizationId,
-            memberId: recipient.id
-          }
-        ],
-        symbol
-      );
+      await sendRecipientInvite([recipient.id]);
       toast.success('Invited recipient successfully');
     } catch (err) {
       toast.error('Something went wrong');
