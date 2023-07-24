@@ -20,7 +20,7 @@ const RecipientSchedule = () => {
   const router = useRouter();
 
   const getVestingScheduleDetails = async () => {
-    const schedule = recipient?.data.vestingId;
+    const schedule = recipient?.vestingId;
     // Get the schedule details
     try {
       const getVestingSchedule = await fetchVesting(schedule as string);
@@ -49,7 +49,7 @@ const RecipientSchedule = () => {
     }
   }, [recipient]);
 
-  if (recipient?.data.walletAddress) {
+  if (recipient?.address) {
     router.push('/claim-portal');
   }
   return (
@@ -64,7 +64,7 @@ const RecipientSchedule = () => {
         <hr className="my-6" />
         <div className="text-neutral-500 text-sm">Your token allocations</div>
         <div className="text-neutral-900 font-bold">
-          {recipient?.data.allocations} {mintFormState.symbol || 'Token'}
+          {recipient?.allocations} {mintFormState.symbol || 'Token'}
         </div>
         <hr className="my-6" />
         <div className="flex items-center justify-between flex-wrap gap-2">

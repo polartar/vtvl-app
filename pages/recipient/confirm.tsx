@@ -64,9 +64,14 @@ const RecipientCreate: NextPage = () => {
     let message;
 
     // const vesting = await fetchVesting(recipient?.vestingId || ''); //vestings.find((vesting) => vesting.id === recipient?.data.vestingId);
-    const vesting = await VestingScheduleApiService.getVestingSchedule(recipient?.vestingId || '');
+    let vesting;
+    try {
+      vesting = await VestingScheduleApiService.getVestingSchedule(recipient?.vestingId || '');
+      // eslint-disable-next-line no-empty
+    } catch (err) {}
 
     if (vesting) message = generateMessage(vesting, account);
+    else message = 'Confirm wallet';
 
     let signature;
     try {

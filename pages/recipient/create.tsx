@@ -4,7 +4,6 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
-import axios from 'axios';
 import { NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -12,18 +11,17 @@ import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { IRecipient } from 'types/models';
-import { IUserType } from 'types/models/member';
 import { WEBSITE_NAME } from 'utils/constants';
 
 const RecipientCreate: NextPage = () => {
-  const { setOrganizationId, loading, setRecipient: setCurrentRecipient, signUpWithToken } = useAuthContext();
+  const { setOrganizationId, setRecipient: setCurrentRecipient } = useAuthContext();
   const {
     website: { name: websiteName, assets }
   } = useGlobalContext();
 
   const router = useRouter();
   const [recipient, setRecipient] = useState<IRecipient>();
-  // const [token, setToken] = useState();
+  const [token, setToken] = useState('');
   const {
     control,
     handleSubmit,
@@ -44,11 +42,12 @@ const RecipientCreate: NextPage = () => {
       RecipientApiService.getRecipientByCode(encryptToken as string)
         .then((response) => {
           setRecipient(response);
+          setToken(encryptToken as string);
           if (response.name) {
             setValue('name', response?.name);
           }
-          if (response.orgName) {
-            setValue('projectName', response.orgName);
+          if (response.organization) {
+            setValue('projectName', response.organization.name);
           }
           if (response.email) {
             setValue('companyEmail', response.email);
@@ -120,6 +119,7 @@ const RecipientCreate: NextPage = () => {
       // signUpWithToken(newRecipient, token);
       setCurrentRecipient(recipient);
       setOrganizationId(recipient?.organizationId);
+      router.push('/recipient/confirm?code=' + token);
     }
   };
 
@@ -143,7 +143,7 @@ const RecipientCreate: NextPage = () => {
             height={32}
             className=""
           />
-          <span>{recipient?.orgName}</span>
+          <span>{recipient?.organization?.name}</span>
         </div>
         <form className="w-full mb-6 border-0 border-t my-7" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid md:grid-cols-2 gap-5 mb-5 mt-7 ">
@@ -196,8 +196,8 @@ const RecipientCreate: NextPage = () => {
             />
           </div>
           <div className="flex flex-row justify-end items-center border-t pt-7">
-            <Button className="primary rounded-lg" type="submit" loading={isSubmitting || loading}>
-              Create account
+            <Button className="primary rounded-lg" type="submit" loading={isSubmitting}>
+              Next
             </Button>
           </div>
         </form>
