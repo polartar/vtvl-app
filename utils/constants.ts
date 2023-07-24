@@ -50,7 +50,7 @@ export const REDIRECT_URIS = {
   INVITE_MEMBER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`),
   SETUP_ACCOUNT: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/onboarding/account-setup`),
   MAIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/dashboard`),
-  RECIPIENT_INVITE: encodeURI(`${PUBLIC_DOMAIN_NAME}/recipient/invite`)
+  RECIPIENT_INVITE: encodeURI(`${PUBLIC_DOMAIN_NAME}/recipient/create`)
 };
 
 export const TOAST_NOTIFICATION_IDS = {
