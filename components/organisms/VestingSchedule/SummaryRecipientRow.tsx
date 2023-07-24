@@ -11,10 +11,10 @@ import React, { useEffect, useState } from 'react';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { fetchTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipientDoc, IRevoking, ITransaction } from 'types/models';
+import { IRecipient, IRevoking, ITransaction } from 'types/models';
 
 interface ISummaryRecipientRowProps {
-  recipient: IRecipientDoc;
+  recipient: IRecipient;
 }
 
 const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient }) => {
@@ -50,7 +50,7 @@ const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient })
       fetchRevokingsByQuery(
         ['chainId', 'recipient', 'vestingId'],
         ['==', '==', '=='],
-        [chainId, recipient.data.walletAddress, recipient.data.vestingId]
+        [chainId, recipient.address, recipient.vestingId]
       ).then((res) => {
         if (res && res.length > 0) {
           const revoke = res[0];
@@ -73,7 +73,7 @@ const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient })
   return (
     <div className="flex text-[#667085] text-xs border-2">
       <div className="flex items-center w-36 p-3 flex-shrink-0 border-t border-[#d0d5dd] bg-[#f9fafb]">
-        {recipient.data.name}
+        {recipient.name}
       </div>
       <div className="flex items-center w-36 p-3 flex-shrink-0 bg-[#f9fafb] border-t border-[#d0d5dd]">
         {revoking ? (

@@ -9,7 +9,7 @@ import ContractsIcon from 'public/icons/contracts-colored.svg';
 import { useMemo } from 'react';
 import { fetchMember } from 'services/db/member';
 import useSWR from 'swr';
-import { IRecipientDoc, ISafe } from 'types/models';
+import { IRecipient, ISafe } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { IVestingContractDoc } from 'types/models/vestingContract';
 import { getDuration } from 'utils/vesting';
@@ -25,12 +25,12 @@ const VestingSummary = ({
   vestingSchedule: IVestingDoc;
   symbol: string;
   safe: ISafe | undefined;
-  recipients: IRecipientDoc[];
+  recipients: IRecipient[];
 }) => {
   const { vestingContracts } = useDashboardContext();
 
   const vestingRecipients = useMemo(
-    () => recipients?.filter((recipient) => recipient.data.vestingId === vestingSchedule.id),
+    () => recipients?.filter((recipient) => recipient.vestingId === vestingSchedule.id),
     [recipients, vestingSchedule.id]
   );
 

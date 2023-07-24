@@ -8,7 +8,7 @@ import { BigNumber } from 'ethers/lib/ethers';
 import { useEffect } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting } from 'types/models';
-import { IRecipientDoc } from 'types/models/recipient';
+import { IRecipient } from 'types/models/recipient';
 import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
 import { getVestingContractABI, isV2 } from 'utils/multicall';
@@ -32,7 +32,7 @@ export type VestingContractInfo = {
 export default function useChainVestingContracts(
   vestingContracts: IVestingContractDoc[] | IVestingContractDoc,
   vestings: { id: string; data: IVesting }[],
-  recipients: IRecipientDoc[]
+  recipients: IRecipient[]
 ) {
   const { chainId } = useWeb3React();
   const [state, setState] = useShallowState<{
@@ -58,9 +58,7 @@ export default function useChainVestingContracts(
         const partialVestings = vestings
           .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
           .map((vesting) => vesting.id);
-        const partialRecipients = recipients.filter(({ data: recipient }) =>
-          partialVestings.includes(recipient.vestingId)
-        );
+        const partialRecipients = recipients.filter((recipient) => partialVestings.includes(recipient.vestingId));
 
         let result: ContractCallContext[] = [];
         result = result.concat({
@@ -77,11 +75,11 @@ export default function useChainVestingContracts(
         });
 
         partialRecipients
-          .filter(({ data: recipient }) => !!recipient.walletAddress)
-          .forEach(({ data: recipient }) => {
+          .filter((recipient) => !!recipient.address)
+          .forEach((recipient) => {
             result = result.concat([
               {
-                reference: `multicall-${vestingContract.data.address}-${recipient.walletAddress}`,
+                reference: `multicall-${vestingContract.data.address}-${recipient.address}`,
                 contractAddress: vestingContract.data.address,
                 abi: getVestingContractABI(vestingContract.data.updatedAt),
                 calls: [
@@ -89,7 +87,7 @@ export default function useChainVestingContracts(
                     //   // This gets the claimable amount by the recipient
                     reference: 'claimableAmount',
                     methodName: 'claimableAmount',
-                    methodParameters: [recipient.walletAddress]
+                    methodParameters: [recipient.address]
                   },
                   // {
                   //   // This gets the total vested amount for the recipient (includes everything)
@@ -103,7 +101,7 @@ export default function useChainVestingContracts(
                   //   methodName: 'vestedAmount',
                   //   methodParameters: [recipient.walletAddress, getUnixTime(new Date())]
                   // },
-                  { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }
+                  { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.address] }
                 ]
               }
             ]);
