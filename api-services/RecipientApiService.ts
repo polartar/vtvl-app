@@ -9,6 +9,8 @@ class RecipientApiService {
   getRecipientByCode = (code: string) => CoreApiService.get<IRecipient>(`/recipe/code/${code}`);
   acceptInvitation = (body: { code: string; wallet: { address: string; signature: string; utcTime: string } }) =>
     CoreApiService.post<AuthResponse>('/auth/accept-invitation', body);
+  sendInvitation = (id: string, redirectUri: string) =>
+    CoreApiService.put(`/recipe/resend/${id}`, { redirectUri: redirectUri });
 }
 
 export default new RecipientApiService();

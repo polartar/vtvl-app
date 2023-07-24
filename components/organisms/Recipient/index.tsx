@@ -1,9 +1,11 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { IEmailTemplate, useGlobalContext } from '@providers/global.context';
 import { useRecipientContext } from '@providers/recipient.context';
 import { useTokenContext } from '@providers/token.context';
+import { REDIRECT_URIS } from '@utils/constants';
 import axios from 'axios';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import Image from 'next/image';
@@ -20,26 +22,20 @@ enum IStatus {
   EXPIRED = 'Expired'
 }
 
-export const sendRecipientInvite = async (
-  recipients: {
-    email: string;
-    name: string;
-    orgId?: string;
-    memberId: string;
-  }[],
-  symbol: string,
-  websiteName?: string,
-  websiteEmail?: string,
-  emailTemplate?: IEmailTemplate
-): Promise<void> => {
+export const sendRecipientInvite = async (recipientIds: string[]): Promise<void> => {
+  await Promise.all(
+    recipientIds.map(async (recipientId) => {
+      return await RecipientApiService.sendInvitation(recipientId, REDIRECT_URIS.RECIPIENT_INVITE);
+    })
+  );
   //TODO: extract api calls
-  await axios.post('/api/email/recipient-invite', {
-    recipients: recipients,
-    symbol: symbol,
-    websiteName,
-    websiteEmail,
-    emailTemplate
-  });
+  // await axios.post('/api/email/recipient-invite', {
+  //   recipients: recipients,
+  //   symbol: symbol,
+  //   websiteName,
+  //   websiteEmail,
+  //   emailTemplate
+  // });
 };
 export const isExpired = (date: string | undefined) => {
   if (!date) {
@@ -147,16 +143,9 @@ export default function VestingContract() {
   const sendBatchEmail = async () => {
     if (isInviting) return;
     setIsInviting(true);
-    const inviteRecipients = recipients
-      .filter((recipient) => recipient.checked)
-      .map((recipient) => ({
-        email: recipient.email,
-        orgId: recipient.organizationId || '',
-        name: recipient.name || '',
-        memberId: recipient.id
-      }));
+    const inviteRecipientIds = recipients.filter((recipient) => recipient.checked).map((recipient) => recipient.id);
     try {
-      await sendRecipientInvite(inviteRecipients, mintFormState.symbol, websiteName, websiteEmail, emailTemplate);
+      await sendRecipientInvite(inviteRecipientIds);
       toast.success('Invited recipients successfully');
     } catch (err) {
       toast.error('Something went wrong');
