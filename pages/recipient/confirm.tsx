@@ -7,6 +7,7 @@ import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useAuth as useAuthStore } from '@store/useAuth';
+import { toUTCString } from '@utils/date';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import { IVestingSchedule } from 'interfaces/vestingSchedule';
@@ -94,7 +95,7 @@ const RecipientCreate: NextPage = () => {
         wallet: {
           address: account,
           signature,
-          utcTime: new Date().getUTCDate().toString()
+          utcTime: toUTCString()
         }
       });
 
