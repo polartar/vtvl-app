@@ -66,7 +66,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page);
 
   useEffect(() => {
-    checkAccessTokenValidity();
+    if (!router.pathname.includes('/recipient/')) checkAccessTokenValidity();
   }, []);
 
   return (

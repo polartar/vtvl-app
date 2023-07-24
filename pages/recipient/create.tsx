@@ -38,7 +38,7 @@ const RecipientCreate: NextPage = () => {
   });
   useEffect(() => {
     // startOnboarding(Step.ChainSetup);
-    const encryptToken = router.query.token;
+    const encryptToken = router.query.code;
 
     if (encryptToken) {
       RecipientApiService.getRecipientByCode(encryptToken as string)

@@ -2,6 +2,7 @@ import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import Copy from '@components/atoms/Copy/Copy';
 import { EditableTypography } from '@components/molecules/RecipientTable';
+import { useAuthContext } from '@providers/auth.context';
 import format from 'date-fns/format';
 import { BigNumber } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
@@ -21,6 +22,7 @@ const RecipientRow: React.FC<{
   setCheck: (checked: boolean, id: string) => void;
 }> = ({ recipient, symbol, vestingSchedulesInfo, setCheck }) => {
   const [newRecipient, setNewRecipient] = useState(recipient);
+  const { organizationId } = useAuthContext();
 
   useEffect(() => {
     setNewRecipient(recipient);
@@ -93,7 +95,7 @@ const RecipientRow: React.FC<{
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      await sendRecipientInvite([recipient.id]);
+      await sendRecipientInvite([recipient.id], organizationId as string);
       toast.success('Invited recipient successfully');
     } catch (err) {
       toast.error('Something went wrong');

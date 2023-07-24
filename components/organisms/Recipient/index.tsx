@@ -20,10 +20,11 @@ enum IStatus {
   EXPIRED = 'Expired'
 }
 
-export const sendRecipientInvite = async (recipientIds: string[]): Promise<void> => {
+export const sendRecipientInvite = async (recipientIds: string[], organizationId: string): Promise<void> => {
   await Promise.all(
     recipientIds.map(async (recipientId) => {
-      return await RecipientApiService.sendInvitation(recipientId, REDIRECT_URIS.RECIPIENT_INVITE);
+      console.log({ organizationId });
+      return await RecipientApiService.sendInvitation(recipientId, REDIRECT_URIS.RECIPIENT_INVITE, organizationId);
     })
   );
   //TODO: extract api calls
@@ -145,7 +146,7 @@ export default function VestingContract() {
     setIsInviting(true);
     const inviteRecipientIds = recipients.filter((recipient) => recipient.checked).map((recipient) => recipient.id);
     try {
-      await sendRecipientInvite(inviteRecipientIds);
+      await sendRecipientInvite(inviteRecipientIds, organizationId as string);
       toast.success('Invited recipients successfully');
     } catch (err) {
       toast.error('Something went wrong');

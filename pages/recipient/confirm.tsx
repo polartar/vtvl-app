@@ -83,7 +83,7 @@ const RecipientCreate: NextPage = () => {
       return;
     }
     try {
-      const token = router.query.token;
+      const token = router.query.code;
       const response = await RecipientApiService.acceptInvitation({
         code: token as string,
         wallet: {
