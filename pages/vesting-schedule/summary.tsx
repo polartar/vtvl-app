@@ -47,6 +47,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
     // const ABI = [PERFORM_CREATE_FUNCTION];
 
     // If the contract is set to be a new one, let's create one.
+
+    let vestingContractId = scheduleState.vestingContractId;
     if (scheduleState.createNewContract) {
       const vestingContract = await VestingContractApiService.createVestingContract({
         name: scheduleState.contractName!,
@@ -54,6 +56,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
         organizationId: organizationId!,
         chainId: chainId ?? 0
       });
+      vestingContractId = vestingContract.id;
       updateVestingContract(vestingContract);
     }
 
