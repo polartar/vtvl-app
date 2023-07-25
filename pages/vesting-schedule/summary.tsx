@@ -85,7 +85,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
         organizationId: organizationId!,
         status: 'INITIALIZED',
         // vestingContractId,
-        tokenId,
+        tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
         vestingContractId: String(vestingContractId),
         name: scheduleState.name,
         startedAt: scheduleFormState.startDateTime?.toISOString(),

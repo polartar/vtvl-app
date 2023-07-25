@@ -1058,7 +1058,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
       const vesting = await VestingScheduleApiService.createVestingSchedule({
         organizationId: String(organizationId),
-        tokenId: tokenId,
+        tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
         vestingContractId: vestingContractId as string,
         // tokenId,
         // vestingContractId: String(vestingContractId),
