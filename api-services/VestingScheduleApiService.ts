@@ -1,13 +1,13 @@
 import { IVestingSchedule } from 'interfaces/vestingSchedule';
 
-import CoreApiServiceTemp from './CoreApiServiceTemp';
+import CoreApiService from './CoreApiService';
 
 class VestingScheduleApiService {
   // Organization APIs
-  createVestingSchedule = (payload: IVestingSchedule) => CoreApiServiceTemp.post<IVestingSchedule>('/vesting', payload);
+  createVestingSchedule = (payload: IVestingSchedule) => CoreApiService.post<IVestingSchedule>('/vesting', payload);
   getVestingSchedules = (organizationId: string) =>
-    CoreApiServiceTemp.get<IVestingSchedule[]>(`/vesting/organization/${organizationId}`);
-  getVestingSchedule = (id: string) => CoreApiServiceTemp.get<IVestingSchedule>(`/vesting/${id}`);
+    CoreApiService.get<IVestingSchedule[]>(`/vesting/organization/${organizationId}`);
+  getVestingSchedule = (id: string) => CoreApiService.get<IVestingSchedule>(`/vesting/${id}`);
 }
 
 export default new VestingScheduleApiService();

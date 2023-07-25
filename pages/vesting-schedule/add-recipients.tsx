@@ -232,7 +232,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
           allocations: record.allocations,
           email: String(record.email),
           type: record.role,
-          company: record.company
+          company: ''
         }))
       );
     }

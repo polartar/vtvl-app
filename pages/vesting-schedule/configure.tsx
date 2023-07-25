@@ -822,7 +822,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
   };
 
-  const totalTokenSupply = parseFloat(mintFormState.initialSupply.toString());
+  const totalTokenSupply = parseFloat((mintFormState.initialSupply || '').toString());
 
   // Handles the clicking of the "MAX" button in the amount to be vested section
   const handleMaxAmount = () => {
