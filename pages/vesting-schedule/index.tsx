@@ -63,7 +63,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const router = useRouter();
   const { account, library, activate, chainId } = useWeb3React();
   const { organizationId, currentSafe, currentSafeId, setCurrentSafe } = useAuthContext();
-  console.log({ organizationId });
+
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
@@ -872,7 +872,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
               <div>
                 <TokenProfile {...mintFormState} className="mb-2" />
-                <Copy text={mintFormState.address || ''}>
+                <Copy text={mintFormState.address as string}>
                   <p className="text-sm font-medium text-netural-900">
                     Token address: <span className="text-neutral-500">{mintFormState.address}</span>
                   </p>
@@ -893,7 +893,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
               remainingAllocation={remaining}
-              totalAllocation={Number(mintFormState?.initialSupply) || 0}
+              totalAllocation={Number(mintFormState.initialSupply) || 0}
             />
           </div>
           <div className="w-full">

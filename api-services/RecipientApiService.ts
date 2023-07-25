@@ -1,5 +1,6 @@
-import CoreApiService from '@api-services/CoreApiServiceTemp';
 import { IRecipient } from 'types/models';
+
+import CoreApiService from './CoreApiService';
 
 class RecipientApiService {
   // Organization APIs
