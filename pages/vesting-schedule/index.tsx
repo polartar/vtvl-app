@@ -35,16 +35,11 @@ import { useTransactionLoaderContext } from 'providers/transaction-loader.contex
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { createRevoking } from 'services/db/revoking';
-import { createOrUpdateSafe } from 'services/db/safe';
-import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, ITransaction, IVesting } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
-import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
-import { createSafeTransaction } from 'utils/safe';
 import { formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -62,9 +57,9 @@ import {
 const VestingScheduleProject: NextPageWithLayout = () => {
   const router = useRouter();
   const { account, library, activate, chainId } = useWeb3React();
-  const { organizationId, currentSafe, currentSafeId, setCurrentSafe } = useAuthContext();
+  const { organizationId, currentSafe } = useAuthContext();
 
-  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { vestings: vestingSchedules, recipients, vestingContracts, fetchDashboardData } = useDashboardContext();
@@ -84,8 +79,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     status: 'ALL' | 'FUND' | 'INITIALIZED' | 'LIVE' | 'PENDING';
   }>({ keyword: '', status: 'ALL' });
   const [vestingContract, setVestingContract] = useState<IVestingContract | undefined>();
-
-  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract);
 
   const filteredVestingSchedules = useMemo(() => {
     return vestingSchedules && vestingSchedules.length > 0

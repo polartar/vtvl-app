@@ -29,7 +29,6 @@ import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import { injected } from 'connectors';
 import { add, addDays, differenceInHours, differenceInSeconds, isAfter, isBefore, subDays } from 'date-fns';
-import { ECliffTypes, EReleaseFrequencyTypes } from 'interfaces/vestingSchedule';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';

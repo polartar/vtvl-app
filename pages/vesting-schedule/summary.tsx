@@ -100,7 +100,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
         recipes: [],
         redirectUri: REDIRECT_URIS.RECIPIENT_INVITE
       });
-      console.log({ vesting });
+
       // const vestingId = await createVesting({
       //   name: scheduleState.name,
       //   details: { ...scheduleFormState },
