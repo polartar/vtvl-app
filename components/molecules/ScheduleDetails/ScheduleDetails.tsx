@@ -78,7 +78,7 @@ const ScheduleDetails = ({
     return chartData.release.length > 1 && chartData.release.filter((rel) => rel.value !== '0').length;
   };
 
-  // const actualStartDateTime = cliffDuration !== 'no-cliff' ? cliffDate : startDateTime;
+  // const actualStartDateTime = cliffDuration !== 'no_cliff' ? cliffDate : startDateTime;
   // const projectedEndDateTime =
   //   endDateTime && actualStartDateTime
   //     ? getProjectedEndDateTime(actualStartDateTime, endDateTime, numberOfReleases, releaseFrequency)
@@ -247,7 +247,7 @@ const ScheduleDetails = ({
           <span>Cliff</span>
           <p className="flex flex-row items-start gap-2 text-xs capitalize">
             <StairCase className="w-6 h-6 text-secondary-900" />
-            {cliffDuration.split('-').join(' ')}
+            {cliffDuration.split('_').join(' ')}
           </p>
         </label>
         <label>

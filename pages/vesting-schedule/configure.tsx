@@ -1,4 +1,6 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import VestingContractApiService from '@api-services/VestingContractApiService';
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
@@ -22,6 +24,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
+import { REDIRECT_URIS } from '@utils/constants';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import { injected } from 'connectors';
@@ -35,7 +38,6 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import Select from 'react-select';
 import { toast } from 'react-toastify';
-import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
@@ -57,7 +59,7 @@ interface CustomActionBarProps {
   field: CustomActionBarDateTimeField;
 }
 
-const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no-cliff';
+const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no_cliff';
 
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { organizationId, currentSafe, user } = useAuthContext();
@@ -71,7 +73,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const [formMessage, setFormMessage] = useState('');
 
   const totalAllocations = useMemo(
-    () => recipients?.reduce((val, recipient) => val + Number(recipient?.data.allocations ?? 0), 0),
+    () => recipients?.reduce((val, recipient) => val + Number(recipient?.allocations ?? 0), 0),
     [recipients]
   );
 
@@ -80,12 +82,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       recipients.map(
         (recipient) =>
           ({
-            walletAddress: recipient.data.walletAddress,
-            name: recipient.data.name,
-            email: recipient.data.email,
-            company: recipient.data.company,
-            recipientType: [getRecipient(String(recipient.data.recipientType))],
-            allocations: Number(recipient.data.allocations)
+            walletAddress: recipient.address,
+            name: recipient.name,
+            email: recipient.email,
+            // company: recipient.company,
+            recipientType: [getRecipient(String(recipient.role))],
+            allocations: Number(recipient.allocations)
           } as IRecipientForm)
       ),
     [recipients]
@@ -230,7 +232,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   console.log('Lumpsum release', lumpSumReleaseAfterCliff.value);
 
   const cliffOptions = [
-    { label: 'No cliff', value: 'no-cliff' },
+    { label: 'No cliff', value: 'no_cliff' },
     // { label: 'Hours', value: 'hours' },
     // { label: 'Days', value: 'days' },
     { label: 'Weeks', value: 'weeks' },
@@ -266,14 +268,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
    * 1-week / 2-weeks
    * 1-day / 2-days
    * 1-hour / 2-hours
-   * no-cliff
+   * no_cliff
    *
    * cannot and should not contain 0 starting value like 0-day etc.
    */
   useEffect(() => {
     // Update the cliffDuration actual value based on these two inputs
     if (cliffDurationNumber.value && cliffDurationOption.value) {
-      if (cliffDurationOption.value === 'no-cliff') {
+      if (cliffDurationOption.value === 'no_cliff') {
         setValue('cliffDuration', cliffDurationOption.value);
       } else {
         const formattedLabel = formatCliffDurationOption(+cliffDurationNumber.value, cliffDurationOption.value);
@@ -283,7 +285,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
     // Trigger an error in the cliff duration when the number is 0 if there is a cliff
     clearErrors('cliffDurationNumber');
-    if (!+cliffDurationNumber.value && cliffDurationOption.value !== 'no-cliff') {
+    if (!+cliffDurationNumber.value && cliffDurationOption.value !== 'no_cliff') {
       setError('cliffDurationNumber', {
         type: 'custom',
         message: `Please enter number of ${cliffDurationOption.value}`
@@ -398,11 +400,11 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue('amountToBeVestedText', formatNumber(newDetails.amountToBeVested).toString());
 
     // Cliff duration checks
-    if (newDetails.cliffDuration === 'no-cliff') {
+    if (newDetails.cliffDuration === 'no_cliff') {
       setValue('cliffDurationNumber', 1);
-      setValue('cliffDurationOption', 'no-cliff');
+      setValue('cliffDurationOption', 'no_cliff');
     } else {
-      const cliffSplit = newDetails.cliffDuration.split('-');
+      const cliffSplit = newDetails.cliffDuration.split('_');
       const cliffOption = cliffSplit[1].charAt(cliffSplit[1].length - 1) !== 's' ? `${cliffSplit[1]}s` : cliffSplit[1];
       setValue('cliffDurationNumber', +cliffSplit[0]);
       setValue('cliffDurationOption', cliffOption as CliffDuration | DateDurationOptionValues);
@@ -765,7 +767,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         return false;
       }
 
-      if (cliffDuration.value !== 'no-cliff' && idealScheduleDuration > diffSeconds) {
+      if (cliffDuration.value !== 'no_cliff' && idealScheduleDuration > diffSeconds) {
         // Error
         setFormError(true);
         setFormSuccess(false);
@@ -962,7 +964,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   // Step 2 interaction -- Go to handleDateTimeChange
   // useEffect(() => {
   //   // Step 3 interaction
-  //   if (cliffDuration.value === 'no-cliff') {
+  //   if (cliffDuration.value === 'no_cliff') {
   //     goToActiveStep(3);
   //   }
   // }, [cliffDuration.value]);
@@ -1045,61 +1047,87 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       await Promise.all(
         recipients
           .filter((recipient) => Boolean(recipient.id))
-          .map((recipient) => editRecipient(recipient.id, recipient.data))
+          .map((recipient) => RecipientApiService.updateRecipient(recipient.id, recipient))
       );
     } else {
-      const vestingId = await createVesting({
+      const cliffAmount = getCliffAmount(
+        scheduleFormState.cliffDuration,
+        +lumpSumReleaseAfterCliff,
+        scheduleFormState.amountToBeVested
+      );
+
+      const vesting = await VestingScheduleApiService.createVestingSchedule({
+        organizationId: String(organizationId),
+        tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
+        vestingContractId: vestingContractId as string,
+        // tokenId,
+        // vestingContractId: String(vestingContractId),
         name: scheduleState.name,
-        details: { ...scheduleFormState },
-        organizationId: organizationId!,
-        status: 'INITIALIZED',
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000),
-        transactionId: '',
-        vestingContractId,
-        tokenAddress: mintFormState.address,
-        tokenId,
-        chainId,
-        createdBy: user?.uid
+        startedAt: scheduleFormState.startDateTime?.toISOString() || '',
+        endedAt: scheduleFormState.endDateTime?.toISOString(),
+        originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
+        releaseFrequencyType: scheduleFormState.releaseFrequency,
+        releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
+        cliffDurationType: scheduleFormState.cliffDuration,
+        cliffDuration: Number(scheduleFormState.cliffDurationNumber),
+        cliffAmount: cliffAmount.toString(),
+        amount: Number(scheduleFormState.amountToBeVested).toString(),
+        recipes: recipients,
+        redirectUri: REDIRECT_URIS.RECIPIENT_INVITE
       });
+      console.log({ vesting });
+      // const vestingId = await createVesting({
+      //   name: scheduleState.name,
+      //   details: { ...scheduleFormState },
+      //   organizationId: organizationId!,
+      //   status: 'INITIALIZED',
+      //   createdAt: Math.floor(new Date().getTime() / 1000),
+      //   updatedAt: Math.floor(new Date().getTime() / 1000),
+      //   transactionId: '',
+      //   vestingContractId,
+      //   tokenAddress: mintFormState.address,
+      //   tokenId,
+      //   chainId,
+      //   createdBy: user?.uid
+      // });
 
-      const newRecipients = await Promise.all(
-        recipients.map(async ({ data: recipient }) => {
-          const id = await createRecipient({
-            vestingId: String(vestingId),
-            organizationId: String(organizationId),
-            name: recipient.name,
-            email: recipient.email,
-            allocations: String(recipient.allocations ?? 0),
-            walletAddress: recipient.walletAddress ?? '',
-            recipientType: String(recipient.recipientType),
-            status: recipient.walletAddress ? 'accepted' : 'delivered',
-            chainId
-          });
-          return {
-            id,
-            data: recipient
-          };
-        })
-      );
+      // const newRecipients = await Promise.all(
+      //   recipients.map(async ({ data: recipient }) => {
+      //     const id = await createRecipient({
+      //       vestingId: String(vesting.id),
+      //       organizationId: String(organizationId),
+      //       name: recipient.name,
+      //       email: recipient.email,
+      //       allocations: String(recipient.allocations ?? 0),
+      //       walletAddress: recipient.walletAddress ?? '',
+      //       recipientType: String(recipient.recipientType),
+      //       status: recipient.walletAddress ? 'accepted' : 'delivered',
+      //       chainId
+      //     });
+      //     return {
+      //       id,
+      //       data: recipient
+      //     };
+      //   })
+      // );
 
-      const noWalletRecipients = newRecipients
-        .filter((recipient) => !recipient.data.walletAddress)
-        .map((recipient) => ({
-          memberId: recipient.id,
-          email: recipient.data.email,
-          name: recipient.data.name,
-          orgId: organizationId
-        }));
+      // const noWalletRecipients = newRecipients
+      //   .filter((recipient) => !recipient.data.walletAddress)
+      //   .map((recipient) => ({
+      //     memberId: recipient.id,
+      //     email: recipient.data.email,
+      //     name: recipient.data.name,
+      //     orgId: organizationId
+      //   }));
 
-      await Promise.all(newRecipients);
+      // await Promise.all(newRecipients);
 
-      if (noWalletRecipients.length > 0) {
-        await sendRecipientInvite(noWalletRecipients, mintFormState.symbol);
-      }
-      await addNewMembers(
-        newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email)
-      );
+      // if (noWalletRecipients.length > 0) {
+      //   await sendRecipientInvite(noWalletRecipients, mintFormState.symbol);
+      // }
+      // await addNewMembers(
+      //   newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email)
+      // );
     }
     console.log('creating vesting schedule');
     // Redirect to the success page to notify the user
@@ -1426,12 +1454,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                     onFocus={() => setActiveStep(2)}
                     {...field}
                     onBlur={() => {
-                      if (cliffDurationOption.value === 'no-cliff') setActiveStep(5);
+                      if (cliffDurationOption.value === 'no_cliff') setActiveStep(5);
                     }}
                   />
                 )}
               />
-              {cliffDurationOption.value === 'no-cliff' ? null : (
+              {cliffDurationOption.value === 'no_cliff' ? null : (
                 <>
                   {/* Step 3 cliff duration value */}
                   <Controller

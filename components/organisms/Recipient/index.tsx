@@ -1,15 +1,15 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import { Typography } from '@components/atoms/Typography/Typography';
+import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
-import { IEmailTemplate, useGlobalContext } from '@providers/global.context';
-import { useRecipientContext } from '@providers/recipient.context';
 import { useTokenContext } from '@providers/token.context';
-import axios from 'axios';
+import { REDIRECT_URIS } from '@utils/constants';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import Image from 'next/image';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { IRecipientData } from 'types/models/recipient';
+import { IRecipientData, RecipeStatus } from 'types/models/recipient';
 
 import RecipientRow from './RecipientRow';
 
@@ -20,37 +20,38 @@ enum IStatus {
   EXPIRED = 'Expired'
 }
 
-export const sendRecipientInvite = async (
-  recipients: {
-    email: string;
-    name: string;
-    orgId?: string;
-    memberId: string;
-  }[],
-  symbol: string,
-  websiteName?: string,
-  websiteEmail?: string,
-  emailTemplate?: IEmailTemplate
-): Promise<void> => {
+export const sendRecipientInvite = async (recipientIds: string[], organizationId: string): Promise<void> => {
+  await Promise.all(
+    recipientIds.map(async (recipientId) => {
+      console.log({ organizationId });
+      return await RecipientApiService.sendInvitation(recipientId, REDIRECT_URIS.RECIPIENT_INVITE, organizationId);
+    })
+  );
   //TODO: extract api calls
-  await axios.post('/api/email/recipient-invite', {
-    recipients: recipients,
-    symbol: symbol,
-    websiteName,
-    websiteEmail,
-    emailTemplate
-  });
+  // await axios.post('/api/email/recipient-invite', {
+  //   recipients: recipients,
+  //   symbol: symbol,
+  //   websiteName,
+  //   websiteEmail,
+  //   emailTemplate
+  // });
 };
-export const isExpired = (timestamp: number | undefined) =>
+export const isExpired = (date: string | undefined) => {
+  if (!date) {
+    return true;
+  }
+  const timestamp = new Date(date).getTime() / 1000;
   timestamp ? Math.floor(new Date().getTime() / 1000) - timestamp >= 3600 * 24 : true;
+};
 
 export default function VestingContract() {
   const [filter, setFilter] = useState<{
     keyword: string;
     status: IStatus;
   }>({ keyword: '', status: IStatus.ALL });
-  const { recipients: initialRecipients } = useRecipientContext();
-  const [recipients, setRecipients] = useState<IRecipientData[]>(initialRecipients);
+  // const { recipients: initialRecipients } = useRecipientContext();
+  const { organizationId } = useAuthContext();
+  const [recipients, setRecipients] = useState<IRecipientData[]>([]);
   const { vestingContracts, vestings, recipients: allRecipients } = useDashboardContext();
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
     vestingContracts,
@@ -60,21 +61,21 @@ export default function VestingContract() {
   const [allChecked, setAllChecked] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const { mintFormState } = useTokenContext();
-  const {
-    website: { name: websiteName, email: websiteEmail },
-    emailTemplate
-  } = useGlobalContext();
+
+  // useState
 
   useEffect(() => {
-    setRecipients(initialRecipients);
-  }, [initialRecipients]);
+    RecipientApiService.getRecipients(`organizationId=${organizationId}`).then((res) => {
+      setRecipients(res);
+    });
+  }, [organizationId]);
 
   const filteredRecipients = useMemo(() => {
     return recipients.filter((recipient) => {
       if (
         filter.keyword &&
-        !recipient.data.name?.toLowerCase().includes(filter.keyword.toLowerCase()) &&
-        !recipient.data.email?.toLowerCase().includes(filter.keyword.toLowerCase())
+        !recipient.name?.toLowerCase().includes(filter.keyword.toLowerCase()) &&
+        !recipient.email?.toLowerCase().includes(filter.keyword.toLowerCase())
       ) {
         return false;
       }
@@ -82,11 +83,11 @@ export default function VestingContract() {
       if (filter.status === IStatus.ALL) {
         return true;
       } else if (filter.status === IStatus.ACCEPTED) {
-        return recipient.data.status === 'accepted' && !recipient.data.walletAddress;
+        return recipient.status === RecipeStatus.ACCEPTED && !recipient.address;
       } else if (filter.status === IStatus.DELIVERED) {
-        return recipient.data.status === 'delivered' && !isExpired(recipient.data.updatedAt);
+        return recipient.status === RecipeStatus.PENDING && !isExpired(recipient.updatedAt);
       } else {
-        return recipient.data.status === 'delivered' && isExpired(recipient.data.updatedAt);
+        return recipient.status === RecipeStatus.PENDING && isExpired(recipient.updatedAt);
       }
     });
   }, [filter, recipients]);
@@ -95,13 +96,13 @@ export default function VestingContract() {
     return {
       [IStatus.ALL]: recipients.length,
       [IStatus.ACCEPTED]: recipients.filter(
-        (recipient) => recipient.data.status === 'accepted' && !recipient.data.walletAddress
+        (recipient) => recipient.status === RecipeStatus.ACCEPTED && !recipient.address
       ).length,
       [IStatus.DELIVERED]: recipients.filter(
-        (recipient) => recipient.data.status === 'delivered' && !isExpired(recipient.data.updatedAt)
+        (recipient) => recipient.status === RecipeStatus.PENDING && !isExpired(recipient.updatedAt)
       ).length,
       [IStatus.EXPIRED]: recipients.filter(
-        (recipient) => recipient.data.status === 'delivered' && isExpired(recipient.data.updatedAt)
+        (recipient) => recipient.status === RecipeStatus.PENDING && isExpired(recipient.updatedAt)
       ).length
     };
   }, [recipients]);
@@ -143,16 +144,9 @@ export default function VestingContract() {
   const sendBatchEmail = async () => {
     if (isInviting) return;
     setIsInviting(true);
-    const inviteRecipients = recipients
-      .filter((recipient) => recipient.checked)
-      .map((recipient) => ({
-        email: recipient.data.email,
-        orgId: recipient.data.organizationId || '',
-        name: recipient.data.name || '',
-        memberId: recipient.id
-      }));
+    const inviteRecipientIds = recipients.filter((recipient) => recipient.checked).map((recipient) => recipient.id);
     try {
-      await sendRecipientInvite(inviteRecipients, mintFormState.symbol, websiteName, websiteEmail, emailTemplate);
+      await sendRecipientInvite(inviteRecipientIds, organizationId as string);
       toast.success('Invited recipients successfully');
     } catch (err) {
       toast.error('Something went wrong');

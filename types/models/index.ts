@@ -1,6 +1,6 @@
 import { IAddress, IInvitee, IMember, IUser } from './member';
 import { IOrganization } from './organization';
-import { IRecipient, IRecipientDoc } from './recipient';
+import { IRecipient } from './recipient';
 import { IRevoking } from './revoking';
 import { IOwner, ISafe } from './safe';
 import { IToken } from './token';
@@ -21,8 +21,7 @@ export type {
   IInvitee,
   ITransaction,
   IRevoking,
-  IRecipient,
-  IRecipientDoc
+  IRecipient
 };
 
 export * from './websites';

@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import RecipientRow from '@components/molecules/VestingSchedule/RecipientRow';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
@@ -22,12 +23,10 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { fetchRecipientsByQuery } from 'services/db/recipient';
-import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipientDoc, ITransaction, IVesting } from 'types/models';
+import { IRecipient, ITransaction, IVesting } from 'types/models';
 import { compareAddresses } from 'utils';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -73,7 +72,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     [data, transactions]
   );
 
-  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract?.data);
+  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract);
 
   const [status, setStatus] = useState<IStatus>('');
 
@@ -83,7 +82,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
-  const [recipients, setRecipients] = useState<IRecipientDoc[]>([]);
+  const [recipients, setRecipients] = useState<IRecipient[]>([]);
 
   const isFundAvailable = useCallback(() => {
     const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
@@ -116,8 +115,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const initializeStatus = async () => {
     if (
       !vestingContract ||
-      vestingContract.data.status === 'INITIALIZED' ||
-      (vestingContract.data.status === 'PENDING' && currentSafe?.address)
+      vestingContract.status === 'INITIALIZED' ||
+      (vestingContract.status === 'PENDING' && currentSafe?.address)
     ) {
       setStatus('CONTRACT_REQUIRED');
       return;
@@ -164,14 +163,29 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         }
       }
     } else {
+      const TokenContract = new ethers.Contract(
+        mintFormState.address ?? '',
+        [
+          // Read-Only Functions
+          'function balanceOf(address owner) view returns (uint256)',
+          'function decimals() view returns (uint8)',
+          'function symbol() view returns (string)',
+          // Authenticated Functions
+          'function transfer(address to, uint amount) returns (bool)',
+          // Events
+          'event Transfer(address indexed from, address indexed to, uint amount)'
+        ],
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+
       const VestingContract = new ethers.Contract(
-        vestingContract?.data.address || '',
+        vestingContract?.address || '',
         VTVL_VESTING_ABI.abi,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
-      // const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
-      const tokenBalance = vestingContract.data.balance || 0;
+      const tokenBalance = await TokenContract.balanceOf(vestingContract?.address);
+      // const tokenBalance = vestingContract.balance || 0;
 
       const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
 
@@ -290,7 +304,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       if (type === 'Metamask') {
         setTransactionLoaderStatus('PENDING');
         const tokenContract = new ethers.Contract(
-          mintFormState.address,
+          mintFormState.address as string,
           [
             // Read-Only Functions
             'function balanceOf(address owner) view returns (uint256)',
@@ -306,19 +320,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           library.getSigner()
         );
 
-        const allowance = await tokenContract.allowance(account, vestingContract?.data?.address);
+        const allowance = await tokenContract.allowance(account, vestingContract?.address);
         if (allowance.lt(ethers.utils.parseEther(amount))) {
           const approveTx = await tokenContract.approve(
-            vestingContract?.data?.address,
+            vestingContract?.address,
             ethers.utils.parseEther(amount).sub(allowance)
           );
           await approveTx.wait();
         }
 
-        const fundTransaction = await tokenContract.transfer(
-          vestingContract?.data?.address,
-          ethers.utils.parseEther(amount)
-        );
+        const fundTransaction = await tokenContract.transfer(vestingContract?.address, ethers.utils.parseEther(amount));
         setTransactionLoaderStatus('IN_PROGRESS');
         await fundTransaction.wait();
         // This should have a function to update the vesting schedule status
@@ -341,7 +352,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           'event Transfer(address indexed from, address indexed to, uint amount)'
         ]);
         const transferEncoded = tokenContractInterface.encodeFunctionData('transfer', [
-          vestingContract?.data?.address,
+          vestingContract?.address,
           ethers.utils.parseEther(amount)
         ]);
         if (currentSafe?.address && account && chainId && organizationId) {
@@ -359,7 +370,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
             const txData = {
-              to: mintFormState.address,
+              to: mintFormState.address as string,
               data: transferEncoded,
               value: '0',
               nonce: nextNonce
@@ -381,7 +392,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               hash: '',
               safeHash: txHash,
               status: 'PENDING',
-              to: vestingContract?.data?.address ?? '',
+              to: vestingContract?.address ?? '',
               type: 'FUNDING_CONTRACT',
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -428,12 +439,12 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           +vesting.details.amountToBeVested
         ) / recipients.length;
       const vestingAmountPerUser = +vesting.details.amountToBeVested / recipients.length - cliffAmountPerUser;
-      const addresses = recipients.map((recipient) => recipient.data.walletAddress);
+      const addresses = recipients.map((recipient) => recipient.address);
 
       const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
 
       const cliffReleaseDate =
-        vesting.details.startDateTime && vesting.details.cliffDuration !== 'no-cliff'
+        vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
           ? getCliffDateTime(vestingStartTime, vesting.details.cliffDuration)
           : '';
       const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
@@ -445,7 +456,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
             )
           : 0;
-      const actualStartDateTime = vesting.details.cliffDuration !== 'no-cliff' ? cliffReleaseDate : vestingStartTime;
+      const actualStartDateTime = vesting.details.cliffDuration !== 'no_cliff' ? cliffReleaseDate : vestingStartTime;
       const vestingEndTimestamp =
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
@@ -483,8 +494,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       const vestingLinearVestAmounts = recipients.map((recipient) => {
         const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
         // Computes how many tokens are left after cliff based on percentage
-        const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
-        return parseTokenAmount(Number(recipient.data.allocations) * percentage, 18);
+        const percentage = 1 - (cliffDuration !== 'no_cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
+        return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
       });
       const vestingCliffAmounts = new Array(recipients.length).fill(parseTokenAmount(cliffAmountPerUser, 18));
 
@@ -525,7 +536,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
         const nextNonce = await safeService.getNextNonce(currentSafe.address);
         const txData = {
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           data: createClaimsBatchEncoded,
           value: '0',
           nonce: nextNonce
@@ -549,7 +560,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             hash: '',
             safeHash: txHash,
             status: 'PENDING',
-            to: vestingContract?.data?.address ?? '',
+            to: vestingContract?.address ?? '',
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -576,7 +587,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       } else if (account && chainId && organizationId) {
         setTransactionLoaderStatus('PENDING');
         const vestingContractInstance = new ethers.Contract(
-          vestingContract?.data?.address ?? '',
+          vestingContract?.address ?? '',
           VTVL_VESTING_ABI.abi,
           library.getSigner()
         );
@@ -594,7 +605,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           hash: addingClaimsTransaction.hash,
           safeHash: '',
           status: 'PENDING',
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           type: 'ADDING_CLAIMS',
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -794,7 +805,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
   useEffect(() => {
     if (id) {
-      fetchRecipientsByQuery(['vestingId'], ['=='], [id]).then((res) => setRecipients(res));
+      // fetchRecipientsByQuery(['vestingId'], ['=='], [id]).then((res) => setRecipients(res));
+      RecipientApiService.getRecipients(`vestingId=${id}`).then((res) => setRecipients(res));
     }
   }, [id]);
 
@@ -928,13 +940,13 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       {recipients.map((recipient, index) => {
         return (
           <RecipientRow
-            key={recipient.data.walletAddress}
-            name={recipient.data.name}
-            address={recipient.data.walletAddress}
-            withdrawn={formatValue(getRecipientInfo(recipient.data.walletAddress)?.withdrawn)}
-            unclaimed={formatValue(getRecipientInfo(recipient.data.walletAddress)?.unclaimed)}
-            locked={formatValue(getRecipientInfo(recipient.data.walletAddress)?.locked)}
-            allocations={recipient.data.allocations ? formatNumber(+recipient.data.allocations) : '0.00'}
+            key={recipient.address}
+            name={recipient.name}
+            address={recipient.address}
+            withdrawn={formatValue(getRecipientInfo(recipient.address)?.withdrawn)}
+            unclaimed={formatValue(getRecipientInfo(recipient.address)?.unclaimed)}
+            locked={formatValue(getRecipientInfo(recipient.address)?.locked)}
+            allocations={recipient.allocations ? formatNumber(+recipient.allocations) : '0.00'}
             vesting={data}
             vestingId={id}
           />

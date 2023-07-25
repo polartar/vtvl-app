@@ -11,7 +11,7 @@ import { useShallowState } from './useShallowState';
 
 export type Route = {
   path: string;
-  allowedRoles: IUserType[];
+  allowedRoles: IRole[];
   allowedRolesV2: IRole[];
 };
 
@@ -64,12 +64,12 @@ const useRoleGuard = (options: RoleGuardOptions) => {
         }
 
         // Check protected routes only when the user type is available.
-        if (user?.memberInfo?.type) {
+        if (user?.memberInfo?.role) {
           // Gets the current role of the user from the Auth Context.
           // Prioritise using the roleOverride if it is available.
           const userRole =
-            (user?.memberInfo?.type === 'founder' && roleOverride ? roleOverride : user?.memberInfo?.type) ||
-            user?.memberInfo?.type ||
+            (user?.memberInfo?.role === IRole.FOUNDER && roleOverride ? roleOverride : user?.memberInfo?.role) ||
+            user?.memberInfo?.role ||
             '';
 
           // For protected routes, filter out all the allowedRoutes for that particular user role.

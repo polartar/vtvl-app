@@ -73,7 +73,7 @@ export default function ClaimPortal() {
    * Sum of total allocations from current(selected) organization
    */
   const totalAllocations = useMemo(() => {
-    return myRecipes?.reduce((val, { data: recipe }) => val + Number(recipe?.allocations), 0) ?? 0;
+    return myRecipes?.reduce((val, recipe) => val + Number(recipe?.allocations), 0) ?? 0;
   }, [myRecipes]);
 
   const vestingDetails = useMemo(

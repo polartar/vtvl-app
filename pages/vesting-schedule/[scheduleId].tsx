@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
@@ -27,11 +28,10 @@ import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import WarningIcon from 'public/icons/warning.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
-import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { fetchTransaction } from 'services/db/transaction';
 import { fetchVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipientDoc, ITransaction, IVesting } from 'types/models';
+import { IRecipient, ITransaction, IVesting } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import { getDuration } from 'utils/vesting';
@@ -49,7 +49,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     keyword: string;
     status: IStatus;
   }>({ keyword: '', status: IStatus.ALL });
-  const [recipients, setRecipients] = useState<IRecipientDoc[]>([]);
+  const [recipients, setRecipients] = useState<IRecipient[]>([]);
   const [vestingSchedule, setVestingSchedule] = useState<IVesting | undefined>(undefined);
 
   const vesting = useMemo(() => {
@@ -99,8 +99,6 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     // Get the schedule details
     try {
       const getVestingSchedule = await fetchVesting(scheduleId as string);
-      const recipientsData = await fetchRecipientsByQuery(['vestingId'], ['=='], [scheduleId]);
-      setRecipients(recipientsData);
 
       if (getVestingSchedule) {
         const actualDateTime = getActualDateTime(getVestingSchedule.details);

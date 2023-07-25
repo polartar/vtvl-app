@@ -7,7 +7,6 @@ import { DashboardContextProvider } from '@providers/dashboard.context';
 import { GlobalContextProvider } from '@providers/global.context';
 import { LoaderContextProvider } from '@providers/loader.context';
 import { OnboardingContextProvider } from '@providers/onboarding.context';
-import { RecipientContextProvider } from '@providers/recipient.context';
 import { TeammateContextProvider } from '@providers/teammate.context';
 import { TokenContextProvider } from '@providers/token.context';
 import { VestingContextProvider } from '@providers/vesting.context';
@@ -67,7 +66,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page);
 
   useEffect(() => {
-    checkAccessTokenValidity();
+    if (!router.pathname.includes('/recipient/')) checkAccessTokenValidity();
   }, []);
 
   return (
@@ -84,12 +83,10 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                         <TransactionLoaderContextProvider>
                           <TeammateContextProvider>
                             <ClaimTokensContextProvider>
-                              <RecipientContextProvider>
-                                <AnimatePresence mode="wait">
-                                  <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
-                                </AnimatePresence>
-                                <ToastContainer autoClose={6000} style={{ top: '6rem', right: '1rem' }} />
-                              </RecipientContextProvider>
+                              <AnimatePresence mode="wait">
+                                <DefaultLayout>{getLayout(<Component {...pageProps} />)}</DefaultLayout>
+                              </AnimatePresence>
+                              <ToastContainer autoClose={6000} style={{ top: '6rem', right: '1rem' }} />
                             </ClaimTokensContextProvider>
                           </TeammateContextProvider>
                         </TransactionLoaderContextProvider>

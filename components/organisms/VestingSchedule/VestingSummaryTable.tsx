@@ -1,8 +1,9 @@
-import { IRecipientDoc } from 'types/models';
+import { IRecipient } from 'types/models';
+import { RecipeStatus } from 'types/models/recipient';
 
 import SummaryRecipientRow from './SummaryRecipientRow';
 
-const VestingSummaryTable = ({ recipients }: { recipients: IRecipientDoc[] }) => {
+const VestingSummaryTable = ({ recipients }: { recipients: IRecipient[] }) => {
   return (
     <div>
       {/* <div className="flex text-[#475467] text-xs w-full border-2"> */}
@@ -14,7 +15,7 @@ const VestingSummaryTable = ({ recipients }: { recipients: IRecipientDoc[] }) =>
           <div className=" w-full p-3   bg-[#f2f4f7]">Confirmation</div>
         </div>
         {recipients
-          ?.filter((recipient) => recipient.data.status === 'accepted' && !!recipient.data.walletAddress)
+          ?.filter((recipient) => recipient.status === RecipeStatus.ACCEPTED && !!recipient.address)
           .map((recipient) => {
             return <SummaryRecipientRow recipient={recipient} key={recipient.id} />;
           })}

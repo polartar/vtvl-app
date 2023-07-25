@@ -1,14 +1,15 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import Copy from '@components/atoms/Copy/Copy';
 import { EditableTypography } from '@components/molecules/RecipientTable';
+import { useAuthContext } from '@providers/auth.context';
 import format from 'date-fns/format';
 import { BigNumber } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { editRecipient } from 'services/db/recipient';
-import { IRecipientData } from 'types/models/recipient';
+import { IRecipientData, RecipeStatus } from 'types/models/recipient';
 import { compareAddresses } from 'utils';
 import { validateEmail } from 'utils/validator';
 
@@ -21,6 +22,7 @@ const RecipientRow: React.FC<{
   setCheck: (checked: boolean, id: string) => void;
 }> = ({ recipient, symbol, vestingSchedulesInfo, setCheck }) => {
   const [newRecipient, setNewRecipient] = useState(recipient);
+  const { organizationId } = useAuthContext();
 
   useEffect(() => {
     setNewRecipient(recipient);
@@ -39,12 +41,12 @@ const RecipientRow: React.FC<{
   };
 
   const getStatusLabel = () => {
-    if (newRecipient.data.email && newRecipient.data.walletAddress) {
+    if (newRecipient.email && newRecipient.address) {
       return '';
-    } else if (newRecipient.data.status === 'accepted') {
+    } else if (newRecipient.status === RecipeStatus.ACCEPTED) {
       return 'Accepted';
-    } else if (newRecipient.data.status === 'delivered') {
-      if (isExpired(newRecipient.data.updatedAt)) {
+    } else if (newRecipient.status === RecipeStatus.PENDING) {
+      if (isExpired(newRecipient.updatedAt)) {
         return 'Expired';
       } else {
         return 'Delivered';
@@ -69,17 +71,14 @@ const RecipientRow: React.FC<{
   };
 
   const onChangeEmail = (email: string) => {
-    if (email === newRecipient.data.email) return;
+    if (email === newRecipient.email) return;
     if (validateEmail(email).validated) {
       setNewRecipient({
         ...newRecipient,
-        data: {
-          ...newRecipient.data,
-          email
-        }
+        email
       });
       setIsUpdating(true);
-      editRecipient(newRecipient.id, { ...newRecipient.data, email })
+      RecipientApiService.updateRecipient(newRecipient.id, { ...newRecipient, email })
         .then(() => {
           toast.success(`E-mail address successfully amended!`);
         })
@@ -96,17 +95,7 @@ const RecipientRow: React.FC<{
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      await sendRecipientInvite(
-        [
-          {
-            email: recipient.data.email,
-            name: recipient.data.name || '',
-            orgId: recipient.data.organizationId,
-            memberId: recipient.id
-          }
-        ],
-        symbol
-      );
+      await sendRecipientInvite([recipient.id], organizationId as string);
       toast.success('Invited recipient successfully');
     } catch (err) {
       toast.error('Something went wrong');
@@ -125,14 +114,14 @@ const RecipientRow: React.FC<{
               onChange={(e) => setCheck(e.target.checked, recipient.id)}
             />
           </div>
-          <div className="flex items-center w-36 py-3">{newRecipient.data.name}</div>
+          <div className="flex items-center w-36 py-3">{newRecipient.name}</div>
           <div className="flex items-center w-52 py-3">
-            {getStatusLabel() !== 'Expired' && getStatusLabel() !== 'Delivered' && recipient.data.email ? (
-              recipient.data.email
+            {getStatusLabel() !== 'Expired' && getStatusLabel() !== 'Delivered' && recipient.email ? (
+              recipient.email
             ) : (
               <EditableTypography
                 id={`${newRecipient.id}-email`}
-                initialValue={newRecipient.data.email}
+                initialValue={newRecipient.email}
                 autoFocus
                 type="text"
                 placeholder="eg. vitalik@vtvl.io"
@@ -143,34 +132,34 @@ const RecipientRow: React.FC<{
             )}
           </div>
           <div className="flex items-center w-52 py-3">
-            <Copy text={newRecipient.data.walletAddress || ''}>
+            <Copy text={newRecipient.address || ''}>
               <p className="paragraphy-small ">
-                {newRecipient.data.walletAddress?.slice(0, 5)}...{newRecipient.data.walletAddress?.slice(-4)}
+                {newRecipient.address?.slice(0, 5)}...{newRecipient.address?.slice(-4)}
               </p>
             </Copy>
           </div>
           <div className="flex items-center w-40 py-3">
             {getStatusLabel() === ''
               ? ''
-              : newRecipient.data.updatedAt
-              ? format(new Date(newRecipient.data.updatedAt * 1000), 'dd/MM/yyyy')
+              : newRecipient.updatedAt
+              ? format(new Date(newRecipient.updatedAt).getTime(), 'dd/MM/yyyy')
               : ''}
           </div>
           <div className={`flex items-center w-32 py-3 `}>
             <div className={` font-medium py-2 px-3 rounded-3xl ${getStatusStyle()}`}>{getStatusLabel()}</div>
           </div>
           <div className="flex items-center w-40 py-3">
-            {formatValue(getRecipientInfo(newRecipient.data.walletAddress || '')?.locked)}
+            {formatValue(getRecipientInfo(newRecipient.address || '')?.locked)}
           </div>
           <div className="flex items-center w-40 py-3">
-            {formatValue(getRecipientInfo(newRecipient.data.walletAddress || '')?.allocation)}
+            {formatValue(getRecipientInfo(newRecipient.address || '')?.allocation)}
           </div>
           <div className="flex items-center w-[150px] flex-grow py-3">
             <Button
               loading={isUpdating}
               className="w-full rounded-lg primary mr-1"
               onClick={() => sendInvite()}
-              disabled={!!(recipient.data.email && recipient.data.walletAddress)}>
+              disabled={!!(recipient.email && recipient.address)}>
               {isUpdating ? '...' : 'Resend invite'}
             </Button>
           </div>

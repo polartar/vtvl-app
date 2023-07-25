@@ -42,7 +42,7 @@ export interface TUserTokenDetails {
 export interface TCapTableRecipientTokenDetails {
   scheduleId: string;
   name: string;
-  company: string;
+  // company: string;
   recipientType: string;
   address: string;
   totalAllocation: TokenNumber;

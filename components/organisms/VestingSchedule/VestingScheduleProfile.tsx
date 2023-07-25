@@ -85,7 +85,7 @@ const VestingScheduleProfile = ({
         {
           title: 'Cliff release',
           icon: <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0" />,
-          content: vesting.details.cliffDuration.split('-').join(' ')
+          content: vesting.details.cliffDuration.split('_').join(' ')
         },
         {
           title: 'Vesting period',

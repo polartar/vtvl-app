@@ -1,4 +1,6 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import VestingContractApiService from '@api-services/VestingContractApiService';
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
@@ -6,15 +8,18 @@ import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
+import { REDIRECT_URIS } from '@utils/constants';
+import { getCliffAmount } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import Decimal from 'decimal.js';
+import { ECliffTypes, EReleaseFrequencyTypes } from 'interfaces/vestingSchedule';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
-import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
+import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { formatRecipientsDocToForm } from 'utils/recipients';
 import { formatNumber } from 'utils/token';
 
@@ -42,6 +47,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
     // const ABI = [PERFORM_CREATE_FUNCTION];
 
     // If the contract is set to be a new one, let's create one.
+
+    let vestingContractId = scheduleState.vestingContractId;
     if (scheduleState.createNewContract) {
       const vestingContract = await VestingContractApiService.createVestingContract({
         name: scheduleState.contractName!,
@@ -49,6 +56,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
         organizationId: organizationId!,
         chainId: chainId ?? 0
       });
+      vestingContractId = vestingContract.id;
       updateVestingContract(vestingContract);
     }
 
@@ -70,38 +78,58 @@ const ScheduleSummary: NextPageWithLayout = () => {
       await Promise.all(
         recipients
           .filter((recipient) => Boolean(recipient.id))
-          .map((recipient) => editRecipient(recipient.id, recipient.data))
+          .map((recipient) => RecipientApiService.updateRecipient(recipient.id, recipient))
       );
     } else {
-      const vestingId = await createVesting({
-        name: scheduleState.name,
-        details: { ...scheduleFormState },
+      const vesting = await VestingScheduleApiService.createVestingSchedule({
         organizationId: organizationId!,
         status: 'INITIALIZED',
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000),
-        transactionId: '',
         // vestingContractId,
-        tokenAddress: mintFormState.address,
-        tokenId,
-        chainId,
-        createdBy: user?.uid
+        tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
+        vestingContractId: String(vestingContractId),
+        name: scheduleState.name,
+        startedAt: scheduleFormState.startDateTime?.toISOString(),
+        endedAt: scheduleFormState.endDateTime?.toISOString(),
+        originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
+        releaseFrequencyType: scheduleFormState.releaseFrequency,
+        releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
+        cliffDurationType: scheduleFormState.cliffDuration,
+        cliffDuration: Number(scheduleFormState.cliffDurationNumber),
+        cliffAmount: '1111111',
+        amount: Number(scheduleFormState.amountToBeVested).toString(),
+        recipes: [],
+        redirectUri: REDIRECT_URIS.RECIPIENT_INVITE
       });
 
-      const newRecipients = recipients.map(({ data: recipient }) =>
-        createRecipient({
-          vestingId: String(vestingId),
-          organizationId: String(organizationId),
-          name: recipient.name,
-          email: recipient.email,
-          allocations: String(recipient.allocations ?? 0),
-          walletAddress: String(recipient.walletAddress),
-          recipientType: String(recipient.recipientType),
-          status: recipient.walletAddress ? 'accepted' : 'delivered'
-        })
-      );
+      // const vestingId = await createVesting({
+      //   name: scheduleState.name,
+      //   details: { ...scheduleFormState },
+      //   organizationId: organizationId!,
+      //   status: 'INITIALIZED',
+      //   createdAt: Math.floor(new Date().getTime() / 1000),
+      //   updatedAt: Math.floor(new Date().getTime() / 1000),
+      //   transactionId: '',
+      //   vestingContractId,
+      //   tokenAddress: mintFormState.address,
+      //   tokenId,
+      //   chainId,
+      //   createdBy: user?.uid
+      // });
 
-      await Promise.all(newRecipients);
+      // const newRecipients = recipients.map((recipient) =>
+      //   createRecipient({
+      //     vestingId: String(vesting.id),
+      //     organizationId: String(organizationId),
+      //     name: recipient.name,
+      //     email: recipient.email,
+      //     allocations: String(recipient.allocations ?? 0),
+      //     walletAddress: String(recipient.address),
+      //     recipientType: String(recipient.role),
+      //     status: recipient.address ? 'accepted' : 'delivered'
+      //   })
+      // );
+
+      // await Promise.all(newRecipients);
     }
 
     console.log('creating vesting schedule');
@@ -125,7 +153,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
           <span>Recipient(s)</span>
         </label>
         <div className="flex flex-row flex-wrap gap-2 pb-5 border-b border-neutral-200">
-          {recipients.map(({ data: recipient }) => (
+          {recipients.map((recipient) => (
             <Chip rounded label={recipient.name} color="random" />
           ))}
         </div>

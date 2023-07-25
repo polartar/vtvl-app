@@ -35,16 +35,11 @@ import { useTransactionLoaderContext } from 'providers/transaction-loader.contex
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { createRevoking } from 'services/db/revoking';
-import { createOrUpdateSafe } from 'services/db/safe';
-import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IRecipient, ITransaction, IVesting } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
-import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
-import { createSafeTransaction } from 'utils/safe';
 import { formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -62,8 +57,9 @@ import {
 const VestingScheduleProject: NextPageWithLayout = () => {
   const router = useRouter();
   const { account, library, activate, chainId } = useWeb3React();
-  const { organizationId, currentSafe, currentSafeId, setCurrentSafe } = useAuthContext();
-  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const { organizationId, currentSafe } = useAuthContext();
+
+  const { setTransactionStatus } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { vestings: vestingSchedules, recipients, vestingContracts, fetchDashboardData } = useDashboardContext();
@@ -83,8 +79,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     status: 'ALL' | 'FUND' | 'INITIALIZED' | 'LIVE' | 'PENDING';
   }>({ keyword: '', status: 'ALL' });
   const [vestingContract, setVestingContract] = useState<IVestingContract | undefined>();
-
-  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract);
 
   const filteredVestingSchedules = useMemo(() => {
     return vestingSchedules && vestingSchedules.length > 0
@@ -115,8 +109,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               data: {
                 ...vesting.data,
                 recipients: recipients
-                  .filter((recipient) => recipient.data.vestingId === vesting.id)
-                  .map((recipient) => recipient.data)
+                  .filter((recipient) => recipient.vestingId === vesting.id)
+                  .map((recipient) => recipient)
               }
             };
           })
@@ -136,7 +130,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         pendingSchedules += sched.data.status === 'WAITING_FUNDS' || sched.data.status === 'INITIALIZED' ? 1 : 0;
         pendingDeployments += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
         pendingApprovals += sched.data.status === 'WAITING_APPROVAL' ? 1 : 0;
-        totalRecipients += recipients.filter((recipient) => recipient.data.vestingId === sched.id).length;
+        totalRecipients += recipients.filter((recipient) => recipient.vestingId === sched.id).length;
       });
 
       setVestingScheduleDataCounts({
@@ -363,8 +357,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                 </td>
                 <td className="group-last:border-b-0">
                   <div className="w-full py-2 text-center">
-                    {recipient.walletAddress ? (
-                      <Copy text={recipient.walletAddress}>{minifyAddress(recipient.walletAddress)}</Copy>
+                    {recipient.address ? (
+                      <Copy text={recipient.address}>{minifyAddress(recipient.address)}</Copy>
                     ) : (
                       <span>No Wallet</span>
                     )}
@@ -576,7 +570,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       let vestingCliffAmounts: any = [];
       const vestingIds = selectedRows.map((row: any) => row.id);
       const vestingContract = vestingContracts.find((v) => v.id === (selectedRows as any)[0].data.vestingContractId);
-      setVestingContract(vestingContract?.data);
+      setVestingContract(vestingContract);
       selectedRows.forEach((row: any) => {
         const vesting = row.data;
         const vestingId = row.id;
@@ -589,7 +583,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const vestingAmountPerUser = +vesting.details.amountToBeVested / vesting.recipients.length - cliffAmountPerUser;
         const addresses1 = vesting.recipients.map((recipient: any) => recipient.walletAddress);
         const cliffReleaseDate =
-          vesting.details.startDateTime && vesting.details.cliffDuration !== 'no-cliff'
+          vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
             ? getCliffDateTime(
                 new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
                 vesting.details.cliffDuration
@@ -605,7 +599,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               )
             : 0;
         const actualStartDateTime =
-          vesting.details.cliffDuration !== 'no-cliff'
+          vesting.details.cliffDuration !== 'no_cliff'
             ? cliffReleaseDate
             : new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
         const vestingEndTimestamp =
@@ -675,7 +669,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
       if (currentSafe?.address && account && chainId && organizationId) {
         const VestingContract = new ethers.Contract(
-          vestingContract?.data.address ?? '',
+          vestingContract?.address ?? '',
           VESTING_ABI.abi,
           ethers.getDefaultProvider(SupportedChains[chainId].rpc)
         );
@@ -702,7 +696,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
         const txData = {
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           data: createClaimsBatchEncoded,
           value: '0',
           nonce: nextNonce
@@ -726,7 +720,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             hash: '',
             safeHash: txHash,
             status: 'PENDING',
-            to: vestingContract?.data?.address ?? '',
+            to: vestingContract?.address ?? '',
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -756,7 +750,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
         const VestingContract = new ethers.Contract(
-          vestingContract?.data.address ?? '',
+          vestingContract?.address ?? '',
           VESTING_ABI.abi,
           ethers.getDefaultProvider(SupportedChains[chainId].rpc)
         );
@@ -771,7 +765,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
         setTransactionStatus('PENDING');
         const vestingContractInstance = new ethers.Contract(
-          vestingContract?.data?.address ?? '',
+          vestingContract?.address ?? '',
           VTVL_VESTING_ABI.abi,
           library.getSigner()
         );
@@ -788,7 +782,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           hash: addingClaimsTransaction.hash,
           safeHash: '',
           status: 'PENDING',
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           type: 'ADDING_CLAIMS',
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -871,7 +865,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
               <div>
                 <TokenProfile {...mintFormState} className="mb-2" />
-                <Copy text={mintFormState.address}>
+                <Copy text={mintFormState.address as string}>
                   <p className="text-sm font-medium text-netural-900">
                     Token address: <span className="text-neutral-500">{mintFormState.address}</span>
                   </p>
@@ -892,7 +886,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
               remainingAllocation={remaining}
-              totalAllocation={+mintFormState.initialSupply || 0}
+              totalAllocation={Number(mintFormState.initialSupply) || 0}
             />
           </div>
           <div className="w-full">

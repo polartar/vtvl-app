@@ -1,6 +1,6 @@
 import { User as FirebaseUser } from 'firebase/auth';
 
-import { ITeamRole } from './settings';
+import { IRole, ITeamRole } from './settings';
 
 export interface IAddress {
   walletAddress: string;
@@ -36,7 +36,7 @@ export interface IMember {
   email?: string;
   companyEmail?: string;
   wallets?: IAddress[];
-  type?: IUserType;
+  role?: IRole;
   joined?: number;
   createdAt?: number;
   updatedAt?: number;

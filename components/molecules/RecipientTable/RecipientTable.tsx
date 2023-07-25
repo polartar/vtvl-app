@@ -90,16 +90,16 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
   const handleChange = useCallback(
     (index: number, field: string) => (value: string | number) => {
       if (field === 'email') {
-        const recipient = allRecipients.find((r) => r.data.email === value);
+        const recipient = allRecipients.find((r) => r.email === value);
         if (recipient) {
           setRows((values) =>
             values.map((val, idx) =>
               idx === index
                 ? {
                     ...val,
-                    name: recipient.data.name,
-                    address: recipient.data.walletAddress,
-                    email: recipient.data.email
+                    name: recipient.name,
+                    address: recipient.address,
+                    email: recipient.email
                   }
                 : val
             )

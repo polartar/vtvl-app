@@ -1,4 +1,5 @@
 import { IRecipientType } from 'types/models/recipient';
+import { IRole } from 'types/models/settings';
 
 function parseBoolean(envValue: string | undefined, defaultValue = 'false') {
   return Boolean(JSON.parse(envValue ?? defaultValue));
@@ -16,10 +17,10 @@ export const PUBLIC_DOMAIN_NAME =
     : window?.location?.origin;
 
 export const RECIPIENTS_TYPES = [
-  { label: 'Advisor', value: 'advisor' },
-  { label: 'Founder', value: 'founder' },
-  { label: 'Investor', value: 'investor' },
-  { label: 'Employee', value: 'employee' }
+  { label: 'Advisor', value: IRole.ADVISOR },
+  { label: 'Founder', value: IRole.FOUNDER },
+  { label: 'Investor', value: IRole.INVESTOR },
+  { label: 'Employee', value: IRole.EMPLOYEE }
 ] as IRecipientType[];
 
 const RECIPIENTS_VALUES = RECIPIENTS_TYPES.map(({ value }) => value);
@@ -51,7 +52,8 @@ export const REDIRECT_URIS = {
   AUTH_GOOGLE_LOGIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/connect`),
   INVITE_MEMBER: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/auth/verify`),
   SETUP_ACCOUNT: encodeURI(`${PUBLIC_DOMAIN_NAME}/v2/onboarding/account-setup`),
-  MAIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/dashboard`)
+  MAIN: encodeURI(`${PUBLIC_DOMAIN_NAME}/dashboard`),
+  RECIPIENT_INVITE: encodeURI(`${PUBLIC_DOMAIN_NAME}/recipient/create`)
 };
 
 export const TOAST_NOTIFICATION_IDS = {

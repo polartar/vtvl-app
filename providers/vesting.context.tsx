@@ -1,12 +1,12 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import { useWeb3React } from '@web3-react/core';
 import { useShallowState } from 'hooks/useShallowState';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
-import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { deleteVesting, fetchVesting, fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
-import { IRecipientDoc, IVesting } from 'types/models';
+import { IRecipient, IVesting } from 'types/models';
 import { IScheduleMode, IScheduleState } from 'types/vesting';
 import { generateRandomName, getActualDateTime } from 'utils/shared';
 
@@ -36,7 +36,7 @@ export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
   startDateTime: new Date(new Date().setHours(0, 0, 0, 0)),
   endDateTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(0, 0, 0, 0)),
   originalEndDateTime: new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setHours(0, 0, 0, 0)),
-  cliffDuration: 'no-cliff',
+  cliffDuration: 'no_cliff',
   lumpSumReleaseAfterCliff: 25,
   releaseFrequency: 'continuous',
   amountToBeVested: 0,
@@ -44,7 +44,7 @@ export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
   amountUnclaimed: 0
 };
 
-const INITIAL_RECIPIENT_FORM_STATE = [] as MultiValue<IRecipientDoc>;
+const INITIAL_RECIPIENT_FORM_STATE = [] as MultiValue<IRecipient[]>;
 
 const INITIAL_SCHEDULE_MODE: IScheduleMode = {
   id: '',
@@ -63,7 +63,7 @@ const INITIAL_SCHEDULE_STATE: IScheduleState = {
 interface IVestingData {
   vestings: { id: string; data: IVesting }[];
   scheduleFormState: IScheduleFormState;
-  recipients: MultiValue<IRecipientDoc>;
+  recipients: IRecipient[];
   scheduleState: IScheduleState;
   scheduleMode: IScheduleMode;
   updateScheduleFormState: (v: any) => void;
@@ -90,7 +90,7 @@ export function VestingContextProvider({ children }: any) {
   // This contains all the details regarding the schedule form in the /configure
   const [scheduleFormState, setScheduleFormState] = useState<IScheduleFormState>(INITIAL_VESTING_FORM_STATE);
   // This contains all the details of the recipients and their allocations
-  const [recipients, setRecipients] = useState(INITIAL_RECIPIENT_FORM_STATE);
+  const [recipients, setRecipients] = useState<IRecipient[]>([]);
   // This contains the contract details being used in the vesting schedule
   const [scheduleState, setScheduleState] = useShallowState(INITIAL_SCHEDULE_STATE);
   // This contains the mode to which the vesting schedule is being run
@@ -138,7 +138,8 @@ export function VestingContextProvider({ children }: any) {
     async (id: string, data: IVesting) => {
       showLoading();
 
-      const recipientsData = await fetchRecipientsByQuery(['vestingId'], ['=='], [id]);
+      // const recipientsData = await fetchRecipientsByQuery(['vestingId'], ['=='], [id]);
+      const recipientsData = await RecipientApiService.getRecipients(`vestingId=${id}`);
 
       console.log('EDIT:::: EDIT INITIALIZED', id, data);
       updateScheduleStates(id, data);

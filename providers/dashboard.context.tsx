@@ -1,3 +1,4 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import VestingContractApiService from '@api-services/VestingContractApiService';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import { useAuth } from '@store/useAuth';
@@ -13,13 +14,12 @@ import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
-import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevoking, ITransaction, IVesting } from 'types/models';
-import { IRecipientDoc, IRecipientForm } from 'types/models/recipient';
+import { IRecipient, IRecipientForm } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { compareAddresses } from 'utils';
 import { isV2 } from 'utils/multicall';
@@ -34,7 +34,7 @@ type IVestingStatus = 'FUNDING_REQUIRED' | 'PENDING' | 'EXECUTABLE' | 'LIVE';
 interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
   revokings: { id: string; data: IRevoking }[];
-  recipients: IRecipientDoc[];
+  recipients: IRecipient[];
   vestingContracts: IVestingContract[];
   ownershipTransfered: boolean;
   insufficientBalance: boolean;
@@ -85,7 +85,7 @@ export function DashboardContextProvider({ children }: any) {
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [transactionsLoading, setTransactionsLoading] = useState(false);
-  const [recipients, setRecipients] = useState<IRecipientDoc[]>([]);
+  const [recipients, setRecipients] = useState<IRecipient[]>([]);
   const [vestingsStatus, setVestingsStatus] = useState<{ [key: string]: IVestingStatus }>({});
   const [safeTransactions, setSafeTransactions] = useState<{ [key: string]: SafeTransaction }>({});
 
@@ -132,7 +132,8 @@ export function DashboardContextProvider({ children }: any) {
   /* Fetch all recipients by organizationId and chainId */
   const fetchDashboardRecipients = useCallback(async () => {
     try {
-      const res = await fetchRecipientsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]);
+      // const res = await fetchRecipientsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]);
+      const res = await RecipientApiService.getRecipients(`organizationId=${organizationId}&chainId=${chainId}`);
       setRecipients(res);
     } catch (err) {
       console.error('Fetching recipients data error in DashboardContext: ', err);
@@ -190,11 +191,10 @@ export function DashboardContextProvider({ children }: any) {
       vestings.length &&
       recipients.length
     ) {
-      const recipientAddresses = recipients
-        .map(({ data: { walletAddress: address } }) => address)
+      const recipientWallets = recipients
+        .map((recipient) => recipient.address)
         .filter(
-          (address, index) =>
-            !!address && recipients.findIndex(({ data: { walletAddress } }) => walletAddress === address) === index
+          (address, index) => !!address && recipients.findIndex((recipient) => recipient.address === address) === index
         );
 
       const multicall = new Multicall({
@@ -210,9 +210,9 @@ export function DashboardContextProvider({ children }: any) {
           if (vestingSchedule) {
             res = [
               ...res,
-              ...recipientAddresses.map((recipient) => ({
+              ...recipientWallets.map((recipientWallet) => ({
                 // Attach the contract address, recipient wallet and schedule ID
-                reference: `multicall-${vestingContract.address}-${recipient}-${vestingSchedule?.id}`,
+                reference: `multicall-${vestingContract.address}-${recipientWallet}-${vestingSchedule?.id}`,
                 contractAddress: vestingContract.address ?? '',
                 abi: isV2(new Date(vestingContract.updatedAt).getTime() / 1000)
                   ? VTVL2_VESTING_ABI.abi
@@ -222,7 +222,7 @@ export function DashboardContextProvider({ children }: any) {
                     // This gets the claimable amount by the recipient
                     reference: 'claimableAmount',
                     methodName: 'claimableAmount',
-                    methodParameters: [recipient]
+                    methodParameters: [recipientWallet]
                   },
                   // {
                   //   // This gets the total vested amount for the recipient (includes everything)
@@ -236,7 +236,7 @@ export function DashboardContextProvider({ children }: any) {
                   //   methodName: 'vestedAmount',
                   //   methodParameters: [recipient, getUnixTime(new Date())]
                   // },
-                  { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient] }
+                  { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipientWallet] }
                 ]
               }))
             ];
@@ -286,20 +286,18 @@ export function DashboardContextProvider({ children }: any) {
             const wallet = key.split('-')[2]; // contains the wallet address from `multicall-[0xContractAddress]-[0xWalletAddress]`
             const scheduleId = key.split('-')[3]; // contains the schedule id from multicall reference
             // Get the recipient details
-            const currentRecipient = recipients.find(({ data: { walletAddress } }) =>
-              compareAddresses(walletAddress, wallet)
-            );
+            const currentRecipient = recipients.find(({ address }) => compareAddresses(address, wallet));
 
             // Only add it in if the recipient on a particular vesting contract and schedule has vested allocation.
             if (currentRecipient && ethers.BigNumber.from(totalAllocation).gt(0)) {
               recipientsTokenDetails.push({
                 scheduleId,
-                name: currentRecipient.data.name,
-                company: currentRecipient.data.company ?? '',
+                name: currentRecipient.name,
+                // company: currentRecipient.company ?? '',
                 // Some data especially on the recipients collection saves the recipientType as string ie., 'employee', 'founder', etc.
                 // while in the old one, it uses the select components values ie [{ label: 'Employee', value: 'employee' }] etc.
-                recipientType: currentRecipient.data.recipientType,
-                address: currentRecipient.data.walletAddress,
+                recipientType: currentRecipient.role,
+                address: currentRecipient.address,
                 // Ensure that the totalAllocation for each recipient is divided by the number of recipients
                 totalAllocation: totalAllocation,
                 // Set recipient's claimed and unclaimed datas

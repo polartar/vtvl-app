@@ -1,34 +1,41 @@
+import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useAuth as useAuthStore } from '@store/useAuth';
+import { toUTCString } from '@utils/date';
 import { useWeb3React } from '@web3-react/core';
-import axios from 'axios';
 import { NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { generateMessage } from 'pages/api/recipient/add-address';
+// import { generateMessage } from 'pages/api/recipient/add-address';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { fetchVesting } from 'services/db/vesting';
 import { MESSAGES } from 'utils/messages';
+
+const SIGN_MESSAGE_TEMPLATE = (address: string, utcTimeString: UTCString) =>
+  `VTVL uses cryptographic signatures instead of passwords to verify that you are the owner of this address. The wallet address is ${
+    address /* wallet: 0xab12 */
+  } and the time is ${utcTimeString /* 2022-06-01 16:47:55 UTC */}.`;
 
 const RecipientCreate: NextPage = () => {
   const { account, library } = useWeb3React();
-  const { recipient, setRecipient } = useAuthContext();
+  const { recipient } = useAuthContext();
+  const { save: saveAuth } = useAuthStore();
 
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setTransactionStatus } = useTransactionLoaderContext();
 
   useEffect(() => {
-    if (recipient && recipient.data && recipient.data.walletAddress) {
+    if (recipient && recipient && recipient.address) {
       router.push('/claim-portal');
     }
-  }, [recipient, router, recipient?.data.walletAddress]);
+  }, [recipient, router, recipient?.address]);
   const onSign = async () => {
     if (!account || !library) {
       return;
@@ -37,13 +44,9 @@ const RecipientCreate: NextPage = () => {
       router.push('/claim-portal');
     }
     setIsSubmitting(true);
-    // const message = 'You are going to update the uri for ' + account + new Date().toString();
 
-    let message;
-
-    const vesting = await fetchVesting(recipient?.data.vestingId || ''); //vestings.find((vesting) => vesting.id === recipient?.data.vestingId);
-
-    if (vesting) message = generateMessage(vesting, account);
+    const time = toUTCString();
+    const message = SIGN_MESSAGE_TEMPLATE(account, time);
 
     let signature;
     try {
@@ -60,19 +63,18 @@ const RecipientCreate: NextPage = () => {
       return;
     }
     try {
-      await axios.post('/api/recipient/add-address', {
-        signature,
-        recipientId: recipient?.id,
-        address: account
-      });
-      setRecipient({
-        id: recipient?.id,
-        data: {
-          ...recipient?.data,
-          walletAddress: account,
-          status: 'accepted'
+      const token = router.query.code;
+      const response = await RecipientApiService.acceptInvitation({
+        code: token as string,
+        wallet: {
+          address: account,
+          signature,
+          utcTime: time
         }
       });
+
+      saveAuth(response);
+      router.push('/dashboard');
     } catch (err) {
       toast.error('The signature is invalid');
     }
