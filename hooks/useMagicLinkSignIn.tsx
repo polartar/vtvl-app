@@ -78,12 +78,11 @@ export default function useMagicLinkSignIn(callback?: () => void) {
   const useNewAPISigning = async () => {
     // Sign in when found
     const params: any = new URL(window.location.toString());
-    const email = params.searchParams.get('email')?.replace(' ', '+');
     const code = params.searchParams.get('code');
-    console.log('USING NEW API for login', email, code);
-    if (email && code) {
+    console.log('USING NEW API for login', code);
+    if (code) {
       try {
-        const validation = await validateVerificationCode({ code, email });
+        const validation = await validateVerificationCode({ code });
         console.log('VALIDATING', validation);
         if (validation) {
           router.push('/v2/auth/connect');
