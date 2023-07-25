@@ -41,7 +41,7 @@ import { fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IRecipient, ITransaction, IVesting } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
@@ -577,7 +577,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
       let vestingCliffAmounts: any = [];
       const vestingIds = selectedRows.map((row: any) => row.id);
       const vestingContract = vestingContracts.find((v) => v.id === (selectedRows as any)[0].data.vestingContractId);
-      setVestingContract(vestingContract?.data);
+      setVestingContract(vestingContract);
       selectedRows.forEach((row: any) => {
         const vesting = row.data;
         const vestingId = row.id;
@@ -676,7 +676,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
       if (currentSafe?.address && account && chainId && organizationId) {
         const VestingContract = new ethers.Contract(
-          vestingContract?.data.address ?? '',
+          vestingContract?.address ?? '',
           VESTING_ABI.abi,
           ethers.getDefaultProvider(SupportedChains[chainId].rpc)
         );
@@ -703,7 +703,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
         const txData = {
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           data: createClaimsBatchEncoded,
           value: '0',
           nonce: nextNonce
@@ -727,7 +727,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             hash: '',
             safeHash: txHash,
             status: 'PENDING',
-            to: vestingContract?.data?.address ?? '',
+            to: vestingContract?.address ?? '',
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -757,7 +757,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         setTransactionStatus('SUCCESS');
       } else if (account && chainId && organizationId) {
         const VestingContract = new ethers.Contract(
-          vestingContract?.data.address ?? '',
+          vestingContract?.address ?? '',
           VESTING_ABI.abi,
           ethers.getDefaultProvider(SupportedChains[chainId].rpc)
         );
@@ -772,7 +772,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
         setTransactionStatus('PENDING');
         const vestingContractInstance = new ethers.Contract(
-          vestingContract?.data?.address ?? '',
+          vestingContract?.address ?? '',
           VTVL_VESTING_ABI.abi,
           library.getSigner()
         );
@@ -789,7 +789,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           hash: addingClaimsTransaction.hash,
           safeHash: '',
           status: 'PENDING',
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           type: 'ADDING_CLAIMS',
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -872,7 +872,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
               <div>
                 <TokenProfile {...mintFormState} className="mb-2" />
-                <Copy text={mintFormState.address}>
+                <Copy text={mintFormState.address || ''}>
                   <p className="text-sm font-medium text-netural-900">
                     Token address: <span className="text-neutral-500">{mintFormState.address}</span>
                   </p>
@@ -893,7 +893,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
               remainingAllocation={remaining}
-              totalAllocation={+mintFormState.initialSupply || 0}
+              totalAllocation={Number(mintFormState?.initialSupply) || 0}
             />
           </div>
           <div className="w-full">

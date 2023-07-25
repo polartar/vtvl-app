@@ -9,7 +9,7 @@ interface TokenProfileProps extends React.BaseHTMLAttributes<HTMLDivElement> {
   name?: string;
   symbol?: string;
   size?: 'small' | 'default';
-  address: string;
+  address?: string;
   burnable?: boolean;
 }
 
