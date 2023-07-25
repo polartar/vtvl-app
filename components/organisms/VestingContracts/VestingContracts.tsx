@@ -30,7 +30,7 @@ export default function VestingContracts() {
   );
 
   const getVestingInfoByContract = useCallback(
-    (contractAddress: string) => {
+    (contractAddress: string | null) => {
       const vestings = vestingSchedulesInfo.filter((vi) => compareAddresses(vi.address, contractAddress));
       let allocation = BigNumber.from(0),
         unclaimed = BigNumber.from(0),
@@ -43,27 +43,29 @@ export default function VestingContracts() {
         locked = locked.add(vesting.locked);
       });
 
-      const vestingContract = vestingContracts.find((contract) =>
-        compareAddresses(contract.data.address, contractAddress)
-      );
+      const vestingContract = vestingContracts.find((contract) => compareAddresses(contract.address, contractAddress));
 
       return {
-        address: contractAddress,
+        address: contractAddress ?? '',
         recipient: '',
         allocation: allocation,
         unclaimed: unclaimed,
         withdrawn: withdrawn,
         locked: locked,
-        reserved: vestings.length
-          ? BigNumber.from(vestingContract?.data.balance || '0').sub(vestings[0].numTokensReservedForVesting || '0')
-          : BigNumber.from(0)
+        reserved: BigNumber.from(0)
+        // @TODO
+        // reserved: vestings.length
+        //   ? BigNumber.from(vestingContract?.balance || '0').sub(vestings[0].numTokensReservedForVesting || '0')
+        //   : BigNumber.from(0)
       };
     },
     [vestingSchedulesInfo, vestingContracts]
   );
 
   const vestingContractsInfo = useMemo(() => {
-    return vestingContracts.map((vestingContract) => getVestingInfoByContract(vestingContract.data.address));
+    return vestingContracts
+      .filter((vestingContract) => !!vestingContract.address)
+      .map((vestingContract) => getVestingInfoByContract(vestingContract.address));
   }, [vestingSchedulesInfo, getVestingInfoByContract, vestingContracts]);
 
   return (
@@ -86,7 +88,7 @@ export default function VestingContracts() {
           </Typography>
           <Copy text={token?.address || ''}>
             <p className="paragraphy-small ">
-              {token.address.slice(0, 5)}...{token.address.slice(-4)}
+              {token?.address?.slice(0, 5)}...{token?.address?.slice(-4)}
             </p>
           </Copy>
         </div>
@@ -102,12 +104,12 @@ export default function VestingContracts() {
               </div>
             ))
           : vestingContracts.map((vestingContractInfo, index) => {
-              const vestingInfo = getVestingInfoByContract(String(vestingContractInfo?.data.address));
+              const vestingInfo = getVestingInfoByContract(String(vestingContractInfo?.address));
               return (
                 <VestingContractCard
-                  key={`${vestingContractInfo.data.address}_${index}`}
-                  title={String(vestingContractInfo.data.name)}
-                  address={vestingContractInfo.data.address}
+                  key={`${vestingContractInfo.address}_${index}`}
+                  title={String(vestingContractInfo.name)}
+                  address={vestingContractInfo.address ?? ''}
                   totalAllocation={formatEther(vestingInfo?.allocation.toString()) || ''}
                   withdrawnAmount={Number(formatEther(String(vestingInfo?.withdrawn))).toFixed(2)}
                   unclaimedAmount={Number(formatEther(String(vestingInfo?.unclaimed))).toFixed(2)}

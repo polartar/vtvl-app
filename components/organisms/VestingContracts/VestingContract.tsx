@@ -75,7 +75,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
   const isAdmin = useIsAdmin(
     currentSafe ? currentSafe.address : account ? account : '',
-    vestingContracts && vestingContracts.length > 0 ? vestingContracts[0].data : undefined
+    vestingContracts && vestingContracts.length > 0 ? vestingContracts[0] : undefined
   );
 
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
@@ -119,16 +119,18 @@ export default function VestingContract({ vestingContractId }: { vestingContract
       unclaimed: unclaimed,
       withdrawn: withdrawn,
       locked: locked,
-      reserved: vestingSchedulesInfo.length
-        ? ethers.BigNumber.from(vestingContracts[0]?.data.balance || '0').sub(
-            vestingSchedulesInfo[0].numTokensReservedForVesting || '0'
-          )
-        : ethers.BigNumber.from(0)
+      reserved: ethers.BigNumber.from(0)
+      // @TODO
+      // reserved: vestingSchedulesInfo.length
+      //   ? ethers.BigNumber.from(vestingContracts[0]?.data.balance || '0').sub(
+      //       vestingSchedulesInfo[0].numTokensReservedForVesting || '0'
+      //     )
+      //   : ethers.BigNumber.from(0)
     };
   }, [vestingSchedulesInfo, vestingContracts]);
 
   const initRecipientAllocation = (vestingContractAddress: string) => {
-    const vestingContract = vestingContracts.find((contract) => contract.data.address === vestingContractAddress);
+    const vestingContract = vestingContracts.find((contract) => contract.address === vestingContractAddress);
     if (!vestingContract) return;
     const vestingIds = allVestings
       .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
@@ -144,7 +146,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
   const handleWithdraw = async () => {
     if (vestingContracts && vestingContracts.length > 0 && organizationId && chainId && account) {
-      const vestingContractAddress = vestingContracts[0].data.address;
+      const vestingContractAddress = vestingContracts[0].address ?? '';
       const vestingContract = new ethers.Contract(vestingContractAddress, VestingABI.abi, library.getSigner());
       if (currentSafe?.address) {
         if (!isAdmin) {
@@ -154,7 +156,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           return;
         }
 
-        const ADMIN_WITHDRAW_FUNCTION = isV2(vestingContracts[0].data.updatedAt)
+        const ADMIN_WITHDRAW_FUNCTION = isV2(vestingContracts[0].updatedAt)
           ? 'function withdrawAdmin(uint256 _amountRequested)'
           : 'function withdrawAdmin(112 _amountRequested)';
         const ABI = [ADMIN_WITHDRAW_FUNCTION];
@@ -204,7 +206,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           organizationId: organizationId,
           chainId,
           vestingIds: [],
-          withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimals || 18),
+          withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimal || 18),
           vestingContractId: vestingContracts[0].id
         };
         const transactionId = await createTransaction(transactionData);
@@ -231,7 +233,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           organizationId: organizationId,
           chainId,
           vestingIds: [],
-          withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimals || 18),
+          withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimal || 18),
           vestingContractId: vestingContracts[0].id
         };
         const transactionId = await createTransaction(transactionData);
@@ -260,7 +262,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
   useEffect(() => {
     if (vestingContracts && vestingContracts.length > 0 && chainId) {
-      const vestingContractAddress = vestingContracts[0].data.address;
+      const vestingContractAddress = vestingContracts[0].address;
       fetchTransactionsByQuery(
         ['address', 'chainId', 'type', 'status'],
         ['==', '==', '==', '=='],
@@ -280,7 +282,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
       vestingSchedulesInfo.length > 0
     ) {
       const tokenContract = new ethers.Contract(mintFormState.address, ERC20ABI, library.getSigner());
-      tokenContract.balanceOf(vestingContracts[0].data.address).then((res: ethers.BigNumber) => {
+      tokenContract.balanceOf(vestingContracts[0].address).then((res: ethers.BigNumber) => {
         setWithdrawAmount(
           ethers.BigNumber.from(res).sub(
             vestingSchedulesInfo[0]?.numTokensReservedForVesting ?? ethers.BigNumber.from(0)
@@ -329,10 +331,10 @@ export default function VestingContract({ vestingContractId }: { vestingContract
             </>
           )}
 
-          {vestingContracts[0]?.data.address ? (
-            <Copy text={vestingContracts[0]?.data.address || ''}>
+          {vestingContracts[0]?.address ? (
+            <Copy text={vestingContracts[0]?.address || ''}>
               <p className="paragraphy-small ">
-                {vestingContracts[0]?.data.address.slice(0, 5)}...{vestingContracts[0]?.data.address.slice(-4)}
+                {vestingContracts[0]?.address.slice(0, 5)}...{vestingContracts[0]?.address.slice(-4)}
               </p>
             </Copy>
           ) : (
@@ -353,7 +355,8 @@ export default function VestingContract({ vestingContractId }: { vestingContract
         <VestingFilter
           vestings={vestings}
           vestingSchedulesInfo={vestingSchedulesInfo}
-          totalBalance={vestingContracts[0].data.balance || '0'}
+          totalBalance={'0'}
+          // totalBalance={vestingContracts[0].balance || '0'} @TODO
         />
       )}
 

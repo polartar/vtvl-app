@@ -1,7 +1,9 @@
+import VestingContractApiService from '@api-services/VestingContractApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
@@ -13,13 +15,13 @@ import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
 import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
-import { createVestingContract } from 'services/db/vestingContract';
 import { formatRecipientsDocToForm } from 'utils/recipients';
 import { formatNumber } from 'utils/token';
 
 const ScheduleSummary: NextPageWithLayout = () => {
   const { account, activate, chainId } = useWeb3React();
   const { organizationId, user } = useAuthContext();
+  const { updateVestingContract } = useDashboardContext();
   const { recipients, scheduleFormState, scheduleState, scheduleMode, setScheduleState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
 
@@ -39,22 +41,15 @@ const ScheduleSummary: NextPageWithLayout = () => {
     // const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
     // const ABI = [PERFORM_CREATE_FUNCTION];
 
-    // Set the vestingContractId based on the scheduleState value coming from the previous forms.
-    let vestingContractId = scheduleState.vestingContractId;
     // If the contract is set to be a new one, let's create one.
     if (scheduleState.createNewContract) {
-      vestingContractId = await createVestingContract({
-        status: 'INITIALIZED',
+      const vestingContract = await VestingContractApiService.createVestingContract({
         name: scheduleState.contractName!,
-        tokenAddress: mintFormState.address,
-        address: '',
-        deployer: '',
+        tokenId: mintFormState.id ?? '',
         organizationId: organizationId!,
-        chainId,
-        transactionId: '',
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000)
+        chainId: chainId ?? 0
       });
+      updateVestingContract(vestingContract);
     }
 
     // Create a draft vesting record -- which has a status of "CREATING".
@@ -66,8 +61,8 @@ const ScheduleSummary: NextPageWithLayout = () => {
           name: scheduleState.name,
           details: { ...scheduleFormState },
           updatedAt: Math.floor(new Date().getTime() / 1000),
-          transactionId: '',
-          vestingContractId
+          transactionId: ''
+          // vestingContractId
         },
         scheduleMode.id
       );
@@ -86,7 +81,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
         createdAt: Math.floor(new Date().getTime() / 1000),
         updatedAt: Math.floor(new Date().getTime() / 1000),
         transactionId: '',
-        vestingContractId,
+        // vestingContractId,
         tokenAddress: mintFormState.address,
         tokenId,
         chainId,

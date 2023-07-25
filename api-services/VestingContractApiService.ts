@@ -5,7 +5,7 @@ class VestingContractApiService {
   createVestingContract = (payload: ICreateVestingContractRequest) =>
     CoreApiService.post<IVestingContract>('/vesting-contract', payload);
 
-  getVestingContractById = (id: string) => CoreApiService.post(`/vesting-contract/${id}`);
+  getVestingContractById = (id: string) => CoreApiService.get<IVestingContract>(`/vesting-contract/${id}`);
 
   updateVestingContract = (id: string, payload: Partial<IVestingContract>) =>
     CoreApiService.put<IVestingContract>(`/vesting-contract/${id}`, payload);

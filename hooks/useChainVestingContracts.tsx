@@ -30,7 +30,7 @@ export type VestingContractInfo = {
  * Fetch on-chain vesting data
  */
 export default function useChainVestingContracts(
-  vestingContracts: IVestingContractDoc[] | IVestingContractDoc,
+  vestingContracts: IVestingContract[],
   vestings: { id: string; data: IVesting }[],
   recipients: IRecipientDoc[]
 ) {
@@ -53,62 +53,65 @@ export default function useChainVestingContracts(
       tryAggregate: true
     });
     const contractCallContext: ContractCallContext[] = arrVestingContracts
-      .filter((contract) => !!contract.data.address)
+      .filter((contract) => !!contract.address)
       .reduce((res, vestingContract) => {
-        const partialVestings = vestings
-          .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
-          .map((vesting) => vesting.id);
-        const partialRecipients = recipients.filter(({ data: recipient }) =>
-          partialVestings.includes(recipient.vestingId)
-        );
-
         let result: ContractCallContext[] = [];
-        result = result.concat({
-          reference: `numTokensReservedForVesting-${vestingContract.data.address}`,
-          contractAddress: vestingContract.data.address,
-          abi: VTVL_VESTING_ABI.abi,
-          calls: [
-            {
-              reference: 'numTokensReservedForVesting',
-              methodName: 'numTokensReservedForVesting',
-              methodParameters: []
-            }
-          ]
-        });
+        if (vestingContract.address) {
+          const partialVestings = vestings
+            .filter((vesting) => vesting.data.vestingContractId === vestingContract.id)
+            .map((vesting) => vesting.id);
+          const partialRecipients = recipients.filter(({ data: recipient }) =>
+            partialVestings.includes(recipient.vestingId)
+          );
 
-        partialRecipients
-          .filter(({ data: recipient }) => !!recipient.walletAddress)
-          .forEach(({ data: recipient }) => {
-            result = result.concat([
+          result = result.concat({
+            reference: `numTokensReservedForVesting-${vestingContract.address}`,
+            contractAddress: vestingContract.address,
+            abi: VTVL_VESTING_ABI.abi,
+            calls: [
               {
-                reference: `multicall-${vestingContract.data.address}-${recipient.walletAddress}`,
-                contractAddress: vestingContract.data.address,
-                abi: getVestingContractABI(vestingContract.data.updatedAt),
-                calls: [
-                  {
-                    //   // This gets the claimable amount by the recipient
-                    reference: 'claimableAmount',
-                    methodName: 'claimableAmount',
-                    methodParameters: [recipient.walletAddress]
-                  },
-                  // {
-                  //   // This gets the total vested amount for the recipient (includes everything)
-                  //   reference: 'finalVestedAmount',
-                  //   methodName: 'finalVestedAmount',
-                  //   methodParameters: [recipient.walletAddress]
-                  // },
-                  // {
-                  //   // This gets the current vested amount as of date (currently unlocked tokens, both claimed and unclaimed)
-                  //   reference: 'vestedAmount',
-                  //   methodName: 'vestedAmount',
-                  //   methodParameters: [recipient.walletAddress, getUnixTime(new Date())]
-                  // },
-                  { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }
-                ]
+                reference: 'numTokensReservedForVesting',
+                methodName: 'numTokensReservedForVesting',
+                methodParameters: []
               }
-            ]);
+            ]
           });
 
+          partialRecipients
+            .filter(({ data: recipient }) => !!recipient.walletAddress)
+            .forEach(({ data: recipient }) => {
+              if (vestingContract.address) {
+                result = result.concat([
+                  {
+                    reference: `multicall-${vestingContract.address}-${recipient.walletAddress}`,
+                    contractAddress: vestingContract.address,
+                    abi: getVestingContractABI(new Date(vestingContract.updatedAt).getTime() / 1000),
+                    calls: [
+                      {
+                        //   // This gets the claimable amount by the recipient
+                        reference: 'claimableAmount',
+                        methodName: 'claimableAmount',
+                        methodParameters: [recipient.walletAddress]
+                      },
+                      // {
+                      //   // This gets the total vested amount for the recipient (includes everything)
+                      //   reference: 'finalVestedAmount',
+                      //   methodName: 'finalVestedAmount',
+                      //   methodParameters: [recipient.walletAddress]
+                      // },
+                      // {
+                      //   // This gets the current vested amount as of date (currently unlocked tokens, both claimed and unclaimed)
+                      //   reference: 'vestedAmount',
+                      //   methodName: 'vestedAmount',
+                      //   methodParameters: [recipient.walletAddress, getUnixTime(new Date())]
+                      // },
+                      { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.walletAddress] }
+                    ]
+                  }
+                ]);
+              }
+            });
+        }
         return [...res, ...result];
       }, [] as ContractCallContext[]);
 

@@ -1,7 +1,6 @@
+import VestingContractApiService from '@api-services/VestingContractApiService';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { fetchVestingContract } from 'services/db/vestingContract';
-import { IVestingContract } from 'types/models';
 import { QUERY_KEYS } from 'utils/queries';
 
 /**
@@ -12,7 +11,9 @@ export const useVestingContractsFromIds = (vestingContractIds: string[]) => {
   const { isLoading: isLoadingVestingContracts, data: vestingContracts } = useQuery(
     [QUERY_KEYS.VESTING_CONTRACT.FROM_IDS],
     () => {
-      const getVestingContractsQuery = vestingContractIds.map((vestingId) => fetchVestingContract(vestingId));
+      const getVestingContractsQuery = vestingContractIds.map((vestingId) =>
+        VestingContractApiService.getVestingContractById(vestingId)
+      );
       return Promise.all(getVestingContractsQuery);
     },
     {

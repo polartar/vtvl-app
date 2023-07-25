@@ -10,8 +10,12 @@ const LINEAR_AMOUNT_INDEX = 4;
 const WITHDRAWN_AMOUNT_INDEX = 5;
 const CLIFF_AMOUNT_INDEX = 6;
 
-export function isV2(deployedAt: number) {
-  return deployedAt >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT);
+export function isV2(deployedAt: number | string) {
+  if (typeof deployedAt == 'number') {
+    return (deployedAt as number) >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT);
+  } else {
+    return new Date(deployedAt).getTime() / 1000 >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT);
+  }
 }
 
 export function getVestingContractABI(deployedAt: number) {
@@ -32,29 +36,31 @@ export const getMulticallInstance = (chainId: SupportedChainId) => {
  */
 export const getVestingDetailsFromContracts = async (
   chainId: SupportedChainId,
-  contracts: IVestingContractDoc[],
+  contracts: IVestingContract[],
   operator: string
 ) => {
   const multicall = getMulticallInstance(chainId);
 
-  const contractCallContext: ContractCallContext[] = contracts.reduce(
-    (res, contract) => [
+  const contractCallContext: ContractCallContext[] = contracts.reduce((res, contract) => {
+    if (!contract.address) {
+      return [...res];
+    }
+    return [
       ...res,
       {
-        reference: `withdrawn-${contract.data.address}`,
-        contractAddress: contract.data.address,
-        abi: getVestingContractABI(contract.data.updatedAt),
+        reference: `withdrawn-${contract.address}`,
+        contractAddress: contract.address,
+        abi: getVestingContractABI(new Date(contract.updatedAt).getTime() / 1000),
         calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator] }]
       },
       {
-        reference: `unclaimed-${contract.data.address}`,
-        contractAddress: contract.data.address,
+        reference: `unclaimed-${contract.address}`,
+        contractAddress: contract.address,
         abi: VTVL_VESTING_ABI.abi,
         calls: [{ reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [operator] }]
       }
-    ],
-    [] as ContractCallContext[]
-  );
+    ];
+  }, [] as ContractCallContext[]);
 
   const response = await multicall.call(contractCallContext);
   const chainData: Array<{

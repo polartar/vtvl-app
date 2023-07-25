@@ -1,3 +1,4 @@
+import VestingContractApiService from '@api-services/VestingContractApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
@@ -19,6 +20,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useAuthContext } from '@providers/auth.context';
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
@@ -35,7 +37,6 @@ import Select from 'react-select';
 import { toast } from 'react-toastify';
 import { createRecipient, editRecipient } from 'services/db/recipient';
 import { createVesting, updateVesting } from 'services/db/vesting';
-import { createVestingContract } from 'services/db/vestingContract';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
@@ -61,6 +62,7 @@ const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { organizationId, currentSafe, user } = useAuthContext();
   const { account, chainId, activate } = useWeb3React();
+  const { updateVestingContract } = useDashboardContext();
   const { recipients, scheduleFormState, scheduleMode, scheduleState, updateScheduleFormState, setScheduleState } =
     useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
@@ -819,7 +821,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
   };
 
-  const totalTokenSupply = parseFloat(mintFormState.initialSupply.toString());
+  const totalTokenSupply = parseFloat((mintFormState.initialSupply ?? '0').toString());
 
   // Handles the clicking of the "MAX" button in the amount to be vested section
   const handleMaxAmount = () => {
@@ -1015,18 +1017,14 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     let vestingContractId = scheduleState.vestingContractId;
     // If the contract is set to be a new one, let's create one.
     if (scheduleState.createNewContract) {
-      vestingContractId = await createVestingContract({
-        status: 'INITIALIZED',
+      const vestingContract = await VestingContractApiService.createVestingContract({
         name: scheduleState.contractName!,
-        tokenAddress: mintFormState.address,
-        address: '',
-        deployer: '',
+        tokenId: mintFormState.id ?? '',
         organizationId: organizationId!,
-        chainId,
-        transactionId: '',
-        createdAt: Math.floor(new Date().getTime() / 1000),
-        updatedAt: Math.floor(new Date().getTime() / 1000)
+        chainId: chainId ?? 0
       });
+      vestingContractId = vestingContract.id;
+      updateVestingContract(vestingContract);
     }
 
     // Create a draft vesting record -- which has a status of "CREATING".
