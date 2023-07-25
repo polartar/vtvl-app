@@ -50,7 +50,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
 
   const isAdmin = useIsAdmin(
     currentSafe ? currentSafe.address : account ? account : '',
-    vestingContracts.find((v) => v.id === vesting.vestingContractId)?.data
+    vestingContracts.find((v) => v.id === vesting.vestingContractId)
   );
 
   const [revoking, setRevoking] = useState<{ id: string; data: IRevoking }>();
@@ -80,7 +80,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
 
   const handleRevoke = async () => {
     const signer = library?.getSigner(0);
-    const vestingAddress = vestingContracts.find((v) => v.id === vesting.vestingContractId)?.data.address;
+    const vestingAddress = vestingContracts.find((v) => v.id === vesting.vestingContractId)?.address;
     if (!signer || !account || !chainId || !vestingAddress) return;
 
     const recipient = address;

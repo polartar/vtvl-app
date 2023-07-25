@@ -19,7 +19,6 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Modal, { Styles } from 'react-modal';
 import { connectionAssets } from 'types/constants/shared';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IFundContractProps, IVestingContract } from 'types/models/vestingContract';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 
 interface IFundSource {
@@ -31,7 +30,7 @@ interface IFundingContractModalProps {
   handleFundContract: (type: string, amount: string) => void;
   hideModal: () => void;
   depositAmount: string;
-  vestingContract: { id: string; data: IVestingContract };
+  vestingContract: IVestingContract;
 }
 
 const FundingContractModal = ({
@@ -120,7 +119,7 @@ const FundingContractModal = ({
    * -- the Amount to be funded in the contract.
    */
   const handleMaxChange = () => {
-    setValue('amount', +mintFormState.maxSupply);
+    setValue('amount', +(mintFormState.maxSupply ?? '0'));
   };
 
   // Update the form values that rely on the contract object from the parent caller.
@@ -134,7 +133,7 @@ const FundingContractModal = ({
   useEffect(() => {
     if (vestingContract && account) {
       const tokenContract = new ethers.Contract(
-        mintFormState.address,
+        mintFormState.address ?? '',
         [
           // Read-Only Functions
           'function balanceOf(address owner) view returns (uint256)',
@@ -303,17 +302,17 @@ const FundingContractModal = ({
                 ) : null}
                 {/* MANUAL FUNDING SECTION */}
                 {fundingMethod.value === 'MANUAL' ? (
-                  <Copy text={mintFormState.address} removeIcon>
+                  <Copy text={mintFormState.address ?? ''} removeIcon>
                     <div className="mt-5 pt-3 px-3 flex flex-col cursor-pointer relative">
                       <TokenProfile
-                        address={mintFormState.address}
+                        address={mintFormState.address ?? ''}
                         logo={mintFormState.logo}
                         name={mintFormState.name}
                         symbol={mintFormState.symbol}
                       />
                       <div className="row-center mt-2">
                         <CopyIcon className="fill-current h-4" />
-                        <p className="paragraphy-small neutral-text">{vestingContract.data.address}</p>
+                        <p className="paragraphy-small neutral-text">{vestingContract.address}</p>
                       </div>
                     </div>
                   </Copy>

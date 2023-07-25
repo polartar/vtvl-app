@@ -1,25 +1,18 @@
+import VestingContractApiService from '@api-services/VestingContractApiService';
 import { injected } from '@connectors/index';
-import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
-import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
-import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { IStatus, STATUS_MAPPING } from 'components/organisms/DashboardPendingActions';
 import VTVL_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
-import FACTORY_ABI from 'contracts/abi/factory.json';
 import { ethers } from 'ethers';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
-import React, { useEffect, useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
-import { createTransaction, updateTransaction } from 'services/db/transaction';
+import React, { useEffect, useState } from 'react';
 import { updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVestingContract } from 'types/models';
-import { CREATE_VESTING_CONTRACT_ABI, FACTORY_CONTRACTS } from 'utils/constants';
-import { getParamFromEvent } from 'utils/web3';
 
 interface IVestingContractPendingActionProps {
   id: string;
@@ -41,23 +34,13 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
   updateFilter
 }) => {
   const { account, chainId, activate, library } = useWeb3React();
-  const { currentSafe, organizationId } = useAuthContext();
-  const { safeTransactions, setSafeTransactions } = useDashboardContext();
-  const {
-    setTransactionStatus: setTransactionLoaderStatus,
-    setIsCloseAvailable,
-    transactions
-  } = useTransactionLoaderContext();
+  const { currentSafe } = useAuthContext();
+  const { organizationId } = useOrganization();
+  // const { fetchDashboardVestingContract } = useDashboardContext();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
+  const { updateVestingContract } = useDashboardContext();
 
-  const transaction = useMemo(
-    () => transactions.find((t) => t.id === data.transactionId && t.data.status === 'PENDING'),
-    [data, transactions]
-  );
-
-  const [transactionStatus, setTransactionStatus] = useState<
-    'INITIALIZE' | 'EXECUTABLE' | 'WAITING_APPROVAL' | 'APPROVAL_REQUIRED' | ''
-  >('');
   const [status, setStatus] = useState<IStatus>('');
 
   const shouldShow =
@@ -66,30 +49,6 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
     (filter.status === 'TRANSFER_OWNERSHIP' &&
       (status === 'REMOVE_ORIGINAL_OWNERSHIP' || status === 'TRANSFER_OWNERSHIP'));
 
-  const fetchSafeTransactionFromHash = async (txHash: string) => {
-    if (currentSafe?.address && chainId && txHash) {
-      const ethAdapter = new EthersAdapter({
-        ethers: ethers,
-        signer: library?.getSigner(0)
-      });
-
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
-      const safeService = new SafeServiceClient({
-        txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-        ethAdapter
-      });
-      const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(txHash);
-      const safeTx = await safeSdk.createTransaction({
-        safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
-      });
-      apiTx.confirmations?.forEach((confirmation) => {
-        safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
-      });
-      setSafeTransactions({ ...safeTransactions, [txHash]: safeTx });
-      return safeTx;
-    }
-  };
-
   const handleDeployVestingContract = async () => {
     setIsCloseAvailable(false);
     try {
@@ -97,249 +56,135 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         activate(injected);
         return;
       } else if (organizationId) {
-        if (currentSafe) {
-          setTransactionLoaderStatus('PENDING');
-          const factoryContractInterface = new ethers.utils.Interface(FACTORY_ABI);
-          const createVestingContractEncoded = factoryContractInterface.encodeFunctionData('createVestingContract', [
-            mintFormState.address
-          ]);
+        setTransactionStatus('PENDING');
+        const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI.abi);
+        const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
+        const VestingFactory = new ethers.ContractFactory(
+          VTVL_VESTING_ABI.abi,
+          VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
+          library.getSigner()
+        );
+        const vestingContract = await VestingFactory.deploy(mintFormState.address);
+        setTransactionStatus('IN_PROGRESS');
+        await vestingContract.deployed();
+        // const vestingContractId = await updateVestingContract(
+        //   {
+        //     ...data,
+        //     tokenAddress: mintFormState.address ?? '',
+        //     address: vestingContract.address,
+        //     status: currentSafe?.address ? 'PENDING' : 'SUCCESS',
+        //     deployer: account,
+        //     updatedAt: Math.floor(new Date().getTime() / 1000)
+        //   },
+        //   id
+        // );
 
-          const ethAdapter = new EthersAdapter({
-            ethers: ethers,
-            signer: library?.getSigner(0)
-          });
-          setTransactionLoaderStatus('PENDING');
-          const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
-          const safeService = new SafeServiceClient({
-            txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-            ethAdapter
-          });
-          const nextNonce = await safeService.getNextNonce(currentSafe.address);
-          const txData = {
-            to: FACTORY_CONTRACTS[chainId],
-            data: createVestingContractEncoded,
-            value: '0',
-            nonce: nextNonce
-          };
-          const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
-          const txHash = await safeSdk.getTransactionHash(safeTransaction);
-          const signature = await safeSdk.signTransactionHash(txHash);
-          setTransactionLoaderStatus('IN_PROGRESS');
-          safeTransaction.addSignature(signature);
-          setSafeTransactions({ ...safeTransactions, [txHash]: safeTransaction });
-          await safeService.proposeTransaction({
-            safeAddress: currentSafe.address,
-            senderAddress: account,
-            safeTransactionData: safeTransaction.data,
-            safeTxHash: txHash,
-            senderSignature: signature.data
-          });
-          const transactionId = await createTransaction({
-            hash: '',
-            safeHash: txHash,
-            status: 'PENDING',
-            to: '',
-            type: 'VESTING_DEPLOYMENT',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
-            organizationId: organizationId,
-            chainId,
-            approvers: [account]
-          });
-          await updateVestingContract({ ...data, status: 'PENDING', transactionId }, id);
-          toast.success(`Created a safe transaction with nonce ${nextNonce} successfully`);
-          setTransactionLoaderStatus('SUCCESS');
+        const res = await VestingContractApiService.updateVestingContract(id, {
+          address: vestingContract.address,
+          chainId,
+          status: currentSafe?.address ? 'PENDING' : 'SUCCESS',
+          isDeployed: true,
+          organizationId
+        });
+        updateVestingContract(res);
+        setTransactionStatus('SUCCESS');
+        // fetchDashboardVestingContract();
+        if (currentSafe?.address) {
+          setStatus('TRANSFER_OWNERSHIP');
         } else {
-          const factoryContract = new ethers.Contract(FACTORY_CONTRACTS[chainId], FACTORY_ABI, library.getSigner());
-          setTransactionLoaderStatus('IN_PROGRESS');
-          const vestingContractTx = await (await factoryContract.createVestingContract(mintFormState.address)).wait();
-          const factoryInterface = new ethers.utils.Interface(FACTORY_ABI);
-          const vestingContractAddress = getParamFromEvent(
-            factoryInterface,
-            vestingContractTx,
-            'CreateVestingContract(address,address)',
-            0
-          );
-          await updateVestingContract(
-            {
-              ...data,
-              tokenAddress: mintFormState.address,
-              address: vestingContractAddress,
-              status: 'SUCCESS',
-              deployer: account,
-              updatedAt: Math.floor(new Date().getTime() / 1000)
-            },
-            id
-          );
-          setTransactionLoaderStatus('SUCCESS');
+          setStatus('SUCCESS');
         }
       }
     } catch (err) {
       console.log('handleDeployVestingContract - ', err);
-      setTransactionLoaderStatus('ERROR');
+      setTransactionStatus('ERROR');
     }
   };
 
-  const handleApproveTransaction = async () => {
+  const handleTransferOwnership = async () => {
     try {
       setIsCloseAvailable(false);
-      if (currentSafe?.address && chainId && transaction && account) {
-        setTransactionLoaderStatus('PENDING');
-        const ethAdapter = new EthersAdapter({
-          ethers: ethers,
-          signer: library?.getSigner(0)
-        });
+      if (organizationId && chainId) {
+        setTransactionStatus('PENDING');
 
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
-        const safeService = new SafeServiceClient({
-          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-          ethAdapter
-        });
-
-        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.safeHash as string);
-        setTransactionLoaderStatus('IN_PROGRESS');
-        await approveTxResponse.transactionResponse?.wait();
-        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
-        );
-
-        const safeTx = await safeSdk.createTransaction({
-          safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
-        });
-        apiTx.confirmations?.forEach((confirmation) => {
-          safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
-        });
-        setSafeTransactions({ ...safeTransactions, [transaction.data.hash]: safeTx });
-        await updateTransaction(
-          {
-            ...transaction.data,
-            approvers: transaction.data.approvers ? [...transaction.data.approvers, account] : [account]
-          },
-          transaction.id
-        );
-        toast.success('Approved successfully.');
-        const threshold = await safeSdk.getThreshold();
-        if (safeTx.signatures.size >= threshold) {
-          setStatus('EXECUTABLE');
-          setTransactionStatus('EXECUTABLE');
-        } else {
-          setStatus('AUTHORIZATION_REQUIRED');
-          setTransactionStatus('WAITING_APPROVAL');
-        }
-        setTransactionLoaderStatus('SUCCESS');
+        const vestingContract = new ethers.Contract(data.address ?? '', VTVL_VESTING_ABI.abi, library.getSigner());
+        const transactionResponse = await vestingContract.setAdmin(currentSafe?.address, true);
+        setTransactionStatus('IN_PROGRESS');
+        await transactionResponse.wait();
+        setStatus('REMOVE_ORIGINAL_OWNERSHIP');
+        setTransactionStatus('SUCCESS');
+        // fetchDashboardVestingContract();
       }
     } catch (err) {
-      console.log('handleApproveTransaction - ', err);
-      toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      console.log('handleTransferOwnership - ', err);
+      setTransactionStatus('ERROR');
     }
   };
 
-  const handleExecuteTransaction = async () => {
-    setIsCloseAvailable(false);
+  const handleRemoveDeployerOwnership = async () => {
     try {
-      if (currentSafe?.address && chainId && transaction) {
-        setTransactionLoaderStatus('PENDING');
-        const ethAdapter = new EthersAdapter({
-          ethers: ethers,
-          signer: library?.getSigner(0)
-        });
-
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
-        const safeService = new SafeServiceClient({
-          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-          ethAdapter
-        });
-        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
-        );
-
-        const safeTx = await safeSdk.createTransaction({
-          safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
-        });
-        apiTx.confirmations?.forEach((confirmation) => {
-          safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
-        });
-
-        const currentNonce = await safeSdk.getNonce();
-        if (currentNonce !== apiTx.nonce) {
-          toast.error('You have pending transactions that should be executed first.');
-          setTransactionLoaderStatus('ERROR');
-          return;
-        }
-        const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
-        setTransactionLoaderStatus('IN_PROGRESS');
-        const vestingContractTx = await executeTransactionResponse.transactionResponse?.wait();
-        setTransactionLoaderStatus('IN_PROGRESS');
-        setSafeTransactions({ ...safeTransactions, [transaction.data.hash]: safeTx });
-        const factoryInterface = new ethers.utils.Interface(FACTORY_ABI);
-        const vestingContractAddress = getParamFromEvent(
-          factoryInterface,
-          vestingContractTx,
-          'CreateVestingContract(address,address)',
-          0
-        );
-        await updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
-        await updateVestingContract({ ...data, address: vestingContractAddress, status: 'SUCCESS' }, id);
-        setTransactionLoaderStatus('SUCCESS');
-        toast.success('Deployed a contract successfully.');
-        setStatus('SUCCESS');
-        setTransactionStatus('');
-      }
-    } catch (err) {
-      console.log('handleExecuteTransaction - ', err);
-      toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
-    }
-  };
-
-  const initializeStatus = async () => {
-    if (data.status === 'INITIALIZED') {
-      setStatus('AUTHORIZATION_REQUIRED');
-      if (currentSafe?.address) {
-        setTransactionStatus('INITIALIZE');
-      } else {
-        setTransactionStatus('');
-      }
-      return;
-    }
-
-    if (transaction && transaction.data.safeHash && currentSafe && account) {
-      const safeTx = safeTransactions[transaction.data.safeHash]
-        ? safeTransactions[transaction.data.safeHash]
-        : await fetchSafeTransactionFromHash(transaction.data.safeHash);
-      if (safeTx) {
-        const ethAdapter = new EthersAdapter({
-          ethers: ethers,
-          signer: library?.getSigner(0)
-        });
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
-        const threshold = await safeSdk.getThreshold();
-        const approvers = transaction.data.approvers ? [...transaction.data.approvers] : [];
-        safeTx.signatures.forEach((signature) => {
-          if (!approvers.find((approver) => approver === signature.signer)) {
-            approvers.push(signature.signer);
-          }
-        });
-        if (approvers.length >= threshold) {
-          setStatus('EXECUTABLE');
-          setTransactionStatus('EXECUTABLE');
-        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
-          setStatus('AUTHORIZATION_REQUIRED');
-          setTransactionStatus('WAITING_APPROVAL');
-        } else {
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
-          setTransactionStatus('APPROVAL_REQUIRED');
-        }
-      } else {
+      setIsCloseAvailable(false);
+      if (!account || !library || !chainId) {
+        activate(injected);
         return;
       }
+
+      if (
+        organizationId &&
+        currentSafe &&
+        currentSafe.address &&
+        currentSafe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())
+      ) {
+        setTransactionStatus('PENDING');
+        const vestingContract = new ethers.Contract(data.address ?? '', VTVL_VESTING_ABI.abi, library.getSigner());
+        const transactionResponse = await vestingContract.setAdmin(account, false);
+        setTransactionStatus('IN_PROGRESS');
+        await transactionResponse.wait();
+        const res = await VestingContractApiService.updateVestingContract(id, {
+          address: vestingContract.address,
+          chainId,
+          status: 'SUCCESS',
+          organizationId
+        });
+        updateVestingContract(res);
+        setStatus('SUCCESS');
+        setTransactionStatus('SUCCESS');
+      }
+    } catch (err) {
+      console.log('handleTransferOwnership - ', err);
+      setTransactionStatus('ERROR');
     }
   };
 
   useEffect(() => {
-    initializeStatus();
-  }, [data, currentSafe, transaction, safeTransactions]);
+    if (data.status === 'INITIALIZED') {
+      setStatus('AUTHORIZATION_REQUIRED');
+    } else if (data.status === 'PENDING' && currentSafe) {
+      const VestingContract = new ethers.Contract(
+        data.address ?? '',
+        VTVL_VESTING_ABI.abi,
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+      VestingContract.isAdmin(currentSafe.address).then((res: any) => {
+        if (!res) {
+          setStatus('TRANSFER_OWNERSHIP');
+          return;
+        } else {
+          VestingContract.isAdmin(account).then((res1: any) => {
+            if (res1) {
+              setStatus('REMOVE_ORIGINAL_OWNERSHIP');
+              return;
+            } else {
+              setStatus('SUCCESS');
+              return;
+            }
+          });
+        }
+      });
+    } else {
+      setStatus('SUCCESS');
+    }
+  }, [data, currentSafe, account]);
 
   return status === 'SUCCESS' ? null : shouldShow ? (
     <div className="flex bg-white text-[#667085] text-xs">
@@ -377,26 +222,16 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center min-w-[200px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {status === 'AUTHORIZATION_REQUIRED' ? (
-          transactionStatus === 'WAITING_APPROVAL' ? (
-            <button className="secondary small" disabled>
-              Approved
-            </button>
-          ) : transactionStatus === 'APPROVAL_REQUIRED' ? (
-            <button className="secondary small" onClick={handleApproveTransaction}>
-              Approve
-            </button>
-          ) : transactionStatus === 'INITIALIZE' ? (
-            <button className="secondary small" onClick={handleDeployVestingContract}>
-              Deploy
-            </button>
-          ) : (
-            <button className="secondary small" onClick={handleDeployVestingContract}>
-              Deploy
-            </button>
-          )
-        ) : status === 'EXECUTABLE' ? (
-          <button className="secondary small" onClick={handleExecuteTransaction}>
-            Execute
+          <button className="secondary small" onClick={handleDeployVestingContract}>
+            Deploy
+          </button>
+        ) : status === 'TRANSFER_OWNERSHIP' ? (
+          <button className="secondary small" onClick={handleTransferOwnership}>
+            Transfer Ownership
+          </button>
+        ) : status === 'REMOVE_ORIGINAL_OWNERSHIP' ? (
+          <button className="secondary small whitespace-nowrap" onClick={handleRemoveDeployerOwnership}>
+            Remove Original Ownership
           </button>
         ) : null}
       </div>

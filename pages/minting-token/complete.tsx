@@ -35,7 +35,7 @@ const Complete: NextPageWithLayout = () => {
         </h2>
         {mintFormState?.logo ? <img src={mintFormState.logo} className="w-20 h-20 mb-4 mx-auto rounded-full" /> : null}
         <h3 className="font-bold h4 uppercase mb-6">{mintFormState?.name}</h3>
-        <Copy text={mintFormState?.address}>
+        <Copy text={mintFormState?.address || ''}>
           <p className="text-sm text-neutral-500 mb-6">{mintFormState?.address}</p>
         </Copy>
         <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">

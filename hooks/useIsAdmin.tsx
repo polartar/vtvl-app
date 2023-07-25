@@ -3,7 +3,6 @@ import VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
 import { SupportedChains } from 'types/constants/supported-chains';
-import { IVestingContract } from 'types/models';
 
 function useIsAdmin(address: string, vestingContract?: IVestingContract) {
   const { chainId } = useWeb3React();
@@ -11,7 +10,7 @@ function useIsAdmin(address: string, vestingContract?: IVestingContract) {
   useEffect(() => {
     if (address && vestingContract && chainId) {
       const VestingContract = new ethers.Contract(
-        vestingContract.address,
+        vestingContract?.address ?? '',
         VESTING_ABI.abi,
         ethers.getDefaultProvider(SupportedChains[chainId].rpc)
       );

@@ -14,6 +14,8 @@ import { useVestingContext } from '@providers/vesting.context';
 import { useUser } from '@store/useUser';
 import { useWeb3React } from '@web3-react/core';
 import { motion } from 'framer-motion';
+import useEagerConnect from 'hooks/useEagerConnect';
+import useInactiveListener from 'hooks/useInactiveListener';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useLoaderContext } from 'providers/loader.context';
@@ -75,7 +77,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     isLoading,
     website: { name, assets }
   } = useGlobalContext();
-  const { active, account } = useWeb3React();
+  const { active, account, connector } = useWeb3React();
   const [sidebarProperties, setSidebarProperties] = useState({
     roleTitle: 'Anonymous',
     role: '',
@@ -83,9 +85,20 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     menuList: [],
     submenuList: []
   });
+  const [activatingConnector, setActivatingConnector] = React.useState<any>();
   const [connectWalletModal, setConnectWalletModal] = useState(false);
   const router = useRouter();
 
+  const triedEager = useEagerConnect();
+
+  // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
+  useInactiveListener(!triedEager || !!activatingConnector);
+
+  useEffect(() => {
+    if (activatingConnector && activatingConnector === connector) {
+      setActivatingConnector(undefined);
+    }
+  }, [activatingConnector, connector]);
   // NEW API implementation
   const { role: userRole } = useUser();
 

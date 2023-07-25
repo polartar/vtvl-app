@@ -1,4 +1,4 @@
-import CoreApiService from '@api-services/CoreApiServiceTemp';
+import CoreApiService from '@api-services/CoreApiService';
 import { PLATFORM_NAME } from '@utils/constants';
 
 class AuthApiService {

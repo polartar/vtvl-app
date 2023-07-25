@@ -23,7 +23,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/models';
+import { IRevoking, ITransaction, IVesting } from 'types/models';
 import { formatNumber } from 'utils/token';
 
 const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> = ({ id, data }) => {
@@ -215,9 +215,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
   return transactionStatus !== 'SUCCESS' ? (
     <div className="flex bg-white text-[#667085] text-xs">
       <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
-      <div className="flex items-center w-36 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
-        {vestingContract?.data.name}
-      </div>
+      <div className="flex items-center w-36 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{vestingContract?.name}</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">Admin Withdraw</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {status && (
@@ -227,9 +225,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
           </div>
         )}
       </div>
-      <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
-        {vestingContract?.data.name}
-      </div>
+      <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{vestingContract?.name}</div>
       <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         <div className="flex gap-1.5 items-center">
           <img className="w-4 h-4" src="icons/safe.png" />

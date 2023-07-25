@@ -14,7 +14,7 @@ import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { ITransaction, IVesting, IVestingContract } from 'types/models';
+import { ITransaction, IVesting } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 
 import PendingAdminWithdrawAction from './PendingAdminWithdrawAction';
@@ -65,7 +65,7 @@ const DashboardPendingActions = () => {
   const { vestingContracts, vestings, revokings } = useDashboardContext();
   const { transactions } = useTransactionLoaderContext();
 
-  const [pendingVestingContracts, setPendingVestingContracts] = useState<{ id: string; data: IVestingContract }[]>([]);
+  const [pendingVestingContracts, setPendingVestingContracts] = useState<IVestingContract[]>([]);
   const [pendingVestings, setPendingVestings] = useState<{ id: string; data: IVesting }[]>([]);
   const [pendingWithdrawTransactions, setPendingWithdrawTransactions] = useState<{ id: string; data: ITransaction }[]>(
     []
@@ -79,8 +79,7 @@ const DashboardPendingActions = () => {
     if (vestingContracts && vestingContracts.length > 0) {
       setPendingVestingContracts(
         vestingContracts.filter(
-          (vestingContract: { id: string; data: IVestingContract }) =>
-            vestingContract.data.status === 'INITIALIZED' || vestingContract.data.status === 'PENDING'
+          (vestingContract) => vestingContract.status === 'INITIALIZED' || vestingContract.status === 'PENDING'
         )
       );
     }
@@ -125,7 +124,7 @@ const DashboardPendingActions = () => {
         {pendingVestingContracts.map((vestingContract) => (
           <VestingContractPendingAction
             id={vestingContract.id}
-            data={vestingContract.data}
+            data={vestingContract}
             key={vestingContract.id}
             filter={filter}
             updateFilter={setFilter}

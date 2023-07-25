@@ -65,7 +65,7 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
       vestingContracts?.map(
         (contract) =>
           ({
-            label: contract.data.name ?? contract.data.address,
+            label: contract.name ?? contract.address,
             value: contract.id,
             safe: currentSafe?.safe_name || ''
           } as VestingContractOption)

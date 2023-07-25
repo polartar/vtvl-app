@@ -72,8 +72,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   } = useDashboardContext();
   const { editSchedule, deleteSchedulePrompt, setShowDeleteModal } = useVestingContext();
   const {
-    pendingTransactions,
     transactions,
+    pendingTransactions,
     transactionStatus: transactionLoaderStatus,
     setTransactionStatus: setTransactionLoaderStatus,
     setIsCloseAvailable
@@ -88,7 +88,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     [data, transactions]
   );
 
-  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract?.data);
+  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract);
   const [status, setStatus] = useState<IStatus>('');
 
   const [transactionStatus, setTransactionStatus] = useState<
@@ -142,8 +142,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   const initializeStatus = async () => {
     if (
       !vestingContract ||
-      vestingContract.data.status === 'INITIALIZED' ||
-      (vestingContract.data.status === 'PENDING' && currentSafe?.address)
+      vestingContract.status === 'INITIALIZED' ||
+      (vestingContract.status === 'PENDING' && currentSafe?.address)
     ) {
       setStatus('CONTRACT_REQUIRED');
       return;
@@ -197,7 +197,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       }
     } else {
       const TokenContract = new ethers.Contract(
-        mintFormState.address,
+        mintFormState.address ?? '',
         [
           // Read-Only Functions
           'function balanceOf(address owner) view returns (uint256)',
@@ -211,13 +211,13 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
       const VestingContract = new ethers.Contract(
-        vestingContract?.data.address || '',
+        vestingContract?.address || '',
         VTVL_VESTING_ABI.abi,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
-      const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
-      // const tokenBalance = vestingContract.data.balance || 0;
+      const tokenBalance = await TokenContract.balanceOf(vestingContract?.address);
+      // const tokenBalance = vestingContract.balance || 0;
 
       const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
 
@@ -334,7 +334,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       if (type === 'Metamask') {
         setTransactionLoaderStatus('PENDING');
         const tokenContract = new ethers.Contract(
-          mintFormState.address,
+          mintFormState.address ?? '',
           [
             // Read-Only Functions
             'function balanceOf(address owner) view returns (uint256)',
@@ -350,19 +350,16 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           library.getSigner()
         );
 
-        const allowance = await tokenContract.allowance(account, vestingContract?.data?.address);
+        const allowance = await tokenContract.allowance(account, vestingContract?.address);
         if (allowance.lt(ethers.utils.parseEther(amount))) {
           const approveTx = await tokenContract.approve(
-            vestingContract?.data?.address,
+            vestingContract?.address,
             ethers.utils.parseEther(amount).sub(allowance)
           );
           await approveTx.wait();
         }
 
-        const fundTransaction = await tokenContract.transfer(
-          vestingContract?.data?.address,
-          ethers.utils.parseEther(amount)
-        );
+        const fundTransaction = await tokenContract.transfer(vestingContract?.address, ethers.utils.parseEther(amount));
         setShowFundingContractModal(false);
 
         setTransactionLoaderStatus('IN_PROGRESS');
@@ -387,7 +384,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           'event Transfer(address indexed from, address indexed to, uint amount)'
         ]);
         const transferEncoded = tokenContractInterface.encodeFunctionData('transfer', [
-          vestingContract?.data?.address,
+          vestingContract?.address,
           ethers.utils.parseEther(amount)
         ]);
         if (currentSafe?.address && account && chainId && organizationId) {
@@ -405,7 +402,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
 
             const nextNonce = await safeService.getNextNonce(currentSafe.address);
             const txData = {
-              to: mintFormState.address,
+              to: mintFormState.address ?? '',
               data: transferEncoded,
               value: '0',
               nonce: nextNonce
@@ -429,7 +426,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               hash: '',
               safeHash: txHash,
               status: 'PENDING',
-              to: vestingContract?.data?.address ?? '',
+              to: vestingContract?.address ?? '',
               type: 'FUNDING_CONTRACT',
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -575,7 +572,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
         const txData = {
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           data: createClaimsBatchEncoded,
           value: '0',
           nonce: nextNonce
@@ -598,7 +595,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             hash: '',
             safeHash: txHash,
             status: 'PENDING',
-            to: vestingContract?.data?.address ?? '',
+            to: vestingContract?.address ?? '',
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -633,7 +630,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
 
         setTransactionLoaderStatus('PENDING');
         const vestingContractInstance = new ethers.Contract(
-          vestingContract?.data?.address ?? '',
+          vestingContract?.address ?? '',
           VTVL_VESTING_ABI.abi,
           library.getSigner()
         );
@@ -651,7 +648,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           hash: addingClaimsTransaction.hash,
           safeHash: '',
           status: 'PENDING',
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           type: 'ADDING_CLAIMS',
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -727,6 +724,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           transaction.id
         );
         toast.success('Approved successfully.');
+        setTransactionStatus('EXECUTABLE');
         setTransactionLoaderStatus('SUCCESS');
       }
     } catch (err) {
@@ -859,9 +857,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           </div>
         )}
       </div>
-      <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
-        {vestingContract?.data.name}
-      </div>
+      <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{vestingContract?.name}</div>
       <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         <div className="flex gap-1.5 items-center">
           <img className="w-4 h-4" src="icons/safe.png" />

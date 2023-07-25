@@ -384,7 +384,7 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
           </div>
         ) : null}
       </div>
-      <div>
+      {/* <div>
         {type === 'contract' ? (
           <ContractOverview
             tokenName={mintFormState.name}
@@ -394,7 +394,7 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
             address={mintFormState.address}
           />
         ) : null}
-      </div>
+      </div> */}
       <div className="border-t mt-3 pt-3 row-center justify-between">
         <div className="row-center">{status ? statuses[status]?.actions : ''}</div>
       </div>

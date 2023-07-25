@@ -1,4 +1,5 @@
 import TransactionModal, { TransactionStatuses } from '@components/molecules/TransactionModal/TransactionModal';
+import { useWeb3React } from '@web3-react/core';
 import { onSnapshot, query, where } from 'firebase/firestore';
 import { useAuthContext } from 'providers/auth.context';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
@@ -20,6 +21,7 @@ interface ITransactionLoadeerData {
 const TransactionLoader = createContext({} as ITransactionLoadeerData);
 
 export function TransactionLoaderContextProvider({ children }: any) {
+  const { chainId } = useWeb3React();
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatuses>('');
   const [transactions, setTransactions] = useState<ITransactionData[]>([]);
   const [pendingTransactions, setPendingTransactions] = useState<ITransactionData[]>([]);
@@ -39,9 +41,13 @@ export function TransactionLoaderContextProvider({ children }: any) {
   useEffect(() => {
     let allTransactions: ITransactionData[] = [];
     let tmpPendingTransactions: ITransactionData[] = [];
-    if (!organizationId) return;
+    if (!organizationId || !chainId) return;
 
-    const q = query(transactionCollection, where('organizationId', '==', organizationId));
+    const q = query(
+      transactionCollection,
+      where('organizationId', '==', organizationId),
+      where('chainId', '==', chainId)
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
@@ -87,7 +93,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
     return () => {
       unsubscribe();
     };
-  }, [organizationId]);
+  }, [organizationId, chainId]);
 
   return (
     <TransactionLoader.Provider value={value}>
