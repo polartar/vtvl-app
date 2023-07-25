@@ -12,7 +12,6 @@ import { BigNumber, ethers } from 'ethers';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
-import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction, IVesting } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';

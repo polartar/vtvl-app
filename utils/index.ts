@@ -4,5 +4,5 @@ export const arraySort = (arr: any[], field: string): any[] => {
 
 export const truncateComma = (value: string) => value?.split(',')?.join('') ?? '';
 
-export const compareAddresses = (address1: string, address2: string) =>
+export const compareAddresses = (address1: string | null, address2: string | null) =>
   address1?.toLowerCase() === address2?.toLowerCase();

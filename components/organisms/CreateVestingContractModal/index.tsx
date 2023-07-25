@@ -7,7 +7,6 @@ import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import { createVestingContract } from 'services/db/vestingContract';
 
 interface ICreateVestingContractModal {
   hideModal: () => void;

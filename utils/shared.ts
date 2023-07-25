@@ -1,3 +1,4 @@
+import VestingContractApiService from '@api-services/VestingContractApiService';
 import ERC20 from '@contracts/abi/ERC20.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import format from 'date-fns/format';
@@ -6,7 +7,6 @@ import sub from 'date-fns/sub';
 import Decimal from 'decimal.js';
 import { ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
-import { fetchVestingContractByQuery, fetchVestingContractsByQuery } from 'services/db/vestingContract';
 import { spaceMissions } from 'types/constants/shared';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting } from 'types/models';
@@ -160,29 +160,27 @@ export const getUserTokenDetails = async (
     userTokenDetails.numberOfReleases = numberOfReleases;
 
     // Check for the vesting contract so we can query it in the blockchain
-    const contractsFromDB = await fetchVestingContractsByQuery(
-      ['organizationId', 'chainId'],
-      ['==', '=='],
-      [selectedSchedule?.data.organizationId, chainId]
+    const contractsFromDB = await VestingContractApiService.getOrganizationVestingContracts(
+      selectedSchedule.data.organizationId
     );
 
     const v = contractsFromDB.find((v) => v.id === selectedSchedule.data.vestingContractId);
 
     // We can now query via ethers
-    if (v && Boolean(v.data.address)) {
+    if (v && v.address && Boolean(v.address)) {
       // Update user token details for the contract address
-      userTokenDetails.vestingContractAddress = v.data.address;
-      console.log('Contract address', v.data);
+      userTokenDetails.vestingContractAddress = v.address;
+      console.log('Contract address', v);
       // Query the blockchain for the data we need
       const vestingContract = await new ethers.Contract(
-        v?.data?.address ?? '',
+        v?.address ?? '',
         VTVL_VESTING_ABI.abi,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
       // Get the token details in the blockchain
       const tokenDetails = await new ethers.Contract(
-        v?.data?.tokenAddress,
+        v?.tokenId,
         ERC20,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
