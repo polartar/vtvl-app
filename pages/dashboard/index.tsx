@@ -9,6 +9,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useAuth } from '@store/useAuth';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import ImportIcon from 'public/icons/import-icon.svg';
@@ -18,6 +19,7 @@ import { ReactElement, useCallback, useEffect, useMemo } from 'react';
 import { NextPageWithLayout } from '../_app';
 
 const Dashboard: NextPageWithLayout = () => {
+  const { userId } = useAuth();
   const { organizationId, emailSignUp } = useAuthContext();
   const { mintFormState } = useTokenContext();
   const { fetchDashboardData } = useDashboardContext();
@@ -57,7 +59,7 @@ const Dashboard: NextPageWithLayout = () => {
 
   return (
     <>
-      {!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED' ? (
+      {!mintFormState?.address || mintFormState?.status === 'PENDING' || mintFormState?.status === 'FAILED' ? (
         <>
           <h1 className="h2 font-medium text-center mb-10">My Projects</h1>
           <EmptyState
@@ -131,7 +133,7 @@ const Dashboard: NextPageWithLayout = () => {
                   </div>
                 </div>
               </div>
-              {mintFormState.address && !mintFormState.imported && mintFormState.supplyCap === 'UNLIMITED' && (
+              {mintFormState.address && !mintFormState.isImported && mintFormState.supplyCap === 'UNLIMITED' && (
                 <button className="secondary row-center" onClick={() => router.push('/dashboard/mint-supply')}>
                   <PlusIcon className="w-5 h-5" />
                   <span className="whitespace-nowrap">Mint Supply</span>

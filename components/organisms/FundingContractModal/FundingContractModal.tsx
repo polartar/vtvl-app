@@ -117,7 +117,7 @@ const FundingContractModal = ({
    * -- the Amount to be funded in the contract.
    */
   const handleMaxChange = () => {
-    setValue('amount', +mintFormState.maxSupply);
+    setValue('amount', +(mintFormState.maxSupply ?? '0'));
   };
 
   // Update the form values that rely on the contract object from the parent caller.
@@ -131,7 +131,7 @@ const FundingContractModal = ({
   useEffect(() => {
     if (account) {
       const tokenContract = new ethers.Contract(
-        mintFormState.address,
+        mintFormState.address ?? '',
         [
           // Read-Only Functions
           'function balanceOf(address owner) view returns (uint256)',
@@ -280,7 +280,7 @@ const FundingContractModal = ({
                       required
                       initial={+amount.value}
                       minimum={+depositAmount}
-                      maximum={+mintFormState.maxSupply}
+                      maximum={+(mintFormState.maxSupply ?? '0')}
                       onMinChange={handleMinChange}
                       onUseMax={handleMaxChange}
                       maxReadOnly
@@ -289,10 +289,10 @@ const FundingContractModal = ({
                 ) : null}
                 {/* MANUAL FUNDING SECTION */}
                 {fundingMethod.value === 'MANUAL' ? (
-                  <Copy text={mintFormState.address} removeIcon>
+                  <Copy text={mintFormState.address ?? ''} removeIcon>
                     <div className="mt-5 pt-3 px-3 flex flex-col items-center cursor-pointer relative">
                       <TokenProfile
-                        address={mintFormState.address}
+                        address={mintFormState.address ?? ''}
                         logo={mintFormState.logo}
                         name={mintFormState.name}
                         symbol={mintFormState.symbol}

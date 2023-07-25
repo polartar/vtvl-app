@@ -1,6 +1,9 @@
+import VestingContractApiService from '@api-services/VestingContractApiService';
 import { injected } from '@connectors/index';
 import { useAuthContext } from '@providers/auth.context';
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { IStatus, STATUS_MAPPING } from 'components/organisms/DashboardPendingActions';
 import VTVL_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
@@ -10,7 +13,6 @@ import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVestingContract } from 'types/models';
 
 interface IVestingContractPendingActionProps {
   id: string;
@@ -32,10 +34,12 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
   updateFilter
 }) => {
   const { account, chainId, activate, library } = useWeb3React();
-  const { currentSafe, organizationId } = useAuthContext();
+  const { currentSafe } = useAuthContext();
+  const { organizationId } = useOrganization();
   // const { fetchDashboardVestingContract } = useDashboardContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
+  const { updateVestingContract } = useDashboardContext();
 
   const [status, setStatus] = useState<IStatus>('');
 
@@ -63,18 +67,26 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         const vestingContract = await VestingFactory.deploy(mintFormState.address);
         setTransactionStatus('IN_PROGRESS');
         await vestingContract.deployed();
-        const vestingContractId = await updateVestingContract(
-          {
-            ...data,
-            tokenAddress: mintFormState.address,
-            address: vestingContract.address,
-            status: currentSafe?.address ? 'PENDING' : 'SUCCESS',
-            deployer: account,
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          id
-        );
+        // const vestingContractId = await updateVestingContract(
+        //   {
+        //     ...data,
+        //     tokenAddress: mintFormState.address ?? '',
+        //     address: vestingContract.address,
+        //     status: currentSafe?.address ? 'PENDING' : 'SUCCESS',
+        //     deployer: account,
+        //     updatedAt: Math.floor(new Date().getTime() / 1000)
+        //   },
+        //   id
+        // );
 
+        const res = await VestingContractApiService.updateVestingContract(id, {
+          address: vestingContract.address,
+          chainId,
+          status: currentSafe?.address ? 'PENDING' : 'SUCCESS',
+          isDeployed: true,
+          organizationId
+        });
+        updateVestingContract(res);
         setTransactionStatus('SUCCESS');
         // fetchDashboardVestingContract();
         if (currentSafe?.address) {
@@ -95,7 +107,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
       if (organizationId && chainId) {
         setTransactionStatus('PENDING');
 
-        const vestingContract = new ethers.Contract(data.address, VTVL_VESTING_ABI.abi, library.getSigner());
+        const vestingContract = new ethers.Contract(data.address ?? '', VTVL_VESTING_ABI.abi, library.getSigner());
         const transactionResponse = await vestingContract.setAdmin(currentSafe?.address, true);
         setTransactionStatus('IN_PROGRESS');
         await transactionResponse.wait();
@@ -124,18 +136,17 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         currentSafe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())
       ) {
         setTransactionStatus('PENDING');
-        const vestingContract = new ethers.Contract(data.address, VTVL_VESTING_ABI.abi, library.getSigner());
+        const vestingContract = new ethers.Contract(data.address ?? '', VTVL_VESTING_ABI.abi, library.getSigner());
         const transactionResponse = await vestingContract.setAdmin(account, false);
         setTransactionStatus('IN_PROGRESS');
         await transactionResponse.wait();
-        await updateVestingContract(
-          {
-            ...data,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          id
-        );
+        const res = await VestingContractApiService.updateVestingContract(id, {
+          address: vestingContract.address,
+          chainId,
+          status: 'SUCCESS',
+          organizationId
+        });
+        updateVestingContract(res);
         setStatus('SUCCESS');
         setTransactionStatus('SUCCESS');
       }
@@ -150,7 +161,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
       setStatus('AUTHORIZATION_REQUIRED');
     } else if (data.status === 'PENDING' && currentSafe) {
       const VestingContract = new ethers.Contract(
-        data.address,
+        data.address ?? '',
         VTVL_VESTING_ABI.abi,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );

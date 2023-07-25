@@ -1,3 +1,4 @@
+import TokenApiService from '@api-services/TokenApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import DotLoader from '@components/atoms/DotLoader/DotLoader';
@@ -30,7 +31,7 @@ const Summary: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { mintFormState, updateMintFormState, updateTokenId } = useTokenContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
-  const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply, burnable } = mintFormState;
+  const { name, symbol, logo, decimal, initialSupply, supplyCap, maxSupply, burnable } = mintFormState;
 
   const [loading, setLoading] = useState(false);
 
@@ -50,11 +51,11 @@ const Summary: NextPageWithLayout = () => {
             ? await TokenFactory.deploy(
                 name,
                 symbol,
-                parseTokenAmount(initialSupply, decimals),
-                parseTokenAmount(maxSupply, decimals),
+                parseTokenAmount(initialSupply!, decimal),
+                parseTokenAmount(maxSupply!, decimal),
                 burnable
               )
-            : await TokenFactory.deploy(name, symbol, parseTokenAmount(initialSupply, decimals), burnable);
+            : await TokenFactory.deploy(name, symbol, parseTokenAmount(initialSupply!, decimal), burnable);
 
         const transactionData: ITransaction = {
           hash: tokenContract.deployTransaction.hash,
@@ -73,28 +74,26 @@ const Summary: NextPageWithLayout = () => {
         setTransactionStatus('IN_PROGRESS');
         const tx = await tokenContract.deployed();
 
-        const tokenId = await createToken({
+        const tokenId = await TokenApiService.createToken({
+          organizationId: organizationId,
           name: name,
           symbol: symbol,
+          decimal: 18,
+          description: '',
+          maxSupply: maxSupply ? maxSupply : '',
           address: tokenContract.address,
-          logo: logo,
-          organizationId: organizationId,
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
+          logo: logo || '',
           imported: false,
-          supplyCap: supplyCap,
-          maxSupply: maxSupply ? maxSupply : 0,
-          initialSupply: initialSupply ? initialSupply : 0,
-          status: 'SUCCESS',
+          supplyCap: supplyCap!,
           chainId,
-          burnable
+          burnable: burnable ?? false
         });
 
         updateMintFormState({ ...mintFormState, address: tokenContract.address, status: 'SUCCESS', chainId });
-        updateTokenId(tokenId);
+        // updateTokenId(tokenId);
 
-        transactionData.status = 'SUCCESS';
-        updateTransaction(transactionData, transactionId);
+        // transactionData.status = 'SUCCESS';
+        // updateTransaction(transactionData, transactionId);
 
         console.log('Address:', tokenContract.address);
         toast.success('Token created successfully');
@@ -117,7 +116,7 @@ const Summary: NextPageWithLayout = () => {
 
   return (
     <div className="panel rounded-lg mx-auto max-w-xl w-1/2 mt-14">
-      <TokenProfile address={mintFormState.address} name={name} symbol={symbol} logo={logo} />
+      <TokenProfile address={mintFormState.address || ''} name={name} symbol={symbol} logo={logo} />
       {/* <progress
         value={
           supplyCap === 'LIMITED' ? (parseInt(initialSupply.toString()) / parseInt(maxSupply.toString())) * 100 : 100
@@ -129,15 +128,17 @@ const Summary: NextPageWithLayout = () => {
       <div className="border-y border-gray-300 mt-5 py-5 grid md:grid-cols-3">
         <label>
           <span>Supply cap</span>
-          <p className="paragraphy-small-medium capitalize">{supplyCap.toLowerCase()}</p>
+          <p className="paragraphy-small-medium capitalize">{supplyCap?.toLowerCase()}</p>
         </label>
         <label>
           <span>Amount to mint</span>
-          <p className="paragraphy-small-medium">{formatNumber(+initialSupply)}</p>
+          <p className="paragraphy-small-medium">{formatNumber(initialSupply ? +initialSupply : 0)}</p>
         </label>
         <label>
           <span>Maximum amount</span>
-          <p className="paragraphy-small-medium">{supplyCap === 'LIMITED' ? formatNumber(+maxSupply) : 'Unlimited'}</p>
+          <p className="paragraphy-small-medium">
+            {supplyCap === 'LIMITED' ? formatNumber(maxSupply ? +maxSupply : 0) : 'Unlimited'}
+          </p>
         </label>
       </div>
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
