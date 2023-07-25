@@ -76,7 +76,7 @@ const Dashboard: NextPageWithLayout = () => {
             <button
               type="button"
               className="line flex flex-row gap-2 items-center"
-              // disabled={!isMintAvailabe}
+              disabled={!isMintAvailabe}
               onClick={() => router.push('/minting-token')}>
               <PlusIcon className="w-5 h-5" />
               Mint a new token
