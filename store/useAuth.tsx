@@ -69,8 +69,11 @@ export const useAuth = () => {
       } else if (currentRouteIsProtected) throw 'Deny access';
     } catch (error) {
       console.log('ACCESS TOKEN NOT VALID', error);
-      toast.error(ERROR_MESSAGES.EN.TOKEN_EXPIRED);
-      router.push(REDIRECT_URIS.AUTH_LOGIN);
+      const isRouteProtected = platformRoutes.find((r) => r.path === router.pathname);
+      if (isRouteProtected) {
+        toast.error(ERROR_MESSAGES.EN.TOKEN_EXPIRED);
+        router.push(REDIRECT_URIS.AUTH_LOGIN);
+      }
     }
   };
 

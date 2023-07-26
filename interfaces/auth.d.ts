@@ -19,7 +19,6 @@ interface AuthWithEmailRequest {
 }
 
 interface VerifyEmailRequest {
-  email: string;
   code: string;
 }
 

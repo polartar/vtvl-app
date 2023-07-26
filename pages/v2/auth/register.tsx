@@ -135,7 +135,7 @@ const RegisterPage = () => {
             className="primary small"
             onClick={() => {
               setAgreedOnConsent(false);
-              router.replace('/auth/login');
+              router.replace(REDIRECT_URIS.AUTH_LOGIN);
             }}>
             Login
           </button>
