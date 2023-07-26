@@ -22,7 +22,7 @@ export type IUserType =
   | 'founder'
   | 'investor'
   | 'manager'
-  | 'manager2'
+  | 'operator'
   | 'employee'
   | 'advisor'
   | 'anonymous'

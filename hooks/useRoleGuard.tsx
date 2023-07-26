@@ -25,16 +25,14 @@ const useRoleGuard = (options: RoleGuardOptions) => {
   const [auth, setAuth] = useShallowState<ILocalStorage | null>(null);
 
   const updateRoleGuardState = async () => {
-    if (!USE_NEW_API) {
-      const persistedUser = await getCache();
-      // Check if user exists
-      if (persistedUser) {
-        const stringAuth = JSON.stringify(auth);
-        const stringCache = JSON.stringify(persistedUser);
-        // Only update the states if there is an update.
-        if (stringAuth !== stringCache) {
-          await setAuth(persistedUser);
-        }
+    const persistedUser = await getCache();
+    // Check if user exists
+    if (persistedUser) {
+      const stringAuth = JSON.stringify(auth);
+      const stringCache = JSON.stringify(persistedUser);
+      // Only update the states if there is an update.
+      if (stringAuth !== stringCache) {
+        await setAuth(persistedUser);
       }
     }
   };

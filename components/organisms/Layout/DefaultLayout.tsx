@@ -354,7 +354,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       ...EmployeeRoutes.menuList
     ],
     roleTitle: 'Manager',
-    role: 'manager2'
+    role: 'operator'
   };
 
   const SidebarProps: Record<string, any> = {
@@ -362,7 +362,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     employee: { ...EmployeeRoutes },
     investor: { ...InvestorRoutes },
     manager: { ...ManagerRoutes },
-    manager2: { ...Manager2Routes }
+    operator: { ...Manager2Routes }
   };
 
   // Vesting schedule section
@@ -441,24 +441,18 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   }, []);
 
   useEffect(() => {
-    if (USE_NEW_API) {
-      console.log('NEW API for sidebar');
-      if (userRole) {
-        setSidebarProperties({ ...SidebarProps[userRole.toLowerCase()] });
+    // Still uses the vtvl_cache storage to get the user's persisted role and override (if any)
+    if (user && user.memberInfo && user.memberInfo.type) {
+      if (user.memberInfo.type === 'founder' && roleOverride) {
+        // set the sidebar items into the switched role
+        setSidebarProperties({ ...SidebarProps[roleOverride] });
+      } else {
+        // Normally set the sidebar itesm to corresponding user type
+        setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
       }
     } else {
-      if (user && user.memberInfo && user.memberInfo.type) {
-        if (user.memberInfo.type === 'founder' && roleOverride) {
-          // set the sidebar items into the switched role
-          setSidebarProperties({ ...SidebarProps[roleOverride] });
-        } else {
-          // Normally set the sidebar itesm to corresponding user type
-          setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
-        }
-      } else {
-        // For testing purposes only
-        setSidebarProperties({ ...SidebarProps.employee });
-      }
+      // For testing purposes only
+      setSidebarProperties({ ...SidebarProps.employee });
     }
   }, [userRole, user, currentSafe, roleOverride]);
 

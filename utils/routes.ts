@@ -65,7 +65,11 @@ export const platformRoutes: Route[] = [
   { path: '/vesting-schedule/summary', allowedRoles: [...managerRoles], allowedRolesV2: managerRolesV2 },
   { path: '/vesting-schedule/upload-csv', allowedRoles: [...managerRoles], allowedRolesV2: managerRolesV2 },
   // Cap table routes
-  { path: '/cap-table', allowedRoles: [IRole.FOUNDER], allowedRolesV2: [IRole.FOUNDER, IRole.OPERATOR] },
+  {
+    path: '/cap-table',
+    allowedRoles: [IRole.FOUNDER, IRole.OPERATOR],
+    allowedRolesV2: [IRole.FOUNDER, IRole.OPERATOR]
+  },
   // Claim portal routes
   {
     path: '/claim-portal',

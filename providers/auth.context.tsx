@@ -2,7 +2,7 @@ import RecipientApiService from '@api-services/RecipientApiService';
 import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { getUserStore, useUser } from '@store/useUser';
-import { USE_NEW_API } from '@utils/constants';
+import { REDIRECT_URIS, USE_NEW_API } from '@utils/constants';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import {
@@ -208,6 +208,7 @@ export function AuthContextProvider({ children }: any) {
     await setCache(updatedAuthData);
     // Update the global state for the auth and role -- automatically redirects the user.
     updateRoleGuardState();
+    router.push(newRole === 'investor' ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
   };
 
   // A function to abstract all authentication from different authentication methods
@@ -575,6 +576,7 @@ export function AuthContextProvider({ children }: any) {
     setLoading(true);
     if (USE_NEW_API) {
       if (userStore.userId) {
+        const persistedRole = await getCache().roleOverride;
         // Authenticate the user based on the new api implementation
         authenticateUser(
           {
@@ -588,7 +590,7 @@ export function AuthContextProvider({ children }: any) {
               role: userStore.role.toLowerCase() as IRole
             }
           } as IUser,
-          userStore.role.toLowerCase() as IRole
+          persistedRole
         );
       }
       return;
@@ -705,7 +707,7 @@ export function AuthContextProvider({ children }: any) {
       user.memberInfo.role &&
       user.memberInfo.role !== IRole.FOUNDER &&
       user.memberInfo.role !== IRole.MANAGER &&
-      // user.memberInfo.role !== 'manager2' &&
+      user.memberInfo.role !== IRole.OPERATOR &&
       !inProgress &&
       !router.asPath.includes('welcome')
     ) {

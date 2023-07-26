@@ -1,6 +1,7 @@
 import { ERROR_MESSAGES } from '@api-hooks/messages';
 import useUserAPI from '@api-hooks/useUser';
 import { REDIRECT_URIS } from '@utils/constants';
+import { getCache } from '@utils/localStorage';
 import { platformRoutes } from '@utils/routes';
 import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
@@ -64,7 +65,10 @@ export const useAuth = () => {
         const userProfile = await getUserProfile();
         if (userProfile) {
           console.log('ACCESS TOKEN STILL VALID', userProfile);
-          router.push(REDIRECT_URIS.MAIN);
+          // Check for role overrides
+          const cachedUserData = await getCache();
+          const { roleOverride } = cachedUserData;
+          router.push(roleOverride === 'investor' ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
         } else throw userProfile;
       } else if (currentRouteIsProtected) throw 'Deny access';
     } catch (error) {
