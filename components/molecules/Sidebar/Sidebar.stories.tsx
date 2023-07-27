@@ -16,6 +16,7 @@ import switchUserIcon from '@assets/switchUser.svg';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
+import { IRole } from 'types/models/settings';
 
 export default {
   title: 'components/Sidebar',
@@ -56,5 +57,5 @@ Collapsed.args = {
     { title: 'Switch to investor', icon: switchUserIcon, route: '/switch-role' }
   ],
   userName: 'John Doe',
-  role: 'Founder'
+  role: IRole.FOUNDER
 };
