@@ -7,6 +7,7 @@ import { useClaimTokensContext } from '@providers/claim-tokens.context';
 import Router, { useRouter } from 'next/router';
 import ChevronIcon from 'public/icons/collapse-btn.svg';
 import React, { Fragment, useContext, useEffect } from 'react';
+import { IRole } from 'types/models/settings';
 
 import { Colors } from '../../CommonStyles';
 
@@ -30,7 +31,7 @@ interface Props {
   menuList: MenuItemProps[];
   submenuList: SubMenuItemProps[];
   userName: string;
-  role: string;
+  role: IRole;
 }
 
 const Sidebar = ({ roleTitle, menuList, submenuList }: Props) => {

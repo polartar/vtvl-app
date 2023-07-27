@@ -587,7 +587,7 @@ export function AuthContextProvider({ children }: any) {
               name: userStore.name,
               org_id: userStore.organizationId,
               wallets: [{ walletAddress: userStore.walletAddress, chainId: userStore.chainId }],
-              role: userStore.role.toLowerCase() as IRole
+              role: userStore.role
             }
           } as IUser,
           persistedRole

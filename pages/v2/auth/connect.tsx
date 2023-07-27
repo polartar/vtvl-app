@@ -68,69 +68,83 @@ const ConnectWalletPage: NextPage = () => {
     setActivated(true);
   };
 
+  console.log('SIGNING?', isSigning);
+
   useEffect(() => {
     // startOnboarding(Step.ChainSetup);
-    injected.isAuthorized().then((isAuthorized) => {
-      if (isAuthorized) {
-        setIsSigning(true);
-        (async () => {
-          await activate(injected, undefined, true);
-          if (active && account) {
-            const currentDate = toUTCString(new Date());
-            const signature = await library.provider.request({
-              method: 'personal_sign',
-              params: [SIGN_MESSAGE_TEMPLATE(account, currentDate), account]
-            });
-            await connectWallet({ address: account, signature, utcTime: currentDate });
-
-            // Get me
-            const profile = await getUserProfile();
-            console.log('USER PROFILE', profile);
-            // Ensure wallet is validated
-            // Identify which url should the user be redirected to based on his/her current role
-            // Probably get the details of the user and check there
-            try {
-              const orgs = await getOrganizations();
-              if (orgs && orgs.length) {
-                // Has an associated organization, there fore is an existing user
-                // Change the chainId later to be from the new api
-                saveUser({ organizationId: orgs[0].organizationId, role: orgs[0].role, chainId });
-                // Use context to save organization id and user information
-                setOrganizationId(orgs[0].organizationId);
-                authenticateUser(
-                  {
-                    ...user,
-                    memberInfo: {
-                      ...user?.memberInfo,
-                      id: profile.user.id,
-                      user_id: profile.user.id,
-                      name: profile.user.name,
-                      // Change the chainId later to be from the new api
-                      wallets: [{ walletAddress: profile.wallet.address, chainId: chainId! }],
-                      org_id: orgs[0].organizationId,
-                      type: orgs[0].role.toLowerCase() as IUserType
-                    }
-                  } as IUser,
-                  orgs[0].role.toLowerCase() as IRole
-                );
-                router.push(REDIRECT_URIS.MAIN);
-              } else {
-                // No associated org, new user
-                // redirect to account setup
-                // POST /organization
-                router.push(REDIRECT_URIS.SETUP_ACCOUNT);
+    injected
+      .isAuthorized()
+      .then((isAuthorized) => {
+        if (isAuthorized) {
+          setIsSigning(true);
+          if (account && active) {
+            (async () => {
+              await activate(injected, undefined, true);
+              console.log('SIGNING AFTER INJECTOR AUTH', isSigning);
+              try {
+                const currentDate = toUTCString(new Date());
+                const signature = await library.provider.request({
+                  method: 'personal_sign',
+                  params: [SIGN_MESSAGE_TEMPLATE(account, currentDate), account]
+                });
+                await connectWallet({ address: account, signature, utcTime: currentDate });
+              } catch (err) {
+                // Handle wallet signing rejection / error
               }
-              console.log('useMAGIC organizations', organizations, orgs);
-            } catch (err) {
-              console.log('ERror organization', err);
-            }
+
+              // Get me
+              const profile = await getUserProfile();
+              console.log('USER PROFILE', profile);
+              // Ensure wallet is validated
+              // Identify which url should the user be redirected to based on his/her current role
+              // Probably get the details of the user and check there
+              try {
+                const orgs = await getOrganizations();
+                if (orgs && orgs.length) {
+                  // Has an associated organization, there fore is an existing user
+                  // Change the chainId later to be from the new api
+                  saveUser({ organizationId: orgs[0].organizationId, role: orgs[0].role, chainId });
+                  // Use context to save organization id and user information
+                  setOrganizationId(orgs[0].organizationId);
+                  authenticateUser(
+                    {
+                      ...user,
+                      memberInfo: {
+                        ...user?.memberInfo,
+                        id: profile.user.id,
+                        user_id: profile.user.id,
+                        name: profile.user.name,
+                        // Change the chainId later to be from the new api
+                        wallets: [{ walletAddress: profile.wallet.address, chainId: chainId! }],
+                        org_id: orgs[0].organizationId,
+                        role: orgs[0].role
+                      }
+                    } as IUser,
+                    orgs[0].role
+                  );
+                  router.push(REDIRECT_URIS.MAIN);
+                } else {
+                  // No associated org, new user
+                  // redirect to account setup
+                  // POST /organization
+                  router.push(REDIRECT_URIS.SETUP_ACCOUNT);
+                }
+                setIsSigning(false);
+                console.log('useMAGIC organizations', organizations, orgs);
+              } catch (err) {
+                console.log('ERror organization', err);
+                setIsSigning(false);
+              }
+            })();
           }
-        })();
-      } else {
+        } else {
+          setIsSigning(false);
+        }
+      })
+      .finally(() => {
         setIsSigning(false);
-      }
-    });
-  }, [active, account]);
+      });
+  }, [account, active]);
 
   return (
     <PaddedLayout>

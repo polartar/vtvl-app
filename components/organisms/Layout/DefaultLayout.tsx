@@ -81,7 +81,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   const { active, account, connector } = useWeb3React();
   const [sidebarProperties, setSidebarProperties] = useState({
     roleTitle: 'Anonymous',
-    role: '',
+    role: IRole.ANONYMOUS,
     userName: '',
     menuList: [],
     submenuList: []
@@ -224,7 +224,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       }
     ],
     userName: 'John Doe',
-    role: 'founder'
+    role: IRole.FOUNDER
   };
 
   // Menulist for both Employee and Investors
@@ -292,7 +292,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     menuList: [...employeeInvestorMenuItems.menuList],
     submenuList: [...employeeInvestorMenuItems.submenuList],
     userName: 'John Doe',
-    role: 'employee'
+    role: IRole.EMPLOYEE
   };
   // Routes available for Investors -- same as the employees
   const InvestorRoutes = {
@@ -301,7 +301,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     menuList: [...employeeInvestorMenuItems.menuList],
     submenuList: [...employeeInvestorMenuItems.submenuList],
     userName: 'John Doe',
-    role: 'investor'
+    role: IRole.INVESTOR
   };
   // Routes available for Managers -- temporary
   const ManagerRoutes = {
@@ -324,7 +324,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       ...EmployeeRoutes.menuList
     ],
     roleTitle: 'Manager',
-    role: 'manager'
+    role: IRole.MANAGER
   };
 
   // Routes available for Manager level 2 -- Manager that is extended with Cap Table view
@@ -355,7 +355,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       ...EmployeeRoutes.menuList
     ],
     roleTitle: 'Manager',
-    role: 'operator'
+    role: IRole.OPERATOR
   };
 
   const SidebarProps: Record<string, any> = {
@@ -446,10 +446,10 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     if (user && user.memberInfo && user.memberInfo.role) {
       if (user.memberInfo.role === IRole.FOUNDER && roleOverride) {
         // set the sidebar items into the switched role
-        setSidebarProperties({ ...SidebarProps[roleOverride] });
+        setSidebarProperties({ ...SidebarProps[roleOverride.toLowerCase()] });
       } else {
         // Normally set the sidebar itesm to corresponding user type
-        setSidebarProperties({ ...SidebarProps[user?.memberInfo?.role] });
+        setSidebarProperties({ ...SidebarProps[user?.memberInfo?.role.toLowerCase()] });
       }
     } else {
       // For testing purposes only
