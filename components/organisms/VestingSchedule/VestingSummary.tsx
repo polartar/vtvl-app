@@ -49,7 +49,7 @@ const VestingSummary = ({
   }, [vestingContracts]);
 
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
-    vestingContract as IVestingContractDoc,
+    [vestingContract!],
     [vestingSchedule],
     recipients
   );
@@ -88,7 +88,7 @@ const VestingSummary = ({
             <ContractsIcon className="h-4" />
             Contract
           </label>
-          <p className="text-neutral-900">{vestingContract?.data.name}</p>
+          <p className="text-neutral-900">{vestingContract?.name}</p>
         </div>
 
         {safe && safe?.address ? (

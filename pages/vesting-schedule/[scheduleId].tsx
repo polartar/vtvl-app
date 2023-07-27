@@ -87,7 +87,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
       withdrawn: withdrawn,
       locked: locked,
       reserved: vestingSchedulesInfo.length
-        ? ethers.BigNumber.from(vestingContracts[0]?.data.balance || '0').sub(
+        ? ethers.BigNumber.from(vestingContracts[0]?.balance || '0').sub(
             vestingSchedulesInfo[0].numTokensReservedForVesting || '0'
           )
         : ethers.BigNumber.from(0)
@@ -197,7 +197,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
             filter={filter}
             vestings={[vesting]}
             vestingSchedulesInfo={vestingSchedulesInfo}
-            totalBalance={vestingContracts[0].data.balance || '0'}
+            totalBalance={vestingContracts[0].balance?.toString() || '0'}
           />
         </div>
       ) : null}

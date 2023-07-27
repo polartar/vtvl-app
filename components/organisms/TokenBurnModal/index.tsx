@@ -61,17 +61,17 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
     try {
       setTransactionStatus('PENDING');
       const TokenContract = new ethers.Contract(
-        mintFormState.address,
+        String(mintFormState.address),
         mintFormState.supplyCap === 'LIMITED' ? LimitedSupplyABI.abi : UnlimitedSupplyABI.abi,
         library.getSigner()
       );
       const tokenAllowance = await TokenContract.allowance(account, mintFormState.address);
-      if (ethers.utils.parseUnits(burnAmount.replaceAll(',', ''), mintFormState.decimals).gt(tokenAllowance)) {
+      if (ethers.utils.parseUnits(burnAmount.replaceAll(',', ''), mintFormState.decimal).gt(tokenAllowance)) {
         const approveTx = await TokenContract.approve(mintFormState.address, ethers.constants.MaxUint256);
         await approveTx.wait();
       }
       const burnTx = await TokenContract.burn(
-        ethers.utils.parseUnits(burnAmount.replaceAll(',', ''), mintFormState.decimals)
+        ethers.utils.parseUnits(burnAmount.replaceAll(',', ''), mintFormState.decimal)
       );
       setTransactionStatus('IN_PROGRESS');
       await burnTx.wait();
@@ -92,7 +92,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
     if (burnableAmount && burnAmount) {
       if (
         parseFloat(burnAmount.replaceAll(',', '')) >
-        parseFloat(ethers.utils.formatUnits(burnableAmount, mintFormState.decimals))
+        parseFloat(ethers.utils.formatUnits(burnableAmount, mintFormState.decimal))
       ) {
         setError('Insufficient burn amount');
         return;
@@ -122,7 +122,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
               <div className="text-[#667085] text-xs">Burnable Supply</div>
             </div>
             <div className="text-[#101828] text-base font-medium">
-              {burnableAmount ? formatNumber(+ethers.utils.formatUnits(burnableAmount, mintFormState.decimals)) : 0}
+              {burnableAmount ? formatNumber(+ethers.utils.formatUnits(burnableAmount, mintFormState.decimal)) : 0}
             </div>
           </div>
           <div className="inline-flex flex-col items-end gap-1.5">
@@ -134,7 +134,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
               {mintFormState.initialSupply
                 ? formatNumber(
                     mintFormState.initialSupply -
-                      parseFloat(ethers.utils.formatUnits(burnableAmount, mintFormState.decimals))
+                      parseFloat(ethers.utils.formatUnits(burnableAmount, mintFormState.decimal))
                   )
                 : 0}
             </div>
@@ -157,8 +157,8 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
                 width:
                   burnableAmount && mintFormState.initialSupply
                     ? `${Math.floor(
-                        (+ethers.utils.formatUnits(burnableAmount, mintFormState.decimals) /
-                          mintFormState.initialSupply) *
+                        (+ethers.utils.formatUnits(burnableAmount, mintFormState.decimal) /
+                          +mintFormState.initialSupply) *
                           100
                       )}%`
                     : '0%',
@@ -171,10 +171,12 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
                 width:
                   burnAmount && mintFormState.initialSupply
                     ? `${
-                        Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / mintFormState.initialSupply) * 100) >
+                        Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / +mintFormState.initialSupply) * 100) >
                         100
                           ? 100
-                          : Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / mintFormState.initialSupply) * 100)
+                          : Math.floor(
+                              (parseFloat(burnAmount.replaceAll(',', '')) / +mintFormState.initialSupply) * 100
+                            )
                       }%`
                     : '0%',
                 backgroundColor: '#ef4444'
@@ -190,8 +192,8 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
                 width:
                   burnableAmount && mintFormState.initialSupply
                     ? `${Math.floor(
-                        (+ethers.utils.formatUnits(burnableAmount, mintFormState.decimals) /
-                          mintFormState.initialSupply) *
+                        (+ethers.utils.formatUnits(burnableAmount, mintFormState.decimal) /
+                          +mintFormState.initialSupply) *
                           100
                       )}%`
                     : '0%'
@@ -214,7 +216,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
               <div className="mr-2">
                 Burnable&nbsp;&nbsp;{' '}
                 <span style={{ color: '#98a2b3' }}>
-                  {burnableAmount ? formatNumber(+ethers.utils.formatUnits(burnableAmount, mintFormState.decimals)) : 0}
+                  {burnableAmount ? formatNumber(+ethers.utils.formatUnits(burnableAmount, mintFormState.decimal)) : 0}
                 </span>
               </div>
               <div
@@ -250,7 +252,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
               <div className="mr-2">
                 Total allocation&nbsp;&nbsp;{' '}
                 <span style={{ color: '#98a2b3' }}>
-                  {mintFormState.initialSupply ? formatNumber(mintFormState.initialSupply) : 0}
+                  {mintFormState.initialSupply ? formatNumber(+mintFormState.initialSupply) : 0}
                 </span>
               </div>
               <div
@@ -286,7 +288,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
           />
           <div className="mt-6">
             <RangeSlider
-              max={burnableAmount ? +ethers.utils.formatUnits(burnableAmount, mintFormState.decimals) : 0}
+              max={burnableAmount ? +ethers.utils.formatUnits(burnableAmount, mintFormState.decimal) : 0}
               value={burnAmount ? parseFloat(burnAmount.replaceAll(',', '')) : 0}
               className="mt-5"
               onChange={(e) => setBurnAmount(formatNumber(e.target.valueAsNumber))}

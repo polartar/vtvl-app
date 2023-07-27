@@ -1,7 +1,9 @@
+import { TRoleGroup } from '@utils/routes';
 import { useRouter } from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from 'services/auth/firebase';
 import { fetchMember } from 'services/db/member';
+import { IRole } from 'types/models/settings';
 
 import AuthContext from './auth.context';
 import { useGlobalContext } from './global.context';
@@ -88,14 +90,14 @@ export function OnboardingContextProvider({ children }: any) {
     setCurrentStep(step);
   };
   const completeOnboarding = async () => {
-    const foundingMembers = ['founder', 'manager', 'operator'];
+    const foundingMembers: TRoleGroup = [IRole.FOUNDER, IRole.MANAGER, IRole.OPERATOR];
     setInProgress(false);
     await refreshUser();
     const user = auth.currentUser;
     if (!user) return;
     const memberInfo = await fetchMember(user.uid);
-    if (memberInfo?.type) {
-      router.replace(!foundingMembers.includes(memberInfo?.type) ? '/claim-portal' : '/dashboard');
+    if (memberInfo?.role) {
+      router.replace(!foundingMembers.includes(memberInfo?.role) ? '/claim-portal' : '/dashboard');
     }
   };
 

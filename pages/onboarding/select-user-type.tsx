@@ -13,7 +13,7 @@ import { toast } from 'react-toastify';
 import { newMember } from 'services/db/member';
 import { twMerge } from 'tailwind-merge';
 import { IMember } from 'types/models';
-import { IUserType } from 'types/models/member';
+import { IRole } from 'types/models/settings';
 
 const Container = styled.div`
   width: 100%;
@@ -25,7 +25,7 @@ const SelectUserTypePage: NextPage = () => {
   const { onNext, startOnboarding, completeOnboarding, inProgress } = useContext(OnboardingContext);
   const { emailSignUp, user } = useContext(AuthContext);
   const { active, account, chainId } = useWeb3React();
-  const [selected, setSelected] = React.useState('');
+  const [selected, setSelected] = React.useState<IRole | undefined>();
   const [member, setMember] = React.useState<IMember>();
   const {
     website: { assets, organizationId: webOrgId, features }
@@ -40,7 +40,7 @@ const SelectUserTypePage: NextPage = () => {
           animateOnHover: assets?.selectUserFounder?.animateOnHover || true,
           fallback: '/images/onboarding-user-type-founder.svg'
         },
-        value: 'founder',
+        value: IRole.FOUNDER,
         label: (
           <>
             I'm a <span className={twMerge(webOrgId ? 'text-primary-900' : 'text-secondary-900')}>founder</span> of a
@@ -55,7 +55,7 @@ const SelectUserTypePage: NextPage = () => {
           animateOnHover: assets?.selectUserRecipient?.animateOnHover || true,
           fallback: '/images/onboarding-user-type-investor.svg'
         },
-        value: 'investor',
+        value: IRole.INVESTOR,
         label: (
           <>
             I’m a <span className={twMerge(webOrgId ? 'text-primary-900' : 'text-secondary-900')}>token recipient</span>{' '}
@@ -113,7 +113,7 @@ const SelectUserTypePage: NextPage = () => {
 
   const handleContinue = async () => {
     try {
-      if (selected === 'founder') {
+      if (selected === IRole.FOUNDER) {
         onNext({ accountType: selected });
         return;
       }
@@ -123,7 +123,7 @@ const SelectUserTypePage: NextPage = () => {
           companyEmail: user.email || member?.email,
           name: user.displayName || member?.name,
           // Will probably update this into 'recipient' later
-          type: (features?.auth?.memberOnly ? 'investor' : selected) as IUserType,
+          role: features?.auth?.memberOnly ? IRole.INVESTOR : selected,
           org_id: webOrgId || member?.org_id,
           wallets: [{ walletAddress: account, chainId: chainId! }]
         });

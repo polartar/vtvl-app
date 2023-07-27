@@ -208,7 +208,7 @@ export function AuthContextProvider({ children }: any) {
     await setCache(updatedAuthData);
     // Update the global state for the auth and role -- automatically redirects the user.
     updateRoleGuardState();
-    router.push(newRole === 'investor' ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
+    router.push(newRole === IRole.INVESTOR ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
   };
 
   // A function to abstract all authentication from different authentication methods

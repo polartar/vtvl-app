@@ -57,7 +57,7 @@ const TeamTable = ({
 
       await sendTeammateInvite(
         selectedMember.email,
-        selectedMember.type || ITeamRole.Manager,
+        selectedMember.role || ITeamRole.MANAGER,
         selectedMember.name || 'anonymous',
         companyName,
         user.memberInfo?.org_id,
@@ -135,7 +135,7 @@ const TeamTable = ({
                   <td>
                     <SelectInput
                       options={roles}
-                      value={row.type}
+                      value={row.role}
                       color="text-primary-800"
                       variant="alt"
                       onChange={(e) => onChangeType(row.id, e.target.value as ITeamRole)}
@@ -159,7 +159,7 @@ const TeamTable = ({
                     {isTeamMember ? (
                       <button
                         className="border-[#ef4444] text-[#ef4444] border-2 font-medium"
-                        disabled={!isDisableAvailable && row.type === ITeamRole.Founder}
+                        disabled={!isDisableAvailable && row.role === ITeamRole.FOUNDER}
                         onClick={() => onDisableClick(row)}>
                         Disable
                       </button>

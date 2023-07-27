@@ -14,7 +14,7 @@ export const formatRecipientsDocToForm = (recipients: IRecipient[] | MultiValue<
         walletAddress: recipient.address,
         name: recipient.name,
         email: recipient.email,
-        company: recipient.company ?? '',
+        company: recipient?.organization?.name ?? '',
         allocations: Number(recipient.allocations),
         recipientType: [getRecipient(recipient.role)]
       } as IRecipientForm)

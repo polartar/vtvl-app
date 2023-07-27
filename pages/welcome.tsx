@@ -31,7 +31,7 @@ const TeamWelcome: NextPage = () => {
           options: {
             address: mintFormState?.address,
             symbol: mintFormState?.symbol,
-            decimals: mintFormState?.decimals || 18,
+            decimals: mintFormState?.decimal || 18,
             image: mintFormState?.logo
           }
         }

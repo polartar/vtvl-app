@@ -7,6 +7,7 @@ interface IVestingContract {
   name: string;
   address: string | null;
   transaction: string | null;
+  balance?: string | number;
   chainId: number;
   isDeployed: boolean;
   isActive: boolean;

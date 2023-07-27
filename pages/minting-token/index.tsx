@@ -19,10 +19,10 @@ import { formatNumber } from 'utils/token';
 interface FormTypes {
   name: string;
   symbol: string;
-  logo: string;
-  supplyCap: string;
-  initialSupply: number | '';
-  maxSupply: number | '';
+  logo?: string;
+  supplyCap?: string;
+  initialSupply?: number | string;
+  maxSupply?: number | string;
 }
 
 const MintingToken: NextPageWithLayout = () => {
@@ -59,16 +59,16 @@ const MintingToken: NextPageWithLayout = () => {
   // Updates made when the user is interacting with the Range Slider component
   // Should also update the text value -- for display -- of the number input
   const handleinitialSupplyChange = (e: any) => {
-    const newValue = parseFloat(e.target.value);
+    const newValue = e.target.value;
     setValue('initialSupply', newValue);
     setValue('initialSupplyText', formatNumber(newValue).toString());
   };
 
   // Make sure that when the user clicks the "MAX" button, we update both the number and text values of the field
   const handleMaxMintAmouont = () => {
-    const newMaxValue = parseFloat(maxSupply.value.toString());
+    const newMaxValue = maxSupply.value!.toString();
     setValue('initialSupply', newMaxValue);
-    setValue('initialSupplyText', formatNumber(newMaxValue).toString());
+    setValue('initialSupplyText', formatNumber(+newMaxValue).toString());
   };
 
   const handleUpload = (url: string) => {
@@ -145,10 +145,14 @@ const MintingToken: NextPageWithLayout = () => {
   // Then updating the numeric value based on the current value of the text
   useEffect(() => {
     // Parse the text into floats to cater the decimals if any
-    const initialSupplyToFloat = parseFloat(initialSupplyText.value.replaceAll(',', ''));
-    const maxSupplyToFloat = parseFloat(maxSupplyText.value.replaceAll(',', ''));
-    setValue('initialSupply', !isNaN(initialSupplyToFloat) ? initialSupplyToFloat : 0);
-    setValue('maxSupply', !isNaN(maxSupplyToFloat) ? maxSupplyToFloat : 0);
+    // const initialSupplyToFloat = parseFloat(initialSupplyText.value.replaceAll(',', ''));
+    // const maxSupplyToFloat = parseFloat(maxSupplyText.value.replaceAll(',', ''));
+    // setValue('initialSupply', !isNaN(initialSupplyToFloat) ? initialSupplyToFloat : 0);
+    // setValue('maxSupply', !isNaN(maxSupplyToFloat) ? maxSupplyToFloat : 0);
+    const initialSupplyToFloat = initialSupplyText.value.replaceAll(',', '');
+    const maxSupplyToFloat = maxSupplyText.value.replaceAll(',', '');
+    setValue('initialSupply', initialSupplyToFloat);
+    setValue('maxSupply', maxSupplyToFloat);
   }, [initialSupplyText.value, maxSupplyText.value]);
 
   const isDisabled =
@@ -290,13 +294,13 @@ const MintingToken: NextPageWithLayout = () => {
                       type="number"
                       error={
                         Boolean(errors.initialSupply) ||
-                        (initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED') ||
+                        (!initialSupply.value! > !maxSupply.value! && supplyCap.value === 'LIMITED') ||
                         Number(initialSupply.value) <= 0
                       }
                       message={
                         errors.initialSupply
                           ? 'Please enter amount to mint'
-                          : initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED'
+                          : +initialSupply.value! > +maxSupply.value! && supplyCap.value === 'LIMITED'
                           ? 'Amount to mint should be smaller than the maximum amount'
                           : Number(initialSupply.value) <= 0
                           ? 'Please input valid amount'
@@ -309,10 +313,12 @@ const MintingToken: NextPageWithLayout = () => {
                 {supplyCap.value === 'LIMITED' ? (
                   <Chip
                     label="MAX"
-                    color={+initialSupply.value < +maxSupply.value ? 'secondary' : 'default'}
+                    color={+initialSupply.value! < +maxSupply.value! ? 'secondary' : 'default'}
                     onClick={handleMaxMintAmouont}
                     className={`absolute right-6 cursor-pointer ${
-                      initialSupply.value > maxSupply.value || errors.initialSupply || Number(initialSupply.value) <= 0
+                      +initialSupply.value! > +maxSupply.value! ||
+                      errors.initialSupply ||
+                      Number(initialSupply.value) <= 0
                         ? 'bottom-9'
                         : 'bottom-2'
                     }`}
@@ -322,7 +328,7 @@ const MintingToken: NextPageWithLayout = () => {
               {supplyCap.value === 'LIMITED' ? (
                 <div className="mt-6">
                   <RangeSlider
-                    max={maxSupply.value ? maxSupply.value : 0}
+                    max={maxSupply.value ? +maxSupply.value : 0}
                     value={initialSupply.value ? initialSupply.value : 0}
                     className="mt-5"
                     onChange={handleinitialSupplyChange}

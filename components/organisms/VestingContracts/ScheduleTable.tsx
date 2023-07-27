@@ -82,7 +82,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     [recipients, id]
   );
 
-  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract?.data);
+  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract);
 
   const [status, setStatus] = useState<IStatus>('');
 
@@ -144,8 +144,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const initializeStatus = async () => {
     if (
       !vestingContract ||
-      vestingContract.data.status === 'INITIALIZED' ||
-      (vestingContract.data.status === 'PENDING' && currentSafe?.address)
+      vestingContract.status === 'INITIALIZED' ||
+      (vestingContract.status === 'PENDING' && currentSafe?.address)
     ) {
       setStatus('CONTRACT_REQUIRED');
       return;
@@ -193,13 +193,13 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       }
     } else {
       const VestingContract = new ethers.Contract(
-        vestingContract?.data.address || '',
+        vestingContract?.address || '',
         VTVL_VESTING_ABI.abi,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
       // const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
-      const tokenBalance = vestingContract.data.balance || 0;
+      const tokenBalance = vestingContract?.balance || 0;
 
       const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
 
@@ -318,7 +318,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       if (type === 'Metamask') {
         setTransactionLoaderStatus('PENDING');
         const tokenContract = new ethers.Contract(
-          mintFormState.address,
+          String(mintFormState.address),
           [
             // Read-Only Functions
             'function balanceOf(address owner) view returns (uint256)',
@@ -334,19 +334,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           library.getSigner()
         );
 
-        const allowance = await tokenContract.allowance(account, vestingContract?.data?.address);
+        const allowance = await tokenContract.allowance(account, vestingContract?.address);
         if (allowance.lt(ethers.utils.parseEther(amount))) {
           const approveTx = await tokenContract.approve(
-            vestingContract?.data?.address,
+            vestingContract?.address,
             ethers.utils.parseEther(amount).sub(allowance)
           );
           await approveTx.wait();
         }
 
-        const fundTransaction = await tokenContract.transfer(
-          vestingContract?.data?.address,
-          ethers.utils.parseEther(amount)
-        );
+        const fundTransaction = await tokenContract.transfer(vestingContract?.address, ethers.utils.parseEther(amount));
         setTransactionLoaderStatus('IN_PROGRESS');
         await fundTransaction.wait();
         // This should have a function to update the vesting schedule status
@@ -369,7 +366,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           'event Transfer(address indexed from, address indexed to, uint amount)'
         ]);
         const transferEncoded = tokenContractInterface.encodeFunctionData('transfer', [
-          vestingContract?.data?.address,
+          vestingContract?.address,
           ethers.utils.parseEther(amount)
         ]);
         if (currentSafe?.address && account && chainId && organizationId) {
@@ -387,7 +384,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
             const txData = {
-              to: mintFormState.address,
+              to: String(mintFormState.address),
               data: transferEncoded,
               value: '0',
               nonce: nextNonce
@@ -409,7 +406,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               hash: '',
               safeHash: txHash,
               status: 'PENDING',
-              to: vestingContract?.data?.address ?? '',
+              to: vestingContract?.address ?? '',
               type: 'FUNDING_CONTRACT',
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -552,7 +549,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
         const nextNonce = await safeService.getNextNonce(currentSafe.address);
         const txData = {
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           data: createClaimsBatchEncoded,
           value: '0',
           nonce: nextNonce
@@ -576,7 +573,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             hash: '',
             safeHash: txHash,
             status: 'PENDING',
-            to: vestingContract?.data?.address ?? '',
+            to: vestingContract?.address ?? '',
             type: 'ADDING_CLAIMS',
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
@@ -610,7 +607,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
         setTransactionLoaderStatus('PENDING');
         const vestingContractInstance = new ethers.Contract(
-          vestingContract?.data?.address ?? '',
+          vestingContract?.address ?? '',
           VTVL_VESTING_ABI.abi,
           library.getSigner()
         );
@@ -628,7 +625,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           hash: addingClaimsTransaction.hash,
           safeHash: '',
           status: 'PENDING',
-          to: vestingContract?.data?.address ?? '',
+          to: vestingContract?.address ?? '',
           type: 'ADDING_CLAIMS',
           createdAt: Math.floor(new Date().getTime() / 1000),
           updatedAt: Math.floor(new Date().getTime() / 1000),

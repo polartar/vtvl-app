@@ -13,6 +13,7 @@ import { useTransactionLoaderContext } from '@providers/transaction-loader.conte
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import VariableSupplyERC20Token from 'contracts/abi/VariableSupplyERC20Token.json';
+import parse from 'date-fns/parse';
 import { ethers } from 'ethers';
 import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
@@ -53,14 +54,14 @@ const MintSuppy: NextPageWithLayout = () => {
     defaultValues
   });
 
-  const { name, symbol, logo, decimals, initialSupply, supplyCap, maxSupply } = mintFormState;
+  const { name, symbol, logo, decimal, initialSupply, supplyCap, maxSupply } = mintFormState;
 
   const additionalTokens = { value: watch('additionalTokens'), fieldState: getFieldState('additionalTokens') };
   const additionalTokensText = {
     value: watch('additionalTokensText'),
     fieldState: getFieldState('additionalTokensText')
   };
-  const maxAllowableToMint = +maxSupply - +initialSupply;
+  const maxAllowableToMint = +maxSupply! - +initialSupply!;
 
   const handleMinChange = (e: any) => {
     setValue('additionalTokens', +e.target.value);
@@ -76,7 +77,7 @@ const MintSuppy: NextPageWithLayout = () => {
         activate(injected);
       } else if (
         mintFormState.address &&
-        !mintFormState.imported &&
+        !mintFormState.isImported &&
         mintFormState.supplyCap === 'UNLIMITED' &&
         Number(additionalTokens.value) > 0
       ) {
@@ -93,19 +94,20 @@ const MintSuppy: NextPageWithLayout = () => {
         setTransactionStatus('IN_PROGRESS');
         await mintTx.wait();
 
+        // ATTENTION: this might need to be updated to support the new API integration for token details
         await updateToken(
           {
             name: name,
             symbol: symbol,
             address: tokenContract.address,
-            logo: logo,
+            logo: String(logo),
             organizationId: organizationId!,
-            createdAt: mintFormState.createdAt,
+            createdAt: Math.floor(parse(String(mintFormState.createdAt), 'YYYY-MM-DD', new Date()).getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
-            imported: mintFormState.imported,
+            imported: mintFormState.isImported,
             supplyCap: supplyCap,
-            maxSupply: +maxSupply,
-            initialSupply: +additionalTokens.value + +initialSupply,
+            maxSupply: +maxSupply!,
+            initialSupply: +additionalTokens.value + +initialSupply!,
             status: mintFormState.status,
             chainId
           },
@@ -114,7 +116,7 @@ const MintSuppy: NextPageWithLayout = () => {
 
         updateMintFormState({
           ...mintFormState,
-          initialSupply: +additionalTokens.value + +initialSupply
+          initialSupply: +additionalTokens.value + +initialSupply!
         });
 
         console.log('Deployed an ERC Token for testing.');
@@ -172,7 +174,7 @@ const MintSuppy: NextPageWithLayout = () => {
         className="w-full my-6">
         <TokenProfile {...mintFormState} burnable={false} className="mb-6" />
         <span className="paragraphy-medium-medium text-neutral-700">Contract address</span>
-        <Copy text={mintFormState.address}>
+        <Copy text={mintFormState.address!}>
           <p className="text-sm text-neutral-500 mb-2">{mintFormState.address}</p>
         </Copy>
         <div className="my-6 py-6 border-t border-b border-gray-200 grid grid-cols-3">
@@ -182,12 +184,14 @@ const MintSuppy: NextPageWithLayout = () => {
           </div>
           <div className="font-medium text-sm">
             <p className="text-neutral-800">Minted amount</p>
-            <p className="text-neutral-500">{formatNumber(+mintFormState.initialSupply)}</p>
+            <p className="text-neutral-500">{formatNumber(+mintFormState.initialSupply!)}</p>
           </div>
           <div className="font-medium text-sm">
             <p className="text-neutral-800">Maximum Supply</p>
             <p className="text-neutral-500">
-              {mintFormState.supplyCap === 'LIMITED' ? formatNumber(+mintFormState.maxSupply) : mintFormState.supplyCap}
+              {mintFormState.supplyCap === 'LIMITED'
+                ? formatNumber(+mintFormState.maxSupply!)
+                : mintFormState.supplyCap}
             </p>
           </div>
         </div>

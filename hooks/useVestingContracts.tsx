@@ -18,20 +18,12 @@ export const useVestingContractsFromIds = (vestingContractIds: string[]) => {
     },
     {
       enabled: !!vestingContractIds?.length,
-      select: (data) =>
-        data
-          ?.map((contract, index) => ({
-            id: vestingContractIds[index],
-            data: contract as IVestingContract
-          }))
-          ?.filter((contract) => Boolean(contract.data)) ?? []
+      select: (data) => data
     }
   );
 
   const vestingContractAddresses = useMemo(
-    () =>
-      vestingContracts?.map((contract) => contract.data?.address as string)?.filter((address) => Boolean(address)) ??
-      [],
+    () => vestingContracts?.map((contract) => contract.address as string)?.filter((address) => Boolean(address)) ?? [],
     [vestingContracts]
   );
 

@@ -10,7 +10,6 @@ import type {
   ITransaction,
   IUser,
   IVesting,
-  IVestingContract,
   IVestingTemplate,
   IWebsite
 } from 'types/models';

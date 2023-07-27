@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { fetchMemberByEmail } from 'services/db/member';
 import { fetchOrg } from 'services/db/organization';
 import { IOrganization } from 'types/models';
+import { IRole } from 'types/models/settings';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const email = req.body.email;
@@ -13,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).send({ message: 'Please add Slack WebHook URL to env' });
   }
 
-  if (member && member.createdAt && member.type === 'founder' && member.createdAt + 3 >= now) {
+  if (member && member.createdAt && member.role === IRole.FOUNDER && member.createdAt + 3 >= now) {
     let organization: IOrganization | undefined;
     if (member.org_id) {
       organization = await fetchOrg(member.org_id);

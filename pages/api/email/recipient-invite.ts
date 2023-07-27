@@ -91,3 +91,6 @@
 //   const token = jwt.sign(signInToken, privateKey || '', { algorithm: 'RS256', expiresIn: 3600 * 24 });
 //   return token;
 // };
+
+// Temporary to fix build error
+export {};

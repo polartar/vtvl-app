@@ -10,7 +10,7 @@ import { toast } from 'react-toastify';
 import { addInvitee } from 'services/db/member';
 import { fetchOrg } from 'services/db/organization';
 import { IInvitee, IMember } from 'types/models';
-import { ITeamRole } from 'types/models/settings';
+import { IRole, ITeamRole } from 'types/models/settings';
 import { convertLabelToOption } from 'utils/shared';
 import * as Yup from 'yup';
 
@@ -21,7 +21,7 @@ const defaultTeammanagement = {
     {
       name: '',
       email: '',
-      type: ITeamRole.Manager
+      type: ITeamRole.MANAGER
     }
   ]
 };
@@ -29,7 +29,7 @@ const defaultTeammanagement = {
 const defaultMember = {
   name: '',
   email: '',
-  type: ITeamRole.Manager
+  type: ITeamRole.MANAGER
 };
 
 export const VALID_EMAIL_REG =
@@ -89,7 +89,7 @@ const Team = () => {
   });
 
   const isMemberDisableAvailable = useMemo(() => {
-    return teammates.filter((member: IMember) => member.type === ITeamRole.Founder).length > 1;
+    return teammates.filter((member: IMember) => member.role === IRole.FOUNDER).length > 1;
   }, [teammates]);
 
   const isMemberExist = (email: string) => {

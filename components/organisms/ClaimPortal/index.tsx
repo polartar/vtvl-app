@@ -79,7 +79,7 @@ export default function ClaimPortal() {
   const vestingDetails = useMemo(
     () =>
       vestingInfos.map((vestingInfo) => {
-        const contract = vestingContracts.find((c) => compareAddresses(c.data.address, vestingInfo.address));
+        const contract = vestingContracts.find((c) => compareAddresses(c.address, vestingInfo.address));
         const singleVesting = vestings.find((v) => v.data.vestingContractId === contract?.id);
         return {
           id: contract?.id,
@@ -341,7 +341,7 @@ export default function ClaimPortal() {
                 ))
               : vestings.map((singleVesting) => {
                   const contract = vestingContracts.find((c) => c.id === singleVesting.data.vestingContractId);
-                  const vestingInfo = getVestingInfoByContract(String(contract?.data.address));
+                  const vestingInfo = getVestingInfoByContract(String(contract?.address));
                   const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = singleVesting.data.details;
                   const computeCliffDateTime = getCliffDateTime(startDateTime!, cliffDuration);
 

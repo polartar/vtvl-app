@@ -30,7 +30,7 @@ const MemberWalletPage: NextPage = () => {
       companyEmail: email,
       org_id: orgId,
       name,
-      type
+      role: type
     });
 
     if (token) {
@@ -41,7 +41,7 @@ const MemberWalletPage: NextPage = () => {
         .then((res) => {
           const { token, name, orgId, email, type } = res.data;
 
-          signUpWithToken({ email, name, org_id: orgId, type, companyEmail: email }, token);
+          signUpWithToken({ email, name, org_id: orgId, role: type, companyEmail: email }, token);
         })
         .catch(async (err) => {
           if (err.response.data.message === 'jwt expired') {

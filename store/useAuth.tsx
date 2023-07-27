@@ -5,6 +5,7 @@ import { getCache } from '@utils/localStorage';
 import { platformRoutes } from '@utils/routes';
 import { useRouter } from 'next/router';
 import { toast } from 'react-toastify';
+import { IRole } from 'types/models/settings';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -68,7 +69,7 @@ export const useAuth = () => {
           // Check for role overrides
           const cachedUserData = await getCache();
           const { roleOverride } = cachedUserData;
-          router.push(roleOverride === 'investor' ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
+          router.push(roleOverride === IRole.INVESTOR ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
         } else throw userProfile;
       } else if (currentRouteIsProtected) throw 'Deny access';
     } catch (error) {

@@ -3,7 +3,7 @@ import Team from '@components/molecules/Settings/Team';
 import { useAuthContext } from '@providers/auth.context';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
-import { ITeamRole } from 'types/models/settings';
+import { IRole } from 'types/models/settings';
 
 const Settings = () => {
   const router = useRouter();
@@ -13,7 +13,7 @@ const Settings = () => {
   const [isTeamPage, setIsTeamPage] = useState(true);
 
   const isFounder = useMemo(() => {
-    return user?.memberInfo?.type === ITeamRole.Founder;
+    return user?.memberInfo?.role === IRole.FOUNDER;
   }, [user]);
 
   useEffect(() => {

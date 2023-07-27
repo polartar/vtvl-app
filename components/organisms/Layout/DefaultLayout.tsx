@@ -22,6 +22,7 @@ import { useLoaderContext } from 'providers/loader.context';
 import React, { useContext, useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { toast } from 'react-toastify';
+import { IRole } from 'types/models/settings';
 import { NO_CONNECT_WALLET_MODAL_PAGES, NO_SIDEBAR_PAGES, USE_NEW_API, WEBSITE_NAME } from 'utils/constants';
 
 import AuthContext from '../../../providers/auth.context';
@@ -206,7 +207,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         route: '/switch-role',
         available: true,
         onClick: async () => {
-          await switchRole('investor');
+          await switchRole(IRole.INVESTOR);
           toast.success(
             <>
               You switched to <strong className="text-primary-900">Investor</strong> mode.
@@ -262,7 +263,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         available: true
       },
       // Only add this option if the user is a founder
-      ...(user?.memberInfo?.type === 'founder'
+      ...(user?.memberInfo?.role === IRole.FOUNDER
         ? [
             {
               title: 'Switch to founder',
@@ -271,7 +272,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
               route: '/switch-role',
               available: true,
               onClick: async () => {
-                await switchRole('');
+                await switchRole(IRole.FOUNDER);
                 toast.success(
                   <>
                     You switched to <strong className="text-secondary-900">Founder</strong> mode.
@@ -429,7 +430,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       : Boolean(
           // MOCK DISPLAY
           // true
-          !inProgress && user && user?.memberInfo && user.memberInfo.type && SidebarProps[user?.memberInfo?.type]
+          !inProgress && user && user?.memberInfo && user.memberInfo.role && SidebarProps[user?.memberInfo?.role]
         )) && !NO_SIDEBAR_PAGES.includes(router.pathname);
 
   const handleWalletConnection = () => {
@@ -442,13 +443,13 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
 
   useEffect(() => {
     // Still uses the vtvl_cache storage to get the user's persisted role and override (if any)
-    if (user && user.memberInfo && user.memberInfo.type) {
-      if (user.memberInfo.type === 'founder' && roleOverride) {
+    if (user && user.memberInfo && user.memberInfo.role) {
+      if (user.memberInfo.role === IRole.FOUNDER && roleOverride) {
         // set the sidebar items into the switched role
         setSidebarProperties({ ...SidebarProps[roleOverride] });
       } else {
         // Normally set the sidebar itesm to corresponding user type
-        setSidebarProperties({ ...SidebarProps[user?.memberInfo?.type] });
+        setSidebarProperties({ ...SidebarProps[user?.memberInfo?.role] });
       }
     } else {
       // For testing purposes only

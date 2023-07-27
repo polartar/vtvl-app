@@ -13,8 +13,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
-import { IUserType } from 'types/models/member';
-import { ITeamRole } from 'types/models/settings';
+import { IRole, ITeamRole } from 'types/models/settings';
 import { WEBSITE_NAME } from 'utils/constants';
 
 interface Contributor {
@@ -123,7 +122,7 @@ const AccountSetupPage: NextPage = () => {
           name: values.name,
           email: user.email || '',
           companyEmail: values.companyEmail,
-          type: (info?.accountType || '') as IUserType
+          type: (String(info?.accountType) as IRole) || IRole.ANONYMOUS
         },
         { name: values.company, email: values.companyEmail }
       );
@@ -134,7 +133,7 @@ const AccountSetupPage: NextPage = () => {
             name: contributor.name,
             email: contributor.email,
             org_id: user.memberInfo?.org_id || org_id || '',
-            type: ITeamRole.Manager
+            type: ITeamRole.MANAGER
           });
           await sendTeammateInvite(
             contributor.email,

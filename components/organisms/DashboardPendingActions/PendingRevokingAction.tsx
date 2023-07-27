@@ -33,7 +33,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
   );
   const vesting = useMemo(() => vestings.find((v) => v.id === data.vestingId), [vestings, data]);
   const recipient = useMemo(
-    () => recipients.find(({ data: r }) => compareAddresses(r.walletAddress, data.recipient))?.data,
+    () => recipients.find((r) => compareAddresses(r.address, data.recipient)),
     [data, recipients]
   );
   const vestingContract = useMemo(

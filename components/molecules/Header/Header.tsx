@@ -8,6 +8,7 @@ import Router, { useRouter } from 'next/router';
 import React from 'react';
 import Fade from 'react-reveal/Fade';
 import { IUser } from 'types/models';
+import { IRole } from 'types/models/settings';
 import { NO_CONNECT_WALLET_BUTTON_PAGES, WEBSITE_NAME } from 'utils/constants';
 
 interface HeaderProps {
@@ -30,7 +31,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
   const redirectToHome = () => {
     let url = '/onboarding';
     if (user) {
-      if (user?.memberInfo?.type === 'employee') {
+      if (user?.memberInfo?.role === IRole.EMPLOYEE) {
         url = '/onboarding/member';
       } else {
         url = '/dashboard';

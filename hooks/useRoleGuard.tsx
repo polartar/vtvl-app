@@ -5,14 +5,13 @@ import { useEffect } from 'react';
 import { IUserType } from 'types/models/member';
 import { IRole } from 'types/models/settings';
 import { getCache } from 'utils/localStorage';
-import { managerRoles, recipientRoles } from 'utils/routes';
+import { TRoleGroup, managerRoles, recipientRoles } from 'utils/routes';
 
 import { useShallowState } from './useShallowState';
 
 export type Route = {
   path: string;
-  allowedRoles: IRole[];
-  allowedRolesV2: IRole[];
+  allowedRoles: TRoleGroup;
 };
 
 type RoleGuardOptions = {

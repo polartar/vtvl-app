@@ -36,7 +36,7 @@ export interface IMember {
   email?: string;
   companyEmail?: string;
   wallets?: IAddress[];
-  role?: IRole;
+  role?: IRole | ITeamRole;
   joined?: number;
   createdAt?: number;
   updatedAt?: number;

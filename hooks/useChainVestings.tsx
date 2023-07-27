@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useWeb3React } from '@web3-react/core';
 import { useMemo } from 'react';
 import { SupportedChainId } from 'types/constants/supported-chains';
-import { IVestingContract } from 'types/models';
 import { IVestingContractDoc } from 'types/models/vestingContract';
 import { getVestingDetailsFromContracts } from 'utils/multicall';
 import { QUERY_KEYS } from 'utils/queries';
@@ -22,7 +21,7 @@ export type VestingInfo = {
 /**
  * Fetch on-chain vesting data
  */
-export const useChainVestings = (vestingContracts: IVestingContractDoc[]) => {
+export const useChainVestings = (vestingContracts: IVestingContract[]) => {
   const { account, chainId } = useWeb3React();
 
   const {

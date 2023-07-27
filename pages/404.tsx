@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
+import { IRole } from 'types/models/settings';
 import { getCache } from 'utils/localStorage';
 import { managerRoles, recipientRoles } from 'utils/routes';
 
@@ -12,9 +13,9 @@ const Page = () => {
     const persistedUser = getCache();
     const { user, roleOverride } = persistedUser;
     const userRole =
-      (user?.memberInfo?.type === 'founder' && roleOverride ? roleOverride : user?.memberInfo?.type) ||
-      user?.memberInfo?.type ||
-      '';
+      (user?.memberInfo?.role === IRole.FOUNDER && roleOverride ? roleOverride : user?.memberInfo?.role) ||
+      user?.memberInfo?.role ||
+      IRole.ANONYMOUS;
     const fallbackTo = managerRoles.includes(userRole)
       ? '/dashboard'
       : recipientRoles.includes(userRole)
