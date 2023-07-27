@@ -3,6 +3,7 @@ import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
+import useAuth from '@hooks/useAuth';
 import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useAuth as useAuthStore } from '@store/useAuth';
@@ -26,6 +27,7 @@ const RecipientCreate: NextPage = () => {
   const { account, library } = useWeb3React();
   const { recipient } = useAuthContext();
   const { save: saveAuth } = useAuthStore();
+  const { authorizeUser } = useAuth(); // hook
 
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,7 +76,8 @@ const RecipientCreate: NextPage = () => {
       });
 
       saveAuth(response);
-      router.push('/dashboard');
+      // Authorize the user and handles redirection
+      await authorizeUser();
     } catch (err) {
       toast.error('The signature is invalid');
     }
