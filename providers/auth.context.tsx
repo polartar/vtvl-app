@@ -136,8 +136,9 @@ export function AuthContextProvider({ children }: any) {
 
   // Sets the recipient if it is found
   useEffect(() => {
-    if (chainId && user?.memberInfo?.email && user.memberInfo?.type == 'investor') {
-      fetchRecipientsByQuery(['email', 'chainId'], ['==', '=='], [user.email, chainId]).then((response) => {
+    if (chainId && (user?.memberInfo?.email || user?.email) && user.memberInfo?.type == 'investor') {
+      const userEmail = user.email || user.memberInfo.email;
+      fetchRecipientsByQuery(['email', 'chainId'], ['==', '=='], [userEmail, chainId]).then((response) => {
         if (response && response.length > 0) {
           setRecipient(response[0]);
         }
