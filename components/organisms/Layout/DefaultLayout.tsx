@@ -218,7 +218,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       {
         title: 'Settings',
         icon: '/icons/settings.svg',
-        hoverIcon: 'icons/settings-hover.svg',
+        hoverIcon: '/icons/settings-hover.svg',
         route: '/settings',
         available: true
       }

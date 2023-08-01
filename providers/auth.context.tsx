@@ -618,22 +618,24 @@ export function AuthContextProvider({ children }: any) {
       clearAuth();
       clearUser();
       clearOrg();
-      setUser(undefined);
-      setOrganizationId(undefined);
-      Router.replace('/v2/auth/login');
     } else {
       // sign out from firebase
       await signOut(auth);
-      // remove user state
-      setUser(undefined);
-      // unauthorize user
-      setIsAuthenticated(false);
-      // remove persistent user states
-      setCache({ user: undefined, roleOverride: undefined, isAuthenticated: undefined });
-      // update auth and role guard states
-      updateRoleGuardState();
-      Router.replace('/onboarding');
     }
+
+    // remove user state
+    setUser(undefined);
+    // unauthorize user
+    setIsAuthenticated(false);
+    // remove associated organizations
+    setOrganizationId(undefined);
+    setOrganization(undefined);
+    // remove persistent user states
+    setCache({ user: undefined, roleOverride: undefined, isAuthenticated: undefined });
+    // update auth and role guard states
+    await updateRoleGuardState();
+
+    Router.replace(USE_NEW_API ? REDIRECT_URIS.AUTH_LOGIN : '/onboarding');
   };
 
   const fetchSafe = useCallback(async () => {

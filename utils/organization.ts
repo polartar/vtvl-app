@@ -9,7 +9,7 @@ export const transformOrganization: (organization: IOrganizationResponse) => IOr
     name,
     email,
     user_id,
-    createdAt: parse(createdAt, 'YYYY-MM-DD', new Date()).getTime(),
-    updatedAt: parse(updatedAt, 'YYYY-MM-DD', new Date()).getTime()
+    createdAt: parse(createdAt, 'yyyy-MM-dd', new Date()).getTime(),
+    updatedAt: parse(updatedAt, 'yyyy-MM-dd', new Date()).getTime()
   };
 };
