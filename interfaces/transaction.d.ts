@@ -1,4 +1,4 @@
-export interface ITransaction {
+interface ITransaction {
   hash: string;
   safeHash: string;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
