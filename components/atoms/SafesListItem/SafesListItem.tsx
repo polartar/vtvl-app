@@ -2,7 +2,7 @@ import React from 'react';
 
 interface SafeListItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   buttonLabel?: string;
-  label: string;
+  label: string | JSX.Element;
   selected?: boolean;
   selectedLabel?: string;
 }
@@ -20,7 +20,7 @@ const SafesListItem = ({
         <div className="bg-neutral-200 rounded-full p-2 flex-shrink-0">
           <img src="/icons/safe.png" className="w-5 h-5" />
         </div>
-        <p className="text-sm font-bold text-neutral-600 break-all">{label}</p>
+        <div className="text-sm font-bold text-neutral-600 break-all">{label}</div>
       </div>
       <button type="button" disabled={selected} className="small primary" onClick={props.onClick}>
         {selected ? selectedLabel : buttonLabel}

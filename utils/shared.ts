@@ -257,6 +257,11 @@ export const removeDuplication = <T extends string>(data: Array<T> = []) => {
 };
 
 /** Only displays n number of characters and add an ellipsis */
-export const truncateLabel = (label: string, length: number) => {
+export const truncateLabel = (label: string, length: number, split?: boolean) => {
+  // Split the label and add ellipsis in the middle
+  if (split && label.length > length)
+    return `${label.substring(0, Math.floor((length - 3) / 2))}...${label.substring(
+      label.length - Math.floor((length - 3) / 2)
+    )}`;
   return `${label.substring(0, length)}${label.length > length ? '...' : ''}`;
 };

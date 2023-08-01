@@ -33,7 +33,7 @@ import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
 import { createOrUpdateSafe, fetchSafeByQuery, fetchSafesByQuery } from 'services/db/safe';
-import { getSafeInfo } from 'services/gnosois';
+import { fetchSafes } from 'services/gnosois';
 import { IMember, IOrganization, IRecipient, ISafe, IUser } from 'types/models';
 import { IRole } from 'types/models/settings';
 import { compareAddresses } from 'utils';
@@ -61,6 +61,8 @@ export type AuthContextData = {
   currentSafe: ISafe | undefined;
   currentSafeId: string;
   safes: { id: string; data: ISafe }[];
+  safesFromChain: string[];
+  safesChainDB: { id: string; data: ISafe }[];
   organizationId?: string;
   organization?: IOrganization;
   connection?: TConnections;
@@ -95,7 +97,8 @@ export type AuthContextData = {
   toggleSideBar: () => void;
   expandSidebar: () => void;
   forceCollapseSidebar: () => void;
-  fetchSafe: () => void;
+  fetchSafeFromDB: () => void;
+  fetchAllSafes: () => void;
   setCurrentSafe: (safe: ISafe | undefined) => void;
   setCurrentSafeId: (v: string) => void;
   agreedOnConsent: boolean;
@@ -119,6 +122,8 @@ export function AuthContextProvider({ children }: any) {
   const [currentSafeId, setCurrentSafeId] = useState('');
   const [currentSafe, setCurrentSafe] = useState<ISafe | undefined>();
   const [safes, setSafes] = useState<{ id: string; data: ISafe }[]>([]);
+  const [safesFromChain, setSafesFromChain] = useState<string[]>([]);
+  const [safesChainDB, setSafesChainDB] = useState<{ id: string; data: ISafe }[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const [agreedOnConsent, setAgreedOnConsent] = useState<boolean>(false);
@@ -150,6 +155,34 @@ export function AuthContextProvider({ children }: any) {
   const { getSafeWalletsByOrganization } = useSafeAPI();
 
   const [organizationName, setOrganizationName] = useState('');
+
+  // Function used to fetch all safes from chain and on DB
+  const fetchAllSafes = async () => {
+    if (library && account && chainId) {
+      try {
+        const resp = await fetchSafes(library, account, chainId);
+        console.log('fetched safes here ', resp);
+        if (resp) setSafesFromChain(resp.safes);
+      } catch (error) {
+        console.error(error);
+        // setImportSafeError((error as any).message);
+      }
+
+      // Get safes from db as well
+      await fetchSafeFromDB();
+    }
+  };
+
+  // Gets the combined safes list based on chain and db records
+  useEffect(() => {
+    if (safesFromChain?.length && safes?.length) {
+      const existingSafes = safes.map((s) => s.data.address);
+      const safesToAdd = safesFromChain
+        .filter((address) => !existingSafes.includes(address))
+        .map((address) => ({ id: address, data: { safe_name: '', address } as ISafe }));
+      setSafesChainDB([...safesToAdd, ...safes]);
+    }
+  }, [safes, safesFromChain]);
 
   // Sets the recipient if it is found
   useEffect(() => {
@@ -638,7 +671,7 @@ export function AuthContextProvider({ children }: any) {
     Router.replace(USE_NEW_API ? REDIRECT_URIS.AUTH_LOGIN : '/onboarding');
   };
 
-  const fetchSafe = useCallback(async () => {
+  const fetchSafeFromDB = useCallback(async () => {
     if (organizationId) {
       if (USE_NEW_API) {
         // Get safe wallets from new API and transform it to the old firebase format
@@ -667,6 +700,8 @@ export function AuthContextProvider({ children }: any) {
       currentSafe,
       currentSafeId,
       safes,
+      safesFromChain,
+      safesChainDB,
       organizationId,
       organization,
       connection,
@@ -692,7 +727,8 @@ export function AuthContextProvider({ children }: any) {
       toggleSideBar: setShowSideBar,
       expandSidebar: setSidebarIsExpanded,
       forceCollapseSidebar,
-      fetchSafe,
+      fetchSafeFromDB,
+      fetchAllSafes,
       setCurrentSafe,
       setCurrentSafeId,
       agreedOnConsent,
@@ -720,7 +756,9 @@ export function AuthContextProvider({ children }: any) {
       agreedOnConsent,
       connection,
       currentSafeId,
-      safes
+      safes,
+      safesFromChain,
+      safesChainDB
     ]
   );
 
@@ -757,7 +795,7 @@ export function AuthContextProvider({ children }: any) {
     const currentOrganization = organizations.find((org) => org.organizationId === organizationId);
     if (currentOrganization) setOrganizationName(currentOrganization.organization.name);
 
-    fetchSafe();
+    fetchSafeFromDB();
   }, [organizationId]);
 
   useEffect(() => {

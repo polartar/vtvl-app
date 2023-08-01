@@ -36,7 +36,7 @@ type ConfirmationForm = {
 
 const NewSafePage: NextPage = () => {
   const { active, library, chainId, error } = useWeb3React();
-  const { fetchSafe } = useAuthContext();
+  const { fetchSafeFromDB } = useAuthContext();
   const { user } = useContext(AuthContext);
   const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
   const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
@@ -308,7 +308,7 @@ const NewSafePage: NextPage = () => {
         },
         safeRef
       );
-      fetchSafe();
+      fetchSafeFromDB();
       if (!importedSafe) {
         setTransactionStatus('SUCCESS');
       }
