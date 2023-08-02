@@ -1,4 +1,5 @@
 import TokenApiService from '@api-services/TokenApiService';
+import TransactionApiService from '@api-services/TransactionApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import DotLoader from '@components/atoms/DotLoader/DotLoader';
@@ -22,7 +23,6 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { db } from 'services/auth/firebase';
 import { createToken, fetchTokenByQuery } from 'services/db/token';
-import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {
@@ -56,7 +56,7 @@ const Summary: NextPageWithLayout = () => {
               )
             : await TokenFactory.deploy(name, symbol, parseTokenAmount(initialSupply!, decimal), burnable);
 
-        const transactionData: ITransaction = {
+        const transactionData: ITransactionRequest = {
           hash: tokenContract.deployTransaction.hash,
           safeHash: '',
           status: 'PENDING',
@@ -68,7 +68,7 @@ const Summary: NextPageWithLayout = () => {
           chainId,
           vestingIds: []
         };
-        const transactionId = await createTransaction(transactionData);
+        // const transactionId = await TransactionApiService.createTransaction(transactionData);
 
         setTransactionStatus('IN_PROGRESS');
         const tx = await tokenContract.deployed();

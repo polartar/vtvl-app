@@ -77,8 +77,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     transactionStatus: transactionLoaderStatus,
     setTransactionStatus: setTransactionLoaderStatus,
     setIsCloseAvailable,
-    addTransaction,
-    updateTransaction
+    updateTransactions
   } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
   const vestingContract = useMemo(
@@ -291,11 +290,10 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
-          await TransactionApiService.updateTransaction(data.transactionId, {
-            ...transaction,
+          const t = await TransactionApiService.updateTransaction(data.transactionId, {
             status: 'SUCCESS'
           });
-          updateTransaction(data.transactionId, { status: 'SUCCESS' });
+          updateTransactions(t);
           const batchVestings = vestings.filter((vesting) => vesting.data.transactionId === data.transactionId);
           await Promise.all(
             batchVestings.map(async (vesting) => {
@@ -433,7 +431,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               organizationId: organizationId,
               chainId
             });
-            addTransaction(transaction);
+            updateTransactions(transaction);
             await updateVesting(
               {
                 ...data,
@@ -605,7 +603,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             vestingIds: [vestingId],
             approvers: [account]
           });
-          addTransaction(transaction);
+          updateTransactions(transaction);
           await updateVesting(
             {
               ...data,
@@ -659,7 +657,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           vestingIds: [vestingId]
         };
         const transaction = await TransactionApiService.createTransaction(transactionData);
-        addTransaction(transaction);
+        updateTransactions(transaction);
         await updateVesting(
           {
             ...vesting,
@@ -670,11 +668,10 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           vestingId
         );
         await addingClaimsTransaction.wait();
-        await TransactionApiService.updateTransaction(transaction.id, {
-          ...transactionData,
+        const t = await TransactionApiService.updateTransaction(transaction.id, {
           status: 'SUCCESS'
         });
-        updateTransaction(transaction.id, { status: 'SUCCESS' });
+        updateTransactions(t);
         await fetchDashboardData();
         setStatus('SUCCESS');
         toast.success('Added schedules successfully.');
@@ -716,13 +713,10 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.safeHash as string));
-        await TransactionApiService.updateTransaction(transaction.id, {
-          ...transaction,
+        const t = await TransactionApiService.updateTransaction(transaction.id, {
           approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
         });
-        updateTransaction(transaction.id, {
-          approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
-        });
+        updateTransactions(t);
         toast.success('Approved successfully.');
         setTransactionStatus('EXECUTABLE');
         setTransactionLoaderStatus('SUCCESS');
@@ -772,11 +766,10 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
-          await TransactionApiService.updateTransaction(data.transactionId, {
-            ...transaction,
+          const t = await TransactionApiService.updateTransaction(data.transactionId, {
             status: 'SUCCESS'
           });
-          updateTransaction(data.transactionId, { status: 'SUCCESS' });
+          updateTransactions(t);
           const batchVestings = await fetchVestingsByQuery(
             ['transactionId', 'chainId'],
             ['==', '=='],

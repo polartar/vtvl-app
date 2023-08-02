@@ -46,7 +46,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
   const { chainId, library, account } = useWeb3React();
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
   const { vestingContracts } = useDashboardContext();
-  const { setTransactionStatus, setIsCloseAvailable, transactions } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable, transactions, updateTransactions } = useTransactionLoaderContext();
 
   const isAdmin = useIsAdmin(
     currentSafe ? currentSafe.address : account ? account : '',
@@ -111,7 +111,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             }
           );
 
-          const { id: transactionId } = await TransactionApiService.createTransaction({
+          const transaction = await TransactionApiService.createTransaction({
             hash: '',
             safeHash,
             chainId: vesting.chainId,
@@ -123,11 +123,11 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             updatedAt: Math.floor(new Date().getTime() / 1000),
             type: 'REVOKE_CLAIM'
           });
-
+          updateTransactions(transaction);
           await createRevoking({
             vestingId: vestingId,
             recipient,
-            transactionId: transactionId!,
+            transactionId: transaction.id,
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             chainId,
@@ -146,7 +146,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           const revokeTransaction = await vestingContractInstance.revokeClaim(recipient);
           setTransactionStatus('IN_PROGRESS');
           await revokeTransaction.wait();
-          const { id: transactionId } = await TransactionApiService.createTransaction({
+          const transaction = await TransactionApiService.createTransaction({
             hash: revokeTransaction.hash,
             safeHash: '',
             chainId: vesting.chainId,
@@ -158,10 +158,11 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             updatedAt: Math.floor(new Date().getTime() / 1000),
             type: 'REVOKE_CLAIM'
           });
+          updateTransactions(transaction);
           await createRevoking({
             vestingId: vestingId,
             recipient,
-            transactionId: transactionId!,
+            transactionId: transaction.id,
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             chainId,

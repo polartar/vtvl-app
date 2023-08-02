@@ -1,4 +1,5 @@
 import RecipientApiService from '@api-services/RecipientApiService';
+import TransactionApiService from '@api-services/TransactionApiService';
 import Copy from '@components/atoms/Copy/Copy';
 import { Typography } from '@components/atoms/Typography/Typography';
 import Safe from '@gnosis.pm/safe-core-sdk';
@@ -21,7 +22,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { createOrUpdateSafe } from 'services/db/safe';
-import { createTransaction, fetchTransactionsByQuery, updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevokingDoc } from 'types/models/revoking';
 import { IVestingDoc } from 'types/models/vesting';
@@ -43,10 +43,14 @@ export default function VestingContract({ vestingContractId }: { vestingContract
   const [revokings, setRevokings] = useState<IRevokingDoc[]>();
 
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
-  const { setTransactionStatus: setTransactionLoaderStatus } = useTransactionLoaderContext();
+  const {
+    setTransactionStatus: setTransactionLoaderStatus,
+    updateTransactions,
+    transactions
+  } = useTransactionLoaderContext();
 
   const [withdrawAmount, setWithdrawAmount] = useState(ethers.BigNumber.from(0));
-  const [withdrawTransactions, setWithdrawTransactions] = useState<{ id: string; data: ITransaction }[]>([]);
+  const [withdrawTransactions, setWithdrawTransactions] = useState<ITransaction[]>([]);
 
   const router = useRouter();
   const vestings = useMemo(() => {
@@ -194,7 +198,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           safeTxHash: txHash,
           senderSignature: signature.data
         });
-        const transactionData: ITransaction = {
+        const transactionData: ITransactionRequest = {
           hash: '',
           safeHash: txHash,
           status: 'PENDING',
@@ -208,20 +212,14 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimal || 18),
           vestingContractId: vestingContracts[0].id
         };
-        const transactionId = await createTransaction(transactionData);
+        const transaction = await TransactionApiService.createTransaction(transactionData);
+        updateTransactions(transaction);
 
         toast.success(`Withdraw transaction with nonce ${nextNonce} has been created successfully.`);
         setTransactionLoaderStatus('SUCCESS');
-        setWithdrawTransactions([
-          ...withdrawTransactions,
-          {
-            id: transactionId,
-            data: transactionData
-          }
-        ]);
       } else {
         const withdrawTransaction = await vestingContract.withdrawAdmin(withdrawAmount);
-        const transactionData: ITransaction = {
+        const transactionData: ITransactionRequest = {
           hash: withdrawTransaction.hash,
           safeHash: '',
           status: 'PENDING',
@@ -235,40 +233,33 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimal || 18),
           vestingContractId: vestingContracts[0].id
         };
-        const transactionId = await createTransaction(transactionData);
+        const transaction = await TransactionApiService.createTransaction(transactionData);
+        updateTransactions(transaction);
         await withdrawTransaction.wait();
-        await updateTransaction(
-          {
-            ...transactionData,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          transactionId
-        );
+        const t = await TransactionApiService.updateTransaction(transaction.id, {
+          status: 'SUCCESS',
+          updatedAt: Math.floor(new Date().getTime() / 1000)
+        });
+        updateTransactions(t);
         toast.success('Withdrew tokens successfully.');
         setTransactionLoaderStatus('SUCCESS');
-        setWithdrawTransactions([
-          ...withdrawTransactions,
-          {
-            id: transactionId,
-            data: { ...transactionData, status: 'SUCCESS', updatedAt: Math.floor(new Date().getTime() / 1000) }
-          }
-        ]);
       }
       initRecipientAllocation(vestingContractAddress);
     }
   };
 
   useEffect(() => {
-    if (vestingContracts && vestingContracts.length > 0 && chainId) {
-      const vestingContractAddress = vestingContracts[0].address;
-      fetchTransactionsByQuery(
-        ['address', 'chainId', 'type', 'status'],
-        ['==', '==', '==', '=='],
-        [vestingContractAddress, chainId, 'ADMIN_WITHDRAW', 'PENDING']
-      ).then((res) => setWithdrawTransactions(res));
-    }
-  }, [vestingContracts, chainId]);
+    if (vestingContracts && vestingContracts.length > 0 && chainId)
+      setWithdrawTransactions(
+        transactions.filter(
+          (t) =>
+            t.vestingContractId === vestingContracts[0].id &&
+            t.chainId === chainId &&
+            t.type === 'ADMIN_WITHDRAW' &&
+            t.status === 'PENDING'
+        )
+      );
+  }, [transactions, vestingContracts]);
 
   useEffect(() => {
     if (

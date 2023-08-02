@@ -4,13 +4,11 @@ import { useWeb3React } from '@web3-react/core';
 import { onSnapshot, query, where } from 'firebase/firestore';
 import { useAuthContext } from 'providers/auth.context';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { transactionCollection } from 'services/db/firestore';
 
 interface ITransactionLoadeerData {
   transactionStatus: TransactionStatuses;
   setTransactionStatus: (v: TransactionStatuses) => void;
-  addTransaction: (data: ITransaction) => void;
-  updateTransaction: (id: string, data: Partial<ITransaction>) => void;
+  updateTransactions: (data: ITransaction) => void;
   transactions: ITransaction[];
   pendingTransactions: ITransaction[];
   setIsCloseAvailable: (v: boolean) => void;
@@ -26,22 +24,22 @@ export function TransactionLoaderContextProvider({ children }: any) {
   const [isCloseAvailable, setIsCloseAvailable] = useState<boolean>(true);
   const { currentSafe, organizationId } = useAuthContext();
 
-  const addTransaction = (data: ITransaction) => {
-    setTransactions([...transactions, data]);
-    if (data.status === 'PENDING') {
-      setPendingTransactions([...pendingTransactions, data]);
-    }
-  };
-
-  const updateTransaction = (id: string, data: Partial<ITransaction>) => {
-    const newTransactions = transactions.map((t) => {
-      if (t.id === id) {
-        return { ...t, ...data };
+  const updateTransactions = (data: ITransaction) => {
+    if (transactions.find((t) => t.id === data.id)) {
+      const newTransactions = transactions.map((t) => {
+        if (t.id === data.id) {
+          return { ...t, ...data };
+        }
+        return t;
+      });
+      setTransactions(newTransactions);
+      setPendingTransactions(newTransactions.filter((t) => t.status === 'PENDING'));
+    } else {
+      setTransactions([...transactions, data]);
+      if (data.status === 'PENDING') {
+        setPendingTransactions([...pendingTransactions, data]);
       }
-      return t;
-    });
-    setTransactions(newTransactions);
-    setPendingTransactions(newTransactions.filter((t) => t.status === 'PENDING'));
+    }
   };
 
   const value = useMemo(
@@ -51,8 +49,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
       transactions,
       pendingTransactions,
       setIsCloseAvailable,
-      updateTransaction,
-      addTransaction
+      updateTransactions
     }),
     [transactionStatus, pendingTransactions, setTransactionStatus, transactions]
   );

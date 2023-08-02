@@ -127,7 +127,11 @@ const Table = ({
   const { organizationId, currentSafe, currentSafeId, setCurrentSafe } = useAuthContext();
   const { mintFormState } = useTokenContext();
   const { vestingContracts, fetchDashboardData } = useDashboardContext();
-  const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const {
+    setTransactionStatus: setTransactionLoaderStatus,
+    setIsCloseAvailable,
+    updateTransactions
+  } = useTransactionLoaderContext();
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -306,7 +310,7 @@ const Table = ({
               safeTxHash: txHash,
               senderSignature: signature.data
             });
-            const { id: transactionId } = await TransactionApiService.createTransaction({
+            const transaction = await TransactionApiService.createTransaction({
               hash: '',
               safeHash: txHash,
               status: 'PENDING',
@@ -317,6 +321,7 @@ const Table = ({
               organizationId: organizationId,
               chainId
             });
+            updateTransactions(transaction);
             await Promise.all(
               actualData.map(async (vesting: any) => {
                 await updateVesting(
@@ -324,7 +329,7 @@ const Table = ({
                     ...vesting.data,
                     // Because all batched vesting schedules are now ready for distribution
                     status: 'WAITING_FUNDS',
-                    transactionId: transactionId
+                    transactionId: transaction.id
                   },
                   vesting.id
                 );

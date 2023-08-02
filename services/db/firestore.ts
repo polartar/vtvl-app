@@ -7,7 +7,6 @@ import type {
   IRevoking,
   ISafe,
   IToken,
-  ITransaction,
   IUser,
   IVesting,
   IVestingTemplate,
@@ -30,7 +29,6 @@ export const vestingCollection = getCollection<IVesting>('vestings');
 export const vestingTemplateCollection = getCollection<IVestingTemplate>('vestingTemplates');
 export const vestingContractCollection = getCollection<IVestingContract>('vestingContracts');
 export const tokenCollection = getCollection<IToken>('tokens');
-export const transactionCollection = getCollection<ITransaction>('transactions');
 export const inviteeCollection = getCollection<IInvitee>('invitee');
 export const revokingCollection = getCollection<IRevoking>('revokings');
 export const recipientCollection = getCollection<IRecipient>('recipients');

@@ -1,3 +1,4 @@
+import TransactionApiService from '@api-services/TransactionApiService';
 import Button from '@components/atoms/Button/Button';
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import Chip from '@components/atoms/Chip/Chip';
@@ -35,10 +36,9 @@ import { useTransactionLoaderContext } from 'providers/transaction-loader.contex
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, ITransaction, IVesting } from 'types/models';
+import { IRecipient, IVesting } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
@@ -59,7 +59,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const { account, library, activate, chainId } = useWeb3React();
   const { organizationId, currentSafe } = useAuthContext();
 
-  const { setTransactionStatus } = useTransactionLoaderContext();
+  const { setTransactionStatus, updateTransactions } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { vestings: vestingSchedules, recipients, vestingContracts, fetchDashboardData } = useDashboardContext();
@@ -716,7 +716,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         });
 
         if (account && organizationId) {
-          const transactionId = await createTransaction({
+          const transaction = await TransactionApiService.createTransaction({
             hash: '',
             safeHash: txHash,
             status: 'PENDING',
@@ -728,6 +728,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             chainId,
             vestingIds
           });
+          updateTransactions(transaction);
           await Promise.all(
             selectedRows.map(async (row: any) => {
               const vestingId = row.id;
@@ -736,7 +737,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
                 {
                   ...vesting,
                   status: 'WAITING_APPROVAL',
-                  transactionId
+                  transactionId: transaction.id
                 },
                 vestingId
               );
@@ -778,7 +779,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           vestingLinearVestAmounts,
           vestingCliffAmounts
         );
-        const transactionData: ITransaction = {
+        const transactionData: ITransactionRequest = {
           hash: addingClaimsTransaction.hash,
           safeHash: '',
           status: 'PENDING',
@@ -790,7 +791,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           chainId,
           vestingIds
         };
-        const transactionId = await createTransaction(transactionData);
+        const transaction = await TransactionApiService.createTransaction(transactionData);
+        updateTransactions(transaction);
         await Promise.all(
           selectedRows.map(async (row: any) => {
             const vestingId = row.id;
@@ -799,7 +801,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               {
                 ...vesting,
                 status: 'WAITING_APPROVAL',
-                transactionId
+                transactionId: transaction.id
               },
               vestingId
             );
@@ -807,14 +809,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         );
         setTransactionStatus('IN_PROGRESS');
         await addingClaimsTransaction.wait();
-        await updateTransaction(
-          {
-            ...transactionData,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          transactionId
-        );
+        const t = await TransactionApiService.updateTransaction(transaction.id, {
+          status: 'SUCCESS',
+          updatedAt: Math.floor(new Date().getTime() / 1000)
+        });
+        updateTransactions(t);
         await Promise.all(
           selectedRows.map(async (row: any) => {
             const vestingId = row.id;
@@ -823,7 +822,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               {
                 ...vesting,
                 status: 'LIVE',
-                transactionId
+                transactionId: t.id
               },
               vestingId
             );

@@ -25,7 +25,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
     setTransactionStatus: setTransactionLoaderStatus,
     setIsCloseAvailable,
     transactions,
-    updateTransaction
+    updateTransactions
   } = useTransactionLoaderContext();
 
   const transaction = useMemo(
@@ -137,11 +137,10 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
-          await TransactionApiService.updateTransaction(data.transactionId, {
-            ...transaction,
+          const t = await TransactionApiService.updateTransaction(data.transactionId, {
             status: 'SUCCESS'
           });
-          updateTransaction(data.transactionId, { status: 'SUCCESS' });
+          updateTransactions(t);
         }
         // setStatus('AUTHORIZATION_REQUIRED');
         // setTransactionStatus('INITIALIZE');
@@ -193,11 +192,10 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.safeHash as string));
-        await TransactionApiService.updateTransaction(id, {
-          ...transaction,
+        const t = await TransactionApiService.updateTransaction(id, {
           approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
         });
-        updateTransaction(id, { approvers: transaction.approvers ? [...transaction.approvers, account] : [account] });
+        updateTransactions(t);
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
@@ -246,11 +244,10 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
-          await TransactionApiService.updateTransaction(data.transactionId, {
-            ...transaction,
+          const t = await TransactionApiService.updateTransaction(data.transactionId, {
             status: 'SUCCESS'
           });
-          updateTransaction(data.transactionId, { status: 'SUCCESS' });
+          updateTransactions(t);
           await updateRevoking(
             {
               ...data,

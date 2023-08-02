@@ -18,6 +18,7 @@ import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
+import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import Decimal from 'decimal.js';
 import { BigNumber, ethers } from 'ethers';
@@ -28,10 +29,9 @@ import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import WarningIcon from 'public/icons/warning.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
-import { fetchTransaction } from 'services/db/transaction';
 import { fetchVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, ITransaction, IVesting } from 'types/models';
+import { IRecipient, IVesting } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import { getDuration } from 'utils/vesting';
@@ -44,6 +44,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
   const { mintFormState } = useTokenContext();
   const { currentSafe, organizationId } = useAuthContext();
   const { loading, hideLoading, showLoading } = useLoaderContext();
+  const { transactions } = useTransactionLoaderContext();
 
   const [filter, setFilter] = useState<{
     keyword: string;
@@ -131,7 +132,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
       : '';
 
   const approvers = new Array(currentSafe?.threshold).fill({ title: '', desc: '' });
-  const [transaction, setTransaction] = useState<{ id: string; data: ITransaction | undefined }>();
+  const [transaction, setTransaction] = useState<ITransaction>();
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
 
   // Copy of the one from AddVestingSchedule.tsx
@@ -163,16 +164,14 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
   // With this, we can check whether the vesting schedule has multisig transactions
   useEffect(() => {
     if (vestingSchedule?.transactionId) {
-      fetchTransaction(vestingSchedule.transactionId).then((res) => {
-        setTransaction({ id: vestingSchedule.transactionId, data: res });
-      });
+      setTransaction(transactions.find((t) => t.id === vestingSchedule.transactionId));
     }
-  }, [vestingSchedule]);
+  }, [vestingSchedule, transactions]);
 
   // Actually fetch the Safe transaction
   useEffect(() => {
-    if (transaction?.data?.safeHash) {
-      fetchSafeTransactionFromHash(transaction.data.safeHash);
+    if (transaction?.safeHash) {
+      fetchSafeTransactionFromHash(transaction.safeHash);
     }
   }, [transaction, account]);
 

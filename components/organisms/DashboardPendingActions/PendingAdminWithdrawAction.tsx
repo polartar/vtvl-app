@@ -37,7 +37,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
   const {
     setTransactionStatus: setTransactionLoaderStatus,
     setIsCloseAvailable,
-    updateTransaction
+    updateTransactions
   } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
 
@@ -139,11 +139,10 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(data?.safeHash as string));
-        await TransactionApiService.updateTransaction(id, {
-          ...data,
+        const t = await TransactionApiService.updateTransaction(id, {
           approvers: data.approvers ? [...data.approvers, account] : [account]
         });
-        updateTransaction(id, { approvers: data.approvers ? [...data.approvers, account] : [account] });
+        updateTransactions(t);
         setTransactionStatus('WAITING_APPROVAL');
         setStatus('AUTHORIZATION_REQUIRED');
         toast.success('Approved successfully.');
@@ -192,11 +191,10 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
         if (data) {
-          await TransactionApiService.updateTransaction(id, {
-            ...data,
+          const t = await TransactionApiService.updateTransaction(id, {
             status: 'SUCCESS'
           });
-          updateTransaction(id, { status: 'SUCCESS' });
+          updateTransactions(t);
         }
         setTransactionLoaderStatus('SUCCESS');
         setTransactionStatus('SUCCESS');

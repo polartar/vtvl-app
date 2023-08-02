@@ -1,3 +1,4 @@
+import TransactionApiService from '@api-services/TransactionApiService';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
 import { injected } from '@connectors/index';
@@ -27,7 +28,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { createOrUpdateSafe } from 'services/db/safe';
-import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 // import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
@@ -66,7 +66,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     transactions,
     transactionStatus: transactionLoaderStatus,
     setTransactionStatus: setTransactionLoaderStatus,
-    setIsCloseAvailable
+    setIsCloseAvailable,
+    updateTransactions
   } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
   const vestingContract = useMemo(
@@ -273,13 +274,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
-          await updateTransaction(
-            {
-              ...transaction,
-              status: 'SUCCESS'
-            },
-            data.transactionId
-          );
+          const t = await TransactionApiService.updateTransaction(data.transactionId, {
+            status: 'SUCCESS'
+          });
+          updateTransactions(t);
           const batchVestings = vestings.filter((vesting) => vesting.data.transactionId === data.transactionId);
           await Promise.all(
             batchVestings.map(async (vesting) => {
@@ -402,7 +400,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               safeTxHash: txHash,
               senderSignature: signature.data
             });
-            const transactionId = await createTransaction({
+            const transaction = await TransactionApiService.createTransaction({
               hash: '',
               safeHash: txHash,
               status: 'PENDING',
@@ -413,11 +411,12 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               organizationId: organizationId,
               chainId
             });
+            updateTransactions(transaction);
             await updateVesting(
               {
                 ...data,
                 status: 'WAITING_FUNDS',
-                transactionId
+                transactionId: transaction.id
               },
               id
             );
@@ -569,7 +568,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         });
 
         if (account && organizationId) {
-          const transactionId = await createTransaction({
+          const transaction = await TransactionApiService.createTransaction({
             hash: '',
             safeHash: txHash,
             status: 'PENDING',
@@ -582,11 +581,12 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             vestingIds: [vestingId],
             approvers: [account]
           });
+          updateTransactions(transaction);
           await updateVesting(
             {
               ...data,
               // Because all batched vesting schedules are now ready for distribution
-              transactionId,
+              transactionId: transaction.id,
               status: 'WAITING_APPROVAL'
             },
             id
@@ -621,7 +621,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           vestingCliffAmounts
         );
         setTransactionLoaderStatus('IN_PROGRESS');
-        const transactionData: ITransaction = {
+        const transactionData: ITransactionRequest = {
           hash: addingClaimsTransaction.hash,
           safeHash: '',
           status: 'PENDING',
@@ -633,25 +633,23 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           chainId,
           vestingIds: [vestingId]
         };
-        const transactionId = await createTransaction(transactionData);
+        const transaction = await TransactionApiService.createTransaction(transactionData);
         await updateVesting(
           {
             ...vesting,
-            transactionId,
+            transactionId: transaction.id,
             // Because the schedule is now confirmed and ready for the vesting
             status: 'LIVE'
           },
           vestingId
         );
+        updateTransactions(transaction);
         await addingClaimsTransaction.wait();
-        await updateTransaction(
-          {
-            ...transactionData,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          transactionId
-        );
+        const t = await TransactionApiService.updateTransaction(transaction.id, {
+          status: 'SUCCESS',
+          updatedAt: Math.floor(new Date().getTime() / 1000)
+        });
+        updateTransactions(t);
         await fetchDashboardData();
         setStatus('SUCCESS');
         toast.success('Added schedules successfully.');
@@ -693,13 +691,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.safeHash as string));
-        await updateTransaction(
-          {
-            ...transaction,
-            approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
-          },
-          transaction?.id ?? ''
-        );
+        const t = await TransactionApiService.updateTransaction(transaction.id, {
+          approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
+        });
+        updateTransactions(t);
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
@@ -748,13 +743,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
-          await updateTransaction(
-            {
-              ...transaction,
-              status: 'SUCCESS'
-            },
-            data.transactionId
-          );
+          const t = await TransactionApiService.updateTransaction(data.transactionId, {
+            status: 'SUCCESS'
+          });
+          updateTransactions(t);
           const batchVestings = await fetchVestingsByQuery(
             ['transactionId', 'chainId'],
             ['==', '=='],

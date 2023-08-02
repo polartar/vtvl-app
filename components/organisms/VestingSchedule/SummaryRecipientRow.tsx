@@ -4,14 +4,14 @@ import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
 import { useAuthContext } from '@providers/auth.context';
+import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import format from 'date-fns/format';
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
-import { fetchTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRecipient, IRevoking, ITransaction } from 'types/models';
+import { IRecipient, IRevoking } from 'types/models';
 
 interface ISummaryRecipientRowProps {
   recipient: IRecipient;
@@ -20,6 +20,7 @@ interface ISummaryRecipientRowProps {
 const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient }) => {
   const { chainId, library } = useWeb3React();
   const { currentSafe } = useAuthContext();
+  const { transactions } = useTransactionLoaderContext();
 
   const [revoking, setRevoking] = useState<{ id: string; data: IRevoking }>();
   const [transaction, setTransaction] = useState<ITransaction>();
@@ -57,12 +58,12 @@ const SummaryRecipientRow: React.FC<ISummaryRecipientRowProps> = ({ recipient })
 
           setRevoking(revoke);
           if (revoke && revoke.data.status === 'PENDING' && revoke.data.transactionId) {
-            fetchTransaction(revoke.data.transactionId).then((res) => setTransaction(res));
+            setTransaction(transactions.find((t) => t.id === revoke.data.transactionId));
           }
         }
       });
     }
-  }, [chainId, recipient]);
+  }, [chainId, recipient, transactions]);
 
   useEffect(() => {
     if (transaction && transaction.safeHash) {
