@@ -18,7 +18,7 @@ import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { fetchTransactionsByQuery } from 'services/db/transaction';
 import { fetchVestingsByQuery } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevoking, ITransaction, IVesting } from 'types/models';
+import { IRevoking, IVesting } from 'types/models';
 import { IRecipient, IRecipientForm } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { compareAddresses } from 'utils';

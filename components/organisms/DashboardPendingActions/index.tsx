@@ -13,7 +13,7 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { ITransaction, IVesting } from 'types/models';
+import { IVesting } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 
 import PendingAdminWithdrawAction from './PendingAdminWithdrawAction';
@@ -66,9 +66,7 @@ const DashboardPendingActions = () => {
 
   const [pendingVestingContracts, setPendingVestingContracts] = useState<IVestingContract[]>([]);
   const [pendingVestings, setPendingVestings] = useState<{ id: string; data: IVesting }[]>([]);
-  const [pendingWithdrawTransactions, setPendingWithdrawTransactions] = useState<{ id: string; data: ITransaction }[]>(
-    []
-  );
+  const [pendingWithdrawTransactions, setPendingWithdrawTransactions] = useState<ITransaction[]>([]);
   const [filter, setFilter] = useState<{
     keyword: string;
     status: 'ALL' | 'FUND' | 'DEPLOY_VESTING_CONTRACT' | 'TRANSFER_OWNERSHIP' | 'APPROVE' | 'EXECUTE';
@@ -95,9 +93,7 @@ const DashboardPendingActions = () => {
   useEffect(() => {
     if (transactions && transactions.length) {
       setPendingWithdrawTransactions(
-        transactions.filter(
-          (transaction) => transaction.data.type === 'ADMIN_WITHDRAW' && transaction.data.status === 'PENDING'
-        )
+        transactions.filter((transaction) => transaction.type === 'ADMIN_WITHDRAW' && transaction.status === 'PENDING')
       );
     }
   }, [transactions]);
@@ -145,7 +141,7 @@ const DashboardPendingActions = () => {
           <PendingRevokingAction id={revoking.id} data={revoking.data} key={revoking.id} />
         ))}
         {pendingWithdrawTransactions.map((transaction) => (
-          <PendingAdminWithdrawAction id={transaction.id} data={transaction.data} key={transaction.id} />
+          <PendingAdminWithdrawAction id={transaction?.id ?? ''} data={transaction} key={transaction.id} />
         ))}
       </div>
     </div>

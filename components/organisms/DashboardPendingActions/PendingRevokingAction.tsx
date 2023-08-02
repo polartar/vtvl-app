@@ -1,3 +1,4 @@
+import TransactionApiService from '@api-services/TransactionApiService';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
@@ -12,7 +13,6 @@ import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { updateRevoking } from 'services/db/revoking';
-import { updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevoking } from 'types/models';
 import { compareAddresses } from 'utils';
@@ -24,11 +24,12 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
   const {
     setTransactionStatus: setTransactionLoaderStatus,
     setIsCloseAvailable,
-    transactions
+    transactions,
+    updateTransaction
   } = useTransactionLoaderContext();
 
   const transaction = useMemo(
-    () => transactions.find((t) => t.id === data.transactionId && t.data.status === 'PENDING'),
+    () => transactions.find((t) => t.id === data.transactionId && t.status === 'PENDING'),
     [data, transactions]
   );
   const vesting = useMemo(() => vestings.find((v) => v.id === data.vestingId), [vestings, data]);
@@ -69,8 +70,8 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
   };
 
   const initializeStatus = async () => {
-    if (transaction && transaction.data.safeHash && currentSafe && account) {
-      const safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
+    if (transaction && transaction.safeHash && currentSafe && account) {
+      const safeTx = await fetchSafeTransactionFromHash(transaction.safeHash);
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
@@ -79,7 +80,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
       const threshold = await safeSdk.getThreshold();
       if (safeTx) {
         setSafeTransaction(safeTx);
-        const approvers = transaction.data.approvers ? [...transaction.data.approvers] : [];
+        const approvers = transaction.approvers ? [...transaction.approvers] : [];
         safeTx.signatures.forEach((signature) => {
           if (!approvers.find((approver) => approver === signature.signer)) {
             approvers.push(signature.signer);
@@ -114,7 +115,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
+          transaction?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -135,14 +136,12 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
-        if (transaction?.data) {
-          await updateTransaction(
-            {
-              ...transaction.data,
-              status: 'SUCCESS'
-            },
-            data.transactionId
-          );
+        if (transaction) {
+          await TransactionApiService.updateTransaction(data.transactionId, {
+            ...transaction,
+            status: 'SUCCESS'
+          });
+          updateTransaction(data.transactionId, { status: 'SUCCESS' });
         }
         // setStatus('AUTHORIZATION_REQUIRED');
         // setTransactionStatus('INITIALIZE');
@@ -177,7 +176,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
+          transaction?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -190,17 +189,15 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.safeHash as string);
+        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.safeHash as string);
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
-        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.safeHash as string));
-        await updateTransaction(
-          {
-            ...transaction.data,
-            approvers: transaction.data.approvers ? [...transaction.data.approvers, account] : [account]
-          },
-          id
-        );
+        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.safeHash as string));
+        await TransactionApiService.updateTransaction(id, {
+          ...transaction,
+          approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
+        });
+        updateTransaction(id, { approvers: transaction.approvers ? [...transaction.approvers, account] : [account] });
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
@@ -227,7 +224,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
+          transaction?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -248,14 +245,12 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
-        if (transaction.data) {
-          await updateTransaction(
-            {
-              ...transaction.data,
-              status: 'SUCCESS'
-            },
-            data.transactionId
-          );
+        if (transaction) {
+          await TransactionApiService.updateTransaction(data.transactionId, {
+            ...transaction,
+            status: 'SUCCESS'
+          });
+          updateTransaction(data.transactionId, { status: 'SUCCESS' });
           await updateRevoking(
             {
               ...data,

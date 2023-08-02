@@ -1,3 +1,4 @@
+import TransactionApiService from '@api-services/TransactionApiService';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
@@ -21,9 +22,8 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevoking, ITransaction, IVesting } from 'types/models';
+import { IRevoking, IVesting } from 'types/models';
 import { formatNumber } from 'utils/token';
 
 const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> = ({ id, data }) => {
@@ -34,7 +34,11 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
     vestingContracts,
     fetchDashboardData
   } = useDashboardContext();
-  const { setTransactionStatus: setTransactionLoaderStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const {
+    setTransactionStatus: setTransactionLoaderStatus,
+    setIsCloseAvailable,
+    updateTransaction
+  } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
 
   const vestingContract = useMemo(
@@ -135,13 +139,11 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(data?.safeHash as string));
-        await updateTransaction(
-          {
-            ...data,
-            approvers: data.approvers ? [...data.approvers, account] : [account]
-          },
-          id
-        );
+        await TransactionApiService.updateTransaction(id, {
+          ...data,
+          approvers: data.approvers ? [...data.approvers, account] : [account]
+        });
+        updateTransaction(id, { approvers: data.approvers ? [...data.approvers, account] : [account] });
         setTransactionStatus('WAITING_APPROVAL');
         setStatus('AUTHORIZATION_REQUIRED');
         toast.success('Approved successfully.');
@@ -190,13 +192,11 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
         if (data) {
-          await updateTransaction(
-            {
-              ...data,
-              status: 'SUCCESS'
-            },
-            id
-          );
+          await TransactionApiService.updateTransaction(id, {
+            ...data,
+            status: 'SUCCESS'
+          });
+          updateTransaction(id, { status: 'SUCCESS' });
         }
         setTransactionLoaderStatus('SUCCESS');
         setTransactionStatus('SUCCESS');

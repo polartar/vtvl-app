@@ -70,15 +70,13 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
 
     return vestings && vestings.length > 0
       ? await asyncFilter(vestings, async (vesting: any) => {
-          const transaction = transactions.find(
-            (t) => t.id === vesting.data.transactionId && t.data.status === 'PENDING'
-          );
+          const transaction = transactions.find((t) => t.id === vesting.data.transactionId && t.status === 'PENDING');
           let isFund;
           let safeTx;
 
-          if (transaction && transaction.data.safeHash && currentSafe) {
-            safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
-            isFund = transaction.data.type === 'FUNDING_CONTRACT' && vesting.data.status === 'WAITING_APPROVAL';
+          if (transaction && transaction.safeHash && currentSafe) {
+            safeTx = await fetchSafeTransactionFromHash(transaction.safeHash);
+            isFund = transaction.type === 'FUNDING_CONTRACT' && vesting.data.status === 'WAITING_APPROVAL';
           } else {
             isFund =
               vestingSchedulesInfo.length &&
@@ -132,13 +130,13 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
       revokeCount = 0,
       completedCount = 0;
     vestings.forEach(async (vesting) => {
-      const transaction = transactions.find((t) => t.id === vesting.data.transactionId && t.data.status === 'PENDING');
+      const transaction = transactions.find((t) => t.id === vesting.data.transactionId && t.status === 'PENDING');
       let isFund;
       let safeTx;
 
-      if (transaction && transaction.data.safeHash && currentSafe) {
-        safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
-        isFund = transaction.data.type === 'FUNDING_CONTRACT' && vesting.data.status === 'WAITING_APPROVAL';
+      if (transaction && transaction.safeHash && currentSafe) {
+        safeTx = await fetchSafeTransactionFromHash(transaction.safeHash);
+        isFund = transaction.type === 'FUNDING_CONTRACT' && vesting.data.status === 'WAITING_APPROVAL';
       } else {
         isFund =
           vestingSchedulesInfo.length &&

@@ -1,3 +1,4 @@
+import TransactionApiService from '@api-services/TransactionApiService';
 import Button from '@components/atoms/Button/Button';
 import FundingContractModalV2 from '@components/organisms/FundingContractModal/FundingContractModalV2';
 import Safe from '@gnosis.pm/safe-core-sdk';
@@ -18,7 +19,6 @@ import React, { InputHTMLAttributes, MutableRefObject, Ref, forwardRef, useEffec
 import { usePagination, useRowSelect, useTable } from 'react-table';
 import { toast } from 'react-toastify';
 import { createOrUpdateSafe } from 'services/db/safe';
-import { createTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
@@ -306,7 +306,7 @@ const Table = ({
               safeTxHash: txHash,
               senderSignature: signature.data
             });
-            const transactionId = await createTransaction({
+            const { id: transactionId } = await TransactionApiService.createTransaction({
               hash: '',
               safeHash: txHash,
               status: 'PENDING',

@@ -37,7 +37,7 @@ const Dashboard: NextPageWithLayout = () => {
   }, []);
 
   const isMintAvailabe = useMemo(() => {
-    const mintingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'TOKEN_DEPLOYMENT');
+    const mintingTransaction = pendingTransactions.find((transaction) => transaction.type === 'TOKEN_DEPLOYMENT');
     return !mintingTransaction;
   }, [pendingTransactions]);
 

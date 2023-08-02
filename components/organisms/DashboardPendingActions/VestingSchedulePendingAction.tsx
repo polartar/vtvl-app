@@ -1,3 +1,4 @@
+import TransactionApiService from '@api-services/TransactionApiService';
 import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
@@ -23,11 +24,10 @@ import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { createOrUpdateSafe } from 'services/db/safe';
-import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 // import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { ITransaction, IVesting } from 'types/models';
+import { IVesting } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -76,7 +76,9 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     pendingTransactions,
     transactionStatus: transactionLoaderStatus,
     setTransactionStatus: setTransactionLoaderStatus,
-    setIsCloseAvailable
+    setIsCloseAvailable,
+    addTransaction,
+    updateTransaction
   } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
   const vestingContract = useMemo(
@@ -84,7 +86,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     [data, vestingContracts]
   );
   const transaction = useMemo(
-    () => transactions.find((t) => t.id === data.transactionId && t.data.status === 'PENDING'),
+    () => transactions.find((t) => t.id === data.transactionId && t.status === 'PENDING'),
     [data, transactions]
   );
 
@@ -111,7 +113,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       (filter.status === 'EXECUTE' && (transactionStatus === 'EXECUTABLE' || status === 'AUTHORIZATION_REQUIRED')));
 
   const isFundAvailable = useCallback(() => {
-    const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
+    const fundingTransaction = pendingTransactions.find((transaction) => transaction.type === 'FUNDING_CONTRACT');
     return !fundingTransaction;
   }, [pendingTransactions]);
 
@@ -149,11 +151,11 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       return;
     }
 
-    if (transaction && transaction.data.safeHash && currentSafe && account) {
-      const safeTx = safeTransactions[transaction.data.safeHash]
-        ? safeTransactions[transaction.data.safeHash]
+    if (transaction && transaction.safeHash && currentSafe && account) {
+      const safeTx = safeTransactions[transaction.safeHash]
+        ? safeTransactions[transaction.safeHash]
         : !isBatchTransaction
-        ? await fetchSafeTransactionFromHash(transaction.data.safeHash)
+        ? await fetchSafeTransactionFromHash(transaction.safeHash)
         : null;
 
       if (safeTx) {
@@ -164,32 +166,32 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         });
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const threshold = await safeSdk.getThreshold();
-        const approvers = transaction.data.approvers ? [...transaction.data.approvers] : [];
+        const approvers = transaction.approvers ? [...transaction.approvers] : [];
         safeTx.signatures.forEach((signature) => {
           if (!approvers.find((approver) => approver === signature.signer)) {
             approvers.push(signature.signer);
           }
         });
         if (approvers.length >= threshold) {
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
+          setStatus(transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
             ...vestingsStatus,
-            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
+            [id]: transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
           });
         } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
+          setStatus(transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('WAITING_APPROVAL');
           setVestingsStatus({
             ...vestingsStatus,
-            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
+            [id]: transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
           });
         } else {
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
+          setStatus(transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('APPROVAL_REQUIRED');
           setVestingsStatus({
             ...vestingsStatus,
-            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
+            [id]: transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
           });
         }
       } else {
@@ -267,7 +269,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
+          transaction?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -276,7 +278,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
+        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
         const currentNonce = await safeSdk.getNonce();
@@ -288,14 +290,12 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
-        if (transaction?.data) {
-          await updateTransaction(
-            {
-              ...transaction.data,
-              status: 'SUCCESS'
-            },
-            data.transactionId
-          );
+        if (transaction) {
+          await TransactionApiService.updateTransaction(data.transactionId, {
+            ...transaction,
+            status: 'SUCCESS'
+          });
+          updateTransaction(data.transactionId, { status: 'SUCCESS' });
           const batchVestings = vestings.filter((vesting) => vesting.data.transactionId === data.transactionId);
           await Promise.all(
             batchVestings.map(async (vesting) => {
@@ -422,7 +422,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               senderSignature: signature.data
             });
 
-            const transactionId = await createTransaction({
+            const transaction = await TransactionApiService.createTransaction({
               hash: '',
               safeHash: txHash,
               status: 'PENDING',
@@ -433,11 +433,12 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               organizationId: organizationId,
               chainId
             });
+            addTransaction(transaction);
             await updateVesting(
               {
                 ...data,
                 status: 'WAITING_FUNDS',
-                transactionId
+                transactionId: transaction.id!
               },
               id
             );
@@ -591,7 +592,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         });
 
         if (account && organizationId) {
-          const transactionId = await createTransaction({
+          const transaction = await TransactionApiService.createTransaction({
             hash: '',
             safeHash: txHash,
             status: 'PENDING',
@@ -604,11 +605,12 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             vestingIds: [vestingId],
             approvers: [account]
           });
+          addTransaction(transaction);
           await updateVesting(
             {
               ...data,
               // Because all batched vesting schedules are now ready for distribution
-              transactionId,
+              transactionId: transaction.id!,
               status: 'WAITING_APPROVAL'
             },
             id
@@ -644,7 +646,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           vestingCliffAmounts
         );
         setTransactionLoaderStatus('IN_PROGRESS');
-        const transactionData: ITransaction = {
+        const transactionData: ITransactionRequest = {
           hash: addingClaimsTransaction.hash,
           safeHash: '',
           status: 'PENDING',
@@ -656,25 +658,23 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           chainId,
           vestingIds: [vestingId]
         };
-        const transactionId = await createTransaction(transactionData);
+        const transaction = await TransactionApiService.createTransaction(transactionData);
+        addTransaction(transaction);
         await updateVesting(
           {
             ...vesting,
-            transactionId,
+            transactionId: transaction.id,
             // Because the schedule is now confirmed and ready for the vesting
             status: 'LIVE'
           },
           vestingId
         );
         await addingClaimsTransaction.wait();
-        await updateTransaction(
-          {
-            ...transactionData,
-            status: 'SUCCESS',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
-          },
-          transactionId
-        );
+        await TransactionApiService.updateTransaction(transaction.id, {
+          ...transactionData,
+          status: 'SUCCESS'
+        });
+        updateTransaction(transaction.id, { status: 'SUCCESS' });
         await fetchDashboardData();
         setStatus('SUCCESS');
         toast.success('Added schedules successfully.');
@@ -703,7 +703,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
+          transaction?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -712,17 +712,17 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.safeHash as string);
+        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.safeHash as string);
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
-        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.safeHash as string));
-        await updateTransaction(
-          {
-            ...transaction.data,
-            approvers: transaction.data.approvers ? [...transaction.data.approvers, account] : [account]
-          },
-          transaction.id
-        );
+        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.safeHash as string));
+        await TransactionApiService.updateTransaction(transaction.id, {
+          ...transaction,
+          approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
+        });
+        updateTransaction(transaction.id, {
+          approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
+        });
         toast.success('Approved successfully.');
         setTransactionStatus('EXECUTABLE');
         setTransactionLoaderStatus('SUCCESS');
@@ -750,7 +750,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
+          transaction?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -759,7 +759,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
+        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
         const currentNonce = await safeSdk.getNonce();
@@ -771,14 +771,12 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
-        if (transaction.data) {
-          await updateTransaction(
-            {
-              ...transaction.data,
-              status: 'SUCCESS'
-            },
-            data.transactionId
-          );
+        if (transaction) {
+          await TransactionApiService.updateTransaction(data.transactionId, {
+            ...transaction,
+            status: 'SUCCESS'
+          });
+          updateTransaction(data.transactionId, { status: 'SUCCESS' });
           const batchVestings = await fetchVestingsByQuery(
             ['transactionId', 'chainId'],
             ['==', '=='],

@@ -23,7 +23,6 @@ import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, fetchTransactionsByQuery, updateTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { ITransaction } from 'types/models';
 import { IRevokingDoc } from 'types/models/revoking';
 import { IVestingDoc } from 'types/models/vesting';
 import { isV2 } from 'utils/multicall';

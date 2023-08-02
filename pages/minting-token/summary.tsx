@@ -23,7 +23,6 @@ import { toast } from 'react-toastify';
 import { db } from 'services/auth/firebase';
 import { createToken, fetchTokenByQuery } from 'services/db/token';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
-import { ITransaction } from 'types/models';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {

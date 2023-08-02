@@ -31,7 +31,7 @@ import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 // import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { ITransaction, IVesting } from 'types/models';
+import { IVesting } from 'types/models';
 import { IRevokingDoc } from 'types/models/revoking';
 import { compareAddresses } from 'utils';
 import { formatNumber, parseTokenAmount } from 'utils/token';
@@ -74,7 +74,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     [data, vestingContracts]
   );
   const transaction = useMemo(
-    () => transactions.find((t) => t.id === data.transactionId && t.data.status === 'PENDING'),
+    () => transactions.find((t) => t.id === data.transactionId && t.status === 'PENDING'),
     [data, transactions]
   );
   const vestingRecipients = useMemo(
@@ -114,7 +114,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   };
 
   const isFundAvailable = useCallback(() => {
-    const fundingTransaction = pendingTransactions.find((transaction) => transaction.data.type === 'FUNDING_CONTRACT');
+    const fundingTransaction = pendingTransactions.find((transaction) => transaction.type === 'FUNDING_CONTRACT');
     return !fundingTransaction;
   }, [pendingTransactions]);
 
@@ -151,8 +151,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       return;
     }
 
-    if (transaction && transaction.data.safeHash && currentSafe && account) {
-      const safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
+    if (transaction && transaction.safeHash && currentSafe && account) {
+      const safeTx = await fetchSafeTransactionFromHash(transaction.safeHash);
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
         signer: library?.getSigner(0)
@@ -162,32 +162,32 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
       if (safeTx) {
         setSafeTransaction(safeTx);
-        const approvers = transaction.data.approvers ? [...transaction.data.approvers] : [];
+        const approvers = transaction.approvers ? [...transaction.approvers] : [];
         safeTx.signatures.forEach((signature) => {
           if (!approvers.find((approver) => approver === signature.signer)) {
             approvers.push(signature.signer);
           }
         });
         if (approvers.length >= threshold) {
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
+          setStatus(transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
             ...vestingsStatus,
-            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
+            [id]: transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
           });
         } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
+          setStatus(transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('WAITING_APPROVAL');
           setVestingsStatus({
             ...vestingsStatus,
-            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
+            [id]: transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
           });
         } else {
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
+          setStatus(transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('APPROVAL_REQUIRED');
           setVestingsStatus({
             ...vestingsStatus,
-            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
+            [id]: transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
           });
         }
       }
@@ -251,7 +251,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
+          transaction?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -260,7 +260,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
+        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
         const currentNonce = await safeSdk.getNonce();
@@ -272,10 +272,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
-        if (transaction?.data) {
+        if (transaction) {
           await updateTransaction(
             {
-              ...transaction.data,
+              ...transaction,
               status: 'SUCCESS'
             },
             data.transactionId
@@ -680,7 +680,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
+          transaction?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -689,16 +689,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.data?.safeHash as string);
+        const approveTxResponse = await safeSdk.approveTransactionHash(transaction?.safeHash as string);
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
-        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.data?.safeHash as string));
+        setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.safeHash as string));
         await updateTransaction(
           {
-            ...transaction.data,
-            approvers: transaction.data.approvers ? [...transaction.data.approvers, account] : [account]
+            ...transaction,
+            approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
           },
-          transaction.id
+          transaction?.id ?? ''
         );
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
@@ -726,7 +726,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           ethAdapter
         });
         const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
+          transaction?.safeHash as string
         );
 
         const safeTx = await safeSdk.createTransaction({
@@ -735,7 +735,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         apiTx.confirmations?.forEach((confirmation) => {
           safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
         });
-        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
+        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.hash);
         // console.log({ safeTx });
         // await approveTxResponse.transactionResponse?.wait();
         const currentNonce = await safeSdk.getNonce();
@@ -747,10 +747,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
         setTransactionLoaderStatus('IN_PROGRESS');
         await executeTransactionResponse.transactionResponse?.wait();
-        if (transaction.data) {
+        if (transaction) {
           await updateTransaction(
             {
-              ...transaction.data,
+              ...transaction,
               status: 'SUCCESS'
             },
             data.transactionId

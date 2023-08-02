@@ -1,3 +1,4 @@
+import TransactionApiService from '@api-services/TransactionApiService';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
@@ -16,9 +17,8 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { createRevoking, fetchRevokingsByQuery } from 'services/db/revoking';
 import { createOrUpdateSafe } from 'services/db/safe';
-import { createTransaction, fetchTransaction } from 'services/db/transaction';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevoking, ITransaction, IVesting } from 'types/models';
+import { IRevoking, IVesting } from 'types/models';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
 
@@ -46,7 +46,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
   const { chainId, library, account } = useWeb3React();
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
   const { vestingContracts } = useDashboardContext();
-  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const { setTransactionStatus, setIsCloseAvailable, transactions } = useTransactionLoaderContext();
 
   const isAdmin = useIsAdmin(
     currentSafe ? currentSafe.address : account ? account : '',
@@ -111,7 +111,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             }
           );
 
-          const transactionID = await createTransaction({
+          const { id: transactionId } = await TransactionApiService.createTransaction({
             hash: '',
             safeHash,
             chainId: vesting.chainId,
@@ -127,7 +127,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           await createRevoking({
             vestingId: vestingId,
             recipient,
-            transactionId: transactionID ?? '',
+            transactionId: transactionId!,
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             chainId,
@@ -146,7 +146,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           const revokeTransaction = await vestingContractInstance.revokeClaim(recipient);
           setTransactionStatus('IN_PROGRESS');
           await revokeTransaction.wait();
-          const transactionID = await createTransaction({
+          const { id: transactionId } = await TransactionApiService.createTransaction({
             hash: revokeTransaction.hash,
             safeHash: '',
             chainId: vesting.chainId,
@@ -161,7 +161,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           await createRevoking({
             vestingId: vestingId,
             recipient,
-            transactionId: transactionID ?? '',
+            transactionId: transactionId!,
             createdAt: Math.floor(new Date().getTime() / 1000),
             updatedAt: Math.floor(new Date().getTime() / 1000),
             chainId,
@@ -201,7 +201,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
 
   useEffect(() => {
     if (revoking && revoking.data.status === 'PENDING' && revoking.data.transactionId) {
-      fetchTransaction(revoking.data.transactionId).then((res) => setTransaction(res));
+      setTransaction(transactions.find((t) => t.id === revoking.data.transactionId));
     }
   }, [revoking]);
 

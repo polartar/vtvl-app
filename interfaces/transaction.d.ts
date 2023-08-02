@@ -1,4 +1,4 @@
-interface ITransaction {
+interface ITransactionRequest {
   hash: string;
   safeHash: string;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
@@ -18,4 +18,8 @@ interface ITransaction {
   withdrawAmount?: string;
   vestingContractId?: string;
   approvers?: string[];
+}
+
+interface ITransaction extends ITransactionRequest {
+  id: string;
 }
