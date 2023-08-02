@@ -2,7 +2,7 @@ import useSafeAPI from '@api-hooks/useSafe';
 import RecipientApiService from '@api-services/RecipientApiService';
 import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
-import { getUserStore, useUser } from '@store/useUser';
+import { useUser } from '@store/useUser';
 import { REDIRECT_URIS, USE_NEW_API } from '@utils/constants';
 import { transformSafes } from '@utils/safe';
 import { useWeb3React } from '@web3-react/core';
@@ -149,8 +149,7 @@ export function AuthContextProvider({ children }: any) {
   const router = useRouter();
 
   const { clear: clearAuth } = useAuth();
-  const { clear: clearUser } = useUser();
-  const userStore = getUserStore();
+  const { clear: clearUser, ...userStore } = useUser();
   const { clear: clearOrg, organizations } = useOrganization();
   const { getSafeWalletsByOrganization } = useSafeAPI();
 
@@ -616,7 +615,7 @@ export function AuthContextProvider({ children }: any) {
   const refreshUser = useCallback(async (): Promise<void> => {
     setLoading(true);
     if (USE_NEW_API) {
-      if (userStore.userId) {
+      if (userStore && userStore.userId) {
         const persistedRole = await getCache().roleOverride;
         // Authenticate the user based on the new api implementation
         authenticateUser(
@@ -793,7 +792,8 @@ export function AuthContextProvider({ children }: any) {
   useEffect(() => {
     // Update organization name based on organizationId
     const currentOrganization = organizations.find((org) => org.organizationId === organizationId);
-    if (currentOrganization) setOrganizationName(currentOrganization.organization.name);
+    if (currentOrganization && currentOrganization.organization)
+      setOrganizationName(currentOrganization.organization.name);
 
     fetchSafeFromDB();
   }, [organizationId]);
