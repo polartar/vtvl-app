@@ -6,12 +6,14 @@ import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
 import useAuth from '@hooks/useAuth';
 import { useGlobalContext } from '@providers/global.context';
+import { REDIRECT_URIS } from '@utils/constants';
 import { toUTCString } from '@utils/date';
 import { transformOrganization } from '@utils/organization';
 import { SIGN_MESSAGE_TEMPLATE } from '@utils/web3';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import { NextPage } from 'next';
+import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 
 const OnboardingContainer = styled.div`
@@ -42,7 +44,7 @@ const Vesting = styled.div<{ background?: string }>`
 `;
 
 const ConnectWalletPage: NextPage = () => {
-  const { active, account, activate, library } = useWeb3React();
+  const { active, account, activate, deactivate, library } = useWeb3React();
   const { connectWallet } = useAuthAPI(); // API hook
   const { authorizeUser } = useAuth(); // Hook
   const [activated, setActivated] = useState(false);
@@ -50,6 +52,7 @@ const ConnectWalletPage: NextPage = () => {
   const {
     website: { assets, features }
   } = useGlobalContext();
+  const router = useRouter();
 
   // When a wallet is connected
   const handleConnectedState = () => {
@@ -75,11 +78,16 @@ const ConnectWalletPage: NextPage = () => {
                   method: 'personal_sign',
                   params: [SIGN_MESSAGE_TEMPLATE(account, currentDate), account]
                 });
-                await connectWallet({ address: account, signature, utcTime: currentDate });
+                const walletConnected = await connectWallet({ address: account, signature, utcTime: currentDate });
+                console.log('Wallet connected', walletConnected);
+
+                if (!walletConnected) throw 'Wallet x user did not match';
                 // Authorize the user and handles redirection
                 await authorizeUser();
               } catch (err) {
                 // Handle wallet signing rejection / error
+                await deactivate();
+                router.push(REDIRECT_URIS.AUTH_LOGIN);
               }
             })();
           }
