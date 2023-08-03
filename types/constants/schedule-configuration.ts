@@ -1,7 +1,7 @@
 export type DateDurationOptions = 'hour' | 'day' | 'week' | 'month' | 'year';
 export type DateDurationOptionsPlural = `${DateDurationOptions}s`;
 export type DateDurationOptionValues = DateDurationOptions | DateDurationOptionsPlural;
-export type CliffDuration = 'no_cliff' | `${number}-${DateDurationOptionValues}`;
+export type CliffDuration = 'no_cliff' | `${number}_${DateDurationOptionValues}`;
 
 export type ReleaseFrequency =
   | 'continuous'
@@ -12,7 +12,7 @@ export type ReleaseFrequency =
   | 'monthly'
   | 'quarterly'
   | 'yearly'
-  | `every-${number}-${DateDurationOptionValues}`;
+  | `every_${number}_${DateDurationOptionValues}`;
 
 export enum DateFrequencies {
   CONTINUOUS = 'continuous',
@@ -50,20 +50,20 @@ export const DATE_FREQ_TO_OPTION = {
 export const CLIFFDURATION_TIMESTAMP: { [key in CliffDuration]: number } = {
   no_cliff: 0,
   // '1-minute': 60,
-  '1-hour': 3600,
-  '6-hours': 21600,
-  '12-hours': 43200,
-  '1-day': 86400,
-  '5-days': 432000,
-  '2-weeks': 1209600,
+  '1_hour': 3600,
+  '6_hours': 21600,
+  '12_hours': 43200,
+  '1_day': 86400,
+  '5_days': 432000,
+  '2_weeks': 1209600,
   // '1-month': 2592000,
-  '1-month': 2628000,
+  '1_month': 2628000,
   // '3-months': 7776000,
-  '3-months': 7884000,
+  '3_months': 7884000,
   // '6-months': 15552000,
-  '6-months': 15768000,
+  '6_months': 15768000,
   // '1-year': 31104000
-  '1-year': 31536000
+  '1_year': 31536000
 };
 
 export const DATE_FREQ_TO_TIMESTAMP: { [key in DateFrequencies]: number } = {

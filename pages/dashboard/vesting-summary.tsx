@@ -132,7 +132,7 @@ const DashboardVestingSummary: NextPageWithLayout = () => {
           <ScheduleDetails
             {...sampleSchedule}
             token={mintFormState.symbol || 'Token'}
-            cliffDuration="1-day"
+            cliffDuration="1_day"
             releaseFrequency="weekly"
             hint={false}
           />

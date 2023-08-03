@@ -238,16 +238,16 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     { label: 'Weeks', value: 'weeks' },
     { label: 'Months', value: 'months' },
     { label: 'Years', value: 'years' }
-    // { label: '1 hour', value: '1-hour' },
-    // { label: '6 hours', value: '6-hours' },
-    // { label: '12 hours', value: '12-hours' },
-    // { label: '1 day', value: '1-day' },
-    // { label: '5 days', value: '5-days' },
-    // { label: '2 weeks', value: '2-weeks' },
-    // { label: '1 month', value: '1-month' },
-    // { label: '3 months', value: '3-months' },
-    // { label: '6 months', value: '6-months' },
-    // { label: '1 year', value: '1-year' }
+    // { label: '1 hour', value: '1_hour' },
+    // { label: '6 hours', value: '6_hours' },
+    // { label: '12 hours', value: '12_hours' },
+    // { label: '1 day', value: '1_day' },
+    // { label: '5 days', value: '5_days' },
+    // { label: '2 weeks', value: '2_weeks' },
+    // { label: '1 month', value: '1_month' },
+    // { label: '3 months', value: '3_months' },
+    // { label: '6 months', value: '6_months' },
+    // { label: '1 year', value: '1_year' }
   ];
 
   /**
@@ -279,7 +279,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         setValue('cliffDuration', cliffDurationOption.value);
       } else {
         const formattedLabel = formatCliffDurationOption(+cliffDurationNumber.value, cliffDurationOption.value);
-        setValue('cliffDuration', `${cliffDurationNumber.value}-${formattedLabel as DateDurationOptionValues}`);
+        setValue('cliffDuration', `${cliffDurationNumber.value}_${formattedLabel as DateDurationOptionValues}`);
       }
     }
 
@@ -420,7 +420,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       selectedFrequency = 'custom';
 
       // Set the right number and selected option
-      const freqValueSplit = newDetails.releaseFrequency.split('-');
+      const freqValueSplit = newDetails.releaseFrequency.split('_');
       frequencyNumber = +freqValueSplit[1];
       frequencyOption = freqValueSplit[2];
     } else {
@@ -563,12 +563,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   }, [organizationId]);
 
   const quickDates = [
-    { label: '+ 1 month', value: '1-month' },
-    { label: '+ 3 months', value: '3-months' },
-    { label: '+ 6 months', value: '6-months' },
-    { label: '+ 1 year', value: '1-year' },
-    { label: '+ 2 years', value: '2-years' },
-    { label: '+ 4 years', value: '4-years' }
+    { label: '+ 1 month', value: '1_month' },
+    { label: '+ 3 months', value: '3_months' },
+    { label: '+ 6 months', value: '6_months' },
+    { label: '+ 1 year', value: '1_year' },
+    { label: '+ 2 years', value: '2_years' },
+    { label: '+ 4 years', value: '4_years' }
   ];
 
   /**
@@ -585,22 +585,22 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       minutes: 0
     };
     switch (value) {
-      case '1-month':
+      case '1_month':
         durationOption.months = 1;
         break;
-      case '3-months':
+      case '3_months':
         durationOption.months = 3;
         break;
-      case '6-months':
+      case '6_months':
         durationOption.months = 6;
         break;
-      case '1-year':
+      case '1_year':
         durationOption.years = 1;
         break;
-      case '2-years':
+      case '2_years':
         durationOption.years = 2;
         break;
-      case '4-years':
+      case '4_years':
         durationOption.years = 4;
         break;
     }

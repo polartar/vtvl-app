@@ -171,7 +171,7 @@ export const getReleaseFrequencyLabel = (releaseFrequency: ReleaseFrequency) => 
       return 'year';
     default: {
       // every-1-days, every-2-days & every-4-weeks
-      const splitFrequencyValue = releaseFrequency.split('-')[2];
+      const splitFrequencyValue = releaseFrequency.split('_')[2];
       // Remove 's' on all labels
       return splitFrequencyValue.slice(0, -1);
     }
@@ -185,7 +185,7 @@ export const humanizeFrequency = (releaseFrequency: ReleaseFrequency) => {
   // Custom ones
   if (releaseFrequency.includes('-')) {
     // every-1-days, every-2-days & every-4-weeks
-    const splitFrequencyValue = releaseFrequency.split('-');
+    const splitFrequencyValue = releaseFrequency.split('_');
     const count = +splitFrequencyValue[1];
     const duration = splitFrequencyValue[2];
     if (count === 1) {
@@ -252,7 +252,7 @@ export const getNumberOfReleases = (frequency: ReleaseFrequency, startDate: Date
         {
           if (frequency) {
             // every-1-days, every-2-days & every-4-weeks
-            const splitFrequencyValue = frequency.split('-');
+            const splitFrequencyValue = frequency.split('_');
             const count = splitFrequencyValue[1];
             const duration = splitFrequencyValue[2];
             // trim down the day intervals based on the count value
@@ -395,7 +395,7 @@ export const getFrequencyDuration = (startDate: Date, releaseFrequency: ReleaseF
     default:
       {
         // every-1-days, every-2-days & every-4-weeks
-        const splitFrequencyValue = releaseFrequency.split('-');
+        const splitFrequencyValue = releaseFrequency.split('_');
         const count = splitFrequencyValue[1];
         const duration = splitFrequencyValue[2];
         // Update corresponding date option and its value
@@ -531,7 +531,7 @@ export const getNextUnlock = (
 
 /**
  * Function that translate Vesting Schedule schema from the NEW API into the OLD model.
- */
+ 
 export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IVesting = (vestingSchedule) => {
   const {
     name,
@@ -587,3 +587,4 @@ export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IV
     // } as IScheduleFormState
   };
 };
+*/

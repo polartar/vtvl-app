@@ -114,7 +114,7 @@ const ScheduleDetails = ({
       default:
         {
           // every-1-days, every-2-days & every-4-weeks
-          const splitFrequencyValue = releaseFrequency.split('-')[2];
+          const splitFrequencyValue = releaseFrequency.split('_')[2];
           const formats: Record<string, string> = {
             continuous: 'M/d/yy h:mm aaa',
             minutes: 'M/d/yy h:mm aaa',
