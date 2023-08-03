@@ -6,10 +6,6 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
 
-const LINEAR_AMOUNT_INDEX = 4;
-const WITHDRAWN_AMOUNT_INDEX = 5;
-const CLIFF_AMOUNT_INDEX = 6;
-
 export function isV2(deployedAt: number) {
   return deployedAt >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT);
 }
@@ -81,6 +77,12 @@ export const getVestingDetailsFromContracts = async (
             unclaimed: BigNumber.from(0),
             locked: BigNumber.from(0)
           };
+
+    const contract = contracts.find((c) => compareAddresses(c.data.address, address));
+
+    const LINEAR_AMOUNT_INDEX = 4;
+    const WITHDRAWN_AMOUNT_INDEX = isV2(contract!.data.updatedAt) ? 5 : 6;
+    const CLIFF_AMOUNT_INDEX = isV2(contract!.data.updatedAt) ? 6 : 5;
 
     if (reference === 'withdrawn') {
       data.allocations = BigNumber.from(value.callsReturnContext[0].returnValues[LINEAR_AMOUNT_INDEX]).add(
