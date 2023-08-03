@@ -79,8 +79,20 @@ const useAuthAPI = () => {
       .then((res) => {
         console.log('CONNECT WALLET DATA', res);
         saveAuth(res);
+        toast.success(SUCCESS_MESSAGES.EN.WALLET_CONNECT);
+        return res;
       })
-      .catch((error) => toast.error(ERROR_MESSAGES.EN.WALLET_CONNECT, { toastId: TOAST_NOTIFICATION_IDS.ERROR }));
+      .catch((error) => {
+        if (error?.reponse?.status === 400) {
+          toast.error(ERROR_MESSAGES.EN.WALLET_CONNECT_USER, {
+            toastId: TOAST_NOTIFICATION_IDS.ERROR,
+            autoClose: 10000
+          });
+        } else {
+          toast.error(ERROR_MESSAGES.EN.WALLET_CONNECT, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
+        }
+        return false;
+      });
   }, []);
 
   return useMemo(
