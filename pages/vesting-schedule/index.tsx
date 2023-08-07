@@ -657,6 +657,15 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         vestingLinearVestAmounts = [...vestingLinearVestAmounts, ...vestingLinearVestAmounts1];
         vestingCliffAmounts = [...vestingCliffAmounts, ...vestingCliffAmounts1];
       });
+
+      vestingEndTimestamps = vestingEndTimestamps.map((endTimeStamp: number, index: number) => {
+        if ((endTimeStamp - vestingStartTimestamps[index]) % vestingReleaseIntervals[index] !== 0) {
+          const times = Math.floor(endTimeStamp / vestingReleaseIntervals[index]);
+          return vestingStartTimestamps[index] + vestingReleaseIntervals[index] * (times + 1);
+        }
+        return endTimeStamp;
+      });
+
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
       const CREATE_CLAIMS_BATCH_INTERFACE =
