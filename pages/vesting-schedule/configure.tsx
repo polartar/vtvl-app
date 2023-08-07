@@ -46,7 +46,13 @@ import { IRecipientForm } from 'types/models/recipient';
 import { getRecipient } from 'utils/recipients';
 import { getActualDateTime, scrollIntoView } from 'utils/shared';
 import { formatNumber } from 'utils/token';
-import { getChartData, getCliffAmount, getCliffDurationTimestamp, getReleaseFrequencyTimestamp } from 'utils/vesting';
+import {
+  getChartData,
+  getCliffAmount,
+  getCliffDurationTimestamp,
+  getReleaseFrequencyTimestamp,
+  transformCliffDurationType
+} from 'utils/vesting';
 
 type DateTimeType = Date | null;
 
@@ -108,8 +114,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     defaultValues: {
       ...scheduleFormState,
       // Set default amount to be vested to be the total token supply
-      // amountToBeVested: parseFloat(mintFormState.initialSupply.toString()),
-      // amountToBeVestedText: formatNumber(parseFloat(mintFormState.initialSupply.toString())).toString(),
+      // amountToBeVested: parseFloat(mintFormState.totalSupply.toString()),
+      // amountToBeVestedText: formatNumber(parseFloat(mintFormState.totalSupply.toString())).toString(),
       amountToBeVested: parseFloat(totalAllocations?.toString() ?? '0'),
       amountToBeVestedText: formatNumber(parseFloat(totalAllocations?.toString() ?? '0')).toString(),
       cliffDurationNumber: scheduleFormState.cliffDurationNumber || 1,
@@ -823,7 +829,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
   };
 
-  const totalTokenSupply = parseFloat((mintFormState.initialSupply ?? '0').toString());
+  const totalTokenSupply = parseFloat((mintFormState.totalSupply ?? '0').toString());
 
   // Handles the clicking of the "MAX" button in the amount to be vested section
   const handleMaxAmount = () => {
@@ -1068,7 +1074,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
         releaseFrequencyType: scheduleFormState.releaseFrequency,
         releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
-        cliffDurationType: scheduleFormState.cliffDuration,
+        cliffDurationType: transformCliffDurationType(scheduleFormState.cliffDuration),
         cliffDuration: Number(scheduleFormState.cliffDurationNumber),
         cliffAmount: cliffAmount.toString(),
         amount: Number(scheduleFormState.amountToBeVested).toString(),

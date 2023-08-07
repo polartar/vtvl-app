@@ -588,3 +588,12 @@ export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IV
   };
 };
 */
+
+// Automatically transform the cliff duration to conform with the NEW API's enum
+export const transformCliffDurationType: (cliffDurationType: CliffDuration) => CliffDuration = (cliffDurationType) => {
+  if (cliffDurationType !== 'no_cliff') {
+    const trimText = cliffDurationType.split('_')[1];
+    return (trimText.charAt(trimText.length - 1) === 's' ? trimText : `${trimText}s`) as CliffDuration;
+  }
+  return cliffDurationType;
+};

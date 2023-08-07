@@ -9,7 +9,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { REDIRECT_URIS } from '@utils/constants';
-import { getCliffAmount } from '@utils/vesting';
+import { getCliffAmount, transformCliffDurationType } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import Decimal from 'decimal.js';
@@ -93,7 +93,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
         originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
         releaseFrequencyType: scheduleFormState.releaseFrequency,
         releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
-        cliffDurationType: scheduleFormState.cliffDuration,
+        cliffDurationType: transformCliffDurationType(scheduleFormState.cliffDuration),
         cliffDuration: Number(scheduleFormState.cliffDurationNumber),
         cliffAmount: '1111111',
         amount: Number(scheduleFormState.amountToBeVested).toString(),

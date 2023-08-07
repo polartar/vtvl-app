@@ -80,7 +80,7 @@ const DashboardVestingSummary: NextPageWithLayout = () => {
     amountToBeVested: 50000
   };
 
-  const tokenSupply = mintFormState.initialSupply || 100000;
+  const tokenSupply = mintFormState.totalSupply || 100000;
 
   const amountToBeVested = { value: watch('amountToBeVested'), state: getFieldState('amountToBeVested') };
 

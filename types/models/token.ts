@@ -16,7 +16,7 @@ export interface IToken {
   updatedAt?: number;
   supplyCap?: string;
   maxSupply?: number;
-  initialSupply?: number;
+  totalSupply?: number;
   status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   decimals?: number;
   chainId: number;

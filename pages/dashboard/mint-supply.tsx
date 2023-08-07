@@ -54,14 +54,14 @@ const MintSuppy: NextPageWithLayout = () => {
     defaultValues
   });
 
-  const { name, symbol, logo, decimal, initialSupply, supplyCap, maxSupply } = mintFormState;
+  const { name, symbol, logo, decimal, totalSupply, supplyCap, maxSupply } = mintFormState;
 
   const additionalTokens = { value: watch('additionalTokens'), fieldState: getFieldState('additionalTokens') };
   const additionalTokensText = {
     value: watch('additionalTokensText'),
     fieldState: getFieldState('additionalTokensText')
   };
-  const maxAllowableToMint = +maxSupply! - +initialSupply!;
+  const maxAllowableToMint = +maxSupply! - +totalSupply!;
 
   const handleMinChange = (e: any) => {
     setValue('additionalTokens', +e.target.value);
@@ -107,7 +107,7 @@ const MintSuppy: NextPageWithLayout = () => {
             imported: mintFormState.isImported,
             supplyCap: supplyCap,
             maxSupply: +maxSupply!,
-            initialSupply: +additionalTokens.value + +initialSupply!,
+            totalSupply: +additionalTokens.value + +totalSupply!,
             status: mintFormState.status,
             chainId
           },
@@ -116,7 +116,7 @@ const MintSuppy: NextPageWithLayout = () => {
 
         updateMintFormState({
           ...mintFormState,
-          initialSupply: +additionalTokens.value + +initialSupply!
+          totalSupply: +additionalTokens.value + +totalSupply!
         });
 
         console.log('Deployed an ERC Token for testing.');
@@ -184,7 +184,7 @@ const MintSuppy: NextPageWithLayout = () => {
           </div>
           <div className="font-medium text-sm">
             <p className="text-neutral-800">Minted amount</p>
-            <p className="text-neutral-500">{formatNumber(+mintFormState.initialSupply!)}</p>
+            <p className="text-neutral-500">{formatNumber(+mintFormState.totalSupply!)}</p>
           </div>
           <div className="font-medium text-sm">
             <p className="text-neutral-800">Maximum Supply</p>

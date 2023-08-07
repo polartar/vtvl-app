@@ -55,7 +55,7 @@ export interface IVestingSchedule {
   token?: IVestingScheduleToken;
   createdAt?: string;
   updatedAt?: string;
-  archive: boolean;
+  archive?: boolean;
   createdBy?: string;
 }
 

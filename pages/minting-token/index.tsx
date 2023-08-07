@@ -21,7 +21,7 @@ interface FormTypes {
   symbol: string;
   logo?: string;
   supplyCap?: string;
-  initialSupply?: number | string;
+  totalSupply?: number | string;
   maxSupply?: number | string;
 }
 
@@ -41,7 +41,7 @@ const MintingToken: NextPageWithLayout = () => {
   } = useForm({
     defaultValues: {
       ...mintFormState,
-      initialSupplyText: '',
+      totalSupplyText: '',
       maxSupplyText: '',
       burnable: false
     }
@@ -51,24 +51,24 @@ const MintingToken: NextPageWithLayout = () => {
   const name = { value: watch('name'), state: getFieldState('name') };
   const symbol = { value: watch('symbol'), state: getFieldState('symbol') };
   const supplyCap = { value: watch('supplyCap'), state: getFieldState('supplyCap') };
-  const initialSupply = { value: watch('initialSupply'), state: getFieldState('initialSupply') };
-  const initialSupplyText = { value: watch('initialSupplyText'), state: getFieldState('initialSupplyText') };
+  const totalSupply = { value: watch('totalSupply'), state: getFieldState('totalSupply') };
+  const totalSupplyText = { value: watch('totalSupplyText'), state: getFieldState('totalSupplyText') };
   const maxSupply = { value: watch('maxSupply'), state: getFieldState('maxSupply') };
   const maxSupplyText = { value: watch('maxSupplyText'), state: getFieldState('maxSupplyText') };
   const burnable = { value: watch('burnable'), state: getFieldState('burnable') };
   // Updates made when the user is interacting with the Range Slider component
   // Should also update the text value -- for display -- of the number input
-  const handleinitialSupplyChange = (e: any) => {
+  const handletotalSupplyChange = (e: any) => {
     const newValue = e.target.value;
-    setValue('initialSupply', newValue);
-    setValue('initialSupplyText', formatNumber(newValue).toString());
+    setValue('totalSupply', newValue);
+    setValue('totalSupplyText', formatNumber(newValue).toString());
   };
 
   // Make sure that when the user clicks the "MAX" button, we update both the number and text values of the field
   const handleMaxMintAmouont = () => {
     const newMaxValue = maxSupply.value!.toString();
-    setValue('initialSupply', newMaxValue);
-    setValue('initialSupplyText', formatNumber(+newMaxValue).toString());
+    setValue('totalSupply', newMaxValue);
+    setValue('totalSupplyText', formatNumber(+newMaxValue).toString());
   };
 
   const handleUpload = (url: string) => {
@@ -78,9 +78,9 @@ const MintingToken: NextPageWithLayout = () => {
   // Handle the submit of the form
   const onSubmit: SubmitHandler<FormTypes> = (data) => {
     if (
-      Number(data.initialSupply) <= 0 ||
+      Number(data.totalSupply) <= 0 ||
       (data.supplyCap === 'LIMITED' &&
-        (Number(data.maxSupply) <= 0 || Number(data.maxSupply) < Number(data.initialSupply)))
+        (Number(data.maxSupply) <= 0 || Number(data.maxSupply) < Number(data.totalSupply)))
     ) {
       return;
     }
@@ -145,22 +145,22 @@ const MintingToken: NextPageWithLayout = () => {
   // Then updating the numeric value based on the current value of the text
   useEffect(() => {
     // Parse the text into floats to cater the decimals if any
-    // const initialSupplyToFloat = parseFloat(initialSupplyText.value.replaceAll(',', ''));
+    // const totalSupplyToFloat = parseFloat(totalSupplyText.value.replaceAll(',', ''));
     // const maxSupplyToFloat = parseFloat(maxSupplyText.value.replaceAll(',', ''));
-    // setValue('initialSupply', !isNaN(initialSupplyToFloat) ? initialSupplyToFloat : 0);
+    // setValue('totalSupply', !isNaN(totalSupplyToFloat) ? totalSupplyToFloat : 0);
     // setValue('maxSupply', !isNaN(maxSupplyToFloat) ? maxSupplyToFloat : 0);
-    const initialSupplyToFloat = initialSupplyText.value.replaceAll(',', '');
+    const totalSupplyToFloat = totalSupplyText.value.replaceAll(',', '');
     const maxSupplyToFloat = maxSupplyText.value.replaceAll(',', '');
-    setValue('initialSupply', initialSupplyToFloat);
+    setValue('totalSupply', totalSupplyToFloat);
     setValue('maxSupply', maxSupplyToFloat);
-  }, [initialSupplyText.value, maxSupplyText.value]);
+  }, [totalSupplyText.value, maxSupplyText.value]);
 
   const isDisabled =
     !!errors.name ||
     !!errors.symbol ||
-    !initialSupply.value ||
-    Number(initialSupply.value) < 0 ||
-    (supplyCap.value === 'LIMITED' && Number(initialSupply.value) > Number(maxSupply.value));
+    !totalSupply.value ||
+    Number(totalSupply.value) < 0 ||
+    (supplyCap.value === 'LIMITED' && Number(totalSupply.value) > Number(maxSupply.value));
 
   return (
     <>
@@ -280,7 +280,7 @@ const MintingToken: NextPageWithLayout = () => {
               ) : null}
               <div className="relative">
                 <Controller
-                  name="initialSupplyText"
+                  name="totalSupplyText"
                   control={control}
                   rules={{ required: true }}
                   render={({ field }) => (
@@ -293,16 +293,16 @@ const MintingToken: NextPageWithLayout = () => {
                       placeholder="Enter amount"
                       type="number"
                       error={
-                        Boolean(errors.initialSupply) ||
-                        (!initialSupply.value! > !maxSupply.value! && supplyCap.value === 'LIMITED') ||
-                        Number(initialSupply.value) <= 0
+                        Boolean(errors.totalSupply) ||
+                        (!totalSupply.value! > !maxSupply.value! && supplyCap.value === 'LIMITED') ||
+                        Number(totalSupply.value) <= 0
                       }
                       message={
-                        errors.initialSupply
+                        errors.totalSupply
                           ? 'Please enter amount to mint'
-                          : +initialSupply.value! > +maxSupply.value! && supplyCap.value === 'LIMITED'
+                          : +totalSupply.value! > +maxSupply.value! && supplyCap.value === 'LIMITED'
                           ? 'Amount to mint should be smaller than the maximum amount'
-                          : Number(initialSupply.value) <= 0
+                          : Number(totalSupply.value) <= 0
                           ? 'Please input valid amount'
                           : ''
                       }
@@ -313,12 +313,10 @@ const MintingToken: NextPageWithLayout = () => {
                 {supplyCap.value === 'LIMITED' ? (
                   <Chip
                     label="MAX"
-                    color={+initialSupply.value! < +maxSupply.value! ? 'secondary' : 'default'}
+                    color={+totalSupply.value! < +maxSupply.value! ? 'secondary' : 'default'}
                     onClick={handleMaxMintAmouont}
                     className={`absolute right-6 cursor-pointer ${
-                      +initialSupply.value! > +maxSupply.value! ||
-                      errors.initialSupply ||
-                      Number(initialSupply.value) <= 0
+                      +totalSupply.value! > +maxSupply.value! || errors.totalSupply || Number(totalSupply.value) <= 0
                         ? 'bottom-9'
                         : 'bottom-2'
                     }`}
@@ -329,9 +327,9 @@ const MintingToken: NextPageWithLayout = () => {
                 <div className="mt-6">
                   <RangeSlider
                     max={maxSupply.value ? +maxSupply.value : 0}
-                    value={initialSupply.value ? initialSupply.value : 0}
+                    value={totalSupply.value ? totalSupply.value : 0}
                     className="mt-5"
-                    onChange={handleinitialSupplyChange}
+                    onChange={handletotalSupplyChange}
                   />
                 </div>
               ) : null}

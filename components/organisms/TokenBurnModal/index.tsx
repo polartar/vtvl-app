@@ -131,9 +131,9 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
               <div className="text-[#667085] text-xs">After burn supply</div>
             </div>
             <div className="text-[#101828] text-base font-medium">
-              {mintFormState.initialSupply
+              {mintFormState.totalSupply
                 ? formatNumber(
-                    mintFormState.initialSupply -
+                    mintFormState.totalSupply -
                       parseFloat(ethers.utils.formatUnits(burnableAmount, mintFormState.decimal))
                   )
                 : 0}
@@ -145,7 +145,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
               <div className="text-[#667085] text-xs">Total Supply</div>
             </div>
             <div className="text-[#101828] text-base font-medium">
-              {mintFormState.initialSupply ? formatNumber(mintFormState.initialSupply) : 0}
+              {mintFormState.totalSupply ? formatNumber(mintFormState.totalSupply) : 0}
             </div>
           </div>
         </div> */}
@@ -155,10 +155,10 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
             <div
               style={{
                 width:
-                  burnableAmount && mintFormState.initialSupply
+                  burnableAmount && mintFormState.totalSupply
                     ? `${Math.floor(
                         (+ethers.utils.formatUnits(burnableAmount, mintFormState.decimal) /
-                          +mintFormState.initialSupply) *
+                          +mintFormState.totalSupply) *
                           100
                       )}%`
                     : '0%',
@@ -169,13 +169,13 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
             <div
               style={{
                 width:
-                  burnAmount && mintFormState.initialSupply
+                  burnAmount && mintFormState.totalSupply
                     ? `${
-                        Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / +mintFormState.initialSupply) * 100) >
+                        Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / +mintFormState.totalSupply) * 100) >
                         100
                           ? 100
                           : Math.floor(
-                              (parseFloat(burnAmount.replaceAll(',', '')) / +mintFormState.initialSupply) * 100
+                              (parseFloat(burnAmount.replaceAll(',', '')) / +mintFormState.totalSupply) * 100
                             )
                       }%`
                     : '0%',
@@ -190,10 +190,10 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
             <div
               style={{
                 width:
-                  burnableAmount && mintFormState.initialSupply
+                  burnableAmount && mintFormState.totalSupply
                     ? `${Math.floor(
                         (+ethers.utils.formatUnits(burnableAmount, mintFormState.decimal) /
-                          +mintFormState.initialSupply) *
+                          +mintFormState.totalSupply) *
                           100
                       )}%`
                     : '0%'
@@ -252,7 +252,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
               <div className="mr-2">
                 Total allocation&nbsp;&nbsp;{' '}
                 <span style={{ color: '#98a2b3' }}>
-                  {mintFormState.initialSupply ? formatNumber(+mintFormState.initialSupply) : 0}
+                  {mintFormState.totalSupply ? formatNumber(+mintFormState.totalSupply) : 0}
                 </span>
               </div>
               <div

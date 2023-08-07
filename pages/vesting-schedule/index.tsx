@@ -850,10 +850,10 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Sets the remaining based on the total supply
   useEffect(() => {
-    if (totalUsedSupply && mintFormState.initialSupply) {
-      setRemaining(+mintFormState.initialSupply - totalUsedSupply);
+    if (totalUsedSupply && mintFormState.totalSupply) {
+      setRemaining(+mintFormState.totalSupply - totalUsedSupply);
     }
-  }, [totalUsedSupply, mintFormState.initialSupply]);
+  }, [totalUsedSupply, mintFormState.totalSupply]);
 
   return (
     <>
@@ -885,7 +885,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               token={mintFormState.symbol}
               {...vestingScheduleDataCounts}
               remainingAllocation={remaining}
-              totalAllocation={Number(mintFormState.initialSupply) || 0}
+              totalAllocation={Number(mintFormState.totalSupply) || 0}
             />
           </div>
           <div className="w-full">

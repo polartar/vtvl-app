@@ -41,7 +41,7 @@ const SafeSelector = () => {
   }, [active]);
 
   return (
-    <div className="relative sm:w-32 lg:w-44 shrink-0" tabIndex={0} onBlur={() => setShowSafes(false)}>
+    <div className="relative lg:w-44 shrink-0" tabIndex={0} onBlur={() => setShowSafes(false)}>
       <div
         className="flex flex-row items-center justify-between cursor-pointer sm:gap-1 md:gap-3 bg-gray-50 border border-gray-200 rounded-3xl px-2 sm:px-3"
         onClick={() => setShowSafes(!showSafes)}>

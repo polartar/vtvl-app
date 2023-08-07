@@ -18,7 +18,7 @@ export interface IMintFormState {
   supplyCap: 'UNLIMITED' | 'LIMITED';
   decimals: number;
   maxSupply: number | '';
-  initialSupply: number | '';
+  totalSupply: number | '';
   imported: boolean;
   createdAt: number;
   updatedAt: number;
@@ -106,7 +106,7 @@ export function TokenContextProvider({ children }: any) {
   //   // Consider the data from DB as Imported token when this condition is met.
   //   if (
   //     mintFormState.address &&
-  //     (!mintFormState.initialSupply || !mintFormState.maxSupply) &&
+  //     (!mintFormState.totalSupply || !mintFormState.maxSupply) &&
   //     mintFormState.supplyCap === 'UNLIMITED'
   //   ) {
   //     getTokenDetailsFromBlockchain();

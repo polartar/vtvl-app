@@ -4,7 +4,7 @@ interface IToken {
   symbol: string;
   description?: string;
   supplyCap?: 'LIMITED' | 'UNLIMITED';
-  initialSupply?: string;
+  totalSupply?: string;
   maxSupply?: string;
   chainId?: number;
   address?: string;
@@ -32,6 +32,7 @@ interface ICreateDeployedTokenRequest extends IImportTokenRequest {
   symbol: string;
   decimal: number;
   description: string;
+  totalSupply: string;
   maxSupply: string;
   supplyCap: 'LIMITED' | 'UNLIMITED';
   burnable: boolean;

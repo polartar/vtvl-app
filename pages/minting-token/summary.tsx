@@ -30,7 +30,7 @@ const Summary: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { mintFormState, updateMintFormState, updateTokenId } = useTokenContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
-  const { name, symbol, logo, decimal, initialSupply, supplyCap, maxSupply, burnable } = mintFormState;
+  const { name, symbol, logo, decimal, totalSupply, supplyCap, maxSupply, burnable } = mintFormState;
 
   const [loading, setLoading] = useState(false);
 
@@ -50,11 +50,11 @@ const Summary: NextPageWithLayout = () => {
             ? await TokenFactory.deploy(
                 name,
                 symbol,
-                parseTokenAmount(initialSupply!, decimal),
+                parseTokenAmount(totalSupply!, decimal),
                 parseTokenAmount(maxSupply!, decimal),
                 burnable
               )
-            : await TokenFactory.deploy(name, symbol, parseTokenAmount(initialSupply!, decimal), burnable);
+            : await TokenFactory.deploy(name, symbol, parseTokenAmount(totalSupply!, decimal), burnable);
 
         const transactionData: ITransactionRequest = {
           hash: tokenContract.deployTransaction.hash,
@@ -73,13 +73,14 @@ const Summary: NextPageWithLayout = () => {
         setTransactionStatus('IN_PROGRESS');
         const tx = await tokenContract.deployed();
 
-        const tokenId = await TokenApiService.createToken({
+        const createdToken = await TokenApiService.createToken({
           organizationId: organizationId,
           name: name,
           symbol: symbol,
           decimal: 18,
           description: '',
           maxSupply: maxSupply ? maxSupply : '',
+          totalSupply: totalSupply ?? '',
           address: tokenContract.address,
           logo: logo || '',
           imported: false,
@@ -88,7 +89,13 @@ const Summary: NextPageWithLayout = () => {
           burnable: burnable ?? false
         });
 
-        updateMintFormState({ ...mintFormState, address: tokenContract.address, status: 'SUCCESS', chainId });
+        updateMintFormState({
+          ...mintFormState,
+          id: createdToken?.id ?? '',
+          address: tokenContract.address,
+          status: 'SUCCESS',
+          chainId
+        });
         // updateTokenId(tokenId);
 
         // transactionData.status = 'SUCCESS';
@@ -118,7 +125,7 @@ const Summary: NextPageWithLayout = () => {
       <TokenProfile address={mintFormState.address || ''} name={name} symbol={symbol} logo={logo} />
       {/* <progress
         value={
-          supplyCap === 'LIMITED' ? (parseInt(initialSupply.toString()) / parseInt(maxSupply.toString())) * 100 : 100
+          supplyCap === 'LIMITED' ? (parseInt(totalSupply.toString()) / parseInt(maxSupply.toString())) * 100 : 100
         }
         max="100"
         className="w-full">
@@ -131,7 +138,7 @@ const Summary: NextPageWithLayout = () => {
         </label>
         <label>
           <span>Amount to mint</span>
-          <p className="paragraphy-small-medium">{formatNumber(initialSupply ? +initialSupply : 0)}</p>
+          <p className="paragraphy-small-medium">{formatNumber(totalSupply ? +totalSupply : 0)}</p>
         </label>
         <label>
           <span>Maximum amount</span>
