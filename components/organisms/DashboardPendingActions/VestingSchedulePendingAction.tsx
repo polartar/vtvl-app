@@ -520,7 +520,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           ? cliffReleaseTimestamp
           : Math.floor((vesting.details.startDateTime as unknown as Timestamp).seconds)
       );
-      const vestingEndTimestamps = new Array(totalRecipients).fill(Math.floor(vestingEndTimestamp!.getTime() / 1000));
+      let vestingEndTimestamps = new Array(totalRecipients).fill(Math.floor(vestingEndTimestamp!.getTime() / 1000));
       const vestingCliffTimestamps = new Array(totalRecipients).fill(cliffReleaseTimestamp);
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
@@ -534,6 +534,14 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         // Computes how many tokens are left after cliff based on percentage
         const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
         return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
+      });
+
+      vestingEndTimestamps = vestingEndTimestamps.map((endTimeStamp: number, index: number) => {
+        if ((endTimeStamp - vestingStartTimestamps[index]) % vestingReleaseIntervals[index] !== 0) {
+          const times = Math.floor(endTimeStamp / vestingReleaseIntervals[index]);
+          return vestingStartTimestamps[index] + vestingReleaseIntervals[index] * (times + 1);
+        }
+        return endTimeStamp;
       });
 
       const vestingCliffAmounts = new Array(totalRecipients).fill(parseTokenAmount(cliffAmountPerUser, 18));
