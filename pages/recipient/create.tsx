@@ -36,41 +36,54 @@ const RecipientCreate: NextPage = () => {
       companyEmail: ''
     }
   });
-  useEffect(() => {
-    // startOnboarding(Step.ChainSetup);
-    const encryptToken = router.query.token;
 
-    if (encryptToken) {
-      axios
-        .post('/api/token/getCustomToken', {
-          encryptToken: encryptToken
-        })
-        .then((res) => {
-          setToken(res.data.token);
-          fetchRecipient(res.data.memberId).then((response) => {
-            setRecipient({ id: res.data.memberId, data: response as IRecipient });
+  // Works as a debounce
+  let timeout: NodeJS.Timeout;
 
-            if (response) updateRecipient(res.data.memberId, { status: 'accepted' });
+  const initializeTokenVerification = () => {
+    timeout = setTimeout(() => {
+      // startOnboarding(Step.ChainSetup);
+      const encryptToken = router.query.token;
 
-            if (response?.name) {
-              setValue('name', response?.name);
-            }
-            if (res?.data.orgName) {
-              setValue('projectName', res?.data.orgName);
-            }
-            if (response?.email) {
-              setValue('companyEmail', response.email);
+      if (encryptToken) {
+        axios
+          .post('/api/token/getCustomToken', {
+            encryptToken: encryptToken
+          })
+          .then((res) => {
+            setToken(res.data.token);
+            fetchRecipient(res.data.memberId).then((response) => {
+              setRecipient({ id: res.data.memberId, data: response as IRecipient });
+
+              if (response) updateRecipient(res.data.memberId, { status: 'accepted' });
+
+              if (response?.name) {
+                setValue('name', response?.name);
+              }
+              if (res?.data.orgName) {
+                setValue('projectName', res?.data.orgName);
+              }
+              if (response?.email) {
+                setValue('companyEmail', response.email);
+              }
+            });
+          })
+          .catch(async (err) => {
+            if (err.response.data.message === 'jwt expired') {
+              router.push({ pathname: '/expired', query: { loginToken: token } });
+            } else {
+              await toast.error('The token is invalid');
             }
           });
-        })
-        .catch(async (err) => {
-          if (err.response.data.message === 'jwt expired') {
-            router.push({ pathname: '/expired', query: { loginToken: token } });
-          } else {
-            await toast.error('The token is invalid');
-          }
-        });
-    }
+      }
+    }, 300);
+  };
+
+  // Debounce the initialization of token verification
+  // Ensures that this will only run once per router update
+  useEffect(() => {
+    initializeTokenVerification();
+    return () => clearTimeout(timeout);
   }, [router]);
 
   const onSubmit = async () => {
