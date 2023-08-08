@@ -57,12 +57,16 @@ export default function useMagicLinkSignIn(callback?: () => void) {
     const orgId = webOrgId && features?.auth?.organizationOnly ? webOrgId : params.searchParams.get('orgId');
     const email = params.searchParams.get('email')?.replace(' ', '+');
     const newUser: boolean = params.searchParams.get('newUser');
+    const redir = params.searchParams.get('redir');
     const member: IMember = { email };
     if (name) member.name = name;
     if (orgId) member.org_id = orgId;
     if (name || orgId) member.companyEmail = email;
     if (email) {
       await signInWithMagicLink(member, newUser);
+    } else if (redir) {
+      // Redirect to the declared page
+      router.push(decodeURIComponent(redir));
     }
   };
 

@@ -426,7 +426,13 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       user &&
       user?.memberInfo &&
       user.memberInfo.type &&
-      !['/recipient/schedule', '/recipient/confirm', '/magic-link-verification'].includes(router.pathname) &&
+      ![
+        '/recipient/schedule',
+        '/recipient/confirm',
+        '/recipient/create',
+        '/member',
+        '/magic-link-verification'
+      ].includes(router.pathname) &&
       SidebarProps[user?.memberInfo?.type]
   );
 
@@ -469,6 +475,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       '/expired',
       '/recipient/create',
       '/recipient/schedule',
+      '/member',
       '/404',
       '/not-found',
       '/terms',
