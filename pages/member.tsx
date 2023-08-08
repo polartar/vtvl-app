@@ -17,41 +17,55 @@ const MemberWalletPage: NextPage = () => {
   const { activate } = useWeb3React();
   const [member, setMember] = React.useState<IMember>();
   const router = useRouter();
+  // Works as a debounce
+  let timeout: NodeJS.Timeout;
+
+  const initializeTokenVerification = () => {
+    timeout = setTimeout(() => {
+      startOnboarding(Step.ChainSetup);
+      const params: any = new URL(window.location.toString());
+      const name = params.searchParams.get('name');
+      const orgId = params.searchParams.get('orgId');
+      const email = params.searchParams.get('email');
+      const type = params.searchParams.get('type');
+      const token = params.searchParams.get('token');
+      setMember({
+        email,
+        companyEmail: email,
+        org_id: orgId,
+        name,
+        type
+      });
+
+      if (token) {
+        axios
+          .post('/api/token/getCustomToken', {
+            encryptToken: token
+          })
+          .then((res) => {
+            const { token, name, orgId, email, type } = res.data;
+
+            signUpWithToken({ email, name, org_id: orgId, type, companyEmail: email }, token);
+          })
+          .catch(async (err) => {
+            if (err.response.data.message === 'jwt expired') {
+              router.push({ pathname: '/expired', query: { loginToken: token } });
+            } else {
+              await toast.error('The token is invalid');
+              router.push('/onboarding');
+            }
+          });
+      }
+    }, 300);
+  };
+
+  // Debounce the initialization of token verification
+  // Ensures that this will only run once
   useEffect(() => {
-    startOnboarding(Step.ChainSetup);
-    const params: any = new URL(window.location.toString());
-    const name = params.searchParams.get('name');
-    const orgId = params.searchParams.get('orgId');
-    const email = params.searchParams.get('email');
-    const type = params.searchParams.get('type');
-    const token = params.searchParams.get('token');
-    setMember({
-      email,
-      companyEmail: email,
-      org_id: orgId,
-      name,
-      type
-    });
-
-    if (token) {
-      axios
-        .post('/api/token/getCustomToken', {
-          encryptToken: token
-        })
-        .then((res) => {
-          const { token, name, orgId, email, type } = res.data;
-
-          signUpWithToken({ email, name, org_id: orgId, type, companyEmail: email }, token);
-        })
-        .catch(async (err) => {
-          if (err.response.data.message === 'jwt expired') {
-            router.push({ pathname: '/expired', query: { loginToken: token } });
-          } else {
-            await toast.error('The token is invalid');
-            router.push('/onboarding');
-          }
-        });
-    }
+    initializeTokenVerification();
+    return () => {
+      clearTimeout(timeout);
+    };
   }, []);
 
   async function metamaskActivate() {
