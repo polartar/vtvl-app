@@ -14,8 +14,6 @@ import format from 'date-fns/format';
 import formatDuration from 'date-fns/formatDuration';
 import getUnixTime from 'date-fns/getUnixTime';
 import intervalToDuration from 'date-fns/intervalToDuration';
-import parse from 'date-fns/parse';
-import sub from 'date-fns/sub';
 import Decimal from 'decimal.js';
 import { IVestingSchedule } from 'interfaces/vestingSchedule';
 import { CliffDuration, DateDurationOptionsPlural, ReleaseFrequency } from 'types/constants/schedule-configuration';
@@ -531,7 +529,7 @@ export const getNextUnlock = (
 
 /**
  * Function that translate Vesting Schedule schema from the NEW API into the OLD model.
- 
+ */
 export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IVesting = (vestingSchedule) => {
   const {
     name,
@@ -541,7 +539,7 @@ export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IV
     createdAt,
     updatedAt,
     transactionId,
-    status,
+    status, // Missing from API
     token,
     vestingContract,
     archive,
@@ -551,6 +549,8 @@ export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IV
     originalEndedAt,
     cliffDurationType,
     cliffDuration,
+    releaseFrequency,
+    releaseFrequencyType,
     cliffAmount,
     amount
   } = vestingSchedule;
@@ -559,35 +559,73 @@ export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IV
     organizationId,
     tokenId,
     vestingContractId,
-    createdAt,
-    updatedAt,
-    transactionId,
+    createdAt: getUnixTime(new Date(createdAt!)),
+    updatedAt: getUnixTime(new Date(updatedAt!)),
+    transactionId: transactionId ?? '',
     status: status as IVestingStatus,
     tokenAddress: token?.address || '',
     archive,
     chainId: vestingContract?.chainId || 0,
-    createdBy
-    // details: {
-    //   startDateTime: parse(startedAt, 'YYYY-MM-DD', new Date()),
-    //   endDateTime: parse(endedAt, 'YYYY-MM-DD', new Date()),
-    //   originalEndDateTime: parse(originalEndedAt, 'YYYY-MM-DD', new Date()),
-    //   cliffDuration: cliffDurationType,
-    //   cliffDurationNumber: cliffDuration,
-    //   // cliffDurationOption?: DateDurationOptionValues | CliffDuration;
-    //   // lumpSumReleaseAfterCliff: string | number;
-    //   // releaseFrequency: ReleaseFrequency;
-    //   // releaseFrequencySelectedOption?: string;
-    //   // customReleaseFrequencyNumber?: number;
-    //   // customReleaseFrequencyOption?: string;
-    //   tokenId,
-    //   tokenAddress: token?.address || '',
-    //   amountToBeVested: amount,
-    //   // amountClaimed: number;
-    //   // amountUnclaimed: number;
-    // } as IScheduleFormState
+    createdBy,
+    details: {
+      startDateTime: new Date(startedAt!),
+      endDateTime: new Date(endedAt!),
+      originalEndDateTime: new Date(originalEndedAt!),
+      cliffDuration: cliffDurationType,
+      cliffDurationNumber: cliffDuration,
+      cliffDurationOption: cliffDurationType,
+      releaseFrequency: releaseFrequencyType,
+      releaseFrequencySelectedOption: releaseFrequencyType,
+      customReleaseFrequencyNumber: releaseFrequency,
+      customReleaseFrequencyOption: cliffDurationType, // Should be changed and provided by API
+      lumpSumReleaseAfterCliff: +cliffAmount,
+      amountToBeVested: +amount,
+      amountToBeVestedText: amount,
+      amountClaimed: 0,
+      amountUnclaimed: 0
+    } as IScheduleFormState
   };
 };
-*/
+
+export const transformVestingPayload: (data: IVesting) => Partial<IVestingSchedule> = (data) => {
+  const {
+    name,
+    status,
+    organizationId,
+    vestingContractId,
+    transactionId,
+    details: {
+      startDateTime,
+      endDateTime,
+      originalEndDateTime,
+      cliffDurationOption,
+      cliffDurationNumber,
+      releaseFrequency,
+      releaseFrequencySelectedOption,
+      customReleaseFrequencyNumber,
+      lumpSumReleaseAfterCliff,
+      amountToBeVested
+    }
+  } = data;
+  return {
+    organizationId,
+    vestingContractId,
+    transactionId,
+    name,
+    startedAt: format(new Date(startDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
+    endedAt: format(new Date(endDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
+    originalEndedAt: format(new Date(originalEndDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
+    // releaseFrequencyType: EReleaseFrequencyTypes;
+    releaseFrequencyType: releaseFrequencySelectedOption as ReleaseFrequency,
+    releaseFrequency: customReleaseFrequencyNumber,
+    cliffDurationType: cliffDurationOption as CliffDuration,
+    // cliffDurationType: ECliffTypes;
+    cliffDuration: cliffDurationNumber,
+    cliffAmount: String(lumpSumReleaseAfterCliff),
+    amount: String(amountToBeVested),
+    status
+  };
+};
 
 // Automatically transform the cliff duration to conform with the NEW API's enum
 export const transformCliffDurationType: (cliffDurationType: CliffDuration) => CliffDuration = (cliffDurationType) => {

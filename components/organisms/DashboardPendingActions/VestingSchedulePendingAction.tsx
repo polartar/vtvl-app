@@ -62,6 +62,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
   const {
     vestingContracts,
+    fetchDashboardVestings,
     fetchDashboardData,
     vestings,
     vestingsStatus,
@@ -770,12 +771,13 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             status: 'SUCCESS'
           });
           updateTransactions(t);
-          const batchVestings = await fetchVestingsByQuery(
-            ['transactionId', 'chainId'],
-            ['==', '=='],
-            [transaction.id, chainId]
+
+          // Ensure that vesting list is updated
+          await fetchDashboardVestings();
+
+          const activeBatchVestings = vestings.filter(
+            (bv) => bv.data.transactionId === transaction.id && !bv.data.archive
           );
-          const activeBatchVestings = batchVestings.filter((bv) => !bv.data.archive);
 
           await Promise.all(
             activeBatchVestings.map(async (vesting) => {

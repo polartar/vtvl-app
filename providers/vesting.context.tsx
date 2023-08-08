@@ -1,6 +1,7 @@
 import RecipientApiService from '@api-services/RecipientApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import { USE_NEW_API } from '@utils/constants';
+import { transformVestingSchedule } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { useShallowState } from 'hooks/useShallowState';
 import { useRouter } from 'next/router';
@@ -195,9 +196,9 @@ export function VestingContextProvider({ children }: any) {
             // Fetch the records related to this vesting schedule ID.
             // This is useful when the page is refreshed as the state resets.
             console.log('EDIT:::: FETCH VESTING SCHEDULE');
-            const vestingSchedule = await fetchVesting(router.query.id as string);
-            if (vestingSchedule) {
-              updateScheduleStates(router.query.id as string, vestingSchedule);
+            const vestingSchedule = vestings.filter((v) => v.id === router.query.id);
+            if (vestingSchedule?.length) {
+              updateScheduleStates(router.query.id as string, vestingSchedule[0].data);
             }
           }
         }
@@ -209,10 +210,12 @@ export function VestingContextProvider({ children }: any) {
   };
 
   const getVestingSchedules = async () => {
-    if (organizationId) {
-      const schedules = await VestingScheduleApiService.getVestingSchedules(organizationId);
-      setVestings(schedules);
-    }
+    if (!organizationId || !chainId) return;
+
+    const schedules = await VestingScheduleApiService.getVestingSchedules(organizationId);
+    setVestings(
+      schedules.map((vestingSchedule) => ({ id: vestingSchedule.id!, data: transformVestingSchedule(vestingSchedule) }))
+    );
   };
 
   const value = useMemo(

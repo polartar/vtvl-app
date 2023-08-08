@@ -1,11 +1,4 @@
-import RecipientApiService from '@api-services/RecipientApiService';
-import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
-import Copy from '@components/atoms/Copy/Copy';
-import Loader from '@components/atoms/Loader/Loader';
-import StepWizard from '@components/atoms/StepWizard/StepWizard';
-import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
-import ScheduleSummary from '@components/molecules/ScheduleSummary/ScheduleSummary';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import VestingScheduleProfile from '@components/organisms/VestingSchedule/VestingScheduleProfile';
@@ -20,20 +13,17 @@ import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
-import Decimal from 'decimal.js';
-import { BigNumber, ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
-import useChainVestingContracts, { VestingContractInfo } from 'hooks/useChainVestingContracts';
+import { ethers } from 'ethers';
+import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import { IStatus } from 'interfaces/vesting';
 import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import WarningIcon from 'public/icons/warning.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
+import { fetchTransaction } from 'services/db/transaction';
 import { fetchVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, IVesting } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
-import { formatNumber } from 'utils/token';
 import { getDuration } from 'utils/vesting';
 
 const VestingScheduleDetailed: NextPageWithLayout = () => {
@@ -99,14 +89,14 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     console.log('fetching schedule', scheduleId);
     // Get the schedule details
     try {
-      const getVestingSchedule = await fetchVesting(scheduleId as string);
+      const getVestingSchedule = allVestings.filter((v) => v.id === scheduleId);
 
-      if (getVestingSchedule) {
-        const actualDateTime = getActualDateTime(getVestingSchedule.details);
+      if (getVestingSchedule?.length) {
+        const actualDateTime = getActualDateTime(getVestingSchedule[0].data.details);
         setVestingSchedule({
-          ...getVestingSchedule,
+          ...getVestingSchedule[0].data,
           details: {
-            ...getVestingSchedule?.details,
+            ...getVestingSchedule[0].data?.details,
             startDateTime: actualDateTime.startDateTime,
             endDateTime: actualDateTime.endDateTime
           }

@@ -1,8 +1,10 @@
 import RecipientApiService from '@api-services/RecipientApiService';
 import VestingContractApiService from '@api-services/VestingContractApiService';
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
+import { transformVestingSchedule } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import VTVL2_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
@@ -98,21 +100,26 @@ export function DashboardContextProvider({ children }: any) {
 
   /* Fetch all vestings by organizationId and chainId */
   const fetchDashboardVestings = useCallback(async () => {
+    if (!organizationId || !chainId || !accessToken) return;
+
     setVestingsLoading(true);
 
     try {
-      const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]);
+      const res = await VestingScheduleApiService.getVestingSchedules(organizationId);
+      // const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]);
       // Filter out without the archived records
-      const filteredVestingSchedules = res.filter(
-        (v) => !v.data.archive && v.data.status !== 'REVOKED' && v.data.chainId === chainId
-      );
+      const filteredVestingSchedules = res
+        .filter(
+          (v) => !v.archive && v.status !== 'REVOKED' //&& v.chainId === chainId
+        )
+        .map((vestingSchedule) => ({ id: vestingSchedule.id!, data: transformVestingSchedule(vestingSchedule) }));
       setVestings(filteredVestingSchedules);
     } catch (err) {
       console.log('fetchDashboardVestings - ', err);
     }
 
     setVestingsLoading(false);
-  }, [organizationId, chainId]);
+  }, [organizationId, chainId, accessToken]);
 
   /* Fetch all pending revokings by organizationId and chainId */
   const fetchDashboardRevokings = useCallback(async () => {

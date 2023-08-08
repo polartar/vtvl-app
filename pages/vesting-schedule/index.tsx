@@ -1,4 +1,5 @@
 import TransactionApiService from '@api-services/TransactionApiService';
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import Button from '@components/atoms/Button/Button';
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import Chip from '@components/atoms/Chip/Chip';
@@ -25,7 +26,6 @@ import { injected } from 'connectors';
 import VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
-import toDate from 'date-fns/toDate';
 import { ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import useIsAdmin from 'hooks/useIsAdmin';
@@ -40,7 +40,7 @@ import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, IVesting } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
-import { formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
+import { convertToActualDateTime, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -203,9 +203,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   const CellDate = ({ value }: any) => {
     return (
       <>
-        {formatDate(toDate(value.toDate()))}
+        {formatDate(convertToActualDateTime(value))}
         <br />
-        {formatTime(toDate(value.toDate()))}
+        {formatTime(convertToActualDateTime(value))}
       </>
     );
   };
@@ -385,14 +385,9 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Handles the archiving process
   const handleArchiving = async (id: string, data: IVesting) => {
-    await updateVesting(
-      {
-        ...data,
-        archive: !data.archive
-      },
-      id
-    );
-    toast.success(`Schedule: ${data.name} ${!data.archive ? '' : 'un'}archived!`);
+    await VestingScheduleApiService.removeVestingSchedule(id);
+    toast.success(`Schedule: ${data.name} archived!`);
+    // toast.success(`Schedule: ${data.name} ${!data.archive ? '' : 'un'}archived!`);
     // getVestings(false);
   };
 
@@ -512,8 +507,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         id: 'vestingPeriod',
         Header: 'Vesting period',
         accessor: 'vestingPeriod',
-        Cell: ({ row }: any) =>
-          getDuration(row.original.data.details.startDateTime.toDate(), row.original.data.details.endDateTime.toDate())
+        Cell: ({ row }: any) => {
+          const sDateTime = convertToActualDateTime(row.original.data.details.startDateTime);
+          const eDateTime = convertToActualDateTime(row.original.data.details.endDateTime);
+          return getDuration(sDateTime, eDateTime);
+        }
       },
       {
         id: 'totalAllocation',

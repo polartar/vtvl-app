@@ -1,4 +1,7 @@
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import { WhereFilterOp, addDoc, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from '@firebase/firestore';
+import { USE_NEW_API } from '@utils/constants';
+import { IVestingSchedule } from 'interfaces/vestingSchedule';
 import { vestingCollection } from 'services/db/firestore';
 import { IVesting } from 'types/models';
 import { generateRandomName } from 'utils/shared';
@@ -43,9 +46,21 @@ export const fetchVestingsByQuery = async (
   return result;
 };
 
-export const updateVesting = async (vesting: IVesting, id: string): Promise<void> => {
-  const vestingRef = doc(vestingCollection, id);
-  await setDoc(vestingRef, vesting);
+export const updateVesting = async (vesting: IVesting, id: string): Promise<void | IVestingSchedule> => {
+  // Use new api pattern
+  if (USE_NEW_API) {
+    try {
+      const res = VestingScheduleApiService.updateVestingSchedule(vesting, id);
+      return res;
+    } catch (err) {
+      // Error
+      console.log('Error new vesting schedule update', err);
+    }
+    return;
+  } else {
+    const vestingRef = doc(vestingCollection, id);
+    await setDoc(vestingRef, vesting);
+  }
 };
 
 export const createVesting = async (vesting: IVesting): Promise<string> => {

@@ -2,17 +2,18 @@ import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import { useAuthContext } from '@providers/auth.context';
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useRouter } from 'next/router';
 import WarningIcon from 'public/icons/warning.svg';
 import { useEffect, useState } from 'react';
-import { fetchVesting } from 'services/db/vesting';
 import { IVesting } from 'types/models';
 import { getActualDateTime } from 'utils/shared';
 
 const RecipientSchedule = () => {
   const { mintFormState } = useTokenContext();
+  const { vestings } = useDashboardContext();
   const [vestingSchedule, setVestingSchedule] = useState<IVesting | undefined>(undefined);
   const { loading, hideLoading, showLoading } = useLoaderContext();
   const { recipient } = useAuthContext();
@@ -23,13 +24,13 @@ const RecipientSchedule = () => {
     const schedule = recipient?.vestingId;
     // Get the schedule details
     try {
-      const getVestingSchedule = await fetchVesting(schedule as string);
-      if (getVestingSchedule) {
-        const actualDateTime = getActualDateTime(getVestingSchedule.details);
+      const getVestingSchedule = vestings.filter((v) => v.id === schedule);
+      if (getVestingSchedule?.length) {
+        const actualDateTime = getActualDateTime(getVestingSchedule[0].data.details);
         setVestingSchedule({
-          ...getVestingSchedule,
+          ...getVestingSchedule[0].data,
           details: {
-            ...getVestingSchedule?.details,
+            ...getVestingSchedule[0].data?.details,
             startDateTime: actualDateTime.startDateTime,
             endDateTime: actualDateTime.endDateTime
           }

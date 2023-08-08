@@ -1,6 +1,6 @@
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { fetchVesting } from 'services/db/vesting';
 import { IVesting } from 'types/models';
 import { QUERY_KEYS } from 'utils/queries';
 
@@ -8,10 +8,14 @@ import { QUERY_KEYS } from 'utils/queries';
  * Get recipient's vestings data
  */
 export const useVestingsFromIds = (vestingIds: string[]) => {
+  const { vestings: allVestings } = useDashboardContext();
+
   const { isLoading: isLoadingVestings, data: vestings } = useQuery(
     [QUERY_KEYS.VESTING.FROM_IDS],
     () => {
-      const vestingQueries = vestingIds.map((vestingId) => fetchVesting(vestingId));
+      // Update to use current dashboard context vesting schedules to make sure everything fetch from one location
+      const vestingQueries = allVestings.filter((v) => vestingIds.includes(v.id)); //fetchVesting(vestingId));
+      // const vestingQueries = vestingIds.map((vestingId) => allVestings.filter((v) => v.id === vestingId))//fetchVesting(vestingId));
       return Promise.all(vestingQueries);
     },
     {
@@ -21,7 +25,7 @@ export const useVestingsFromIds = (vestingIds: string[]) => {
         data
           ?.map((vesting, index) => ({
             id: vestingIds[index],
-            data: vesting as IVesting
+            data: vesting.data as IVesting
           }))
           ?.filter((vesting) => Boolean(vesting.data)) ?? []
     }

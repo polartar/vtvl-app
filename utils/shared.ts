@@ -90,6 +90,18 @@ export const getActualDateTime = (data: IActualDateTimeProps) => {
   };
 };
 
+export const convertToActualDateTime = (value?: Date) => {
+  if (!value) return new Date();
+
+  let actualDateTime;
+  try {
+    actualDateTime = new Date((value as unknown as Timestamp).toMillis());
+  } catch (err) {
+    actualDateTime = value;
+  }
+  return actualDateTime;
+};
+
 // Generates a set of numbers based on the given length
 export const generateRandomName = (l = 4) => {
   const length = l;

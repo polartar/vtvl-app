@@ -4,6 +4,7 @@ import VestingProgress from '@components/atoms/VestingProgress/VestingProgress';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import { useClaimTokensContext } from '@providers/claim-tokens.context';
+import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
@@ -22,7 +23,6 @@ import { ReactElement, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';
 import { toast } from 'react-toastify';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { fetchVesting } from 'services/db/vesting';
 import { MESSAGES } from 'utils/messages';
 import { formatDate, formatTime, getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
@@ -31,9 +31,10 @@ import { getChartData, getCliffAmount, getCliffDateTime, getNextUnlock, getRelea
 const MyTokenSchedule: NextPageWithLayout = () => {
   const { library, chainId, account, activate } = useWeb3React();
   const { mintFormState } = useTokenContext();
+  const { vestings: vestingSchedules } = useDashboardContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { showLoading, hideLoading } = useLoaderContext();
-  const { userTokenDetails, vestingSchedules, selectedSchedule, selectedToken, setSelectedSchedule, fetchContract } =
+  const { userTokenDetails, selectedSchedule, selectedToken, setSelectedSchedule, fetchContract } =
     useClaimTokensContext();
   const router = useRouter();
   // schedule = document id of the vesting schedule
@@ -126,14 +127,14 @@ const MyTokenSchedule: NextPageWithLayout = () => {
     console.log('fetching schedule', schedule);
     // Get the schedule details
     try {
-      const getVestingSchedule = await fetchVesting(schedule as string);
+      const getVestingSchedule = vestingSchedules.filter((v) => v.id === schedule);
       console.log('Vesting Schedule UI', getVestingSchedule);
-      if (getVestingSchedule) {
-        const actualDateTime = getActualDateTime(getVestingSchedule.details);
+      if (getVestingSchedule?.length) {
+        const actualDateTime = getActualDateTime(getVestingSchedule[0].data.details);
         setSelectedSchedule({
-          ...getVestingSchedule,
+          ...getVestingSchedule[0].data,
           details: {
-            ...getVestingSchedule?.details,
+            ...getVestingSchedule[0].data?.details,
             startDateTime: actualDateTime.startDateTime,
             endDateTime: actualDateTime.endDateTime,
             originalEndDateTime: actualDateTime.originalEndDateTime
