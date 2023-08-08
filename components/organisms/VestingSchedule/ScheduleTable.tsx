@@ -1,5 +1,6 @@
 import RecipientApiService from '@api-services/RecipientApiService';
 import TransactionApiService from '@api-services/TransactionApiService';
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import RecipientRow from '@components/molecules/VestingSchedule/RecipientRow';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
@@ -24,7 +25,6 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, IVesting } from 'types/models';
 import { compareAddresses } from 'utils';
@@ -268,7 +268,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           const batchVestings = vestings.filter((vesting) => vesting.data.transactionId === data.transactionId);
           await Promise.all(
             batchVestings.map(async (vesting) => {
-              await updateVesting(
+              await VestingScheduleApiService.updateVestingSchedule(
                 {
                   ...vesting.data,
                   // Because all batched vesting schedules are now ready for distribution
@@ -333,7 +333,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         await fundTransaction.wait();
         // This should have a function to update the vesting schedule status
         // From INITIALIZED into WAITING_APPROVAL
-        await updateVesting(
+        await VestingScheduleApiService.updateVestingSchedule(
           {
             ...data,
             status: 'WAITING_APPROVAL',
@@ -399,7 +399,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               chainId
             });
             updateTransactions(transaction);
-            await updateVesting(
+            await VestingScheduleApiService.updateVestingSchedule(
               {
                 ...data,
                 status: 'WAITING_FUNDS',
@@ -570,7 +570,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             approvers: [account]
           });
           updateTransactions(transaction);
-          await updateVesting(
+          await VestingScheduleApiService.updateVestingSchedule(
             {
               ...data,
               // Because all batched vesting schedules are now ready for distribution
@@ -616,7 +616,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         };
         const transaction = await TransactionApiService.createTransaction(transactionData);
         updateTransactions(transaction);
-        await updateVesting(
+        await VestingScheduleApiService.updateVestingSchedule(
           {
             ...vesting,
             transactionId: transaction.id,
@@ -738,7 +738,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
           await Promise.all(
             activeBatchVestings.map(async (vesting) => {
-              await updateVesting(
+              await VestingScheduleApiService.updateVestingSchedule(
                 {
                   ...vesting.data,
                   // Because all batched vesting schedules are now ready for distribution

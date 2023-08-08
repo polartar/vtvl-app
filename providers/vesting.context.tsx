@@ -1,17 +1,15 @@
 import RecipientApiService from '@api-services/RecipientApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
-import { USE_NEW_API } from '@utils/constants';
 import { transformVestingSchedule } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { useShallowState } from 'hooks/useShallowState';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MultiValue } from 'react-select';
-import { deleteVesting, fetchVesting, fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IRecipient, IVesting } from 'types/models';
 import { IScheduleMode, IScheduleState } from 'types/vesting';
-import { generateRandomName, getActualDateTime } from 'utils/shared';
+import { getActualDateTime } from 'utils/shared';
 
 import { useAuthContext } from './auth.context';
 import { useLoaderContext } from './loader.context';
@@ -164,7 +162,7 @@ export function VestingContextProvider({ children }: any) {
   // Removes the schedule from the DB
   const deleteSchedule = async (id: string) => {
     console.log('DELETE:::: DELETING', id);
-    return await deleteVesting(id);
+    return await VestingScheduleApiService.removeVestingSchedule(id);
   };
 
   // Checks for routes and apply necessary state updates
@@ -262,27 +260,7 @@ export function VestingContextProvider({ children }: any) {
   }, [account]);
 
   useEffect(() => {
-    if (organizationId && chainId) {
-      if (USE_NEW_API) {
-        getVestingSchedules();
-      } else {
-        fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]).then((res) => {
-          // Check if the vesting schedules already has name, if none, generate one
-          if (res.length) {
-            const newVestings = res.map((schedule) => {
-              const newScheduleDetails = { ...schedule };
-              if (!schedule.data.name) {
-                // Generate random name when there is no schedule name
-                newScheduleDetails.data.name = generateRandomName();
-                updateVesting({ ...newScheduleDetails.data }, schedule.id);
-              }
-              return newScheduleDetails;
-            });
-            setVestings(newVestings);
-          }
-        });
-      }
-    }
+    if (organizationId && chainId) getVestingSchedules();
   }, [organizationId, chainId]);
 
   // Checks for the route changes related to the vesting schedule.

@@ -18,7 +18,6 @@ import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
-import { createVesting, updateVesting } from 'services/db/vesting';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { formatRecipientsDocToForm } from 'utils/recipients';
 import { formatNumber } from 'utils/token';
@@ -63,7 +62,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
     // Create a draft vesting record -- which has a status of "CREATING".
     // Draft records can still be edited or deleted as long as it's not yet funded.
     if (scheduleMode && scheduleMode.edit && scheduleMode.id && scheduleMode.data) {
-      await updateVesting(
+      await VestingScheduleApiService.updateVestingSchedule(
         {
           ...scheduleMode.data,
           name: scheduleState.name,

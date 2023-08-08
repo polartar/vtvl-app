@@ -19,8 +19,6 @@ import { IStatus } from 'interfaces/vesting';
 import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
-import { fetchTransaction } from 'services/db/transaction';
-import { fetchVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, IVesting } from 'types/models';
 import { getActualDateTime } from 'utils/shared';

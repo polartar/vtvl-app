@@ -36,7 +36,6 @@ import { useTransactionLoaderContext } from 'providers/transaction-loader.contex
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, IVesting } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
@@ -731,7 +730,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             selectedRows.map(async (row: any) => {
               const vestingId = row.id;
               const vesting = row.data;
-              await updateVesting(
+              await VestingScheduleApiService.updateVestingSchedule(
                 {
                   ...vesting,
                   status: 'WAITING_APPROVAL',
@@ -795,7 +794,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           selectedRows.map(async (row: any) => {
             const vestingId = row.id;
             const vesting = row.data;
-            await updateVesting(
+            await VestingScheduleApiService.updateVestingSchedule(
               {
                 ...vesting,
                 status: 'WAITING_APPROVAL',
@@ -816,7 +815,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           selectedRows.map(async (row: any) => {
             const vestingId = row.id;
             const vesting = row.data;
-            await updateVesting(
+            await VestingScheduleApiService.updateVestingSchedule(
               {
                 ...vesting,
                 status: 'LIVE',

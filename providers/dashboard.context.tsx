@@ -17,7 +17,6 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { toast } from 'react-toastify';
 import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
-import { fetchVestingsByQuery } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevoking, IVesting } from 'types/models';
 import { IRecipient, IRecipientForm } from 'types/models/recipient';
@@ -106,7 +105,6 @@ export function DashboardContextProvider({ children }: any) {
 
     try {
       const res = await VestingScheduleApiService.getVestingSchedules(organizationId);
-      // const res = await fetchVestingsByQuery(['organizationId', 'chainId'], ['==', '=='], [organizationId, chainId]);
       // Filter out without the archived records
       const filteredVestingSchedules = res
         .filter(

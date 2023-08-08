@@ -1,4 +1,5 @@
 import TransactionApiService from '@api-services/TransactionApiService';
+import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import Button from '@components/atoms/Button/Button';
 import FundingContractModalV2 from '@components/organisms/FundingContractModal/FundingContractModalV2';
 import Safe from '@gnosis.pm/safe-core-sdk';
@@ -18,8 +19,6 @@ import PrintIcon from 'public/icons/print.svg';
 import React, { InputHTMLAttributes, MutableRefObject, Ref, forwardRef, useEffect, useRef, useState } from 'react';
 import { usePagination, useRowSelect, useTable } from 'react-table';
 import { toast } from 'react-toastify';
-import { createOrUpdateSafe } from 'services/db/safe';
-import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 interface IndeterminateCheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -324,7 +323,7 @@ const Table = ({
             updateTransactions(transaction);
             await Promise.all(
               actualData.map(async (vesting: any) => {
-                await updateVesting(
+                await VestingScheduleApiService.updateVestingSchedule(
                   {
                     ...vesting.data,
                     // Because all batched vesting schedules are now ready for distribution

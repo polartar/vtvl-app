@@ -38,7 +38,6 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { ActionMeta, OnChangeValue, SingleValue } from 'react-select';
 import Select from 'react-select';
 import { toast } from 'react-toastify';
-import { createVesting, updateVesting } from 'services/db/vesting';
 import { createVestingTemplate, fetchVestingTemplatesByQuery } from 'services/db/vestingTemplate';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IVestingTemplate } from 'types/models';
@@ -1038,7 +1037,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     // Create a draft vesting record -- which has a status of "CREATING".
     // Draft records can still be edited or deleted as long as it's not yet funded.
     if (scheduleMode && scheduleMode.edit && scheduleMode.id && scheduleMode.data) {
-      await updateVesting(
+      await VestingScheduleApiService.updateVestingSchedule(
         {
           ...scheduleMode.data,
           name: scheduleState.name,

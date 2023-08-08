@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 import { IVestingSchedule } from 'interfaces/vestingSchedule';
 import type { NextApiRequest, NextApiResponse } from 'next';
 // import { editRecipient, fetchRecipient } from 'services/db/recipient';
-import { fetchVesting } from 'services/db/vesting';
 import { IVesting } from 'types/models';
 
 // export default async function handler(req: NextApiRequest, res: NextApiResponse) {

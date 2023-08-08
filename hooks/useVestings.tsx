@@ -14,8 +14,7 @@ export const useVestingsFromIds = (vestingIds: string[]) => {
     [QUERY_KEYS.VESTING.FROM_IDS],
     () => {
       // Update to use current dashboard context vesting schedules to make sure everything fetch from one location
-      const vestingQueries = allVestings.filter((v) => vestingIds.includes(v.id)); //fetchVesting(vestingId));
-      // const vestingQueries = vestingIds.map((vestingId) => allVestings.filter((v) => v.id === vestingId))//fetchVesting(vestingId));
+      const vestingQueries = allVestings.filter((v) => vestingIds.includes(v.id));
       return Promise.all(vestingQueries);
     },
     {
