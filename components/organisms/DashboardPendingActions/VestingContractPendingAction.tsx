@@ -9,6 +9,7 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { updateVestingContract } from 'services/db/vestingContract';
+import { VTVLVesting__factory } from 'typechain/factories/VTVLVesting__factory';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVestingContract } from 'types/models';
 
@@ -53,14 +54,9 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         return;
       } else if (organizationId) {
         setTransactionStatus('PENDING');
-        const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI.abi);
-        const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
-        const VestingFactory = new ethers.ContractFactory(
-          VTVL_VESTING_ABI.abi,
-          VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
-          library.getSigner()
-        );
-        const vestingContract = await VestingFactory.deploy(mintFormState.address);
+        const factory = new VTVLVesting__factory(library.getSigner());
+        const vestingContract = await factory.deploy(mintFormState.address);
+
         setTransactionStatus('IN_PROGRESS');
         await vestingContract.deployed();
         const vestingContractId = await updateVestingContract(
