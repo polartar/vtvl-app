@@ -124,7 +124,7 @@ export function TokenContextProvider({ children }: any) {
               const data = token.data();
               setMintFormState((mintFormState) => ({
                 ...mintFormState,
-                address: data.address || '',
+                address: data.address ? ethers.utils.getAddress(data.address) : '',
                 name: data.name || '',
                 symbol: data.symbol || '',
                 logo: data.logo || '',

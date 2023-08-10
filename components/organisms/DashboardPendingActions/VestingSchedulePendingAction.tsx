@@ -933,11 +933,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           </>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button
-            className="secondary small whitespace-nowrap"
-            onClick={() => {
-              setShowFundingContractModal(true);
-            }}>
+          <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
             Approve Funding
           </button>
         )}
