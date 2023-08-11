@@ -790,7 +790,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               ...transaction.data,
               status: 'SUCCESS'
             },
-            data.transactionId
+            transaction.id
           );
           const batchVestings = await fetchVestingsByQuery(
             ['transactionId', 'chainId'],
@@ -920,7 +920,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           <>
             <button
               className="secondary small whitespace-nowrap"
-              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}
               onClick={() => {
                 setShowFundingContractModal(true);
               }}>

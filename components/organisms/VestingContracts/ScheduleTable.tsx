@@ -311,8 +311,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         }
         // setStatus('AUTHORIZATION_REQUIRED');
         // setTransactionStatus('INITIALIZE');
-        toast.success('Funded successfully.');
         await fetchDashboardData();
+        toast.success('Funded successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
     } catch (err) {
@@ -890,7 +890,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
             <button
               className="secondary small whitespace-nowrap"
-              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}
               onClick={() => {
                 setShowFundingContractModal(true);
               }}>
