@@ -15,6 +15,7 @@ export interface ITransaction {
   organizationId: string;
   chainId: number;
   vestingIds?: string[];
+  fundingAmount?: string;
   withdrawAmount?: string;
   vestingContractId?: string;
   approvers?: string[];

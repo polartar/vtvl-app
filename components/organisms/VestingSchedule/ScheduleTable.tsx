@@ -386,6 +386,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
+              approvers: [account],
+              fundingAmount: amount,
               chainId
             });
             await updateVesting(
@@ -859,11 +861,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             </button>
           )}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-            <button
-              className="secondary small whitespace-nowrap"
-              onClick={() => {
-                setShowFundingContractModal(true);
-              }}>
+            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
               Approve Funding
             </button>
           )}
