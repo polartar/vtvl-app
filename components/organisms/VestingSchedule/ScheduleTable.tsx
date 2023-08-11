@@ -170,8 +170,23 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
-      // const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
-      const tokenBalance = vestingContract.data.balance || 0;
+      const TokenContract = new ethers.Contract(
+        mintFormState.address,
+        [
+          // Read-Only Functions
+          'function balanceOf(address owner) view returns (uint256)',
+          'function decimals() view returns (uint8)',
+          'function symbol() view returns (string)',
+          // Authenticated Functions
+          'function transfer(address to, uint amount) returns (bool)',
+          // Events
+          'event Transfer(address indexed from, address indexed to, uint amount)'
+        ],
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+
+      const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
+      // const tokenBalance = vestingContract.data.balance || 0;
 
       const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
 
