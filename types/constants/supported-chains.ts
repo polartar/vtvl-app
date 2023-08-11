@@ -15,7 +15,8 @@ export enum SupportedChainId {
   OKC_MAINNET = 66,
   OKC_TESTNET = 65,
   BASE_GOERLI = 84531,
-  SATOSHI_MAINNET = 12009
+  SATOSHI_MAINNET = 12009,
+  GANACHE_NETWORK = 999
 }
 
 export const PROD_SUPPORTED_CHAIN_IDS = [
@@ -50,7 +51,8 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
   SupportedChainId.SATOSHI_MAINNET,
-  SupportedChainId.BINANCE_TESTNET
+  SupportedChainId.BINANCE_TESTNET,
+  SupportedChainId.GANACHE_NETWORK
 ];
 
 export const SUPPORTED_CHAIN_IDS =
@@ -313,6 +315,15 @@ export const devSupportedChains: ChainsType = {
     code: 'tBNB',
     rpc: 'https://bsc-testnet.publicnode.com',
     explorer: 'https://testnet.bscscan.com/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.GANACHE_NETWORK]: {
+    id: 999,
+    icon: '/icons/chains/ganache.png',
+    title: 'Ganache Network',
+    code: 'WAN',
+    rpc: 'http://13.42.77.252:8545',
+    explorer: '',
     multisigTxUrl: ''
   }
 };
