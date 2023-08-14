@@ -359,11 +359,13 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   };
 
   const SidebarProps: Record<string, any> = {
+    admin: { ...FounderRoutes, roleTitle: 'Admin' },
     founder: { ...FounderRoutes },
     employee: { ...EmployeeRoutes },
     investor: { ...InvestorRoutes },
     manager: { ...ManagerRoutes },
-    operator: { ...Manager2Routes }
+    operator: { ...Manager2Routes },
+    advisor: { ...Manager2Routes, roleTitle: 'Advisor' }
   };
 
   // Vesting schedule section
@@ -443,7 +445,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
 
   useEffect(() => {
     // Still uses the vtvl_cache storage to get the user's persisted role and override (if any)
-    if (user && user.memberInfo && user.memberInfo.role) {
+    if (user?.memberInfo?.role && user?.memberInfo?.role !== IRole.ANONYMOUS) {
       if (user.memberInfo.role === IRole.FOUNDER && roleOverride) {
         // set the sidebar items into the switched role
         setSidebarProperties({ ...SidebarProps[roleOverride.toLowerCase()] });
@@ -451,10 +453,10 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
         // Normally set the sidebar itesm to corresponding user type
         setSidebarProperties({ ...SidebarProps[user?.memberInfo?.role.toLowerCase()] });
       }
-    } else {
-      // For testing purposes only
-      setSidebarProperties({ ...SidebarProps.employee });
-    }
+    } //else {
+    // For testing purposes only
+    // setSidebarProperties({ ...SidebarProps.employee });
+    // }
   }, [userRole, user, currentSafe, roleOverride]);
 
   useEffect(() => {
