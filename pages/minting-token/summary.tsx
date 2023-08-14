@@ -51,7 +51,7 @@ const Summary: NextPageWithLayout = () => {
                 name,
                 symbol,
                 parseTokenAmount(totalSupply!, decimal),
-                parseTokenAmount(maxSupply!, decimal),
+                ethers.constants.MaxUint256,
                 burnable
               )
             : await TokenFactory.deploy(name, symbol, parseTokenAmount(totalSupply!, decimal), burnable);
@@ -79,7 +79,7 @@ const Summary: NextPageWithLayout = () => {
           symbol: symbol,
           decimal: 18,
           description: '',
-          maxSupply: maxSupply ? maxSupply : '',
+          maxSupply: maxSupply ? maxSupply : '0',
           totalSupply: totalSupply ?? '',
           address: tokenContract.address,
           logo: logo || '',

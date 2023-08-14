@@ -174,9 +174,7 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
                         Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / +mintFormState.totalSupply) * 100) >
                         100
                           ? 100
-                          : Math.floor(
-                              (parseFloat(burnAmount.replaceAll(',', '')) / +mintFormState.totalSupply) * 100
-                            )
+                          : Math.floor((parseFloat(burnAmount.replaceAll(',', '')) / +mintFormState.totalSupply) * 100)
                       }%`
                     : '0%',
                 backgroundColor: '#ef4444'
