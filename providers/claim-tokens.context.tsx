@@ -1,11 +1,11 @@
+import TokenApiService from '@api-services/TokenApiService';
 import { useWeb3React } from '@web3-react/core';
 import Decimal from 'decimal.js';
 import { useMyRecipes } from 'hooks/useRecipients';
 import { useVestingsFromIds } from 'hooks/useVestings';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { fetchTokenByQuery } from 'services/db/token';
-import { IToken, IVesting } from 'types/models';
+import { IVesting } from 'types/models';
 import { TUserTokenDetails } from 'types/models/token';
 import { getActualDateTime, getUserTokenDetails } from 'utils/shared';
 
@@ -102,16 +102,14 @@ export function ClaimTokensContextProvider({ children }: any) {
   const getTokenDetails = useCallback(async () => {
     if (selectedSchedule && selectedSchedule.data) {
       try {
-        const getTokenFromDB = await fetchTokenByQuery(
-          ['organizationId', 'chainId'],
-          ['==', '=='],
-          [selectedSchedule?.data.organizationId, chainId!]
-        );
+        const getTokenFromDB = await TokenApiService.getTokens();
         console.log('Token', getTokenFromDB);
-        if (getTokenFromDB && getTokenFromDB.data) {
-          setSelectedToken({
-            ...getTokenFromDB.data
-          });
+        if (getTokenFromDB) {
+          setSelectedToken(
+            getTokenFromDB.find(
+              (token) => token.chainId === chainId! && token.organizationId === selectedSchedule?.data.organizationId
+            )
+          );
         }
       } catch (err) {
         console.error('Getting Token Details Error in ClaimTokensContext: ', err);
@@ -121,19 +119,7 @@ export function ClaimTokensContextProvider({ children }: any) {
 
   // Stores the token list of the current user
   useEffect(() => {
-    if (organizations && Object.keys(organizations).length > 0 && chainId) {
-      const orgIds = Object.keys(organizations);
-      orgIds.map((orgId) => {
-        fetchTokenByQuery(['organizationId', 'chainId'], ['==', '=='], [orgId, chainId!]).then((res) => {
-          if (res?.data) {
-            setTokens([
-              ...tokens.filter((token) => token.address.toLowerCase() !== res.data?.address.toLowerCase()),
-              res.data
-            ]);
-          }
-        });
-      });
-    }
+    if (chainId) TokenApiService.getTokens().then((res) => setTokens(res.filter((token) => token.chainId === chainId)));
   }, [organizations, chainId]);
 
   // Watch for route changes that has [schedule]

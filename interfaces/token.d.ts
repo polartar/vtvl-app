@@ -18,6 +18,7 @@ interface IToken {
   createdAt?: string;
   updatedAt?: string;
   status?: 'PENDING' | 'SUCCESS' | 'FAILED';
+  organizationId: string;
 }
 
 interface IImportTokenRequest {
@@ -37,6 +38,11 @@ interface ICreateDeployedTokenRequest extends IImportTokenRequest {
   supplyCap: 'LIMITED' | 'UNLIMITED';
   burnable: boolean;
   imported: boolean;
+}
+
+interface IUpdateTokenRequest {
+  organizationId: string;
+  totalSupply: string;
 }
 
 type ITokensResponse = {

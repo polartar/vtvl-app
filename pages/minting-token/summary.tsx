@@ -22,7 +22,6 @@ import { ReactElement, useEffect } from 'react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { db } from 'services/auth/firebase';
-import { createToken, fetchTokenByQuery } from 'services/db/token';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {

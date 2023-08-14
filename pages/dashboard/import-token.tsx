@@ -14,7 +14,6 @@ import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { createToken } from 'services/db/token';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 interface IImportToken {

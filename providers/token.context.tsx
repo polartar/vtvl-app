@@ -5,7 +5,6 @@ import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { fetchTokensByQuery } from 'services/db/token';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 import { useAuthContext } from './auth.context';
@@ -42,7 +41,8 @@ const INITIAL_STATE: IToken = {
   logo: '',
   maxSupply: '',
   address: '',
-  chainId: 0
+  chainId: 0,
+  organizationId: ''
 };
 
 const TokenContext = createContext({} as ITokenContextData);
@@ -117,7 +117,7 @@ export function TokenContextProvider({ children }: any) {
       TokenApiService.getTokens().then((res) => {
         const data = res.filter((token) => token.chainId === chainId);
         if (data && data.length > 0) {
-          setMintFormState(data[0]);
+          setMintFormState({ ...data[0], organizationId });
         }
       });
     }

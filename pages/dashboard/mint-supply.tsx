@@ -1,3 +1,4 @@
+import TokenApiService from '@api-services/TokenApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
@@ -20,7 +21,6 @@ import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { updateToken } from 'services/db/token';
 import { formatNumber } from 'utils/token';
 
 interface IAdditionalSupply {
@@ -95,24 +95,10 @@ const MintSuppy: NextPageWithLayout = () => {
         await mintTx.wait();
 
         // ATTENTION: this might need to be updated to support the new API integration for token details
-        await updateToken(
-          {
-            name: name,
-            symbol: symbol,
-            address: tokenContract.address,
-            logo: String(logo),
-            organizationId: organizationId!,
-            createdAt: Math.floor(parse(String(mintFormState.createdAt), 'YYYY-MM-DD', new Date()).getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
-            imported: mintFormState.isImported,
-            supplyCap: supplyCap,
-            maxSupply: +maxSupply!,
-            totalSupply: +additionalTokens.value + +totalSupply!,
-            status: mintFormState.status,
-            chainId
-          },
-          tokenId
-        );
+        await TokenApiService.updateToken(tokenId, {
+          organizationId: organizationId!,
+          totalSupply: (+additionalTokens.value + +totalSupply!).toString()
+        });
 
         updateMintFormState({
           ...mintFormState,

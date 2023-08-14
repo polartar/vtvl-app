@@ -9,6 +9,11 @@ class TokenApiService {
 
   getTokens = () => CoreApiService.get<IToken[]>('/token');
 
+  getToken = (tokenId: string) => CoreApiService.get<IToken>(`/token/${tokenId}`);
+
+  updateToken = (tokenId: string, payload: IUpdateTokenRequest) =>
+    CoreApiService.put<IToken>(`/token/${tokenId}`, payload);
+
   // inviteMember = (payload: IOrgMemberInviteRequest) =>
   //   CoreApiService.post(`/organization/${payload.organizationId}/invite/${PLATFORM_NAME}`, payload);
 }

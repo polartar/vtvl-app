@@ -110,7 +110,7 @@ const MyTokenSchedule: NextPageWithLayout = () => {
           options: {
             address: selectedToken?.address,
             symbol: selectedToken?.symbol,
-            decimals: selectedToken?.decimals || 18,
+            decimals: selectedToken?.decimal || 18,
             image: selectedToken?.logo
           }
         }
