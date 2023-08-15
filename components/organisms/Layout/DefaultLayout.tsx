@@ -405,16 +405,17 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       backgroundColor: 'rgba(0,0,0,0.3)',
       zIndex: '900',
       overflowY: 'auto',
-      paddingTop: '3rem',
-      paddingBottom: '3rem'
+      paddingTop: '1rem',
+      paddingBottom: '1rem'
     },
     content: {
-      maxWidth: '600px',
+      width: '100%',
+      maxWidth: '480px',
       backgroundColor: '#fff',
       position: 'absolute',
       filter: 'drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08))',
       borderRadius: '1.5rem',
-      left: '50%',
+      inset: '24px 40px 24px 50%',
       transform: 'translateX(-50%)'
     }
   };

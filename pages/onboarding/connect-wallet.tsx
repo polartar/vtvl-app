@@ -11,27 +11,6 @@ import { NextPage } from 'next';
 import Router from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 
-const OnboardingContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-radius: 26px;
-  box-shadow: 0 10px 20px -15px rgba(56, 56, 56, 0.6);
-  max-width: 1152px;
-  font-weight: medium;
-`;
-const Signing = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 32px;
-  text-align: center;
-  padding: 48px 36px;
-  border: 1px solid #d0d5dd;
-  border-right: none;
-  border-radius: 26px 0 0 26px;
-`;
-
 const Vesting = styled.div<{ background?: string }>`
   border-radius: 0 26px 26px 0;
   background: url(${({ background }) => background ?? '/images/background.png'});
@@ -69,16 +48,16 @@ const ConnectWalletPage: NextPage = () => {
 
   return (
     <PaddedLayout>
-      <OnboardingContainer>
-        <Signing>
+      <div className="grid md:grid-cols-2 md:rounded-3xl md:shadow-xl max-w-[1152px]">
+        <div className="flex flex-col justify-center items-center gap-8 py-6 px-8 order-1 md:order-0">
           <ConnectWalletOptions onConnect={handleConnectedState} />
-        </Signing>
+        </div>
         <Vesting
-          className="flex flex-col items-center justify-center pt-12 pb-10"
+          className="hidden md:flex flex-col items-center justify-center pt-12 pb-10 md:order-1"
           background={assets?.loginBgImage?.src}>
           <Carousel variant="dark" />
         </Vesting>
-      </OnboardingContainer>
+      </div>
     </PaddedLayout>
   );
 };

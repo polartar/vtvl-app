@@ -54,13 +54,13 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
       <div className={`flex flex-row items-center`}>
         <MediaAsset
           src={assets?.logoIcon?.src || '/icons/vtvl-icon.svg'}
-          className="h-10 sm:hidden md:h-12"
+          className="h-10 hidden md:h-12"
           alt={name || WEBSITE_NAME}
           onClick={redirectToHome}
         />
         <MediaAsset
           src={assets?.logoImage?.src || '/logo.svg'}
-          className="hidden sm:block w-48 h-12 cursor-pointer"
+          className="block w-48 h-12 cursor-pointer"
           alt={name || WEBSITE_NAME}
           onClick={redirectToHome}
         />
@@ -75,8 +75,8 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
         <div className="w-full flex flex-row gap-3 md:gap-5 justify-between h-20 absolute z-10 px-3 md:px-6 ">
           {renderVTVLLogo()}
           <div
-            className={`flex flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5 flex-shrink-0 transition-all delay-300 ${
-              displayWalletConnect ? 'w-auto' : 'w-0'
+            className={`flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5 flex-shrink-0 transition-all delay-300 ${
+              displayWalletConnect ? 'flex w-auto' : 'hidden w-0'
             }`}>
             <SafeSelector />
             <NetworkSelector />
