@@ -5,9 +5,9 @@ interface ISafeRequest {
   organizationId: string;
   address: string;
   chainId: number;
-  name: string;
+  name?: string;
   requiredConfirmations: number;
-  owners: ISafeOwner[] | IOwner;
+  owners: ISafeOwner[] | IOwner[];
 }
 
 interface ISafeResponse {

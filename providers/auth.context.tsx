@@ -4,6 +4,7 @@ import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { useUser } from '@store/useUser';
 import { REDIRECT_URIS, USE_NEW_API } from '@utils/constants';
+import { transformOrganization } from '@utils/organization';
 import { transformSafes } from '@utils/safe';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
@@ -62,7 +63,7 @@ export type AuthContextData = {
   currentSafeId: string;
   safes: { id: string; data: ISafe }[];
   safesFromChain: string[];
-  safesChainDB: { id: string; data: ISafe }[];
+  safesChainDB: { id: string; data: ISafe; isImported: boolean }[];
   organizationId?: string;
   organization?: IOrganization;
   connection?: TConnections;
@@ -123,7 +124,7 @@ export function AuthContextProvider({ children }: any) {
   const [currentSafe, setCurrentSafe] = useState<ISafe | undefined>();
   const [safes, setSafes] = useState<{ id: string; data: ISafe }[]>([]);
   const [safesFromChain, setSafesFromChain] = useState<string[]>([]);
-  const [safesChainDB, setSafesChainDB] = useState<{ id: string; data: ISafe }[]>([]);
+  const [safesChainDB, setSafesChainDB] = useState<{ id: string; data: ISafe; isImported: boolean }[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isNewUser, setIsNewUser] = useState<boolean>(false);
   const [agreedOnConsent, setAgreedOnConsent] = useState<boolean>(false);
@@ -179,7 +180,10 @@ export function AuthContextProvider({ children }: any) {
       const safesToAdd = safesFromChain
         .filter((address) => !existingSafes.includes(address))
         .map((address) => ({ id: address, data: { safe_name: '', address } as ISafe }));
-      setSafesChainDB([...safesToAdd, ...safes]);
+      setSafesChainDB([
+        ...safes.map((s) => ({ ...s, isImported: true })),
+        ...safesToAdd.map((s) => ({ ...s, isImported: false }))
+      ]);
     }
   }, [safes, safesFromChain]);
 
@@ -260,7 +264,9 @@ export function AuthContextProvider({ children }: any) {
       await setCache({ roleOverride: role });
     }
     await updateRoleGuardState();
+    const findOrganization = organizations.find((org) => org.organizationId === user?.memberInfo?.org_id);
     setOrganizationId(user?.memberInfo?.org_id);
+    setOrganization(transformOrganization(findOrganization!));
     setUser(user);
     setIsAuthenticated(true);
   };

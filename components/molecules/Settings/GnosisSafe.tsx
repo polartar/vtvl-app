@@ -8,15 +8,15 @@ import { Typography } from '@components/atoms/Typography/Typography';
 import UnsupportedChainModal from '@components/organisms/UnsupportedChainModal';
 import { useAuthContext } from '@providers/auth.context';
 import { useLoaderContext } from '@providers/loader.context';
+import { useUser } from '@store/useUser';
 import { USE_NEW_API } from '@utils/constants';
 import { transformSafe } from '@utils/safe';
 // import AuthContext from '@providers/auth.context';
 // import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { useModal } from 'hooks/useModal';
+import { ISafeOwner } from 'interfaces/safe';
 import React, { useEffect, useState } from 'react';
-import { fetchOrg } from 'services/db/organization';
-import { createOrUpdateSafe, fetchSafeByAddress } from 'services/db/safe';
 import { getSafeInfo } from 'services/gnosois';
 import { SafeSupportedChains } from 'types/constants/supported-chains';
 
@@ -42,6 +42,7 @@ export default function GonsisSafe() {
     safesFromChain,
     safesChainDB
   } = useAuthContext();
+  const { userId } = useUser();
   const [step, setStep] = useState<keyof typeof STEP_GUIDES>(1);
   const { showLoading, hideLoading } = useLoaderContext();
   const { ModalWrapper, showModal, hideModal } = useModal({});
@@ -56,7 +57,8 @@ export default function GonsisSafe() {
   }, [account]);
 
   const importSafe = async (address: string) => {
-    if (organizationId && organization && user?.memberInfo?.id) {
+    console.log('IMPORT SAFE START', address, organizationId, organization, userId);
+    if (organizationId && organization && userId) {
       showLoading();
       try {
         const safe = await getSafeInfo(library, address);
@@ -64,44 +66,42 @@ export default function GonsisSafe() {
           throw 'Safe is not existed on-chain';
         }
 
-        let safeFromDB = undefined;
-
-        if (USE_NEW_API) {
+        // Use try catch here to hanle 404 status code from Safe API
+        try {
           const newAPISafe = await SafeApiService.getSafeWalletsByAddress(address);
+          console.log('NEW API SAFE', newAPISafe);
           if (newAPISafe) {
-            safeFromDB = transformSafe({
-              safe: newAPISafe,
-              organizationId,
-              organizationName: organization.name,
-              userId: user?.memberInfo?.id || ''
-            });
+            setCurrentSafe(
+              transformSafe({
+                safe: newAPISafe,
+                organizationId,
+                organizationName: organization.name,
+                userId: userId || ''
+              })
+            );
           }
-        } else {
-          safeFromDB = await fetchSafeByAddress(address);
-        }
-
-        if (!safeFromDB) {
-          const findOrganization = USE_NEW_API ? organization : await fetchOrg(organizationId);
-          if (findOrganization && safe) {
+        } catch (err) {
+          if (organization && safe) {
             const owners = await safe.getOwners();
             const threshold = await safe.getThreshold();
-            const safeId = await createOrUpdateSafe({
-              user_id: user?.uid,
-              org_id: user?.memberInfo?.org_id || '',
-              org_name: findOrganization.name,
+
+            const saveSafe = await SafeApiService.addSafeWallet({
+              organizationId,
               address: safe.getAddress(),
               chainId: chainId || 0,
+              name: '',
+              requiredConfirmations: threshold,
               owners: owners.map((owner) => ({
                 address: owner,
                 name: ''
-              })),
-              threshold
+              })) as ISafeOwner[]
             });
-            setCurrentSafeId(safeId);
+
+            setCurrentSafeId(saveSafe.id);
             setCurrentSafe({
-              user_id: user?.uid,
-              org_id: user?.memberInfo?.org_id || '',
-              org_name: findOrganization.name,
+              user_id: userId,
+              org_id: organizationId || '',
+              org_name: organization.name,
               address: safe.getAddress(),
               chainId: chainId || 0,
               owners: owners.map((owner) => ({
@@ -111,8 +111,6 @@ export default function GonsisSafe() {
               threshold
             });
           }
-        } else {
-          setCurrentSafe(safeFromDB);
         }
       } catch (error) {
         console.error('Importing safe error: ', error);
@@ -142,7 +140,7 @@ export default function GonsisSafe() {
             {safesChainDB?.length ? (
               /* Display all safes to import */
               <div className="flex flex-col gap-5 mt-5" style={{ marginBottom: '1.5em' }}>
-                {safesChainDB.map(({ data: { safe_name, address } }, safeIndex) => (
+                {safesChainDB.map(({ data: { safe_name, address }, isImported }, safeIndex) => (
                   <SafesListItem
                     key={`safe-${address}-${safeIndex}`}
                     label={
@@ -155,12 +153,10 @@ export default function GonsisSafe() {
                         address
                       )
                     }
-                    selected={
-                      importedSafe?.address?.toLowerCase() === address?.toLowerCase() ||
-                      !safesFromChain.includes(address)
-                    }
+                    selected={importedSafe?.address?.toLowerCase() === address?.toLowerCase()}
+                    buttonLabel={isImported ? 'Use this' : 'Import'}
                     selectedLabel={
-                      importedSafe?.address?.toLowerCase() === address?.toLowerCase() ? 'Selected' : 'Created'
+                      importedSafe?.address?.toLowerCase() === address?.toLowerCase() ? 'Selected' : 'Imported'
                     }
                     onClick={async () => await importSafe(address)}
                   />

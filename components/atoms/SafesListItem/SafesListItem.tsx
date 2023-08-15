@@ -22,7 +22,11 @@ const SafesListItem = ({
         </div>
         <div className="text-sm font-bold text-neutral-600 break-all">{label}</div>
       </div>
-      <button type="button" disabled={selected} className="small primary" onClick={props.onClick}>
+      <button
+        type="button"
+        disabled={selected || props.disabled}
+        className="small primary flex-shrink-0"
+        onClick={props.onClick}>
         {selected ? selectedLabel : buttonLabel}
       </button>
     </div>

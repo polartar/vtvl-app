@@ -1,3 +1,4 @@
+import SafeApiService from '@api-services/SafeApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
@@ -19,9 +20,9 @@ import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { createOrUpdateSafe, fetchSafeByAddress } from 'services/db/safe';
 import { deploySafe, getSafeInfo } from 'services/gnosois';
 import { SafeSupportedChains } from 'types/constants/supported-chains';
+import { IOwner } from 'types/models';
 
 interface Owner {
   name: string;
@@ -37,7 +38,7 @@ type ConfirmationForm = {
 const NewSafePage: NextPage = () => {
   const { active, library, chainId, error } = useWeb3React();
   const { fetchSafeFromDB } = useAuthContext();
-  const { user } = useContext(AuthContext);
+  const { user, organization, organizationId } = useContext(AuthContext);
   const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
   const { transactionStatus, setTransactionStatus } = useTransactionLoaderContext();
   const { query, push: routerPush } = useRouter();
@@ -189,10 +190,10 @@ const NewSafePage: NextPage = () => {
       // Use the correct value for authorized users by checking on the threshold.
       defaultValues.authorizedUsers = o.length > authThreshold ? authThreshold : o.length;
       //populate with existing safe if we have it stored
-      const savedSafe = await fetchSafeByAddress(safe.getAddress());
+      const savedSafe = await SafeApiService.getSafeWalletsByAddress(safe.getAddress());
       if (savedSafe) {
-        defaultValues.owners = savedSafe.owners;
-        defaultValues.organizationName = savedSafe.org_name;
+        defaultValues.owners = savedSafe.safeOwners;
+        defaultValues.organizationName = organization?.name;
         setSafeRef(savedSafe?.id);
       }
       // Set the options depending on the number of owners
@@ -296,18 +297,26 @@ const NewSafePage: NextPage = () => {
         setFormError(true);
         return;
       }
-      await createOrUpdateSafe(
-        {
-          user_id: user?.uid,
-          org_id: user?.memberInfo?.org_id || '',
-          org_name: values.organizationName,
-          address: safe.getAddress(),
-          chainId: chainId || 0,
-          owners: values.owners,
-          threshold: values.authorizedUsers
-        },
-        safeRef
-      );
+
+      const SafePayload = {
+        organizationId: organizationId || '',
+        address: safe.getAddress(),
+        chainId: chainId || 0,
+        name: '',
+        requiredConfirmations: values.authorizedUsers,
+        owners: values.owners as IOwner[]
+      };
+      // Already existing, update the safe
+      if (safeRef) {
+        await SafeApiService.updateSafeWallet({
+          safeId: safeRef,
+          ...SafePayload
+        });
+      } else {
+        // Create new safe in the DB
+        await SafeApiService.addSafeWallet(SafePayload);
+      }
+
       fetchSafeFromDB();
       if (!importedSafe) {
         setTransactionStatus('SUCCESS');
