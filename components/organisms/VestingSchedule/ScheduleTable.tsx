@@ -170,8 +170,23 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
-      // const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
-      const tokenBalance = vestingContract.data.balance || 0;
+      const TokenContract = new ethers.Contract(
+        mintFormState.address,
+        [
+          // Read-Only Functions
+          'function balanceOf(address owner) view returns (uint256)',
+          'function decimals() view returns (uint8)',
+          'function symbol() view returns (string)',
+          // Authenticated Functions
+          'function transfer(address to, uint amount) returns (bool)',
+          // Events
+          'event Transfer(address indexed from, address indexed to, uint amount)'
+        ],
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+
+      const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
+      // const tokenBalance = vestingContract.data.balance || 0;
 
       const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
 
@@ -386,6 +401,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
+              approvers: [account],
+              fundingAmount: amount,
               chainId
             });
             await updateVesting(
@@ -851,7 +868,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
             <button
               className="secondary small whitespace-nowrap"
-              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}
               onClick={() => {
                 setShowFundingContractModal(true);
               }}>
@@ -859,11 +876,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             </button>
           )}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-            <button
-              className="secondary small whitespace-nowrap"
-              onClick={() => {
-                setShowFundingContractModal(true);
-              }}>
+            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
               Approve Funding
             </button>
           )}

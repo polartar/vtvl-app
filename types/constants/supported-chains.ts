@@ -16,7 +16,9 @@ export enum SupportedChainId {
   OKC_TESTNET = 65,
   BASE_GOERLI = 84531,
   SATOSHI_MAINNET = 12009,
-  GANACHE_NETWORK = 999
+  GANACHE_NETWORK = 999,
+  OPTIMISM_MAINNET = 10,
+  OPTIMISM_GOERLI = 420
 }
 
 export const PROD_SUPPORTED_CHAIN_IDS = [
@@ -27,7 +29,8 @@ export const PROD_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.FANTOM,
   SupportedChainId.CRONOS,
   SupportedChainId.OKC_MAINNET,
-  SupportedChainId.SATOSHI_MAINNET
+  SupportedChainId.SATOSHI_MAINNET,
+  SupportedChainId.OPTIMISM_MAINNET
 ];
 
 export const DEMO_SUPPORTED_CHAIN_IDS = [
@@ -35,7 +38,8 @@ export const DEMO_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
-  SupportedChainId.BINANCE_TESTNET
+  SupportedChainId.BINANCE_TESTNET,
+  SupportedChainId.OPTIMISM_GOERLI
 ];
 
 export const DEV_SUPPORTED_CHAIN_IDS = [
@@ -52,7 +56,8 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.BASE_GOERLI,
   SupportedChainId.SATOSHI_MAINNET,
   SupportedChainId.BINANCE_TESTNET,
-  SupportedChainId.GANACHE_NETWORK
+  SupportedChainId.GANACHE_NETWORK,
+  SupportedChainId.OPTIMISM_GOERLI
 ];
 
 export const SUPPORTED_CHAIN_IDS =
@@ -145,6 +150,15 @@ export const prodSupportedChains: ChainsType = {
     rpc: 'https://mainnet-rpc.satoshichain.io',
     explorer: 'https://satoshiscan.io',
     multisigTxUrl: ''
+  },
+  [SupportedChainId.OPTIMISM_MAINNET]: {
+    id: 10,
+    icon: '/icons/chains/optimism.png',
+    title: 'OP Mainnet',
+    code: 'ETH',
+    rpc: 'https://mainnet.optimism.io/',
+    explorer: 'https://optimistic.etherscan.io/',
+    multisigTxUrl: 'https://safe-transaction-optimism.safe.global/'
   }
 };
 
@@ -193,6 +207,15 @@ export const demoSupportedChains: ChainsType = {
     code: 'BNB',
     rpc: 'https://bsc-testnet.publicnode.com',
     explorer: 'https://testnet.bscscan.com/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.OPTIMISM_GOERLI]: {
+    id: 420,
+    icon: '/icons/chains/optimism.png',
+    title: 'Optimism Goerli Testnet',
+    code: 'ETH',
+    rpc: 'https://goerli.optimism.io',
+    explorer: 'https://goerli-optimism.etherscan.io/',
     multisigTxUrl: ''
   }
 };
@@ -324,6 +347,15 @@ export const devSupportedChains: ChainsType = {
     code: 'WAN',
     rpc: 'http://13.42.77.252:8545',
     explorer: '',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.OPTIMISM_GOERLI]: {
+    id: 420,
+    icon: '/icons/chains/optimism.png',
+    title: 'Optimism Goerli Testnet',
+    code: 'ETH',
+    rpc: 'https://goerli.optimism.io',
+    explorer: 'https://goerli-optimism.etherscan.io/',
     multisigTxUrl: ''
   }
 };
