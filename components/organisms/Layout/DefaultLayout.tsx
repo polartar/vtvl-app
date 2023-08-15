@@ -445,19 +445,19 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
 
   useEffect(() => {
     // Still uses the vtvl_cache storage to get the user's persisted role and override (if any)
-    if (user?.memberInfo?.role && user?.memberInfo?.role !== IRole.ANONYMOUS) {
-      if (user.memberInfo.role === IRole.FOUNDER && roleOverride) {
+    if (userRole && userRole !== IRole.ANONYMOUS) {
+      if (userRole === IRole.FOUNDER && roleOverride) {
         // set the sidebar items into the switched role
         setSidebarProperties({ ...SidebarProps[roleOverride.toLowerCase()] });
       } else {
         // Normally set the sidebar itesm to corresponding user type
-        setSidebarProperties({ ...SidebarProps[user?.memberInfo?.role.toLowerCase()] });
+        setSidebarProperties({ ...SidebarProps[userRole.toLowerCase()] });
       }
     } //else {
     // For testing purposes only
     // setSidebarProperties({ ...SidebarProps.employee });
     // }
-  }, [userRole, user, currentSafe, roleOverride]);
+  }, [userRole, roleOverride]);
 
   useEffect(() => {
     // Check if the user has a wallet connected on all of the pages except:
