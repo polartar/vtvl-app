@@ -66,7 +66,7 @@ export function TokenContextProvider({ children }: any) {
       updateMintFormState: setMintFormState,
       updateTokenId: setTokenId
     }),
-    [mintFormState, isTokenLoading]
+    [mintFormState, isTokenLoading, tokenId]
   );
 
   const getTokenDetailsFromBlockchain = async () => {
@@ -118,6 +118,7 @@ export function TokenContextProvider({ children }: any) {
         const data = res.filter((token) => token.chainId === chainId);
         if (data && data.length > 0) {
           setMintFormState({ ...data[0], organizationId });
+          setTokenId(data[0].id ?? '');
         }
       });
     }
