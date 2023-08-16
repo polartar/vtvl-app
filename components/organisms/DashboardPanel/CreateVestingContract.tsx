@@ -20,6 +20,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { createVestingContract, fetchVestingContractByQuery } from 'services/db/vestingContract';
+import { VTVLVesting__factory } from 'typechain/factories/VTVLVesting__factory';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction } from 'types/models';
 
@@ -99,14 +100,9 @@ const AddVestingSchedules = ({ className = '', type }: AddVestingSchedulesProps)
         setIsCloseAvailable(false);
 
         setTransactionStatus('PENDING');
-        const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI.abi);
-        const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
-        const VestingFactory = new ethers.ContractFactory(
-          VTVL_VESTING_ABI.abi,
-          VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
-          library.getSigner()
-        );
-        const vestingContract = await VestingFactory.deploy(mintFormState.address);
+
+        const factory = new VTVLVesting__factory(library.getSigner());
+        const vestingContract = await factory.deploy(mintFormState.address);
 
         const transactionData: ITransaction = {
           hash: vestingContract.deployTransaction.hash,

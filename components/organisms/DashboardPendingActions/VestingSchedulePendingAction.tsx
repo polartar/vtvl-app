@@ -351,17 +351,17 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         );
 
         const allowance = await tokenContract.allowance(account, vestingContract?.data?.address);
-        if (allowance.lt(ethers.utils.parseEther(amount))) {
+        if (allowance.lt(ethers.utils.parseUnits(amount, mintFormState.decimals))) {
           const approveTx = await tokenContract.approve(
             vestingContract?.data?.address,
-            ethers.utils.parseEther(amount).sub(allowance)
+            ethers.utils.parseUnits(amount, mintFormState.decimals).sub(allowance)
           );
           await approveTx.wait();
         }
 
         const fundTransaction = await tokenContract.transfer(
           vestingContract?.data?.address,
-          ethers.utils.parseEther(amount)
+          ethers.utils.parseUnits(amount, mintFormState.decimals)
         );
         setShowFundingContractModal(false);
 
@@ -434,6 +434,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
+              approvers: [account],
+              fundingAmount: amount,
               chainId
             });
             await updateVesting(
@@ -788,7 +790,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               ...transaction.data,
               status: 'SUCCESS'
             },
-            data.transactionId
+            transaction.id
           );
           const batchVestings = await fetchVestingsByQuery(
             ['transactionId', 'chainId'],
@@ -918,7 +920,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           <>
             <button
               className="secondary small whitespace-nowrap"
-              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}
               onClick={() => {
                 setShowFundingContractModal(true);
               }}>
@@ -933,11 +935,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           </>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button
-            className="secondary small whitespace-nowrap"
-            onClick={() => {
-              setShowFundingContractModal(true);
-            }}>
+          <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
             Approve Funding
           </button>
         )}
