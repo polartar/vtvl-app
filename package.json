@@ -116,7 +116,7 @@
     "@types/react-modal": "^3.13.1",
     "@types/react-table": "^7.7.12",
     "babel-loader": "^8.2.5",
-    "cypress": "^12.7.0",
+    "cypress": "12.17.3",
     "cypress-iframe": "^1.0.1",
     "cypress-localstorage-commands": "^2.2.3",
     "env-cmd": "^10.1.0",
