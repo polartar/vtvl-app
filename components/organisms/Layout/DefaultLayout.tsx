@@ -427,13 +427,15 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   };
 
   const displaySideBar =
-    (USE_NEW_API
-      ? userRole && SidebarProps[userRole.toLowerCase()]
-      : Boolean(
-          // MOCK DISPLAY
-          // true
-          !inProgress && user && user?.memberInfo && user.memberInfo.role && SidebarProps[user?.memberInfo?.role]
-        )) && !NO_SIDEBAR_PAGES.includes(router.pathname);
+    Boolean(
+      // MOCK DISPLAY
+      // true
+      !inProgress &&
+        user &&
+        user?.memberInfo &&
+        user.memberInfo.role &&
+        SidebarProps[user?.memberInfo?.role.toLowerCase()]
+    ) && !NO_SIDEBAR_PAGES.includes(router.pathname);
 
   const handleWalletConnection = () => {
     setConnectWalletModal(false);
@@ -445,19 +447,19 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
 
   useEffect(() => {
     // Still uses the vtvl_cache storage to get the user's persisted role and override (if any)
-    if (userRole && userRole !== IRole.ANONYMOUS) {
-      if (userRole === IRole.FOUNDER && roleOverride) {
+    if (user?.memberInfo?.role && user.memberInfo.role !== IRole.ANONYMOUS) {
+      if (user.memberInfo.role === IRole.FOUNDER && roleOverride) {
         // set the sidebar items into the switched role
         setSidebarProperties({ ...SidebarProps[roleOverride.toLowerCase()] });
       } else {
         // Normally set the sidebar itesm to corresponding user type
-        setSidebarProperties({ ...SidebarProps[userRole.toLowerCase()] });
+        setSidebarProperties({ ...SidebarProps[user.memberInfo.role.toLowerCase()] });
       }
     } //else {
     // For testing purposes only
     // setSidebarProperties({ ...SidebarProps.employee });
     // }
-  }, [userRole, roleOverride]);
+  }, [user, roleOverride]);
 
   useEffect(() => {
     // Check if the user has a wallet connected on all of the pages except:

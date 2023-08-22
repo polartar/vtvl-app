@@ -4,7 +4,12 @@ import { IOrganization } from 'types/models';
 
 // Transforms the data coming from the NEW API response into the OLD API-readable format
 export const transformOrganization: (organization: IOrganizationResponse) => IOrganization = (organization) => {
-  const { name, email, userId: user_id, createdAt, updatedAt } = organization;
+  const {
+    organization: { name, email },
+    userId: user_id,
+    createdAt,
+    updatedAt
+  } = organization;
   return {
     name,
     email,
