@@ -41,7 +41,7 @@ const Vesting = styled.div<{ background?: string }>`
 const ConnectWalletPage: NextPage = () => {
   const { active, activate } = useWeb3React();
   const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
-  const { user, anonymousSignIn } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [activated, setActivated] = useState(false);
   const {
     website: { assets, features }

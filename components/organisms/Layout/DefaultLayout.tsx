@@ -100,8 +100,6 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       setActivatingConnector(undefined);
     }
   }, [activatingConnector, connector]);
-  // NEW API implementation
-  const { role: userRole } = useUser();
 
   /**
    * SIDEBAR ITEMS BASED ON USER ROLES
@@ -427,15 +425,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   };
 
   const displaySideBar =
-    Boolean(
-      // MOCK DISPLAY
-      // true
-      !inProgress &&
-        user &&
-        user?.memberInfo &&
-        user.memberInfo.role &&
-        SidebarProps[user?.memberInfo?.role.toLowerCase()]
-    ) && !NO_SIDEBAR_PAGES.includes(router.pathname);
+    Boolean(user?.memberInfo?.role && SidebarProps[user?.memberInfo?.role.toLowerCase()]) &&
+    !NO_SIDEBAR_PAGES.includes(router.pathname);
 
   const handleWalletConnection = () => {
     setConnectWalletModal(false);

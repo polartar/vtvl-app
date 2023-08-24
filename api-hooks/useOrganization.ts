@@ -67,6 +67,7 @@ const useOrgAPI = () => {
     return OrganizationApiService.inviteMember(payload)
       .then((res) => {
         console.log('MEMBER INVITED', payload.name);
+        toast.success(`${payload.name} has been invited`);
         return res;
       })
       .catch((error) => {

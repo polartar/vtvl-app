@@ -3,11 +3,12 @@ import Button from '@components/atoms/Button/Button';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import { useAuthContext } from '@providers/auth.context';
 import format from 'date-fns/format';
+import getUnixTime from 'date-fns/getUnixTime';
 import { useModal } from 'hooks/useModal';
+import { IMember } from 'interfaces/member';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { removeInvite, removeMember } from 'services/db/member';
-import { IMember } from 'types/models';
 import { ITeamRole } from 'types/models/settings';
 import { INVITEE_EXPIRED_TIME } from 'utils/constants';
 import { convertLabelToOption } from 'utils/shared';
@@ -32,14 +33,14 @@ const TeamTable = ({
   const [isResend, setIsResend] = useState(true);
   const [tableData, setTableData] = useState<IMember[]>([]);
 
-  const [selectedMember, setSelectedMember] = useState<IMember>({});
+  const [selectedMember, setSelectedMember] = useState<IMember | undefined>();
 
   useEffect(() => {
     setTableData(data.slice());
   }, [isTeamMember, data]);
 
   const disableMember = useCallback(async () => {
-    if (selectedMember.id) {
+    if (selectedMember?.id) {
       hideModal();
 
       if (isTeamMember) {
@@ -51,19 +52,17 @@ const TeamTable = ({
   }, [selectedMember]);
 
   const resendMember = useCallback(async () => {
-    if (!selectedMember.email || !user) return;
+    if (!selectedMember?.user.email || !user || !user.memberInfo || !user.memberInfo.org_id) return;
     try {
       hideModal();
 
       await sendTeammateInvite(
-        selectedMember.email,
-        selectedMember.role || ITeamRole.MANAGER,
-        selectedMember.name || 'anonymous',
-        companyName,
-        user.memberInfo?.org_id,
-        selectedMember.id
+        selectedMember.user.email,
+        selectedMember.user.role || ITeamRole.MANAGER,
+        selectedMember.user.name || 'anonymous',
+        user.memberInfo.org_id
       );
-      toast.success(`${selectedMember.name} re-invited`);
+      toast.success(`${selectedMember.user.name} re-invited`);
     } catch (err) {
       toast.error('Something went wrong while resending email');
     }
@@ -124,18 +123,18 @@ const TeamTable = ({
               return (
                 <tr key={row.id}>
                   <td className="flex items-center">
-                    <Avatar name={row.name || row.email?.split('@')[0] || ''} />
+                    <Avatar name={row.user.name || row.user.email?.split('@')[0] || ''} />
                     <div className="flex flex-col ml-2 h-[40px]">
-                      <span className=" font-medium">{row.name || row.email?.split('@')[0]}</span>
-                      <span className="  text-gray-400">{row.email}</span>
+                      <span className=" font-medium">{row.user.name || row.user.email?.split('@')[0]}</span>
+                      <span className="  text-gray-400">{row.user.email}</span>
                     </div>
                   </td>
 
-                  <td>{row.createdAt ? format(new Date(row.createdAt * 1000), 'MMMM d, yyyy') : ''}</td>
+                  <td>{row.createdAt ? format(getUnixTime(new Date(row.createdAt)) * 1000, 'MMMM d, yyyy') : ''}</td>
                   <td>
                     <SelectInput
                       options={roles}
-                      value={row.role}
+                      value={row.user.role}
                       color="text-primary-800"
                       variant="alt"
                       onChange={(e) => onChangeType(row.id, e.target.value as ITeamRole)}
@@ -144,7 +143,7 @@ const TeamTable = ({
 
                   {!isTeamMember && (
                     <td>
-                      {isPending(row.createdAt) ? (
+                      {isPending(getUnixTime(new Date(row.createdAt))) ? (
                         <Button className="text-[#98a2b3] cursor-default">Pending</Button>
                       ) : (
                         <Button className="text-[#ff5c00] cursor-default">Expired</Button>
@@ -159,7 +158,7 @@ const TeamTable = ({
                     {isTeamMember ? (
                       <button
                         className="border-[#ef4444] text-[#ef4444] border-2 font-medium"
-                        disabled={!isDisableAvailable && row.role === ITeamRole.FOUNDER}
+                        disabled={!isDisableAvailable && row.user.role === ITeamRole.FOUNDER}
                         onClick={() => onDisableClick(row)}>
                         Disable
                       </button>
@@ -183,7 +182,7 @@ const TeamTable = ({
         ) : (
           <RevokeModalContainer
             hideModal={hideModal}
-            memberName={selectedMember.name}
+            memberName={selectedMember?.user.name}
             disableMember={disableMember}
             isDisable={isTeamMember}
           />

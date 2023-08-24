@@ -1,4 +1,4 @@
-import { IRole } from 'types/models/settings';
+import { IRole, ITeamRole } from 'types/models/settings';
 
 interface IOrganizationRequest {
   name: string;
@@ -31,6 +31,6 @@ interface IOrgMemberInviteRequest {
   organizationId: string;
   name: string;
   email: string;
-  role: string;
+  role: IRole | ITeamRole;
   redirectUri: string;
 }

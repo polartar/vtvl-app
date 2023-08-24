@@ -40,7 +40,7 @@ export default function useAuth() {
         // Use context to save organization id and user information
         setOrganizationId(orgs[0].organizationId);
         setOrganization(transformOrganization(orgs[0]));
-        authenticateUser(
+        await authenticateUser(
           {
             ...user,
             memberInfo: {

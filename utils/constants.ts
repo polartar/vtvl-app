@@ -94,7 +94,7 @@ export const NO_CONNECT_WALLET_MODAL_PAGES = [
 ];
 
 export const NO_SIDEBAR_PAGES = [
-  '/',
+  '',
   '/recipient/schedule',
   '/recipient/confirm',
   '/magic-link-verification',

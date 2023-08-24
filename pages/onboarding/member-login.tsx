@@ -19,7 +19,7 @@ type LoginForm = {
 };
 
 const MemberLoginPage: NextPage = () => {
-  const { teammateSignIn, sendLoginLink, signInWithGoogle, allowSignIn } = useContext(AuthContext);
+  const { teammateSignIn, signInWithGoogle, allowSignIn } = useContext(AuthContext);
   const { onNext, startOnboarding } = useContext(OnboardingContext);
   const {
     website: { features }

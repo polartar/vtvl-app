@@ -1,4 +1,5 @@
 import TokenApiService from '@api-services/TokenApiService';
+import { useAuth } from '@store/useAuth';
 import { useWeb3React } from '@web3-react/core';
 import Decimal from 'decimal.js';
 import { useMyRecipes } from 'hooks/useRecipients';
@@ -44,6 +45,8 @@ export function ClaimTokensContextProvider({ children }: any) {
   const { account, chainId } = useWeb3React();
 
   const { user } = useAuthContext();
+
+  const { accessToken } = useAuth();
 
   const router = useRouter();
   // schedule = document id of the vesting schedule
@@ -119,8 +122,9 @@ export function ClaimTokensContextProvider({ children }: any) {
 
   // Stores the token list of the current user
   useEffect(() => {
-    if (chainId) TokenApiService.getTokens().then((res) => setTokens(res.filter((token) => token.chainId === chainId)));
-  }, [organizations, chainId]);
+    if (chainId && organizations && accessToken)
+      TokenApiService.getTokens().then((res) => setTokens(res.filter((token) => token.chainId === chainId)));
+  }, [organizations, chainId, accessToken]);
 
   // Watch for route changes that has [schedule]
   useEffect(() => {

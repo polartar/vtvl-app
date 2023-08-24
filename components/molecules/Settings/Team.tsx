@@ -1,15 +1,13 @@
+import { useOrganizationMembers } from '@api-hooks/useOrganizationMembers';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuthContext } from '@providers/auth.context';
-import { useTeammateContext } from '@providers/teammate.context';
+import { IMember } from 'interfaces/member';
 import { useMemo, useState } from 'react';
 import { useEffect } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { addInvitee } from 'services/db/member';
-import { fetchOrg } from 'services/db/organization';
-import { IInvitee, IMember } from 'types/models';
 import { IRole, ITeamRole } from 'types/models/settings';
 import { convertLabelToOption } from 'utils/shared';
 import * as Yup from 'yup';
@@ -37,25 +35,19 @@ export const VALID_EMAIL_REG =
   /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const Team = () => {
-  const { user, sendTeammateInvite } = useAuthContext();
+  const { user, sendTeammateInvite, organization, organizationId } = useAuthContext();
   const [isTeamMemberClicked, setIsTeamMemberClicked] = useState(true);
-  const { teammates, pendingTeammates } = useTeammateContext();
 
   const [companyName, setCompanyName] = useState('');
   const [isInviting, setIsInviting] = useState(false);
 
-  useEffect(() => {
-    const getCompanyName = async () => {
-      if (user?.memberInfo?.org_id) {
-        const org = await fetchOrg(user.memberInfo.org_id);
-        if (org?.name) {
-          setCompanyName(org?.name);
-        }
-      }
-    };
+  const { isLoadingMembers, members, refetchMembers } = useOrganizationMembers(organizationId!);
+  const activeMembers = useMemo(() => members?.filter((member) => member.isAccepted) ?? [], [members]);
+  const pendingMembers = useMemo(() => members?.filter((member) => !member.isAccepted) ?? [], [members]);
 
-    getCompanyName();
-  }, [user]);
+  useEffect(() => {
+    if (organization) setCompanyName(organization.name);
+  }, [organization]);
 
   const addMoreMember = () => append(defaultMember);
   const roles = Object.keys(ITeamRole).map((role) => convertLabelToOption(role));
@@ -89,19 +81,19 @@ const Team = () => {
   });
 
   const isMemberDisableAvailable = useMemo(() => {
-    return teammates.filter((member: IMember) => member.role === IRole.FOUNDER).length > 1;
-  }, [teammates]);
+    return activeMembers.filter((member: IMember) => member.user.role === IRole.FOUNDER).length > 1;
+  }, [activeMembers]);
 
   const isMemberExist = (email: string) => {
-    const existingMember = teammates.find((member) => member.email === email);
+    const existingMember = activeMembers.find((member) => member.user.email === email);
     if (existingMember) {
-      toast.warning(`${existingMember.name} is already a member`);
+      toast.warning(`${existingMember.user.name} is already a member`);
       return true;
     }
 
-    const pendingMember = pendingTeammates.find((member) => member.email === email);
+    const pendingMember = pendingMembers.find((member) => member.user.email === email);
     if (pendingMember) {
-      toast.warning(`${pendingMember.name} is already invited`);
+      toast.warning(`${pendingMember.user.name} is already invited`);
       return true;
     }
     return false;
@@ -116,23 +108,12 @@ const Team = () => {
           if (isMemberExist(member.email)) {
             return;
           }
-          const invitee: IInvitee = {
-            org_id: user?.memberInfo?.org_id,
-            name: member.name,
-            email: member.email,
-            type: member.type
-          };
           setIsInviting(true);
 
-          await sendTeammateInvite(member.email, member.type, member.name, companyName, user.memberInfo?.org_id);
-          await addInvitee(invitee);
-        }
-        if (data.members && data.members.length) {
-          toast.success(
-            `${data.members.length > 1 ? data.members.length + ' members' : data.members[0].name} invited!`
-          );
+          await sendTeammateInvite(member.email, member.type.toUpperCase(), member.name, user.memberInfo?.org_id);
         }
         reset();
+        await refetchMembers();
       } catch (err: any) {
         toast.error('Member invitation failed: ' + err.message);
       } finally {
@@ -239,12 +220,12 @@ const Team = () => {
             } cursor-pointer rounded-tl-xl border-b-0`}
             onClick={() => setIsTeamMemberClicked(true)}>
             <span>Team members</span>
-            {teammates.length > 0 && (
+            {activeMembers.length > 0 && (
               <div
                 className={`avatar ${
                   isTeamMemberClicked ? 'bg-primary-900 text-white' : 'bg-primary-50 text-primary-500'
                 } w-6 h-6`}>
-                {teammates.length}
+                {activeMembers.length}
               </div>
             )}
           </div>
@@ -255,19 +236,19 @@ const Team = () => {
             } cursor-pointer  rounded-tr-xl border-b-0`}
             onClick={() => setIsTeamMemberClicked(false)}>
             <span>Pending members</span>
-            {pendingTeammates.length > 0 && (
+            {pendingMembers.length > 0 && (
               <div
                 className={`avatar ${
                   !isTeamMemberClicked ? 'bg-primary-900 text-white' : 'bg-primary-50 text-primary-500'
                 } w-6 h-6`}>
-                {pendingTeammates.length}
+                {pendingMembers.length}
               </div>
             )}
           </div>
         </div>
 
         <TeamTable
-          data={isTeamMemberClicked ? teammates : pendingTeammates}
+          data={isTeamMemberClicked ? activeMembers : pendingMembers}
           isTeamMember={isTeamMemberClicked}
           companyName={companyName}
           isDisableAvailable={isTeamMemberClicked ? isMemberDisableAvailable : true}

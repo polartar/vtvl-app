@@ -1,3 +1,4 @@
+import useOrgAPI from '@api-hooks/useOrganization';
 import useSafeAPI from '@api-hooks/useSafe';
 import RecipientApiService from '@api-services/RecipientApiService';
 import { useAuth } from '@store/useAuth';
@@ -7,7 +8,6 @@ import { REDIRECT_URIS } from '@utils/constants';
 import { transformOrganization } from '@utils/organization';
 import { transformSafes } from '@utils/safe';
 import { useWeb3React } from '@web3-react/core';
-import axios from 'axios';
 import {
   GoogleAuthProvider,
   UserCredential,
@@ -34,7 +34,7 @@ import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
 import { fetchSafes } from 'services/gnosois';
 import { IMember, IOrganization, IRecipient, ISafe, IUser } from 'types/models';
-import { IRole } from 'types/models/settings';
+import { IRole, ITeamRole } from 'types/models/settings';
 import { compareAddresses } from 'utils';
 import { getCache, setCache } from 'utils/localStorage';
 import { MESSAGES } from 'utils/messages';
@@ -77,15 +77,7 @@ export type AuthContextData = {
     org: IOrganization
   ) => Promise<string | undefined>;
   teammateSignIn: (email: string, type: IRole, orgId: string, url: string) => Promise<void>;
-  sendTeammateInvite: (
-    email: string,
-    type: string,
-    userName: string,
-    orgName: string,
-    orgId?: string,
-    memberId?: string
-  ) => Promise<void>;
-  sendLoginLink: (email: string) => Promise<void>;
+  sendTeammateInvite: (email: string, type: IRole | ITeamRole, userName: string, orgId: string) => Promise<void>;
   loading: boolean;
   isNewUser: boolean;
   logOut: () => Promise<void>;
@@ -150,6 +142,7 @@ export function AuthContextProvider({ children }: any) {
   const { clear: clearUser, ...userStore } = useUser();
   const { clear: clearOrg, organizations } = useOrganization();
   const { getSafeWalletsByOrganization } = useSafeAPI();
+  const { inviteMember } = useOrgAPI();
 
   const [organizationName, setOrganizationName] = useState('');
 
@@ -234,19 +227,17 @@ export function AuthContextProvider({ children }: any) {
   // A function to abstract all authentication from different authentication methods
   const authenticateUser = useCallback(
     async (user: IUser, role?: IRole) => {
-      await setCache({ user, isAuthenticated: true });
+      await setCache({ user: user, isAuthenticated: true });
       // Condition is used because a possible value is blank '' from IRole
       if (role !== undefined) {
         setRoleOverride(role);
         await setCache({ roleOverride: role });
       }
       const findOrganization = organizations.find((org) => org.organizationId === user?.memberInfo?.org_id);
-      if (findOrganization) {
-        setOrganizationId(user?.memberInfo?.org_id);
-        setOrganization(transformOrganization(findOrganization));
-        setUser(user);
-        setIsAuthenticated(true);
-      }
+      setOrganizationId(user?.memberInfo?.org_id);
+      setOrganization(findOrganization ? transformOrganization(findOrganization) : undefined);
+      setUser(user);
+      setIsAuthenticated(true);
     },
     [organizations]
   );
@@ -532,47 +523,14 @@ export function AuthContextProvider({ children }: any) {
     setLoading(false);
   };
 
-  const sendLoginLink = async (email: string): Promise<void> => {
-    setLoading(true);
-    const member = await fetchMemberByEmail(email);
-    //TODO: abstract api calls
-    if (allowSignIn(member?.org_id)) {
-      await axios.post('/api/email/login', {
-        email,
-        newUser: member ? false : true,
-        websiteEmail,
-        websiteName,
-        emailTemplate
-      });
-      setLoading(false);
-      toast.success('Please check your email for the link to login');
-    } else {
-      toast.error(MESSAGES.AUTH.FAIL.INVALID_ORGANIZATION);
-    }
-    setLoading(false);
-  };
-
   const sendTeammateInvite = async (
     email: string,
-    type: string,
+    type: IRole | ITeamRole,
     name: string,
-    orgName: string,
-    orgId?: string,
-    memberId?: string
+    orgId: string
   ): Promise<void> => {
     setLoading(true);
-    //TODO: extract api calls
-    await axios.post(`/api/email/teammate-invite`, {
-      email,
-      type,
-      orgId,
-      orgName,
-      name,
-      memberId,
-      websiteEmail,
-      websiteName,
-      emailTemplate
-    });
+    await inviteMember({ email, role: type, redirectUri: REDIRECT_URIS.INVITE_MEMBER, organizationId: orgId, name });
     setLoading(false);
   };
 
@@ -679,7 +637,6 @@ export function AuthContextProvider({ children }: any) {
       anonymousSignIn,
       teammateSignIn,
       sendTeammateInvite,
-      sendLoginLink,
       registerNewMember,
       loading,
       isNewUser,

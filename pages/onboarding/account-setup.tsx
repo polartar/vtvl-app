@@ -11,7 +11,6 @@ import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
 import { IRole, ITeamRole } from 'types/models/settings';
 import { WEBSITE_NAME } from 'utils/constants';
@@ -129,19 +128,14 @@ const AccountSetupPage: NextPage = () => {
 
       if (values.contributors && values.contributors.length > 0) {
         values.contributors.map(async (contributor) => {
-          await addInvitee({
-            name: contributor.name,
-            email: contributor.email,
-            org_id: user.memberInfo?.org_id || org_id || '',
-            type: ITeamRole.MANAGER
-          });
-          await sendTeammateInvite(
-            contributor.email,
-            'manager',
-            contributor.name,
-            values.company,
-            user.memberInfo?.org_id || org_id
-          );
+          if (user.memberInfo?.org_id || org_id) {
+            await sendTeammateInvite(
+              contributor.email,
+              ITeamRole.MANAGER,
+              contributor.name,
+              String(user.memberInfo?.org_id || org_id)
+            );
+          }
         });
       }
       setFormSuccess(true);
