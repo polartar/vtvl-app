@@ -1,3 +1,4 @@
+import RevokingApiService from '@api-services/RevokingApiService';
 import TransactionApiService from '@api-services/TransactionApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import Chip from '@components/atoms/Chip/Chip';
@@ -27,11 +28,8 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { fetchRevokingsByQuery } from 'services/db/revoking';
-// import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting } from 'types/models';
-import { IRevokingDoc } from 'types/models/revoking';
 import { compareAddresses } from 'utils';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -94,14 +92,12 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
   const [isRecipientExpand, setIsRecipientExpand] = useState(false);
-  const [revokings, setRevokings] = useState<IRevokingDoc[]>();
+  const [revokings, setRevokings] = useState<IRevoking[]>();
 
   useEffect(() => {
     if (chainId && organizationId) {
-      fetchRevokingsByQuery(
-        ['chainId', 'organizationId', 'vestingId', 'status'],
-        ['==', '==', '==', '=='],
-        [chainId, organizationId, id, 'SUCCESS']
+      RevokingApiService.getRevokingsByQuery(
+        `organizationId=${organizationId}&chainId=${chainId}&vestingId=${id}&status='SUCCESS'`
       ).then((res) => {
         if (res) {
           setRevokings(res);
@@ -110,8 +106,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     }
   }, [chainId, organizationId]);
 
-  const getRevoked = (address: string) => {
-    return revokings?.find((revoking) => compareAddresses(revoking.data.recipient, address));
+  const getRevoked = (recipeId: string) => {
+    return revokings?.find((revoking) => revoking.id === recipeId);
   };
 
   const isFundAvailable = useCallback(() => {
@@ -953,12 +949,12 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
                 {formatValue(getRecipientInfo(recipient.address)?.allocation)}
               </div>
               <div className="flex items-center w-40 py-3">
-                {getRevoked(recipient.address) && (
+                {getRevoked(recipient.id) && (
                   <Chip
                     rounded
                     className="text-xs"
                     label={`Revoked on ${format(
-                      new Date((getRevoked(recipient.address) as IRevokingDoc).data.updatedAt * 1000),
+                      new Date((getRevoked(recipient.id) as IRevoking)?.updatedAt),
                       'dd MMM yyyy'
                     )}`}
                     color="dangerAlt"

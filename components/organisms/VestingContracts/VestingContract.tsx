@@ -1,4 +1,5 @@
 import RecipientApiService from '@api-services/RecipientApiService';
+import RevokingApiService from '@api-services/RevokingApiService';
 import TransactionApiService from '@api-services/TransactionApiService';
 import Copy from '@components/atoms/Copy/Copy';
 import { Typography } from '@components/atoms/Typography/Typography';
@@ -20,9 +21,7 @@ import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevokingDoc } from 'types/models/revoking';
 import { IVestingDoc } from 'types/models/vesting';
 import { isV2 } from 'utils/multicall';
 import { formatNumber } from 'utils/token';
@@ -39,7 +38,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     recipients: allRecipients
   } = useDashboardContext();
   const { mintFormState } = useTokenContext();
-  const [revokings, setRevokings] = useState<IRevokingDoc[]>();
+  const [revokings, setRevokings] = useState<IRevoking[]>();
 
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
   const {
@@ -58,10 +57,8 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
   useEffect(() => {
     if (chainId && organizationId) {
-      fetchRevokingsByQuery(
-        ['chainId', 'organizationId', 'status'],
-        ['==', '==', '=='],
-        [chainId, organizationId, 'SUCCESS']
+      RevokingApiService.getRevokingsByQuery(
+        `organizationId=${organizationId}&chainId=${chainId}&status='SUCCESS'`
       ).then((res) => {
         if (res) {
           setRevokings(res);
@@ -91,8 +88,8 @@ export default function VestingContract({ vestingContractId }: { vestingContract
       return revokings.filter((revoking) => {
         const rc = allRecipients.find(
           (recipient) =>
-            recipient.vestingId === revoking.data.vestingId &&
-            recipient.address === revoking.data.recipient &&
+            recipient.vestingId === revoking.vestingId &&
+            recipient.id === revoking.recipeId &&
             vestings.map((vesting) => vesting.id).includes(recipient.vestingId)
         );
         return rc && Number(rc.allocations) !== 0;

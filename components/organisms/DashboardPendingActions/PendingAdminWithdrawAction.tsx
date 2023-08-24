@@ -23,7 +23,6 @@ import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevoking, IVesting } from 'types/models';
 import { formatNumber } from 'utils/token';
 
 const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> = ({ id, data }) => {

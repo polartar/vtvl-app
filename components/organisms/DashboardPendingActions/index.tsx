@@ -138,7 +138,7 @@ const DashboardPendingActions = () => {
           />
         ))}
         {revokings.map((revoking) => (
-          <PendingRevokingAction id={revoking.id} data={revoking.data} key={revoking.id} />
+          <PendingRevokingAction id={revoking.id} data={revoking} key={revoking.id} />
         ))}
         {pendingWithdrawTransactions.map((transaction) => (
           <PendingAdminWithdrawAction id={transaction?.id ?? ''} data={transaction} key={transaction.id} />

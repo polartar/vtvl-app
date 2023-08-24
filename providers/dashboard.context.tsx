@@ -1,4 +1,5 @@
 import RecipientApiService from '@api-services/RecipientApiService';
+import RevokingApiService from '@api-services/RevokingApiService';
 import VestingContractApiService from '@api-services/VestingContractApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
@@ -16,9 +17,8 @@ import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
-import { fetchRevokingsByQuery } from 'services/db/revoking';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevoking, IVesting } from 'types/models';
+import { IVesting } from 'types/models';
 import { IRecipient, IRecipientForm } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { compareAddresses } from 'utils';
@@ -33,7 +33,7 @@ type IVestingStatus = 'FUNDING_REQUIRED' | 'PENDING' | 'EXECUTABLE' | 'LIVE';
 
 interface IDashboardData {
   vestings: { id: string; data: IVesting }[];
-  revokings: { id: string; data: IRevoking }[];
+  revokings: IRevoking[];
   recipients: IRecipient[];
   vestingContracts: IVestingContract[];
   ownershipTransfered: boolean;
@@ -79,7 +79,7 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingContractLoading, setVestingContractLoading] = useState(false);
   const [vestingContracts, setVestingContracts] = useState<IVestingContract[]>([]);
 
-  const [revokings, setRevokings] = useState<{ id: string; data: IRevoking }[]>([]);
+  const [revokings, setRevokings] = useState<IRevoking[]>([]);
   const [ownershipTransfered, setOwnershipTransfered] = useState(false);
   const [removeOwnership, setRemoveOwnership] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
@@ -121,15 +121,13 @@ export function DashboardContextProvider({ children }: any) {
 
   /* Fetch all pending revokings by organizationId and chainId */
   const fetchDashboardRevokings = useCallback(async () => {
-    try {
-      const res = await fetchRevokingsByQuery(
-        ['organizationId', 'chainId', 'status'],
-        ['==', '==', '=='],
-        [organizationId, chainId, 'PENDING']
-      );
-      setRevokings(res);
-    } catch (err) {
-      console.log('fetchDashboardRevokings - ', err);
+    if (chainId && organizationId) {
+      try {
+        const res = await RevokingApiService.getRevokings(organizationId, chainId);
+        setRevokings(res.filter((revoking) => revoking.status === 'PENDING'));
+      } catch (err) {
+        console.log('fetchDashboardRevokings - ', err);
+      }
     }
   }, [organizationId, chainId]);
 

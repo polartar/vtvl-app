@@ -1,7 +1,6 @@
 import { IAddress, IInvitee, IMember, IUser } from './member';
 import { IOrganization } from './organization';
 import { IRecipient } from './recipient';
-import { IRevoking } from './revoking';
 import { IOwner, ISafe } from './safe';
 import { IToken } from './token';
 import { IVesting } from './vesting';
@@ -18,7 +17,6 @@ export type {
   IVestingTemplate,
   IToken,
   IInvitee,
-  IRevoking,
   IRecipient
 };
 

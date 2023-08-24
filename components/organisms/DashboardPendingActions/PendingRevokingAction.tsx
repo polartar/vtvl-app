@@ -1,3 +1,4 @@
+import RevokingApiService from '@api-services/RevokingApiService';
 import TransactionApiService from '@api-services/TransactionApiService';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
@@ -12,10 +13,7 @@ import { ethers } from 'ethers';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { updateRevoking } from 'services/db/revoking';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevoking } from 'types/models';
-import { compareAddresses } from 'utils';
 
 const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, data }) => {
   const { account, chainId, library } = useWeb3React();
@@ -33,10 +31,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
     [data, transactions]
   );
   const vesting = useMemo(() => vestings.find((v) => v.id === data.vestingId), [vestings, data]);
-  const recipient = useMemo(
-    () => recipients.find((r) => compareAddresses(r.address, data.recipient)),
-    [data, recipients]
-  );
+  const recipient = useMemo(() => recipients.find((r) => r.id === data.recipeId), [data, recipients]);
   const vestingContract = useMemo(
     () => vestingContracts.find((v) => v.id === vesting?.data.vestingContractId),
     [vesting, vestingContracts]
@@ -248,13 +243,9 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
             status: 'SUCCESS'
           });
           updateTransactions(t);
-          await updateRevoking(
-            {
-              ...data,
-              status: 'SUCCESS'
-            },
-            id
-          );
+          await RevokingApiService.updateRevoking(id, {
+            status: 'SUCCESS'
+          });
           await fetchDashboardData();
         }
         setTransactionLoaderStatus('SUCCESS');

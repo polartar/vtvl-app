@@ -1,3 +1,4 @@
+import RevokingApiService from '@api-services/RevokingApiService';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
@@ -9,7 +10,6 @@ import { BigNumber } from 'ethers/lib/ethers';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import { IStatus } from 'interfaces/vesting';
 import React, { useMemo } from 'react';
-import { fetchRevokingSchedules } from 'services/db/revoking';
 import useSWR from 'swr';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting } from 'types/models';
@@ -30,7 +30,9 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
   const { chainId, library } = useWeb3React();
   const { transactions } = useTransactionLoaderContext();
   const { currentSafe, organizationId } = useAuthContext();
-  const { data: revokedSchedules } = useSWR('fetchRevokings', () => fetchRevokingSchedules(organizationId || ''));
+  const { data: revokedSchedules } = useSWR('fetchRevokings', () =>
+    RevokingApiService.getRevokings(organizationId || '', chainId ?? 0)
+  );
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
     if (currentSafe?.address && chainId) {

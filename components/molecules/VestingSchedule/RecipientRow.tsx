@@ -1,3 +1,4 @@
+import RevokingApiService from '@api-services/RevokingApiService';
 import TransactionApiService from '@api-services/TransactionApiService';
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
@@ -15,13 +16,13 @@ import { ethers } from 'ethers';
 import useIsAdmin from 'hooks/useIsAdmin';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { createRevoking, fetchRevokingsByQuery } from 'services/db/revoking';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IRevoking, IVesting } from 'types/models';
+import { IVesting } from 'types/models';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
 
 interface IRecipientRowProps {
+  id: string;
   name: string;
   address: string;
   withdrawn?: string;
@@ -33,6 +34,7 @@ interface IRecipientRowProps {
 }
 
 const RecipientRow: React.FC<IRecipientRowProps> = ({
+  id,
   name,
   address,
   withdrawn = '',
@@ -52,7 +54,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
     vestingContracts.find((v) => v.id === vesting.vestingContractId)
   );
 
-  const [revoking, setRevoking] = useState<{ id: string; data: IRevoking }>();
+  const [revoking, setRevoking] = useState<IRevoking>();
   const [transaction, setTransaction] = useState<ITransaction>();
   const [confirmations, setConfirmations] = useState(0);
   const [threshold, setThreshold] = useState(0);
@@ -123,12 +125,10 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             type: 'REVOKE_CLAIM'
           });
           updateTransactions(transaction);
-          await createRevoking({
+          await RevokingApiService.createRevoking({
             vestingId: vestingId,
-            recipient,
+            recipeId: id,
             transactionId: transaction.id,
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
             chainId,
             organizationId: organizationId!,
             status: 'PENDING'
@@ -158,12 +158,10 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             type: 'REVOKE_CLAIM'
           });
           updateTransactions(transaction);
-          await createRevoking({
+          await RevokingApiService.createRevoking({
             vestingId: vestingId,
-            recipient,
+            recipeId: id,
             transactionId: transaction.id,
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
             chainId,
             organizationId: organizationId!,
             status: 'SUCCESS'
@@ -181,27 +179,25 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
   };
 
   useEffect(() => {
-    if (chainId && vesting.status === 'LIVE') {
-      fetchRevokingsByQuery(
-        ['chainId', 'recipient', 'vestingId'],
-        ['==', '==', '=='],
-        [chainId, address, vestingId]
-      ).then((res) => {
-        if (res && res.length > 0) {
-          const revoke = res[0];
-          if (revoke.data.status === 'PENDING') {
-            setRevoking({ ...res[0] });
-          } else if (revoke.data.status === 'SUCCESS') {
-            setRevoked(true);
+    if (chainId && vesting.status === 'LIVE' && organizationId) {
+      RevokingApiService.getUserRevokings(organizationId, chainId, vestingId, id).then((res) => {
+        if (res && res[0]) {
+          const revoking = res[0];
+          if (revoking) {
+            if (revoking.status === 'PENDING') {
+              setRevoking(revoking);
+            } else if (revoking.status === 'SUCCESS') {
+              setRevoked(true);
+            }
           }
         }
       });
     }
-  }, [vestingId, address, chainId, vesting]);
+  }, [vestingId, address, chainId, vesting, organizationId]);
 
   useEffect(() => {
-    if (revoking && revoking.data.status === 'PENDING' && revoking.data.transactionId) {
-      setTransaction(transactions.find((t) => t.id === revoking.data.transactionId));
+    if (revoking && revoking.status === 'PENDING' && revoking.transactionId) {
+      setTransaction(transactions.find((t) => t.id === revoking.transactionId));
     }
   }, [revoking]);
 
@@ -249,9 +245,9 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
         {allocations}
       </div>
       <div className="flex items-center min-w-[136px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd] bg-[#f9fafb]">
-        {(!revoking || revoking.data.status === 'PENDING') && vesting.status === 'LIVE' && (
+        {(!revoking || revoking.status === 'PENDING') && vesting.status === 'LIVE' && (
           <Button
-            disabled={revoking?.data.status === 'PENDING' || revoked}
+            disabled={revoking?.status === 'PENDING' || revoked}
             danger
             size="small"
             label="Revoke"

@@ -1,14 +1,14 @@
-export interface IRevoking {
+interface IRevokingRequest {
   vestingId: string;
-  recipient: string;
+  recipeId: string;
   transactionId: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: string;
+  updatedAt: string;
   organizationId: string;
   chainId: number;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
 }
-export interface IRevokingDoc {
+
+interface IRevoking extends IRevokingRequest {
   id: string;
-  data: IRevoking;
 }

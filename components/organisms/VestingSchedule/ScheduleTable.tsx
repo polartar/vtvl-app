@@ -934,6 +934,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       {recipients.map((recipient, index) => {
         return (
           <RecipientRow
+            id={recipient.id}
             key={recipient.address}
             name={recipient.name}
             address={recipient.address}
