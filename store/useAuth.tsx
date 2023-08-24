@@ -1,6 +1,6 @@
 import { ERROR_MESSAGES } from '@api-hooks/messages';
 import useUserAPI from '@api-hooks/useUser';
-import { REDIRECT_URIS } from '@utils/constants';
+import { REDIRECT_URIS, TOAST_NOTIFICATION_IDS } from '@utils/constants';
 import { getCache } from '@utils/localStorage';
 import { platformRoutes } from '@utils/routes';
 import { useRouter } from 'next/router';
@@ -76,7 +76,7 @@ export const useAuth = () => {
       console.log('ACCESS TOKEN NOT VALID', error);
       const isRouteProtected = platformRoutes.find((r) => r.path === router.pathname);
       if (isRouteProtected) {
-        toast.error(ERROR_MESSAGES.EN.TOKEN_EXPIRED);
+        toast.error(ERROR_MESSAGES.EN.TOKEN_EXPIRED, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
         router.push(REDIRECT_URIS.AUTH_LOGIN);
       }
     }

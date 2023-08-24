@@ -1,10 +1,10 @@
+import SafeApiService from '@api-services/SafeApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import SelectInput from '@components/atoms/FormControls/SelectInput/SelectInput';
 import UnsupportedChainModal from '@components/organisms/UnsupportedChainModal';
-import Safe from '@gnosis.pm/safe-core-sdk';
 import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
@@ -14,7 +14,6 @@ import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { createOrUpdateSafe } from 'services/db/safe';
 import { deploySafe } from 'services/gnosois';
 import { SafeSupportedChains } from 'types/constants/supported-chains';
 
@@ -114,16 +113,16 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
       setTransactionStatus('PENDING');
       const safe = await deploySafe(library, owners, values.authorizedUsers);
       setTransactionStatus('IN_PROGRESS');
-      await createOrUpdateSafe({
-        user_id: user?.uid,
-        org_id: organizationId!,
-        org_name: '',
-        safe_name: values.safeName,
+
+      await SafeApiService.addSafeWallet({
+        organizationId: organizationId!,
         address: safe.getAddress(),
         chainId: chainId || 0,
-        owners: values.owners,
-        threshold: values.authorizedUsers
+        name: values.safeName || '',
+        requiredConfirmations: values.authorizedUsers,
+        owners: values.owners
       });
+
       setTransactionStatus('SUCCESS');
       onBack();
     } catch (error) {

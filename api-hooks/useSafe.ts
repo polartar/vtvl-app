@@ -1,4 +1,5 @@
 import SafeApiService from '@api-services/SafeApiService';
+import { TOAST_NOTIFICATION_IDS } from '@utils/constants';
 import { ISafeRequest } from 'interfaces/safe';
 import { useCallback } from 'react';
 import { toast } from 'react-toastify';
@@ -11,12 +12,12 @@ const useSafeAPI = () => {
     return SafeApiService.addSafeWallet(payload)
       .then((res) => {
         // Do something with the response
-        toast.success(SUCCESS_MESSAGES.EN.CREATE_SAFE);
+        toast.success(SUCCESS_MESSAGES.EN.CREATE_SAFE, { toastId: TOAST_NOTIFICATION_IDS.SUCCESS });
         return res;
       })
       .catch((error) => {
         // Do something when there was an error adding a safe wallet
-        toast.error(ERROR_MESSAGES.EN.CREATE_SAFE);
+        toast.error(ERROR_MESSAGES.EN.CREATE_SAFE, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
         return error;
       });
   }, []);
@@ -26,12 +27,12 @@ const useSafeAPI = () => {
     return SafeApiService.updateSafeWallet(payload)
       .then((res) => {
         // Do something with the response
-        toast.success(SUCCESS_MESSAGES.EN.UPDATE_SAFE);
+        toast.success(SUCCESS_MESSAGES.EN.UPDATE_SAFE, { toastId: TOAST_NOTIFICATION_IDS.SUCCESS });
         return res;
       })
       .catch((error) => {
         // Do something when there was an error updating a safe wallet
-        toast.error(ERROR_MESSAGES.EN.UPDATE_SAFE);
+        toast.error(ERROR_MESSAGES.EN.UPDATE_SAFE, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
         return error;
       });
   }, []);
@@ -45,7 +46,7 @@ const useSafeAPI = () => {
       })
       .catch((error) => {
         // Do something when there was an error adding a safe wallet
-        toast.error(ERROR_MESSAGES.EN.GET_SAFE);
+        toast.error(ERROR_MESSAGES.EN.GET_SAFE, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
         return error;
       });
   }, []);
@@ -59,7 +60,7 @@ const useSafeAPI = () => {
       })
       .catch((error) => {
         // Do something when there was an error adding a safe wallet
-        toast.error(ERROR_MESSAGES.EN.GET_SAFE);
+        toast.error(ERROR_MESSAGES.EN.GET_SAFE, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
         return error;
       });
   }, []);

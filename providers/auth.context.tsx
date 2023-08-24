@@ -3,7 +3,7 @@ import RecipientApiService from '@api-services/RecipientApiService';
 import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { useUser } from '@store/useUser';
-import { REDIRECT_URIS, USE_NEW_API } from '@utils/constants';
+import { REDIRECT_URIS } from '@utils/constants';
 import { transformOrganization } from '@utils/organization';
 import { transformSafes } from '@utils/safe';
 import { useWeb3React } from '@web3-react/core';
@@ -25,7 +25,6 @@ import {
   signOut,
   updateEmail
 } from 'firebase/auth';
-import useRoleGuard from 'hooks/useRoleGuard';
 import useToggle from 'hooks/useToggle';
 import Router, { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -33,7 +32,6 @@ import { toast } from 'react-toastify';
 import { auth } from 'services/auth/firebase';
 import { fetchMember, fetchMemberByEmail, newMember } from 'services/db/member';
 import { createOrg, fetchOrg, fetchOrgByQuery, updateOrg } from 'services/db/organization';
-import { createOrUpdateSafe, fetchSafeByQuery, fetchSafesByQuery } from 'services/db/safe';
 import { fetchSafes } from 'services/gnosois';
 import { IMember, IOrganization, IRecipient, ISafe, IUser } from 'types/models';
 import { IRole } from 'types/models/settings';
@@ -144,7 +142,6 @@ export function AuthContextProvider({ children }: any) {
   const [roleOverride, setRoleOverride] = useState<IRole>(IRole.ANONYMOUS);
 
   // Adds the auth and role guard here
-  const { updateRoleGuardState } = useRoleGuard({ routes: platformRoutes, fallbackPath: '/404' });
 
   const { inProgress } = useOnboardingContext();
   const router = useRouter();
@@ -203,26 +200,6 @@ export function AuthContextProvider({ children }: any) {
     }
   }, [chainId, user]);
 
-  useEffect(() => {
-    // Update the user for persisted data
-    if (!USE_NEW_API) {
-      const persistedUser = getCache();
-      if (persistedUser?.user) authenticateUser(persistedUser?.user, persistedUser?.roleOverride);
-
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          const memberInfo = await fetchMember(user.uid);
-          const persistedRoleOverride = getCache()?.roleOverride;
-          authenticateUser({ ...user, memberInfo });
-          if (persistedRoleOverride) setRoleOverride(persistedRoleOverride as IRole);
-        }
-        setLoading(false);
-      });
-
-      return unsubscribe;
-    }
-  }, []);
-
   // This is used to determine which icons or assets to use across the app,
   // especially on Funding Contract and Transaction Modals.
   // Will surely update and refactor this function later as we add in
@@ -251,25 +228,28 @@ export function AuthContextProvider({ children }: any) {
     // Update setCache for persistency
     await setCache(updatedAuthData);
     // Update the global state for the auth and role -- automatically redirects the user.
-    updateRoleGuardState();
     router.push(newRole === IRole.INVESTOR ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
   };
 
   // A function to abstract all authentication from different authentication methods
-  const authenticateUser = async (user: IUser, role?: IRole) => {
-    await setCache({ user, isAuthenticated: true });
-    // Condition is used because a possible value is blank '' from IRole
-    if (role !== undefined) {
-      setRoleOverride(role);
-      await setCache({ roleOverride: role });
-    }
-    await updateRoleGuardState();
-    const findOrganization = organizations.find((org) => org.organizationId === user?.memberInfo?.org_id);
-    setOrganizationId(user?.memberInfo?.org_id);
-    setOrganization(transformOrganization(findOrganization!));
-    setUser(user);
-    setIsAuthenticated(true);
-  };
+  const authenticateUser = useCallback(
+    async (user: IUser, role?: IRole) => {
+      await setCache({ user, isAuthenticated: true });
+      // Condition is used because a possible value is blank '' from IRole
+      if (role !== undefined) {
+        setRoleOverride(role);
+        await setCache({ roleOverride: role });
+      }
+      const findOrganization = organizations.find((org) => org.organizationId === user?.memberInfo?.org_id);
+      if (findOrganization) {
+        setOrganizationId(user?.memberInfo?.org_id);
+        setOrganization(transformOrganization(findOrganization));
+        setUser(user);
+        setIsAuthenticated(true);
+      }
+    },
+    [organizations]
+  );
 
   const allowSignIn = (userOrganizationId?: string) => {
     // Used this kind of conditions for readability
@@ -620,46 +600,32 @@ export function AuthContextProvider({ children }: any) {
 
   const refreshUser = useCallback(async (): Promise<void> => {
     setLoading(true);
-    if (USE_NEW_API) {
-      if (userStore && userStore.userId) {
-        const persistedRole = await getCache().roleOverride;
-        // Authenticate the user based on the new api implementation
-        authenticateUser(
-          {
-            memberInfo: {
-              id: userStore.userId,
-              user_id: userStore.userId,
-              email: userStore.email,
-              name: userStore.name,
-              org_id: userStore.organizationId,
-              wallets: [{ walletAddress: userStore.walletAddress, chainId: userStore.chainId }],
-              role: userStore.role
-            }
-          } as IUser,
-          persistedRole
-        );
-      }
-      return;
-    }
-    const user = auth.currentUser;
-    if (!user) return;
-    const memberInfo = await fetchMember(user.uid);
-    if (memberInfo) {
-      authenticateUser({ ...user, memberInfo });
+    if (userStore && userStore.userId) {
+      const persistedRole = await getCache().roleOverride;
+      // Authenticate the user based on the new api implementation
+      authenticateUser(
+        {
+          memberInfo: {
+            id: userStore.userId,
+            user_id: userStore.userId,
+            email: userStore.email,
+            name: userStore.name,
+            org_id: userStore.organizationId,
+            wallets: [{ walletAddress: userStore.walletAddress, chainId: userStore.chainId }],
+            role: userStore.role
+          }
+        } as IUser,
+        persistedRole
+      );
     }
     setLoading(false);
+    return;
   }, []);
 
   const logOut = async () => {
-    if (USE_NEW_API) {
-      // Use new API methods
-      clearAuth();
-      clearUser();
-      clearOrg();
-    } else {
-      // sign out from firebase
-      await signOut(auth);
-    }
+    clearAuth();
+    clearUser();
+    clearOrg();
 
     // remove user state
     setUser(undefined);
@@ -671,27 +637,21 @@ export function AuthContextProvider({ children }: any) {
     // remove persistent user states
     setCache({ user: undefined, roleOverride: undefined, isAuthenticated: undefined });
     // update auth and role guard states
-    await updateRoleGuardState();
 
-    Router.replace(USE_NEW_API ? REDIRECT_URIS.AUTH_LOGIN : '/onboarding');
+    Router.replace(REDIRECT_URIS.AUTH_LOGIN);
   };
 
   const fetchSafeFromDB = useCallback(async () => {
     if (organizationId) {
-      if (USE_NEW_API) {
-        // Get safe wallets from new API and transform it to the old firebase format
-        const safesList = await getSafeWalletsByOrganization(organizationId);
-        const transformedSafes = transformSafes({
-          safes: safesList,
-          organizationId,
-          organizationName,
-          userId: user?.memberInfo?.id || ''
-        });
-        setSafes(transformedSafes);
-      } else {
-        // Just do the old firebase one
-        fetchSafesByQuery(['org_id'], ['=='], [organizationId]).then((res) => setSafes(res));
-      }
+      // Get safe wallets from new API and transform it to the old firebase format
+      const safesList = await getSafeWalletsByOrganization(organizationId);
+      const transformedSafes = transformSafes({
+        safes: safesList,
+        organizationId,
+        organizationName,
+        userId: user?.memberInfo?.id || ''
+      });
+      setSafes(transformedSafes);
     }
   }, [organizationId]);
 

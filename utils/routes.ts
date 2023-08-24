@@ -1,5 +1,9 @@
-import { Route } from 'hooks/useRoleGuard';
 import { IRole, ITeamRole } from 'types/models/settings';
+
+export type Route = {
+  path: string;
+  allowedRoles: TRoleGroup;
+};
 
 export type TRoleGroup = (IRole | ITeamRole)[];
 

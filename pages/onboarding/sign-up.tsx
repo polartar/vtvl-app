@@ -6,7 +6,7 @@ import { Typography } from '@components/atoms/Typography/Typography';
 import Consent from '@components/molecules/Consent/Consent';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
-import { REDIRECT_URIS, USE_NEW_API } from '@utils/constants';
+import { REDIRECT_URIS } from '@utils/constants';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
@@ -87,11 +87,7 @@ const SignUpPage: NextPage = () => {
         return;
       }
 
-      if (USE_NEW_API) {
-        await signupWithEmail({ email: values.memberEmail, redirectUri: REDIRECT_URIS.AUTH_EMAIL });
-      } else {
-        await sendLoginLink(values.memberEmail);
-      }
+      await signupWithEmail({ email: values.memberEmail, redirectUri: REDIRECT_URIS.AUTH_EMAIL });
     } catch (error) {
       toast.error('Oh no! Something went wrong!');
       console.log(' invalid member signin ', error);

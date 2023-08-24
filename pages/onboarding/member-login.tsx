@@ -6,7 +6,7 @@ import { Typography } from '@components/atoms/Typography/Typography';
 import AuthContext from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { States, Step } from '@providers/onboarding.context';
-import { REDIRECT_URIS, USE_NEW_API } from '@utils/constants';
+import { REDIRECT_URIS, TOAST_NOTIFICATION_IDS } from '@utils/constants';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useContext, useEffect } from 'react';
@@ -66,14 +66,10 @@ const MemberLoginPage: NextPage = () => {
         return;
       }
 
-      if (USE_NEW_API) {
-        await loginWithEmail({ email: values.memberEmail, redirectUri: REDIRECT_URIS.AUTH_EMAIL });
-      } else {
-        await sendLoginLink(values.memberEmail);
-      }
+      await loginWithEmail({ email: values.memberEmail, redirectUri: REDIRECT_URIS.AUTH_EMAIL });
       return;
     } catch (error) {
-      toast.error('Oh no! Something went wrong!');
+      toast.error('Oh no! Something went wrong!', { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       console.log(' invalid member signin ', error);
       return;
     }

@@ -23,7 +23,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import { toast } from 'react-toastify';
 import { IRole } from 'types/models/settings';
-import { NO_CONNECT_WALLET_MODAL_PAGES, NO_SIDEBAR_PAGES, USE_NEW_API, WEBSITE_NAME } from 'utils/constants';
+import { NO_CONNECT_WALLET_MODAL_PAGES, NO_SIDEBAR_PAGES, WEBSITE_NAME } from 'utils/constants';
 
 import AuthContext from '../../../providers/auth.context';
 
@@ -448,7 +448,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   useEffect(() => {
     // Still uses the vtvl_cache storage to get the user's persisted role and override (if any)
     if (user?.memberInfo?.role && user.memberInfo.role !== IRole.ANONYMOUS) {
-      if (user.memberInfo.role === IRole.FOUNDER && roleOverride) {
+      if (user.memberInfo.role === IRole.FOUNDER && roleOverride && roleOverride !== IRole.ANONYMOUS) {
         // set the sidebar items into the switched role
         setSidebarProperties({ ...SidebarProps[roleOverride.toLowerCase()] });
       } else {

@@ -16,7 +16,6 @@ import useIsAdmin from 'hooks/useIsAdmin';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { createRevoking, fetchRevokingsByQuery } from 'services/db/revoking';
-import { createOrUpdateSafe } from 'services/db/safe';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevoking, IVesting } from 'types/models';
 import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';

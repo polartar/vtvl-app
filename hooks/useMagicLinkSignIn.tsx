@@ -4,10 +4,9 @@ import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useOnboardingContext } from '@providers/onboarding.context';
 import { getOrgStore } from '@store/useOrganizations';
-import { USE_NEW_API } from '@utils/constants';
 import { useWeb3React } from '@web3-react/core';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IMember } from 'types/models';
 
 /**
@@ -96,14 +95,9 @@ export default function useMagicLinkSignIn(callback?: () => void) {
     }
   };
 
-  const initializeMagicLinkSigning = async () => {
-    if (USE_NEW_API) useNewAPISigning();
-    else useOldAPISigning();
-  };
-
   useEffect(() => {
     // Ensure that initialization only happens once by debouncing it
-    timeout = setTimeout(initializeMagicLinkSigning, 600);
+    timeout = setTimeout(useNewAPISigning, 600);
     return () => {
       clearTimeout(timeout);
     };

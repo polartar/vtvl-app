@@ -21,7 +21,6 @@ import PlusIcon from 'public/icons/plus.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchRevokingsByQuery } from 'services/db/revoking';
-import { createOrUpdateSafe } from 'services/db/safe';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRevokingDoc } from 'types/models/revoking';
 import { IVestingDoc } from 'types/models/vesting';

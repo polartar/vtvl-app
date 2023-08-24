@@ -9,7 +9,6 @@ import UnsupportedChainModal from '@components/organisms/UnsupportedChainModal';
 import { useAuthContext } from '@providers/auth.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useUser } from '@store/useUser';
-import { USE_NEW_API } from '@utils/constants';
 import { transformSafe } from '@utils/safe';
 // import AuthContext from '@providers/auth.context';
 // import OnboardingContext, { Step } from '@providers/onboarding.context';
