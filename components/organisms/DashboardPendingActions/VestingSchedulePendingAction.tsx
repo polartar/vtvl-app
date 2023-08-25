@@ -94,6 +94,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
   const [transactionStatus, setTransactionStatus] = useState<
     'INITIALIZE' | 'EXECUTABLE' | 'WAITING_APPROVAL' | 'APPROVAL_REQUIRED' | ''
   >('');
+  const [isExecutableAfterApprove, setIsExecutableAfterApprove] = useState(false);
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
@@ -177,7 +178,11 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             ...vestingsStatus,
             [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
           });
-        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
+          setIsExecutableAfterApprove(false);
+        } else if (
+          safeTx.signatures.has(account.toLowerCase()) ||
+          approvers.find((approver) => approver.toLowerCase() === account.toLowerCase())
+        ) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('WAITING_APPROVAL');
           setVestingsStatus({
@@ -191,6 +196,9 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             ...vestingsStatus,
             [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
           });
+          if (approvers.length === threshold - 1) {
+            setIsExecutableAfterApprove(true);
+          }
         }
       } else {
         return;
@@ -824,6 +832,16 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
     }
   };
 
+  const handleApproveAndExecuteTransaction = async () => {
+    await handleApproveTransaction();
+    await handleExecuteTransaction();
+  };
+
+  const handleApproveAndExecuteFundingTransaction = async () => {
+    await handleApproveTransaction();
+    await handleExecuteFundingTransaction();
+  };
+
   const handleDeleteSchedule = (id: string, data: IVesting) => {
     // Should prompt the user
     console.log('Deleting', id, data);
@@ -889,7 +907,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {formatNumber(data.details.amountToBeVested)}
       </div>
-      <div className="flex items-center min-w-[200px] flex-grow py-3  border-t border-[#d0d5dd]">
+      <div className="flex items-center min-w-[350px] flex-grow py-3  border-t border-[#d0d5dd]">
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'INITIALIZE' && (
           <button
             className="secondary small whitespace-nowrap"
@@ -904,9 +922,16 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           </button>
         )}
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
-            Approve
-          </button>
+          <div className="flex gap-4">
+            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+              Approve
+            </button>
+            {isExecutableAfterApprove && (
+              <button className="secondary small whitespace-nowrap" onClick={handleApproveAndExecuteTransaction}>
+                Approve & Execute
+              </button>
+            )}
+          </div>
         )}
         {(status === 'AUTHORIZATION_REQUIRED' || status === 'EXECUTABLE') && transactionStatus === 'EXECUTABLE' && (
           <button
@@ -935,9 +960,16 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           </>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
-            Approve Funding
-          </button>
+          <div className="flex gap-4">
+            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+              Approve Funding
+            </button>
+            {isExecutableAfterApprove && (
+              <button className="secondary small whitespace-nowrap" onClick={handleApproveAndExecuteFundingTransaction}>
+                Approve & Execute Funding
+              </button>
+            )}
+          </div>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
           <button

@@ -128,7 +128,7 @@ describe('email test spec', () => {
         chainId: '999',
         symbol: 'WAN',
         blockExplorer: '',
-        isTestnet: true,
+        isTestnet: true
       });
 
       cy.get('label.card-radio') // Select the label element

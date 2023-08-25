@@ -120,7 +120,7 @@ const DashboardPendingActions = () => {
           <div className="w-32 py-3 flex-shrink-0 bg-[#f2f4f7]">Safe</div>
           <div className="w-32 py-3 flex-shrink-0 bg-[#f2f4f7]">Safe Nonce</div>
           <div className="w-40 py-3 flex-shrink-0 bg-[#f2f4f7]">Total allocation</div>
-          <div className="min-w-[200px] flex-grow py-3 flex-shrink-0 bg-[#f2f4f7]"></div>
+          <div className="min-w-[350px] flex-grow py-3 flex-shrink-0 bg-[#f2f4f7]"></div>
         </div>
         {pendingVestingContracts.map((vestingContract) => (
           <VestingContractPendingAction

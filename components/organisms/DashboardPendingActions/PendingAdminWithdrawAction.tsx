@@ -43,6 +43,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
   );
 
   const [status, setStatus] = useState<IStatus>();
+  const [isExecutableAfterApprove, setIsExecutableAfterApprove] = useState(false);
   const [transactionStatus, setTransactionStatus] = useState<ITransactionStatus>('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
 
@@ -89,12 +90,19 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         if (approvers.length >= threshold) {
           setTransactionStatus('EXECUTABLE');
           setStatus('EXECUTABLE');
-        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
+          setIsExecutableAfterApprove(false);
+        } else if (
+          safeTx.signatures.has(account.toLowerCase()) ||
+          approvers.find((approver) => approver.toLowerCase() === account.toLowerCase())
+        ) {
           setTransactionStatus('WAITING_APPROVAL');
           setStatus('AUTHORIZATION_REQUIRED');
         } else {
           setTransactionStatus('APPROVAL_REQUIRED');
           setStatus('AUTHORIZATION_REQUIRED');
+          if (approvers.length === threshold - 1) {
+            setIsExecutableAfterApprove(true);
+          }
         }
       }
     }
@@ -208,6 +216,11 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
     }
   };
 
+  const handleApproveAndExecuteTransaction = async () => {
+    await handleApproveTransaction();
+    await handleExecuteTransaction();
+  };
+
   useEffect(() => {
     initializeStatus();
   }, [data, currentSafe, account]);
@@ -246,16 +259,23 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {formatNumber(+(data.withdrawAmount ?? 0))}
       </div>
-      <div className="flex items-center min-w-[200px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd]">
+      <div className="flex items-center min-w-[350px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {transactionStatus === 'WAITING_APPROVAL' && (
           <button className="secondary small whitespace-nowrap" disabled>
             Waiting approval
           </button>
         )}
         {transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
-            Approve
-          </button>
+          <div className="flex gap-4">
+            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+              Approve
+            </button>
+            {isExecutableAfterApprove && (
+              <button className="secondary small whitespace-nowrap" onClick={handleApproveAndExecuteTransaction}>
+                Approve & Execute
+              </button>
+            )}
+          </div>
         )}
         {transactionStatus === 'EXECUTABLE' && (
           <button className="secondary small whitespace-nowrap" onClick={handleExecuteTransaction}>
