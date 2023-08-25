@@ -165,11 +165,13 @@ export function AuthContextProvider({ children }: any) {
 
   // Gets the combined safes list based on chain and db records
   useEffect(() => {
-    if (safesFromChain?.length && safes?.length) {
+    if (safesFromChain?.length || safes?.length) {
       const existingSafes = safes.map((s) => s.data.address);
-      const safesToAdd = safesFromChain
-        .filter((address) => !existingSafes.includes(address))
-        .map((address) => ({ id: address, data: { safe_name: '', address } as ISafe }));
+      const safesToAdd = safesFromChain?.length
+        ? safesFromChain
+            .filter((address) => !existingSafes.includes(address))
+            .map((address) => ({ id: address, data: { safe_name: '', address } as ISafe }))
+        : [];
       setSafesChainDB([
         ...safes.map((s) => ({ ...s, isImported: true })),
         ...safesToAdd.map((s) => ({ ...s, isImported: false }))
