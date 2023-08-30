@@ -60,7 +60,7 @@ const LoginPage: NextPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 max-w-2xl">
+    <div className="flex flex-col items-center justify-center gap-4 max-w-2xl px-4">
       <h1 className="text-neutral-900">Welcome to VTVL</h1>
       <p className="text-sm max-w-xl text-center text-neutral-500">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae iaculis nulla.
