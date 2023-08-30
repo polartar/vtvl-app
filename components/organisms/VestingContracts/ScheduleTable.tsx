@@ -1,5 +1,7 @@
+import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
+import RecipientRow from '@components/molecules/VestingSchedule/RecipientRow';
 import { injected } from '@connectors/index';
 import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
@@ -25,7 +27,7 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { fetchRevokingsByQuery } from 'services/db/revoking';
+import { createRevoking, fetchRevokingsByQuery } from 'services/db/revoking';
 import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
@@ -34,6 +36,8 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { ITransaction, IVesting } from 'types/models';
 import { IRevokingDoc } from 'types/models/revoking';
 import { compareAddresses } from 'utils';
+import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
+import { createSafeTransaction } from 'utils/safe';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -43,6 +47,7 @@ import {
   getNumberOfReleases,
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
+import { BNToAmountString } from 'utils/web3';
 
 const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo: VestingContractInfo[] }> = ({
   id,
@@ -94,13 +99,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
   const [isRecipientExpand, setIsRecipientExpand] = useState(false);
   const [revokings, setRevokings] = useState<IRevokingDoc[]>();
+  const [revoked, setRevoked] = useState(false);
 
   useEffect(() => {
     if (chainId && organizationId) {
       fetchRevokingsByQuery(
-        ['chainId', 'organizationId', 'vestingId', 'status'],
+        ['chainId', 'organizationId', 'vestingId'],
         ['==', '==', '==', '=='],
-        [chainId, organizationId, id, 'SUCCESS']
+        [chainId, organizationId, id]
       ).then((res) => {
         if (res) {
           setRevokings(res);
@@ -832,6 +838,106 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     );
   };
 
+  const handleRevoke = async (recipient: string) => {
+    const signer = library?.getSigner(0);
+    const vestingAddress = vestingContracts.find((v) => v.id === data.vestingContractId)?.data.address;
+    if (!signer || !account || !chainId || !vestingAddress) return;
+
+    if (data.status === 'COMPLETED' || data.status === 'LIVE') {
+      try {
+        setTransactionLoaderStatus('IN_PROGRESS');
+        if (currentSafe?.address) {
+          if (!isAdmin) {
+            toast.error(
+              "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
+            );
+            return;
+          }
+
+          const vestingContractInterface = new ethers.utils.Interface([REVOKE_CLAIM_FUNCTION_ABI]);
+
+          const { hash: safeHash, nonce } = await createSafeTransaction(
+            signer,
+            chainId as SupportedChainId,
+            account,
+            currentSafe.address,
+            currentSafe?.owners?.map((owner) => owner.address) ?? [],
+            {
+              to: vestingAddress,
+              data: vestingContractInterface.encodeFunctionData('revokeClaim', [recipient]),
+              value: '0'
+            }
+          );
+
+          const transactionID = await createTransaction({
+            hash: '',
+            safeHash,
+            chainId: data.chainId,
+            organizationId: data.organizationId,
+            vestingIds: [id],
+            to: vestingAddress,
+            status: 'PENDING',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            type: 'REVOKE_CLAIM'
+          });
+
+          await createRevoking({
+            vestingId: id,
+            recipient,
+            transactionId: transactionID ?? '',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            chainId,
+            organizationId: organizationId!,
+            status: 'PENDING'
+          });
+
+          toast.success(`Revoking transaction with nonce ${nonce} has been created successfully.`);
+          console.info('Safe Transaction: ', safeHash);
+        } else {
+          const vestingContractInstance = new ethers.Contract(
+            vestingAddress,
+            VTVL_VESTING_ABI.abi,
+            library.getSigner()
+          );
+          const revokeTransaction = await vestingContractInstance.revokeClaim(recipient);
+
+          await revokeTransaction.wait();
+          const transactionID = await createTransaction({
+            hash: revokeTransaction.hash,
+            safeHash: '',
+            chainId: data.chainId,
+            organizationId: data.organizationId,
+            vestingIds: [id],
+            to: vestingAddress,
+            status: 'SUCCESS',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            type: 'REVOKE_CLAIM'
+          });
+          await createRevoking({
+            vestingId: id,
+            recipient,
+            transactionId: transactionID ?? '',
+            createdAt: Math.floor(new Date().getTime() / 1000),
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            chainId,
+            organizationId: organizationId!,
+            status: 'SUCCESS'
+          });
+          toast.success('Revoking is done successfully.');
+        }
+        setRevoked(true);
+        setTransactionLoaderStatus('SUCCESS');
+      } catch (err) {
+        console.log('handleRevoke - ', err);
+        toast.error('Something went wrong. Try agaiin later.');
+        setTransactionLoaderStatus('ERROR');
+      }
+    }
+  };
+
   const getRecipientInfo = useCallback(
     (wallet: string) => {
       return vestingSchedulesInfo.find((vestingInfo) => compareAddresses(vestingInfo.recipient, wallet));
@@ -839,8 +945,11 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     [vestingSchedulesInfo]
   );
 
+  // const formatValue = (value: BigNumber | undefined) => {
+  //   return value ? Number(formatEther(value)).toFixed(2) : 0;
+  // };
   const formatValue = (value: BigNumber | undefined) => {
-    return value ? Number(formatEther(value)).toFixed(2) : 0;
+    return value ? formatNumber(parseFloat(BNToAmountString(ethers.BigNumber.from(value)))) : '0';
   };
 
   return (
@@ -947,7 +1056,9 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         <div className="flex items-center w-32 py-3">Total locked</div>
         <div className="flex items-center w-40 py-3">Allocation</div>
         <div className="flex items-center w-40 py-3">Status</div>
+        <div className="flex items-center w-40 py-3"></div>
       </div>
+
       {vestingRecipients.map(({ data: recipient }, index) => {
         if (index < 3 || isRecipientExpand) {
           return (
@@ -976,17 +1087,31 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
                 {formatValue(getRecipientInfo(recipient.walletAddress)?.allocation)}
               </div>
               <div className="flex items-center w-40 py-3">
-                {getRevoked(recipient.walletAddress) && (
-                  <Chip
-                    rounded
-                    className="text-xs"
-                    label={`Revoked on ${format(
-                      new Date((getRevoked(recipient.walletAddress) as IRevokingDoc).data.updatedAt * 1000),
-                      'dd MMM yyyy'
-                    )}`}
-                    color="dangerAlt"
-                  />
-                )}
+                {getRevoked(recipient.walletAddress) &&
+                  getRevoked(recipient.walletAddress)?.data.status === 'SUCCESS' && (
+                    <Chip
+                      rounded
+                      className="text-xs"
+                      label={`Revoked on ${format(
+                        new Date((getRevoked(recipient.walletAddress) as IRevokingDoc).data.updatedAt * 1000),
+                        'dd MMM yyyy'
+                      )}`}
+                      color="dangerAlt"
+                    />
+                  )}
+              </div>
+              <div className="flex items-center w-40 py-3">
+                {(!getRevoked(recipient.walletAddress) ||
+                  getRevoked(recipient.walletAddress)?.data.status === 'PENDING') &&
+                  data.status === 'LIVE' && (
+                    <Button
+                      disabled={getRevoked(recipient.walletAddress)?.data.status === 'PENDING' || revoked}
+                      danger
+                      size="small"
+                      label={`${revoked ? 'Revoked' : 'Revoke'}`}
+                      onClick={() => handleRevoke(recipient.walletAddress)}
+                    />
+                  )}
               </div>
             </div>
           );
