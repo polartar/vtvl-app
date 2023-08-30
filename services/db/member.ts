@@ -97,3 +97,13 @@ export const updateMember = async (id: string, updateObj: { [key: string]: any }
     ...updateObj
   });
 };
+
+export const fetchMembersByEmails = async (emails: string[]): Promise<IMember[] | undefined> => {
+  const q = query(memberCollection, where('email', 'in', emails), limit(1));
+  const querySnapshot = await getDocs(q);
+  const documents: IMember[] = [];
+  querySnapshot.forEach((doc) => {
+    documents.push(doc.data());
+  });
+  return documents;
+};
