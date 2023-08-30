@@ -1,3 +1,4 @@
+import { error } from 'console';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
 import { fetchMembersByEmails, newMember } from 'services/db/member';

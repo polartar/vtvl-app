@@ -1103,7 +1103,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email)
       );
     }
-    console.log('creating vesting schedule');
+
     // Redirect to the success page to notify the user
     await Router.push('/vesting-schedule/success');
 
@@ -1120,9 +1120,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
   const addNewMembers = async (emails: string[]): Promise<void> => {
     //TODO: extract api calls
-    await axios.post('/api/recipient/add-members', {
-      emails: emails
-    });
+    try {
+      await axios.post('/api/recipient/add-members', {
+        emails: emails
+      });
+    } catch (err) {
+      toast.warn('Something went wrong while registering as members');
+    }
   };
 
   return (
