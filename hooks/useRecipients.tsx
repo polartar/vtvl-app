@@ -17,10 +17,7 @@ export const useMyRecipes = () => {
 
   const { isLoading: isLoadingMyRecipes, data: myRecipes } = useQuery<IRecipientDoc[]>(
     [QUERY_KEYS.RECIPIENT.MINE, chainId, account, email, recipient?.data.walletAddress],
-    () =>
-      email
-        ? fetchRecipientsByQuery(['chainId', 'walletAddress', 'email'], ['==', '==', '=='], [chainId, account, email])
-        : fetchRecipientsByQuery(['chainId', 'walletAddress'], ['==', '=='], [chainId, account]),
+    () => fetchRecipientsByQuery(['chainId', 'walletAddress'], ['==', '=='], [chainId, account]),
     {
       enabled: !!chainId && !!account
     }

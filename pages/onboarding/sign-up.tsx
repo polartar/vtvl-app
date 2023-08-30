@@ -107,7 +107,7 @@ const SignUpPage: NextPage = () => {
   }, [agreedOnConsent]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
+    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl px-4">
       <Typography size="title" variant="sora" className="font-medium text-neutral-900">
         Create your account
       </Typography>

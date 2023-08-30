@@ -21,11 +21,16 @@ const Container = styled.div`
   text-align: center;
 `;
 
+enum EUserTypes {
+  FOUNDER = 'founder',
+  INVESTOR = 'investor'
+}
+
 const SelectUserTypePage: NextPage = () => {
-  const { onNext, startOnboarding, completeOnboarding, inProgress } = useContext(OnboardingContext);
+  const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
   const { emailSignUp, user } = useContext(AuthContext);
-  const { active, account, chainId } = useWeb3React();
-  const [selected, setSelected] = React.useState('');
+  const { account, chainId } = useWeb3React();
+  const [selected, setSelected] = React.useState(EUserTypes.FOUNDER);
   const [member, setMember] = React.useState<IMember>();
   const {
     website: { assets, organizationId: webOrgId, features }
@@ -40,7 +45,7 @@ const SelectUserTypePage: NextPage = () => {
           animateOnHover: assets?.selectUserFounder?.animateOnHover || true,
           fallback: '/images/onboarding-user-type-founder.svg'
         },
-        value: 'founder',
+        value: EUserTypes.FOUNDER,
         label: (
           <>
             I'm a <span className={twMerge(webOrgId ? 'text-primary-900' : 'text-secondary-900')}>founder</span> of a
@@ -55,7 +60,7 @@ const SelectUserTypePage: NextPage = () => {
           animateOnHover: assets?.selectUserRecipient?.animateOnHover || true,
           fallback: '/images/onboarding-user-type-investor.svg'
         },
-        value: 'investor',
+        value: EUserTypes.INVESTOR,
         label: (
           <>
             I’m a <span className={twMerge(webOrgId ? 'text-primary-900' : 'text-secondary-900')}>token recipient</span>{' '}

@@ -214,7 +214,7 @@ export default function ClaimPortal() {
           description={<>Come back again next time.</>}
         />
       ) : (
-        <div className="w-full px-4">
+        <div className="w-full">
           <div className="mb-6 flex gap-6">
             <div className="w-323 h-323 relative mx-auto hidden lg:flex scale-105">
               <AllocationSummaryChart

@@ -10,27 +10,6 @@ import AstroHelmet from 'public/icons/astronaut-helmet.svg';
 import { useEffect, useState } from 'react';
 import { WEBSITE_NAME } from 'utils/constants';
 
-const OnboardingContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-radius: 26px;
-  box-shadow: 0 10px 20px -15px rgba(56, 56, 56, 0.6);
-  max-width: 1152px;
-  font-weight: medium;
-`;
-const Signing = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 32px;
-  text-align: center;
-  padding: 279px 74px;
-  border: 1px solid #d0d5dd;
-  border-right: none;
-  border-radius: 26px 0 0 26px;
-`;
-
 const Vesting = styled.div<{ background?: string }>`
   border-radius: 0 26px 26px 0;
   background-color: var(--primary-900);
@@ -76,9 +55,9 @@ const SelectLoginTypePage: NextPage = () => {
 
   return (
     <PaddedLayout>
-      <OnboardingContainer>
-        <Signing>
-          <div className="max-w-[397px]">
+      <div className="grid md:grid-cols-2 md:rounded-3xl md:shadow-xl max-w-[1152px]">
+        <div className="flex flex-col justify-center items-center gap-8 py-24 px-8 order-1 md:order-0 md:py-[279px] md:px-[74px]">
+          <div className="max-w-[397px] text-center md:text-left">
             <h1 className="font-medium">Access {name || WEBSITE_NAME} as</h1>
             {!features?.auth?.memberOnly && (
               <p className="text-sm font-medium text-neutral-500">
@@ -92,13 +71,13 @@ const SelectLoginTypePage: NextPage = () => {
               <Wallets wallets={wallets} />
             </div>
           </WalletContainer>
-        </Signing>
+        </div>
         <Vesting
-          className="flex flex-col items-center justify-center pt-12 pb-10"
+          className="hidden md:flex flex-col items-center justify-center pt-12 pb-10 md:order-1"
           background={assets?.loginBgImage?.src}>
           <Carousel variant="dark" />
         </Vesting>
-      </OnboardingContainer>
+      </div>
     </PaddedLayout>
   );
 };

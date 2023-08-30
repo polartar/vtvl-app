@@ -493,7 +493,7 @@ export function AuthContextProvider({ children }: any) {
     if (allowSignIn(member?.org_id)) {
       await axios.post('/api/email/login', {
         email,
-        newUser: member ? false : true,
+        newUser: member && member.name ? false : true,
         websiteEmail,
         websiteName,
         emailTemplate
@@ -661,7 +661,7 @@ export function AuthContextProvider({ children }: any) {
         Router.push('/recipient/schedule');
       } else if (isNewUser) {
         Router.push('/welcome');
-      } else {
+      } else if (user.memberInfo.type !== 'anonymous') {
         Router.push('/claim-portal');
       }
 
