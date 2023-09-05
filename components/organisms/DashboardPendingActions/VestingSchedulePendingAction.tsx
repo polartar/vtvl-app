@@ -28,6 +28,7 @@ import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 // import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction, IVesting } from 'types/models';
+import { TOAST_IDS } from 'utils/constants';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -670,6 +671,9 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
+        // Wait for the transaction first
+        await addingClaimsTransaction.wait();
+        // Update everything else in the DB
         await updateVesting(
           {
             ...vesting,
@@ -679,7 +683,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           },
           vestingId
         );
-        await addingClaimsTransaction.wait();
         await updateTransaction(
           {
             ...transactionData,
@@ -690,7 +693,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         );
         await fetchDashboardData();
         setStatus('SUCCESS');
-        toast.success('Added schedules successfully.');
+        toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionLoaderStatus('SUCCESS');
       }
     } catch (err) {

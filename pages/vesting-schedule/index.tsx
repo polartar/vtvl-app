@@ -43,7 +43,7 @@ import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, ITransaction, IVesting, IVestingContract } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
-import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
+import { REVOKE_CLAIM_FUNCTION_ABI, TOAST_IDS } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
 import { formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
@@ -807,6 +807,11 @@ const VestingScheduleProject: NextPageWithLayout = () => {
           vestingIds
         };
         const transactionId = await createTransaction(transactionData);
+        // Put up the loader
+        setTransactionStatus('IN_PROGRESS');
+        // Wait for the transaction to complete before saving anything to db
+        await addingClaimsTransaction.wait();
+        // Save / Update everything
         await Promise.all(
           selectedRows.map(async (row: any) => {
             const vestingId = row.id;
@@ -821,8 +826,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             );
           })
         );
-        setTransactionStatus('IN_PROGRESS');
-        await addingClaimsTransaction.wait();
         await updateTransaction(
           {
             ...transactionData,
@@ -845,7 +848,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             );
           })
         );
-        toast.success('Added schedules successfully.');
+        toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionStatus('SUCCESS');
       }
     } catch (err) {

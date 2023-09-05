@@ -19,6 +19,7 @@ import { IRevoking, ITransaction, IVesting, IVestingContract } from 'types/model
 import { IRecipientDoc, IRecipientForm } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { compareAddresses } from 'utils';
+import { TOAST_IDS } from 'utils/constants';
 import { isV2 } from 'utils/multicall';
 import { getRecipient } from 'utils/recipients';
 
@@ -372,7 +373,7 @@ export function DashboardContextProvider({ children }: any) {
           const newVestings = vestings.map((vesting) => {
             if (vesting.id === change.doc.id) {
               if (vestingInfo.status === 'LIVE') {
-                toast.success(`Added schedules successfully. ${vestingInfo.name}`);
+                toast.success(`${vestingInfo.name} has been added`, { toastId: TOAST_IDS.SUCCESS });
               }
               return {
                 id: vesting.id,

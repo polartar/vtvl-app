@@ -21,7 +21,7 @@ const User = ({ userName, role, compact = false, profilePhoto }: Props) => {
         />
       ) : (
         // Temporarily use role as avatar initials -- update later
-        <Avatar name={role.toUpperCase()} />
+        <Avatar name={role?.toUpperCase() || 'V'} />
       )}
       <div className={`transition-all whitespace-nowrap ${compact ? 'w-0 opacity-0' : ''}`}>
         {userName.length && <p>{userName?.length > 20 ? `${userName.substring(0, 20)}...` : userName}</p>}
