@@ -1,4 +1,3 @@
-import { error } from 'console';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { firebaseAdmin } from 'services/auth/firebaseAdmin';
 import { fetchMembersByEmails, newMember } from 'services/db/member';
@@ -6,13 +5,11 @@ import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { IUserType } from 'types/models/member';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { emails } = req.body;
+  const { emails, organizationId } = req.body;
 
-  const recipients = await fetchRecipientsByQuery(['email'], ['in'], [emails]);
-
+  const recipients = await fetchRecipientsByQuery(['email', 'organizationId'], ['in', '=='], [emails, organizationId]);
   const members = await fetchMembersByEmails(emails);
   const memberEmails = members?.map((member) => member.email);
-
   await Promise.all(
     recipients.map(async (recipient) => {
       if (!memberEmails?.includes(recipient.data.email)) {

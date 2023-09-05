@@ -1100,7 +1100,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         await sendRecipientInvite(noWalletRecipients, mintFormState.symbol);
       }
       await addNewMembers(
-        newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email)
+        newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email),
+        organizationId || ''
       );
     }
 
@@ -1118,11 +1119,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setSavingSchedule(false);
   };
 
-  const addNewMembers = async (emails: string[]): Promise<void> => {
+  const addNewMembers = async (emails: string[], organizationId: string): Promise<void> => {
     //TODO: extract api calls
     try {
       await axios.post('/api/recipient/add-members', {
-        emails: emails
+        emails: emails,
+        organizationId
       });
     } catch (err) {
       toast.warn('Something went wrong while registering as members');

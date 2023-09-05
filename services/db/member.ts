@@ -99,7 +99,7 @@ export const updateMember = async (id: string, updateObj: { [key: string]: any }
 };
 
 export const fetchMembersByEmails = async (emails: string[]): Promise<IMember[] | undefined> => {
-  const q = query(memberCollection, where('email', 'in', emails), limit(1));
+  const q = query(memberCollection, where('email', 'in', emails));
   const querySnapshot = await getDocs(q);
   const documents: IMember[] = [];
   querySnapshot.forEach((doc) => {
