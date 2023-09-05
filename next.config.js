@@ -34,7 +34,7 @@ const nextConfig = {
       {
         source: '/',
         // If the website is white-labelled, we directly go to the connect wallet page
-        destination: '/onboarding',
+        destination: '/onboarding/sign-up',
         permanent: true
       },
       {

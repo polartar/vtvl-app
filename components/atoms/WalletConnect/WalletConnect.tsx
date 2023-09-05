@@ -12,9 +12,10 @@ interface Props {
   account?: string;
   connected: boolean;
   connectWallet?: void;
+  onConnect?: () => void;
 }
 
-const WalletConnect = ({ account, connected }: Props) => {
+const WalletConnect = ({ account, connected, onConnect = () => {} }: Props) => {
   const { activate, deactivate } = useWeb3React();
   const { logOut, connection } = useContext(AuthContext);
   const [expanded, setExpanded] = useState(false);
@@ -29,6 +30,8 @@ const WalletConnect = ({ account, connected }: Props) => {
         if (connection) {
           connection === 'metamask' ? await activate(injected) : await activate(walletconnect);
           toast.success(`Your wallet ${account} is now connected`);
+        } else {
+          onConnect?.();
         }
       } catch (err) {
         toast.error('Connect wallet failed!');
