@@ -79,7 +79,7 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
             className={`flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5 flex-shrink-0 transition-all delay-300 ${
               displayWalletConnect ? 'flex w-auto' : 'hidden w-0'
             }`}>
-            <SafeSelector />
+            {user && user.uid && <SafeSelector />}
             <NetworkSelector />
             <WalletConnect connected={active} account={account || ''} onConnect={onConnect} />
           </div>
