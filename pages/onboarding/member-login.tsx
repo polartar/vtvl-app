@@ -10,7 +10,7 @@ import { useRouter } from 'next/router';
 import { useContext, useEffect } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { emailPattern } from 'types/constants/validation-patterns';
+import { VALIDATION_ERROR_MESSAGES, emailRegex } from 'utils/validator';
 
 type LoginForm = {
   memberEmail: string;
@@ -102,7 +102,7 @@ const MemberLoginPage: NextPage = () => {
             <Controller
               name="memberEmail"
               control={control}
-              rules={{ required: true, pattern: emailPattern }}
+              rules={{ required: true, pattern: emailRegex }}
               render={({ field }) => (
                 <Input
                   label="Your company email"
@@ -110,7 +110,11 @@ const MemberLoginPage: NextPage = () => {
                   className="md:col-span-2"
                   error={Boolean(errors.memberEmail)}
                   required
-                  message={errors.memberEmail ? 'Please enter your company email' : ''}
+                  message={
+                    errors?.memberEmail?.type === 'pattern'
+                      ? VALIDATION_ERROR_MESSAGES.EMAIL
+                      : 'Please enter your company email'
+                  }
                   {...field}
                 />
               )}

@@ -17,6 +17,7 @@ import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-fo
 import { createOrUpdateSafe } from 'services/db/safe';
 import { deploySafe } from 'services/gnosois';
 import { SafeSupportedChains } from 'types/constants/supported-chains';
+import { VALIDATION_ERROR_MESSAGES, emailRegex } from 'utils/validator';
 
 interface Owner {
   name: string;
@@ -207,14 +208,18 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
               <Controller
                 name={`owners.${ownerIndex}.email`}
                 control={control}
-                rules={{ required: true }}
+                rules={{ required: true, pattern: emailRegex }}
                 render={({ field }) => (
                   <Input
                     label="Owner email"
                     placeholder="Enter owner email"
                     required
                     error={Boolean(getOwnersState(ownerIndex).email.state.error)}
-                    message={getOwnersState(ownerIndex).email.state.error ? 'Please enter owner email' : ''}
+                    message={
+                      getOwnersState(ownerIndex).email.state.error?.type === 'pattern'
+                        ? VALIDATION_ERROR_MESSAGES.EMAIL
+                        : 'Please enter owner email'
+                    }
                     className="md:col-span-3"
                     {...field}
                   />
