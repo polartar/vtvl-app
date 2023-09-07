@@ -15,10 +15,13 @@ const DropdownMenu = ({ items = [] }: DropdownMenuProps) => {
   return (
     <Menu
       menuButton={
-        <div className="w-5 h-5 cursor-pointer">
+        <div className="w-7 h-7 cursor-pointer p-1">
           <DotsIcon className="w-full h-full" />
         </div>
       }
+      position="initial"
+      direction="left"
+      align="end"
       transition>
       {items.map((item, itemIndex) => (
         <MenuItem key={`menu-item-${itemIndex}`} onClick={item.onClick}>

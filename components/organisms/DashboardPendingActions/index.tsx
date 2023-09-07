@@ -111,8 +111,8 @@ const DashboardPendingActions = () => {
         <PendingActionsFilter filter={filter} updateFilter={setFilter} />
       </div>
       <div className="border border-[#d0d5dd] rounded-xl w-full max-h-[700px] overflow-y-auto">
-        <div className="flex bg-[#f2f4f7] text-[#475467] text-xs">
-          <div className="w-16 py-3 flex-shrink-0 bg-[#f2f4f7]"></div>
+        <div className="flex  bg-[#f2f4f7] text-[#475467] text-xs">
+          <div className="w-4 lg:w-16 py-3 flex-shrink-0 bg-[#f2f4f7]"></div>
           <div className="w-36 py-3 flex-shrink-0 bg-[#f2f4f7]">Name</div>
           <div className="w-52 py-3 flex-shrink-0 bg-[#f2f4f7]">Type</div>
           <div className="w-52 py-3 flex-shrink-0 bg-[#f2f4f7]">Status</div>
@@ -120,7 +120,7 @@ const DashboardPendingActions = () => {
           <div className="w-32 py-3 flex-shrink-0 bg-[#f2f4f7]">Safe</div>
           <div className="w-32 py-3 flex-shrink-0 bg-[#f2f4f7]">Safe Nonce</div>
           <div className="w-40 py-3 flex-shrink-0 bg-[#f2f4f7]">Total allocation</div>
-          <div className="min-w-[200px] flex-grow py-3 flex-shrink-0 bg-[#f2f4f7]"></div>
+          <div className="min-w-[205px] flex-grow py-3 pr-3 flex-shrink-0 bg-[#f2f4f7] sticky right-0"></div>
         </div>
         {pendingVestingContracts.map((vestingContract) => (
           <VestingContractPendingAction
