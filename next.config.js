@@ -7,7 +7,7 @@ const nextConfig = {
     VERCEL_ENV: process.env.VERCEL_ENV
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production'
+    // removeConsole: process.env.NODE_ENV === 'production'
   },
   reactStrictMode: true,
   swcMinify: true,
