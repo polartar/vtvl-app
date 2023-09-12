@@ -535,7 +535,10 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
         // Computes how many tokens are left after cliff based on percentage
         const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
-        return parseTokenAmount(Number(recipient.allocations) - cliffAmountPerUser, 18);
+        return ethers.utils
+          .parseUnits(recipient.allocations, 18)
+          .sub(ethers.utils.parseUnits(cliffAmountPerUser.toString(), 18))
+          .toString();
       });
 
       vestingEndTimestamps = vestingEndTimestamps.map((endTimeStamp: number, index: number) => {
