@@ -362,8 +362,16 @@ const Table = ({
           <thead>
             {headerGroups.map((headerGroup) => (
               <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                {headerGroup.headers.map((column, columnIndex) => (
+                  <th
+                    {...column.getHeaderProps()}
+                    className={
+                      getTrProps(page[0]).stickyActions && headerGroup.headers.length - 1 === columnIndex
+                        ? 'sticky right-0 bg-gradient-to-l from-neutral-100 via-neutral-100 to-transparent'
+                        : ''
+                    }>
+                    {column.render('Header')}
+                  </th>
                 ))}
               </tr>
             ))}
@@ -373,8 +381,18 @@ const Table = ({
               prepareRow(row);
               return (
                 <tr {...row.getRowProps()} {...getTrProps(row)}>
-                  {row.cells.map((cell: any) => {
-                    return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>;
+                  {row.cells.map((cell: any, cellIndex: number) => {
+                    return (
+                      <td
+                        {...cell.getCellProps()}
+                        className={
+                          getTrProps(row).stickyActions && row.cells.length - 1 === cellIndex
+                            ? 'sticky right-0 bg-gradient-to-l from-white via-white to-transparent'
+                            : ''
+                        }>
+                        {cell.render('Cell')}
+                      </td>
+                    );
                   })}
                 </tr>
               );

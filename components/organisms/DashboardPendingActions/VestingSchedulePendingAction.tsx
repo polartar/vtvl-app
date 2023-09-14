@@ -867,7 +867,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
 
   return isVisible ? (
     <div className="flex bg-white text-[#667085] text-xs">
-      <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
+      <div className="flex items-center w-4 lg:w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center w-36 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{data.name}</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">Vesting Schedule</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
@@ -907,7 +907,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {formatNumber(data.details.amountToBeVested)}
       </div>
-      <div className="flex items-center min-w-[350px] flex-grow py-3  border-t border-[#d0d5dd]">
+      <div className="flex items-center min-w-[350px] flex-grow py-3 pr-2 justify-stretch border-t border-[#d0d5dd] bg-gradient-to-l from-white via-white to-transparent  sticky right-0">
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'INITIALIZE' && (
           <button
             className="secondary small whitespace-nowrap"

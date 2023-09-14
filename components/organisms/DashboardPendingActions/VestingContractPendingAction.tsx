@@ -173,7 +173,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
 
   return status === 'SUCCESS' ? null : shouldShow ? (
     <div className="flex bg-white text-[#667085] text-xs">
-      <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
+      <div className="flex items-center w-4 lg:w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center w-36 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{data.name}</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">Contract Deployment</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
@@ -209,17 +209,17 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
       </div>
       <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
-      <div className="flex items-center min-w-[200px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd]">
+      <div className="flex items-center min-w-[205px] flex-grow py-3 pr-3 flex-shrink-0 justify-stretch border-t border-[#d0d5dd] bg-gradient-to-l from-white via-white to-transparent  sticky right-0">
         {status === 'AUTHORIZATION_REQUIRED' ? (
-          <button className="secondary small" onClick={handleDeployVestingContract}>
+          <button className="secondary small w-full" onClick={handleDeployVestingContract}>
             Deploy
           </button>
         ) : status === 'TRANSFER_OWNERSHIP' ? (
-          <button className="secondary small" onClick={handleTransferOwnership}>
+          <button className="secondary small w-full" onClick={handleTransferOwnership}>
             Transfer Ownership
           </button>
         ) : status === 'REMOVE_ORIGINAL_OWNERSHIP' ? (
-          <button className="secondary small whitespace-nowrap" onClick={handleRemoveDeployerOwnership}>
+          <button className="secondary small" onClick={handleRemoveDeployerOwnership}>
             Remove Original Ownership
           </button>
         ) : null}

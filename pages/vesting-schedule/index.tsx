@@ -383,7 +383,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     if (rowInfo) {
       const { status, archive } = rowInfo.original.data;
       return {
-        className: status === 'COMPLETED' ? 'bg-success-50' : archive ? 'bg-gray-50' : ''
+        className: status === 'COMPLETED' ? 'bg-success-50' : archive ? 'bg-gray-50' : '',
+        stickyActions: true
       };
     }
     return {};

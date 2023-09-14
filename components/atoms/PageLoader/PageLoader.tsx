@@ -7,7 +7,7 @@ interface IPageLoaderProps {
 
 const PageLoader = ({ loader = 'default' }: IPageLoaderProps) => {
   return (
-    <div className="w-full flex items-start justify-center absolute top-0 bottom-0 left-0 right-0 z-20 bg-white pt-32">
+    <div className="w-full flex items-start justify-center absolute top-0 bottom-0 left-0 right-0 z-20 bg-white pt-32 px-6">
       <div className="mx-auto text-center">
         {loader === 'global' ? (
           <img src="/global-loader.gif" className="h-32 w-32 mx-auto" />

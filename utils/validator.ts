@@ -1,5 +1,5 @@
 const numberRegex = /^\d+$/;
-const emailRegex =
+export const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const addressRegex = /^0x[a-fA-F0-9]{40}$/;
@@ -80,3 +80,8 @@ export function validate(value: string, validations: Validation[]): ValidationRe
 
   return errors;
 }
+
+export const VALIDATION_ERROR_MESSAGES = {
+  EMAIL: 'Please enter a valid email',
+  NUMBER: 'Please enter a number'
+};
