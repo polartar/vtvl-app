@@ -898,7 +898,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
                 Approve
               </button>
               {isExecutableAfterApprove && (
-                <button className="secondary small whitespace-nowrap" onClick={handleApproveAndExecuteTransaction}>
+                <button className="secondary small whitespace-nowrap" onClick={handleExecuteTransaction}>
                   Approve & Execute
                 </button>
               )}
@@ -928,9 +928,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
                 Approve Funding
               </button>
               {isExecutableAfterApprove && (
-                <button
-                  className="secondary small whitespace-nowrap"
-                  onClick={handleApproveAndExecuteFundingTransaction}>
+                <button className="secondary small whitespace-nowrap" onClick={handleExecuteFundingTransaction}>
                   Approve & Execute Funding
                 </button>
               )}

@@ -927,7 +927,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               Approve
             </button>
             {isExecutableAfterApprove && (
-              <button className="secondary small whitespace-nowrap" onClick={handleApproveAndExecuteTransaction}>
+              <button className="secondary small whitespace-nowrap" onClick={handleExecuteTransaction}>
                 Approve & Execute
               </button>
             )}
@@ -965,7 +965,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               Approve Funding
             </button>
             {isExecutableAfterApprove && (
-              <button className="secondary small whitespace-nowrap" onClick={handleApproveAndExecuteFundingTransaction}>
+              <button className="secondary small whitespace-nowrap" onClick={handleExecuteFundingTransaction}>
                 Approve & Execute Funding
               </button>
             )}

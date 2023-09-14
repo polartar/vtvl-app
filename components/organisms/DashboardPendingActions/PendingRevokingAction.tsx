@@ -276,7 +276,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
               Approve
             </button>
             {isExecutableAfterApprove && (
-              <button className="secondary small whitespace-nowrap" onClick={handleApproveAndExecuteTransaction}>
+              <button className="secondary small whitespace-nowrap" onClick={handleExecuteTransaction}>
                 Approve & Execute
               </button>
             )}
