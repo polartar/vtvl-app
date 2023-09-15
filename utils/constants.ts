@@ -25,7 +25,7 @@ const RECIPIENTS_VALUES = RECIPIENTS_TYPES.map(({ value }) => value);
 export const IS_ENABLED_AUTH_BY_ORG = parseBoolean(process.env.NEXT_PUBLIC_ENABLE_LOGIN_BY_ORGANIZATION);
 
 declare global {
-  type IRecipientTypeValue = typeof RECIPIENTS_VALUES[number];
+  type IRecipientTypeValue = (typeof RECIPIENTS_VALUES)[number];
 }
 
 export const CACHE_KEY = 'vtvl_cache';
@@ -45,3 +45,5 @@ export const TOAST_IDS = {
   WARNING: 'vtvl-toast-warning',
   INFO: 'vtvl-toast-info'
 };
+
+export const WALLET_CONNECT_V2_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ?? '';
