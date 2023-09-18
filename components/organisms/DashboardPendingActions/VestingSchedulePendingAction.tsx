@@ -28,6 +28,7 @@ import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 // import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction, IVesting } from 'types/models';
+import { TOAST_IDS } from 'utils/constants';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -351,17 +352,17 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         );
 
         const allowance = await tokenContract.allowance(account, vestingContract?.data?.address);
-        if (allowance.lt(ethers.utils.parseEther(amount))) {
+        if (allowance.lt(ethers.utils.parseUnits(amount, mintFormState.decimals))) {
           const approveTx = await tokenContract.approve(
             vestingContract?.data?.address,
-            ethers.utils.parseEther(amount).sub(allowance)
+            ethers.utils.parseUnits(amount, mintFormState.decimals).sub(allowance)
           );
           await approveTx.wait();
         }
 
         const fundTransaction = await tokenContract.transfer(
           vestingContract?.data?.address,
-          ethers.utils.parseEther(amount)
+          ethers.utils.parseUnits(amount, mintFormState.decimals)
         );
         setShowFundingContractModal(false);
 
@@ -434,6 +435,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
+              approvers: [account],
+              fundingAmount: amount,
               chainId
             });
             await updateVesting(
@@ -533,7 +536,18 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
         // Computes how many tokens are left after cliff based on percentage
         const percentage = 1 - (cliffDuration !== 'no-cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
-        return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
+        return ethers.utils
+          .parseUnits(recipient.allocations, 18)
+          .sub(ethers.utils.parseUnits(cliffAmountPerUser.toString(), 18))
+          .toString();
+      });
+
+      vestingEndTimestamps = vestingEndTimestamps.map((endTimeStamp: number, index: number) => {
+        if ((endTimeStamp - vestingStartTimestamps[index]) % vestingReleaseIntervals[index] !== 0) {
+          const times = Math.floor(endTimeStamp / vestingReleaseIntervals[index]);
+          return vestingStartTimestamps[index] + vestingReleaseIntervals[index] * (times + 1);
+        }
+        return endTimeStamp;
       });
 
       vestingEndTimestamps = vestingEndTimestamps.map((endTimeStamp: number, index: number) => {
@@ -545,7 +559,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       });
 
       const vestingCliffAmounts = new Array(totalRecipients).fill(parseTokenAmount(cliffAmountPerUser, 18));
-
+      console.log({ vestingLinearVestAmounts, vestingCliffAmounts });
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
       const CREATE_CLAIMS_BATCH_INTERFACE =
@@ -668,6 +682,9 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
+        // Wait for the transaction first
+        await addingClaimsTransaction.wait();
+        // Update everything else in the DB
         await updateVesting(
           {
             ...vesting,
@@ -677,7 +694,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           },
           vestingId
         );
-        await addingClaimsTransaction.wait();
         await updateTransaction(
           {
             ...transactionData,
@@ -688,7 +704,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         );
         await fetchDashboardData();
         setStatus('SUCCESS');
-        toast.success('Added schedules successfully.');
+        toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionLoaderStatus('SUCCESS');
       }
     } catch (err) {
@@ -788,7 +804,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               ...transaction.data,
               status: 'SUCCESS'
             },
-            data.transactionId
+            transaction.id
           );
           const batchVestings = await fetchVestingsByQuery(
             ['transactionId', 'chainId'],
@@ -847,7 +863,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
 
   return isVisible ? (
     <div className="flex bg-white text-[#667085] text-xs">
-      <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
+      <div className="flex items-center w-4 lg:w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center w-36 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{data.name}</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">Vesting Schedule</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
@@ -887,28 +903,28 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {formatNumber(data.details.amountToBeVested)}
       </div>
-      <div className="flex items-center min-w-[200px] flex-grow py-3  border-t border-[#d0d5dd]">
+      <div className="flex items-center min-w-[205px] flex-grow py-3 pr-2 justify-stretch border-t border-[#d0d5dd] bg-gradient-to-l from-white via-white to-transparent  sticky right-0">
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'INITIALIZE' && (
           <button
-            className="secondary small whitespace-nowrap"
+            className="secondary small whitespace-nowrap w-full"
             onClick={handleCreateSignTransaction}
             disabled={transactionLoaderStatus === 'IN_PROGRESS' || hasNoWalletAddress}>
             Deploy schedule
           </button>
         )}
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
-          <button className="secondary small whitespace-nowrap" disabled>
+          <button className="secondary small whitespace-nowrap w-full" disabled>
             Waiting approval
           </button>
         )}
         {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+          <button className="secondary small whitespace-nowrap w-full" onClick={handleApproveTransaction}>
             Approve
           </button>
         )}
         {(status === 'AUTHORIZATION_REQUIRED' || status === 'EXECUTABLE') && transactionStatus === 'EXECUTABLE' && (
           <button
-            className="secondary small whitespace-nowrap"
+            className="secondary small whitespace-nowrap w-full"
             onClick={handleExecuteTransaction}
             disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
             Execute
@@ -917,8 +933,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
           <>
             <button
-              className="secondary small whitespace-nowrap"
-              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              className="secondary small whitespace-nowrap w-full"
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}
               onClick={() => {
                 setShowFundingContractModal(true);
               }}>
@@ -933,13 +949,13 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           </>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+          <button className="secondary small whitespace-nowrap w-full" onClick={handleApproveTransaction}>
             Approve Funding
           </button>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
           <button
-            className="secondary small whitespace-nowrap"
+            className="secondary small whitespace-nowrap w-full"
             disabled
             onClick={() => {
               // setShowFundingContractModal(true);
@@ -949,7 +965,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         )}
         {status === 'FUNDING_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
           <button
-            className="secondary small whitespace-nowrap"
+            className="secondary small whitespace-nowrap w-full"
             onClick={handleExecuteFundingTransaction}
             disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
             Execute Funding

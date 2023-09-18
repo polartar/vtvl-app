@@ -2,7 +2,8 @@ import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected, walletconnect } from 'connectors';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { isMobile } from 'react-device-detect';
 import Modal, { Styles } from 'react-modal';
 
 import Consent from '../Consent/Consent';
@@ -19,8 +20,8 @@ interface ConnectWalletOptionsProps {
 
 const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProps) => {
   // Use web3 react to activate the connection
-  const { activate } = useWeb3React();
-  const { setConnection } = useAuthContext();
+  const { activate, account, active } = useWeb3React();
+  const { setConnection, connection } = useAuthContext();
   const {
     website: { features }
   } = useGlobalContext();
@@ -57,7 +58,6 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
       await activate(injected);
       // Trigger the onConnect function when the connection is established
       setConnection('metamask');
-      onConnect();
     } catch (error) {
       console.log('connection error ', error);
     }
@@ -69,7 +69,6 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
       await activate(walletconnect, (error) => {}, true);
       // Trigger the onConnect function when the connection is established
       setConnection('walletconnect');
-      onConnect();
     } catch (error) {
       console.log('connection error ', error);
     }
@@ -87,7 +86,8 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
       name: 'Wallet Connect',
       image: '/icons/wallets/walletconnect.svg',
       onClick: walletConnectActivate,
-      disabled: false
+      subLabel: isMobile ? 'Soon' : '',
+      disabled: isMobile
     },
     {
       name: 'Trezor',
@@ -109,16 +109,18 @@ const ConnectWalletOptions = ({ onConnect = () => {} }: ConnectWalletOptionsProp
       onClick: () => setLedgerModalShow(true),
       subLabel: 'Soon',
       disabled: true
-    },
-    {
-      name: 'Ledger Connect',
-      image: '/icons/wallets/ledger.png',
-      // need to add an onClick handler here
-      onClick: () => setLedgerModalShow(true),
-      subLabel: 'Soon',
-      disabled: true
     }
   ];
+
+  useEffect(() => {
+    if (active && account) {
+      onConnect();
+    } else if (isMobile && connection === 'metamask') {
+      // Redirect the user to the metamask deeplink if user tried to activate the metamask prompt
+      // is on mobile and did not actually show the prompt -- because of no extension on mobile browser.
+      window.location.href = `https://metamask.app.link/dapp/${window.location.host}`;
+    }
+  }, [active, account, connection]);
 
   return (
     <>

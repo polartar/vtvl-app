@@ -122,9 +122,15 @@ describe('email test spec', () => {
       cy.switchToCypressWindow();
       cy.wait(2000);
 
-      cy.get('label.card-radio') // Select the label element
-        .contains("I'm a founder of a web3 project") // Find the element containing the founder text
-        .click(); // Click on the element
+      cy.addMetamaskNetwork({
+        networkName: 'Ganache Network',
+        rpcUrl: 'http://13.42.77.252:8545',
+        chainId: '999',
+        symbol: 'WAN',
+        blockExplorer: '',
+        isTestnet: true
+      });
+
       cy.contains('Continue').click();
       cy.get('input[name="name"]') // Select the name element
         .type(randomName); // Enter a random name

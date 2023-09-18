@@ -29,6 +29,7 @@ import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipientDoc, ITransaction, IVesting } from 'types/models';
 import { compareAddresses } from 'utils';
+import { TOAST_IDS } from 'utils/constants';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
@@ -170,8 +171,23 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
-      // const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
-      const tokenBalance = vestingContract.data.balance || 0;
+      const TokenContract = new ethers.Contract(
+        mintFormState.address,
+        [
+          // Read-Only Functions
+          'function balanceOf(address owner) view returns (uint256)',
+          'function decimals() view returns (uint8)',
+          'function symbol() view returns (string)',
+          // Authenticated Functions
+          'function transfer(address to, uint amount) returns (bool)',
+          // Events
+          'event Transfer(address indexed from, address indexed to, uint amount)'
+        ],
+        ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+      );
+
+      const tokenBalance = await TokenContract.balanceOf(vestingContract?.data?.address);
+      // const tokenBalance = vestingContract.data.balance || 0;
 
       const numberOfTokensReservedForVesting = await VestingContract.numTokensReservedForVesting();
 
@@ -386,6 +402,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
+              approvers: [account],
+              fundingAmount: amount,
               chainId
             });
             await updateVesting(
@@ -603,6 +621,9 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
+        // Wait for the transaction first
+        await addingClaimsTransaction.wait();
+        // Update everything else in the DB
         await updateVesting(
           {
             ...vesting,
@@ -612,7 +633,6 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           },
           vestingId
         );
-        await addingClaimsTransaction.wait();
         await updateTransaction(
           {
             ...transactionData,
@@ -623,7 +643,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         );
         await fetchDashboardData();
         setStatus('SUCCESS');
-        toast.success('Added schedules successfully.');
+        toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionLoaderStatus('SUCCESS');
       }
     } catch (err) {
@@ -851,7 +871,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
             <button
               className="secondary small whitespace-nowrap"
-              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}
               onClick={() => {
                 setShowFundingContractModal(true);
               }}>
@@ -859,11 +879,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             </button>
           )}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-            <button
-              className="secondary small whitespace-nowrap"
-              onClick={() => {
-                setShowFundingContractModal(true);
-              }}>
+            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
               Approve Funding
             </button>
           )}

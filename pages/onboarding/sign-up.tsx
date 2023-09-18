@@ -10,8 +10,7 @@ import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { fetchMemberByEmail } from 'services/db/member';
-import { emailPattern } from 'types/constants/validation-patterns';
+import { VALIDATION_ERROR_MESSAGES, emailRegex } from 'utils/validator';
 
 type LoginForm = {
   memberEmail: string;
@@ -106,8 +105,10 @@ const SignUpPage: NextPage = () => {
     }
   }, [agreedOnConsent]);
 
+  console.log('ERRORS', errors);
+
   return (
-    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl">
+    <div className="flex flex-col items-center justify-center gap-4 w-full max-w-xl px-4">
       <Typography size="title" variant="sora" className="font-medium text-neutral-900">
         Create your account
       </Typography>
@@ -139,7 +140,7 @@ const SignUpPage: NextPage = () => {
             <Controller
               name="memberEmail"
               control={control}
-              rules={{ required: true, pattern: emailPattern }}
+              rules={{ required: true, pattern: emailRegex }}
               render={({ field }) => (
                 <Input
                   label="Your company email"
@@ -147,7 +148,13 @@ const SignUpPage: NextPage = () => {
                   className="md:col-span-2"
                   error={Boolean(errors.memberEmail)}
                   required
-                  message={errors.memberEmail ? 'Please enter your company email' : ''}
+                  message={
+                    errors?.memberEmail?.type === 'pattern'
+                      ? VALIDATION_ERROR_MESSAGES.EMAIL
+                      : errors?.memberEmail?.type === 'required'
+                      ? 'Please enter your company email'
+                      : ''
+                  }
                   {...field}
                 />
               )}

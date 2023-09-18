@@ -1,5 +1,5 @@
 import { useWeb3React } from '@web3-react/core';
-import { injected } from 'connectors';
+import { injected, walletconnect } from 'connectors';
 import React, { useContext, useState } from 'react';
 import { toast } from 'react-toastify';
 import { twMerge } from 'tailwind-merge';
@@ -12,9 +12,10 @@ interface Props {
   account?: string;
   connected: boolean;
   connectWallet?: void;
+  onConnect?: () => void;
 }
 
-const WalletConnect = ({ account, connected }: Props) => {
+const WalletConnect = ({ account, connected, onConnect = () => {} }: Props) => {
   const { activate, deactivate } = useWeb3React();
   const { logOut, connection } = useContext(AuthContext);
   const [expanded, setExpanded] = useState(false);
@@ -26,8 +27,12 @@ const WalletConnect = ({ account, connected }: Props) => {
       setExpanded((prev) => !prev);
     } else {
       try {
-        await activate(injected);
-        toast.success(`Your wallet ${account} is now connected`);
+        if (connection) {
+          connection === 'metamask' ? await activate(injected) : await activate(walletconnect);
+          toast.success(`Your wallet ${account} is now connected`);
+        } else {
+          onConnect?.();
+        }
       } catch (err) {
         toast.error('Connect wallet failed!');
       }
@@ -59,7 +64,7 @@ const WalletConnect = ({ account, connected }: Props) => {
     <div className="h-10 transition-all relative" tabIndex={0} onBlur={() => setExpanded(false)} onClick={handleClick}>
       <div
         className={twMerge(
-          'h-10 w-auto shrink-0 flex flex-row items-center gap-2 rounded-3xl px-1.5 sm:px-2 lg:px-4 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
+          'h-10 w-10 md:w-auto shrink-0 flex flex-row items-center justify-center md:justify-start gap-2 rounded-3xl md:px-4 text-gray-50 font-semibold text-sm cursor-pointer transition-all hover:brightness-125',
           connection === 'metamask'
             ? 'bg-metamask'
             : connection === 'walletconnect'
