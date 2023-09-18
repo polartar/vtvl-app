@@ -303,7 +303,7 @@ const FundingContractModal = ({
                 ) : null}
                 {/* MANUAL FUNDING SECTION */}
                 {fundingMethod.value === 'MANUAL' ? (
-                  <Copy text={mintFormState.address} removeIcon>
+                  <Copy text={vestingContract.data.address} removeIcon>
                     <div className="mt-5 pt-3 px-3 flex flex-col cursor-pointer relative">
                       <TokenProfile
                         address={mintFormState.address}
