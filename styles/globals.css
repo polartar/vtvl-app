@@ -397,8 +397,8 @@
   }
 
   /* Other disabled styles */
-  :disabled:not(fieldset):not(.card-radio),
-  [disabled]:not(fieldset):not(.card-radio) {
+  :disabled:not(fieldset):not(.card-radio):not(.wallet-button),
+  [disabled]:not(fieldset):not(.card-radio):not(.wallet-button) {
     @apply opacity-80;
   }
 

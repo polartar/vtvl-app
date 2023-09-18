@@ -43,6 +43,19 @@ const nextConfig = {
         permanent: true
       }
     ];
+  },
+  async rewrites() {
+    return [
+      // These adds a did.json and wc-notify-config.json for Wallet Connect V2 verification
+      {
+        source: '/.well-known/did.json',
+        destination: '/api/walletconnect/did'
+      },
+      {
+        source: '/.well-known/wc-notify-config.json',
+        destination: '/api/walletconnect/wc-notify-config'
+      }
+    ];
   }
 };
 
