@@ -107,7 +107,6 @@ const VestingOverview = ({
             <p className="mb-2">
               {formatNumber(totalAllocation)} {token}
             </p>
-            <div className="paragraphy-small-semibold text-success-500">= ${convertToUSD(totalAllocation)}</div>
           </div>
         </div>
       </div>

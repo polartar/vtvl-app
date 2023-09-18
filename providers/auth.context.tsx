@@ -207,6 +207,9 @@ export function AuthContextProvider({ children }: any) {
     setOrganizationId(user?.memberInfo?.org_id);
     setUser(user);
     setIsAuthenticated(true);
+    if (user.memberInfo?.type === 'founder') {
+      router.push('/dashboard');
+    }
   };
 
   const allowSignIn = (userOrganizationId?: string) => {
@@ -697,6 +700,9 @@ export function AuthContextProvider({ children }: any) {
   useEffect(() => {
     if (currentSafe && library && currentSafeId) {
       setCache({ safeAddress: currentSafe.address });
+    }
+    if (!currentSafe || !currentSafeId) {
+      setCache({ safeAddress: '' });
     }
   }, [currentSafe, library, currentSafeId]);
 

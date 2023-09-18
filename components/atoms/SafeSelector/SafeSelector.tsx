@@ -71,6 +71,7 @@ const SafeSelector = () => {
               }`}
               onClick={async () => {
                 setCurrentSafe(undefined);
+                setCurrentSafeId('');
                 setShowSafes(false);
               }}>
               <img className="w-6 h-6 rounded-full" src="/icons/safe_wallet.svg" />

@@ -12,6 +12,7 @@ import { fetchOrg } from 'services/db/organization';
 import { IInvitee, IMember } from 'types/models';
 import { ITeamRole } from 'types/models/settings';
 import { convertLabelToOption } from 'utils/shared';
+import { VALIDATION_ERROR_MESSAGES, emailRegex } from 'utils/validator';
 import * as Yup from 'yup';
 
 import TeamTable from './TeamTable';
@@ -31,10 +32,6 @@ const defaultMember = {
   email: '',
   type: ITeamRole.Manager
 };
-
-export const VALID_EMAIL_REG =
-  // eslint-disable-next-line no-useless-escape
-  /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const Team = () => {
   const { user, sendTeammateInvite } = useAuthContext();
@@ -71,7 +68,7 @@ const Team = () => {
           email: Yup.string()
             .required('Email is required')
             .max(100, 'Email must contain less than 100 characters')
-            .matches(VALID_EMAIL_REG, 'Enter a valid email')
+            .matches(emailRegex, VALIDATION_ERROR_MESSAGES.EMAIL)
         })
       )
     });

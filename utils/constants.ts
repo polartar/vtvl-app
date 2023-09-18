@@ -38,3 +38,10 @@ export const FACTORY_CONTRACTS: { [key: number]: string } = {
   5: '0x48CC6FFb03B14Cbf6315e99c8bfa42642848d7AA',
   12009: '0x41d3f5e5744df065B34bc30be2021DDf8Ff72480'
 };
+
+export const TOAST_IDS = {
+  ERROR: 'vtvl-toast-error',
+  SUCCESS: 'vtvl-toast-success',
+  WARNING: 'vtvl-toast-warning',
+  INFO: 'vtvl-toast-info'
+};

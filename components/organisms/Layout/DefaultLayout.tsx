@@ -518,6 +518,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
           user={user}
           onLogout={() => logOut()}
           toggleSideBar={toggleSideBar}
+          onConnect={() => setConnectWalletModal(true)}
           // onLogin={() => setUser({ name: 'Jane Doe' })}
           // onCreateAccount={() => setUser({ name: 'Jane Doe' })}
         />
