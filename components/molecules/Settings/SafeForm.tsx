@@ -218,7 +218,9 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
                     message={
                       getOwnersState(ownerIndex).email.state.error?.type === 'pattern'
                         ? VALIDATION_ERROR_MESSAGES.EMAIL
-                        : 'Please enter owner email'
+                        : getOwnersState(ownerIndex).email.state.error?.type === 'required'
+                        ? 'Please enter owner email'
+                        : ''
                     }
                     className="md:col-span-3"
                     {...field}

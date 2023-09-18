@@ -113,7 +113,9 @@ const MemberLoginPage: NextPage = () => {
                   message={
                     errors?.memberEmail?.type === 'pattern'
                       ? VALIDATION_ERROR_MESSAGES.EMAIL
-                      : 'Please enter your company email'
+                      : errors?.memberEmail?.type === 'required'
+                      ? 'Please enter your company email'
+                      : ''
                   }
                   {...field}
                 />

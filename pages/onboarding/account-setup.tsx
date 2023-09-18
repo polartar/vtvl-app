@@ -309,7 +309,9 @@ const AccountSetupPage: NextPage = () => {
                         message={
                           getContributorState(contributorIndex).email.state.error?.type === 'pattern'
                             ? VALIDATION_ERROR_MESSAGES.EMAIL
-                            : 'Please enter team member email'
+                            : getContributorState(contributorIndex).email.state.error?.type === 'required'
+                            ? 'Please enter team member email'
+                            : ''
                         }
                         {...field}
                       />
