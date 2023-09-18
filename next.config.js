@@ -7,7 +7,7 @@ const nextConfig = {
     VERCEL_ENV: process.env.VERCEL_ENV
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production'
+    // removeConsole: process.env.NODE_ENV === 'production'
   },
   reactStrictMode: true,
   swcMinify: true,
@@ -76,9 +76,9 @@ module.exports = withSentryConfig(
     tunnelRoute: '/monitoring',
 
     // Hides source maps from generated client bundles
-    hideSourceMaps: true,
+    hideSourceMaps: true
 
     // Automatically tree-shake Sentry logger statements to reduce bundle size
-    disableLogger: true
+    // disableLogger: true
   }
 );
