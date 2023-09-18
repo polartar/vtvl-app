@@ -13,13 +13,14 @@ import { WEBSITE_NAME } from 'utils/constants';
 interface HeaderProps {
   user: IUser | undefined;
   connected: boolean;
+  onConnect?: () => void;
   onLogin?: () => void;
   onLogout?: () => void;
   onCreateAccount?: () => void;
   toggleSideBar?: () => void;
 }
 
-const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSideBar }: HeaderProps) => {
+const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSideBar, onConnect }: HeaderProps) => {
   const { active, account } = useWeb3React();
   const { pathname } = useRouter();
   const {
@@ -78,9 +79,9 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
             className={`flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5 flex-shrink-0 transition-all delay-300 ${
               displayWalletConnect ? 'flex w-auto' : 'hidden w-0'
             }`}>
-            <SafeSelector />
+            {user && user.uid && <SafeSelector />}
             <NetworkSelector />
-            <WalletConnect connected={active} account={account || ''} />
+            <WalletConnect connected={active} account={account || ''} onConnect={onConnect} />
           </div>
         </div>
       </Fade>

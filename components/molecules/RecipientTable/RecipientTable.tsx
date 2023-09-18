@@ -9,6 +9,7 @@ import { RECIPIENTS_TYPES } from 'utils/constants';
 import { getRecipient } from 'utils/recipients';
 import { validate, validateDuplication, validateEVMAddress } from 'utils/regex';
 import { formatNumber } from 'utils/token';
+import { VALIDATION_ERROR_MESSAGES, validate as validator } from 'utils/validator';
 import { validate as validateSingleField } from 'utils/validator';
 
 import { EditableTypography } from './EditableTypography';
@@ -68,9 +69,15 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
       newErrors.push('Allocations should be greater than 0.');
     }
 
-    const hasEmptyEmails = validate(rows, 'email', (value) => !value);
+    const emailValidation = rows.map((row) => validator(row.email, ['required', 'email']));
+    const hasEmptyEmails = emailValidation.filter((r) => r.length > 1).length; //validate(rows, 'email', (value) => !value);
     if (hasEmptyEmails) {
       newErrors.push('Recipient email is the required field.');
+    }
+
+    const hasInvalidEmails = emailValidation.filter((r) => r.length === 1).length;
+    if (hasInvalidEmails) {
+      newErrors.push(VALIDATION_ERROR_MESSAGES.EMAIL);
     }
 
     onContinue?.(rows, newErrors);

@@ -214,7 +214,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
 
   return transactionStatus !== 'SUCCESS' ? (
     <div className="flex bg-white text-[#667085] text-xs">
-      <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
+      <div className="flex items-center w-4 lg:w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center w-36 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {vestingContract?.data.name}
       </div>
@@ -246,19 +246,19 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
         {formatNumber(+(data.withdrawAmount ?? 0))}
       </div>
-      <div className="flex items-center min-w-[200px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd]">
+      <div className="flex items-center min-w-[205px] flex-grow py-3 pr-3 flex-shrink-0 justify-stretch border-t border-[#d0d5dd] bg-gradient-to-l from-white via-white to-transparent sticky right-0">
         {transactionStatus === 'WAITING_APPROVAL' && (
-          <button className="secondary small whitespace-nowrap" disabled>
+          <button className="secondary small whitespace-nowrap w-full" disabled>
             Waiting approval
           </button>
         )}
         {transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+          <button className="secondary small whitespace-nowrap w-full" onClick={handleApproveTransaction}>
             Approve
           </button>
         )}
         {transactionStatus === 'EXECUTABLE' && (
-          <button className="secondary small whitespace-nowrap" onClick={handleExecuteTransaction}>
+          <button className="secondary small whitespace-nowrap w-full" onClick={handleExecuteTransaction}>
             Execute
           </button>
         )}

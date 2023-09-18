@@ -36,7 +36,7 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { ITransaction, IVesting } from 'types/models';
 import { IRevokingDoc } from 'types/models/revoking';
 import { compareAddresses } from 'utils';
-import { REVOKE_CLAIM_FUNCTION_ABI } from 'utils/constants';
+import { REVOKE_CLAIM_FUNCTION_ABI, TOAST_IDS } from 'utils/constants';
 import { createSafeTransaction } from 'utils/safe';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -660,6 +660,9 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           vestingIds: [vestingId]
         };
         const transactionId = await createTransaction(transactionData);
+        // Wait for the transaction first
+        await addingClaimsTransaction.wait();
+        // Update everything else in the DB
         await updateVesting(
           {
             ...vesting,
@@ -669,7 +672,6 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           },
           vestingId
         );
-        await addingClaimsTransaction.wait();
         await updateTransaction(
           {
             ...transactionData,
@@ -680,7 +682,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         );
         await fetchDashboardData();
         setStatus('SUCCESS');
-        toast.success('Added schedules successfully.');
+        toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionLoaderStatus('SUCCESS');
       }
     } catch (err) {
