@@ -41,8 +41,8 @@ const MintingToken: NextPageWithLayout = () => {
   } = useForm({
     defaultValues: {
       ...mintFormState,
-      initialSupplyText: 'undefined',
-      maxSupplyText: 'undefined',
+      initialSupplyText: 'initialValue',
+      maxSupplyText: 'initialValue',
       burnable: false
     }
   });
@@ -269,7 +269,7 @@ const MintingToken: NextPageWithLayout = () => {
                       type="number"
                       error={
                         Boolean(errors.maxSupply) ||
-                        (Number(maxSupply.value) <= 0 && maxSupplyText.value !== 'undefined')
+                        (Number(maxSupply.value) <= 0 && maxSupplyText.value !== 'initialValue')
                       }
                       message={errors.maxSupply ? 'Please enter the initial total supply' : ''}
                       {...field}
@@ -294,14 +294,14 @@ const MintingToken: NextPageWithLayout = () => {
                       error={
                         Boolean(errors.initialSupply) ||
                         (initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED') ||
-                        (Number(initialSupply.value) <= 0 && initialSupplyText.value !== 'undefined')
+                        (Number(initialSupply.value) <= 0 && initialSupplyText.value !== 'initialValue')
                       }
                       message={
                         errors.initialSupply
                           ? 'Please enter amount to mint'
                           : initialSupply.value > maxSupply.value && supplyCap.value === 'LIMITED'
                           ? 'Amount to mint should be smaller than the maximum amount'
-                          : Number(initialSupply.value) <= 0 && initialSupplyText.value !== 'undefined'
+                          : Number(initialSupply.value) <= 0 && initialSupplyText.value !== 'initialValue'
                           ? 'Please input valid amount'
                           : ''
                       }
