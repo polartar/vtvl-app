@@ -20,7 +20,7 @@ import { IRecipientDoc, IRecipientForm } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { compareAddresses } from 'utils';
 import { TOAST_IDS } from 'utils/constants';
-import { isV2 } from 'utils/multicall';
+import { getVestingContractABI } from 'utils/multicall';
 import { getRecipient } from 'utils/recipients';
 
 import { useAuthContext } from './auth.context';
@@ -195,7 +195,7 @@ export function DashboardContextProvider({ children }: any) {
                 // Attach the contract address, recipient wallet and schedule ID
                 reference: `multicall-${vestingContract.data.address}-${recipient}-${vestingSchedule?.id}`,
                 contractAddress: vestingContract.data.address,
-                abi: isV2(vestingContract.data.updatedAt) ? VTVL2_VESTING_ABI.abi : VTVL_VESTING_ABI.abi,
+                abi: getVestingContractABI(vestingContract.data.updatedAt),
                 calls: [
                   {
                     // This gets the claimable amount by the recipient

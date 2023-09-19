@@ -131,7 +131,7 @@ export function AuthContextProvider({ children }: any) {
   // Adds the auth and role guard here
   const { updateRoleGuardState } = useRoleGuard({ routes: platformRoutes, fallbackPath: '/404' });
 
-  const { inProgress } = useOnboardingContext();
+  const { inProgress, completeOnboarding } = useOnboardingContext();
   const router = useRouter();
 
   // Sets the recipient if it is found
@@ -663,7 +663,11 @@ export function AuthContextProvider({ children }: any) {
       if (user.memberInfo.type === 'investor' && (!recipient || (recipient && !recipient.data.walletAddress))) {
         Router.push('/recipient/schedule');
       } else if (isNewUser) {
-        Router.push('/welcome');
+        if (connection === 'metamask') {
+          Router.push('/welcome');
+        } else {
+          completeOnboarding();
+        }
       } else if (user.memberInfo.type !== 'anonymous') {
         Router.push('/claim-portal');
       }
@@ -673,7 +677,7 @@ export function AuthContextProvider({ children }: any) {
     if (user && user.email && user.uid) {
       setOrganizationId(user?.memberInfo?.org_id);
     }
-  }, [user, recipient, agreedOnConsent]);
+  }, [user, recipient, agreedOnConsent, connection]);
 
   useEffect(() => {
     fetchSafe();
