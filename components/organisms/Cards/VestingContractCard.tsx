@@ -69,7 +69,7 @@ export default function VestingContractCard({
       </Typography>
       <br></br>
       <Typography size="subtitle" variant="inter" className=" font-medium   mr-9">
-        {totalAllocation}
+        {formatNumber(Number(truncateComma(totalAllocation)))}
       </Typography>
       <hr className="my-3 bg-neutral-200" />
 
