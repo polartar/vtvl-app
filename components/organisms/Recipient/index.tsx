@@ -33,13 +33,17 @@ export const sendRecipientInvite = async (
   emailTemplate?: IEmailTemplate
 ): Promise<void> => {
   //TODO: extract api calls
-  await axios.post('/api/email/recipient-invite', {
-    recipients: recipients,
-    symbol: symbol,
-    websiteName,
-    websiteEmail,
-    emailTemplate
-  });
+  try {
+    await axios.post('/api/email/recipient-invite', {
+      recipients: recipients,
+      symbol: symbol,
+      websiteName,
+      websiteEmail,
+      emailTemplate
+    });
+  } catch (err) {
+    toast.error('Something went wrong while sending invitation');
+  }
 };
 export const isExpired = (timestamp: number | undefined) =>
   timestamp ? Math.floor(new Date().getTime() / 1000) - timestamp >= 3600 * 24 : true;

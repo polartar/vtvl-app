@@ -550,6 +550,14 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         return endTimeStamp;
       });
 
+      vestingEndTimestamps = vestingEndTimestamps.map((endTimeStamp: number, index: number) => {
+        if ((endTimeStamp - vestingStartTimestamps[index]) % vestingReleaseIntervals[index] !== 0) {
+          const times = Math.floor(endTimeStamp / vestingReleaseIntervals[index]);
+          return vestingStartTimestamps[index] + vestingReleaseIntervals[index] * (times + 1);
+        }
+        return endTimeStamp;
+      });
+
       const vestingCliffAmounts = new Array(totalRecipients).fill(parseTokenAmount(cliffAmountPerUser, 18));
       console.log({ vestingLinearVestAmounts, vestingCliffAmounts });
       const CREATE_CLAIMS_BATCH_FUNCTION =
