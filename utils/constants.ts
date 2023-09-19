@@ -45,3 +45,5 @@ export const TOAST_IDS = {
   WARNING: 'vtvl-toast-warning',
   INFO: 'vtvl-toast-info'
 };
+
+export const WALLET_CONNECT_V2_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ?? '';

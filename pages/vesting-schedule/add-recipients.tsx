@@ -156,7 +156,6 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
   const handleContinue = useCallback(
     async (data: RecipientTableRow[], newErrors: string[]) => {
-      console.log({ scheduleState });
       if (scheduleState.vestingContractId) {
         const existingVestings = vestings
           .filter((vesting) => vesting.data.vestingContractId === scheduleState.vestingContractId)

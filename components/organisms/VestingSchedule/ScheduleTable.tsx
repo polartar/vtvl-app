@@ -81,6 +81,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const [transactionStatus, setTransactionStatus] = useState<
     'INITIALIZE' | 'EXECUTABLE' | 'WAITING_APPROVAL' | 'APPROVAL_REQUIRED' | ''
   >('');
+  const [isExecutableAfterApprove, setIsExecutableAfterApprove] = useState(false);
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
@@ -148,7 +149,11 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             ...vestingsStatus,
             [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
           });
-        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
+          setIsExecutableAfterApprove(false);
+        } else if (
+          safeTx.signatures.has(account.toLowerCase()) ||
+          approvers.find((approver) => approver.toLowerCase() === account.toLowerCase())
+        ) {
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('WAITING_APPROVAL');
           setVestingsStatus({
@@ -162,6 +167,9 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             ...vestingsStatus,
             [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
           });
+          if (approvers.length === threshold - 1) {
+            setIsExecutableAfterApprove(true);
+          }
         }
       }
     } else {
@@ -776,6 +784,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     }
   };
 
+  const handleApproveAndExecuteTransaction = async () => {
+    await handleApproveTransaction();
+    await handleExecuteTransaction();
+  };
+
+  const handleApproveAndExecuteFundingTransaction = async () => {
+    await handleApproveTransaction();
+    await handleExecuteFundingTransaction();
+  };
+
   useEffect(() => {
     if (transactions.length) {
       initializeStatus();
@@ -856,9 +874,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             </button>
           )}
           {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
-              Approve
-            </button>
+            <div className="flex gap-4">
+              <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+                Approve
+              </button>
+              {isExecutableAfterApprove && (
+                <button className="secondary small whitespace-nowrap" onClick={handleExecuteTransaction}>
+                  Approve & Execute
+                </button>
+              )}
+            </div>
           )}
           {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
             <button
@@ -879,9 +904,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             </button>
           )}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
-              Approve Funding
-            </button>
+            <div className="flex gap-4">
+              <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+                Approve Funding
+              </button>
+              {isExecutableAfterApprove && (
+                <button className="secondary small whitespace-nowrap" onClick={handleExecuteFundingTransaction}>
+                  Approve & Execute Funding
+                </button>
+              )}
+            </div>
           )}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
             <button

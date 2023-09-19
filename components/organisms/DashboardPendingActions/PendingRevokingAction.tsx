@@ -43,6 +43,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
 
   const [status, setStatus] = useState<IStatus>();
   const [transactionStatus, setTransactionStatus] = useState<ITransactionStatus>('');
+  const [isExecutableAfterApprove, setIsExecutableAfterApprove] = useState(false);
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
@@ -88,72 +89,21 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         if (approvers.length >= threshold) {
           setTransactionStatus('EXECUTABLE');
           setStatus('AUTHORIZATION_REQUIRED');
-        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
+          setIsExecutableAfterApprove(false);
+        } else if (
+          safeTx.signatures.has(account.toLowerCase()) ||
+          approvers.find((approver) => approver.toLowerCase() === account.toLowerCase())
+        ) {
           setTransactionStatus('WAITING_APPROVAL');
           setStatus('AUTHORIZATION_REQUIRED');
         } else {
           setTransactionStatus('APPROVAL_REQUIRED');
           setStatus('AUTHORIZATION_REQUIRED');
+          if (approvers.length === threshold - 1) {
+            setIsExecutableAfterApprove(true);
+          }
         }
       }
-    }
-  };
-
-  const handleExecuteFundingTransaction = async () => {
-    try {
-      if (currentSafe?.address && chainId && safeTransaction) {
-        setTransactionLoaderStatus('PENDING');
-        const ethAdapter = new EthersAdapter({
-          ethers: ethers,
-          signer: library?.getSigner(0)
-        });
-
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
-        const safeService = new SafeServiceClient({
-          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-          ethAdapter
-        });
-        const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(
-          transaction?.data?.safeHash as string
-        );
-
-        const safeTx = await safeSdk.createTransaction({
-          safeTransactionData: { ...apiTx, data: apiTx.data || '0x', gasPrice: parseInt(apiTx.gasPrice) }
-        });
-        apiTx.confirmations?.forEach((confirmation) => {
-          safeTx.addSignature(new EthSignSignature(confirmation.owner, confirmation.signature));
-        });
-        // const approveTxResponse = await safeSdk.approveTransactionHash(transaction.data.hash);
-        // console.log({ safeTx });
-        // await approveTxResponse.transactionResponse?.wait();
-        const currentNonce = await safeSdk.getNonce();
-        if (currentNonce !== apiTx.nonce) {
-          toast.error('You have pending transactions that should be executed first.');
-          setTransactionLoaderStatus('ERROR');
-          return;
-        }
-        const executeTransactionResponse = await safeSdk.executeTransaction(safeTx);
-        setTransactionLoaderStatus('IN_PROGRESS');
-        await executeTransactionResponse.transactionResponse?.wait();
-        if (transaction?.data) {
-          await updateTransaction(
-            {
-              ...transaction.data,
-              status: 'SUCCESS'
-            },
-            data.transactionId
-          );
-        }
-        // setStatus('AUTHORIZATION_REQUIRED');
-        // setTransactionStatus('INITIALIZE');
-        toast.success('Funded successfully.');
-        await fetchDashboardData();
-        setTransactionLoaderStatus('SUCCESS');
-      }
-    } catch (err) {
-      console.log('handleExecuteFundingTransaction - ', err);
-      toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
     }
   };
 
@@ -275,6 +225,11 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
     }
   };
 
+  const handleApproveAndExecuteTransaction = async () => {
+    await handleApproveTransaction();
+    await handleExecuteTransaction();
+  };
+
   useEffect(() => {
     initializeStatus();
   }, [data, currentSafe, account, transactions, transaction]);
@@ -309,19 +264,26 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         <div className="flex gap-1.5 items-center">{safeTransaction?.data.nonce}</div>
       </div>
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
-      <div className="flex items-center min-w-[205px] flex-grow py-3 pr-3 flex-shrink-0 justify-stretch border-t border-[#d0d5dd]  bg-gradient-to-l from-white via-white to-transparent sticky right-0">
+      <div className="flex items-center min-w-[350px] flex-grow py-3 pr-3 flex-shrink-0 justify-stretch border-t border-[#d0d5dd]  bg-gradient-to-l from-white via-white to-transparent sticky right-0">
         {transactionStatus === 'WAITING_APPROVAL' && (
-          <button className="danger small whitespace-nowrap w-full" disabled>
+          <button className="danger small whitespace-nowrap" disabled>
             Waiting approval
           </button>
         )}
         {transactionStatus === 'APPROVAL_REQUIRED' && (
-          <button className="danger small whitespace-nowrap w-full" onClick={handleApproveTransaction}>
-            Approve
-          </button>
+          <div className="flex gap-4">
+            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+              Approve
+            </button>
+            {isExecutableAfterApprove && (
+              <button className="secondary small whitespace-nowrap" onClick={handleExecuteTransaction}>
+                Approve & Execute
+              </button>
+            )}
+          </div>
         )}
         {transactionStatus === 'EXECUTABLE' && (
-          <button className="danger small whitespace-nowrap w-full" onClick={handleExecuteTransaction}>
+          <button className="danger small whitespace-nowrap" onClick={handleExecuteTransaction}>
             Execute
           </button>
         )}
