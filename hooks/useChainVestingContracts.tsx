@@ -66,7 +66,7 @@ export default function useChainVestingContracts(
         result = result.concat({
           reference: `numTokensReservedForVesting-${vestingContract.data.address}`,
           contractAddress: vestingContract.data.address,
-          abi: VTVL_VESTING_ABI.abi,
+          abi: getVestingContractABI(vestingContract.data.updatedAt),
           calls: [
             {
               reference: 'numTokensReservedForVesting',

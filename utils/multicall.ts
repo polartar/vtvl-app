@@ -45,7 +45,7 @@ export const getVestingDetailsFromContracts = async (
       {
         reference: `unclaimed-${contract.data.address}`,
         contractAddress: contract.data.address,
-        abi: VTVL_VESTING_ABI.abi,
+        abi: getVestingContractABI(contract.data.updatedAt),
         calls: [{ reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [operator] }]
       }
     ],
