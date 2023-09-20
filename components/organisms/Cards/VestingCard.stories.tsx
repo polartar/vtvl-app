@@ -73,7 +73,7 @@ Vesting.args = {
   percentage: 55,
   startDate: 'Aug 06, 2022 07:00 (GST) ',
   endDate: 'Nov 12, 2022 23:00 (GST) ',
-  unlockDate: 36000,
+  unlockDate: 'Nov 12, 2022 23:00 (GST) ',
   withdrawnAmount: '0',
   unclaimedAmount: '205',
   totalLockedAmount: '15,000',
