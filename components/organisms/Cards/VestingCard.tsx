@@ -11,7 +11,7 @@ export interface VestingCardProps {
   percentage: number;
   startDate: string;
   endDate: string;
-  unlockDate?: number;
+  unlockDate: string;
   withdrawnAmount: string;
   unclaimedAmount: string;
   totalLockedAmount: string;
@@ -91,8 +91,8 @@ export default function VestingCard({
       <div className="grid grid-cols-3 gap-4">
         <VestingSection title="Start date" description={startDate} />
         <VestingSection title="End date" description={endDate} />
-        <VestingSection title="Next unlock" description={unlockDate ? '' : 'N/A'}>
-          <Countdown
+        <VestingSection title="Next unlock" description={unlockDate} />
+        {/* <Countdown
             date={unlockDate}
             renderer={({ days, hours, minutes, seconds }) => (
               <Typography className="text-neutral-500 font-medium" size="caption">
@@ -100,8 +100,8 @@ export default function VestingCard({
               </Typography>
             )}
             onComplete={handleCountdownComplete}
-          />
-        </VestingSection>
+          /> */}
+        {/* </VestingSection> */}
       </div>
       <hr className="my-3 bg-neutral-200" />
       <div className="grid grid-cols-3 gap-4">
