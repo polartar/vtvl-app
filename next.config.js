@@ -73,7 +73,8 @@ module.exports = withSentryConfig(
     silent: true,
 
     org: 'vtvl',
-    project: 'vtvl-app-v2'
+    project: 'vtvl-app-v2',
+    authToken: process.env.SENTRY_AUTH_TOKEN
   },
   {
     // For all available options, see:
@@ -89,9 +90,9 @@ module.exports = withSentryConfig(
     tunnelRoute: '/monitoring',
 
     // Hides source maps from generated client bundles
-    hideSourceMaps: true
+    hideSourceMaps: true,
 
     // Automatically tree-shake Sentry logger statements to reduce bundle size
-    // disableLogger: true
+    disableLogger: true
   }
 );
