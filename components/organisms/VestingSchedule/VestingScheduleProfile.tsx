@@ -105,7 +105,7 @@ const VestingScheduleProfile = ({
       let progress =
         vesting.status === 'LIVE' && diffFromNow >= 0 ? Math.floor((diffFromNow / diff) * 100).toString() : 0;
       if (Number(progress) > 100) progress = 100;
-      items[7].content = `${progress}/100%`;
+      items[7].content = `${progress}%`;
 
       const years = Math.floor(diff / 12);
       const months = diff - years * 12;
