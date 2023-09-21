@@ -1,4 +1,5 @@
 import DashboardBarChart from '@components/molecules/DashboardBarChart';
+import differenceInSeconds from 'date-fns/differenceInSeconds';
 import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
@@ -6,6 +7,7 @@ import moment from 'moment';
 import Image from 'next/image';
 import { useMemo } from 'react';
 import { IVesting } from 'types/models';
+import { getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
 import { BNToAmountString } from 'utils/web3';
 
@@ -102,9 +104,15 @@ const VestingScheduleProfile = ({
         'months'
       );
 
-      let progress =
-        vesting.status === 'LIVE' && diffFromNow >= 0 ? Math.floor((diffFromNow / diff) * 100).toString() : 0;
-      if (Number(progress) > 100) progress = 100;
+      const actualDates = getActualDateTime(vesting.details);
+      let progress = 0;
+      if (actualDates.startDateTime && actualDates.endDateTime && vesting.status === 'LIVE') {
+        const totalSeconds = differenceInSeconds(actualDates.endDateTime, actualDates.startDateTime);
+        const secondsFromNow = differenceInSeconds(new Date(), actualDates.startDateTime);
+        progress = Math.round((secondsFromNow / totalSeconds) * 100);
+      }
+      progress = progress >= 100 ? 100 : progress < 0 ? 0 : progress;
+
       items[7].content = `${progress}%`;
 
       const years = Math.floor(diff / 12);
