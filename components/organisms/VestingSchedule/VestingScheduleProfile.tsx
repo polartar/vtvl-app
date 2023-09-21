@@ -98,7 +98,8 @@ const VestingScheduleProfile = ({
         'months'
       );
       const diffFromNow = moment().diff(
-        moment((vesting.details.startDateTime as unknown as Timestamp).toDate().toString())
+        moment((vesting.details.startDateTime as unknown as Timestamp).toDate().toString()),
+        'months'
       );
 
       let progress =
