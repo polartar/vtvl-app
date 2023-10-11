@@ -14,7 +14,6 @@ interface Props {
 }
 
 const StepWizard = ({ steps, status, size = 'default', className = '', showAllLabels = false }: Props) => {
-  console.log({ steps, status });
   return (
     <StepContainer className={className}>
       {steps.map((step, stepIndex) => (
@@ -71,7 +70,7 @@ const DotWrapper = styled.div<{ size: IStepWizardSize }>`
   ${({ size }) => (size === 'tiny' ? '' : 'margin-bottom: 14px;')}
 `;
 const LeftBorder = styled.hr<{ cl: number; isActive: boolean; size: IStepWizardSize }>`
-  width: ${({ size }) => (size === 'tiny' ? '8px' : size === 'small' ? '90px' : '112px')};
+  width: ${({ size }) => (size === 'tiny' ? '30px' : size === 'small' ? '80px' : size === 'large' ? '220px' : '112px')};
   border: none;
   border-top: 2px solid
     ${({ cl, isActive, size }) =>

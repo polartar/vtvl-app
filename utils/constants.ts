@@ -103,3 +103,12 @@ export const NO_SIDEBAR_PAGES = [
   '/v2/onboarding/account-setup',
   '/v2/onboarding/setup-safes'
 ];
+
+export const TOAST_IDS = {
+  ERROR: 'vtvl-toast-error',
+  SUCCESS: 'vtvl-toast-success',
+  WARNING: 'vtvl-toast-warning',
+  INFO: 'vtvl-toast-info'
+};
+
+export const WALLET_CONNECT_V2_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ?? '';

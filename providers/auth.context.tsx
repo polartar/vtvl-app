@@ -135,7 +135,7 @@ export function AuthContextProvider({ children }: any) {
 
   // Adds the auth and role guard here
 
-  const { inProgress } = useOnboardingContext();
+  const { inProgress, completeOnboarding } = useOnboardingContext();
   const router = useRouter();
 
   const { clear: clearAuth } = useAuth();
@@ -702,8 +702,12 @@ export function AuthContextProvider({ children }: any) {
       if (user.memberInfo.role === IRole.INVESTOR && (!recipient || (recipient && !recipient.address))) {
         Router.push('/recipient/schedule');
       } else if (isNewUser) {
-        Router.push('/welcome');
-      } else {
+        if (connection === 'metamask') {
+          Router.push('/welcome');
+        } else {
+          completeOnboarding();
+        }
+      } else if (user.memberInfo.role !== IRole.ANONYMOUS) {
         Router.push('/claim-portal');
       }
 
@@ -712,7 +716,7 @@ export function AuthContextProvider({ children }: any) {
     if (user && user.email && user.uid) {
       setOrganizationId(user?.memberInfo?.org_id);
     }
-  }, [user, recipient, agreedOnConsent]);
+  }, [user, recipient, agreedOnConsent, connection]);
 
   useEffect(() => {
     // Update organization name based on organizationId
@@ -744,6 +748,9 @@ export function AuthContextProvider({ children }: any) {
   useEffect(() => {
     if (currentSafe && library && currentSafeId) {
       setCache({ safeAddress: currentSafe.address });
+    }
+    if (!currentSafe || !currentSafeId) {
+      setCache({ safeAddress: '' });
     }
   }, [currentSafe, library, currentSafeId]);
 

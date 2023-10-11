@@ -28,13 +28,13 @@ import { toast } from 'react-toastify';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, IVesting } from 'types/models';
 import { compareAddresses } from 'utils';
+import { TOAST_IDS } from 'utils/constants';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
   getChartData,
   getCliffAmount,
   getCliffDateTime,
   getDuration,
-  getNumberOfReleases,
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
 import { BNToAmountString } from 'utils/web3';
@@ -45,7 +45,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   vestingSchedulesInfo
 }) => {
   const { account, chainId, activate, library } = useWeb3React();
-  const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   const {
     // fetchDashboardVestingContract,
     vestingContracts,
@@ -57,7 +57,6 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     setVestingsStatus
   } = useDashboardContext();
   const {
-    pendingTransactions,
     transactions,
     transactionStatus: transactionLoaderStatus,
     setTransactionStatus: setTransactionLoaderStatus,
@@ -81,15 +80,11 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const [transactionStatus, setTransactionStatus] = useState<
     'INITIALIZE' | 'EXECUTABLE' | 'WAITING_APPROVAL' | 'APPROVAL_REQUIRED' | ''
   >('');
+  const [isExecutableAfterApprove, setIsExecutableAfterApprove] = useState(false);
   const [showFundingContractModal, setShowFundingContractModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [safeTransaction, setSafeTransaction] = useState<SafeTransaction>();
   const [recipients, setRecipients] = useState<IRecipient[]>([]);
-
-  const isFundAvailable = useCallback(() => {
-    const fundingTransaction = pendingTransactions.find((transaction) => transaction.type === 'FUNDING_CONTRACT');
-    return !fundingTransaction;
-  }, [pendingTransactions]);
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
     if (currentSafe?.address && chainId) {
@@ -162,6 +157,9 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             ...vestingsStatus,
             [id]: transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
           });
+          if (approvers.length === threshold - 1) {
+            setIsExecutableAfterApprove(true);
+          }
         }
       }
     } else {
@@ -396,6 +394,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
+              approvers: [account],
+              fundingAmount: amount,
               chainId
             });
             updateTransactions(transaction);
@@ -448,14 +448,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           ? getCliffDateTime(vestingStartTime, vesting.details.cliffDuration)
           : '';
       const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
-      const numberOfReleases =
-        vesting.details.startDateTime && vesting.details.endDateTime
-          ? getNumberOfReleases(
-              vesting.details.releaseFrequency,
-              cliffReleaseDate || vestingStartTime,
-              new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
-            )
-          : 0;
+
       const actualStartDateTime = vesting.details.cliffDuration !== 'no_cliff' ? cliffReleaseDate : vestingStartTime;
       const vestingEndTimestamp =
         vesting.details.endDateTime && actualStartDateTime
@@ -501,8 +494,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
-      const CREATE_CLAIMS_BATCH_INTERFACE =
-        'createClaimsBatch(address[],uint40[],uint40[],uint40[],uint40[],uint112[],uint112[])';
+
       const ABI = [CREATE_CLAIMS_BATCH_FUNCTION];
       const vestingContractInterface = new ethers.utils.Interface(ABI);
       const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [
@@ -633,7 +625,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         updateTransactions(t);
         await fetchDashboardData();
         setStatus('SUCCESS');
-        toast.success('Added schedules successfully.');
+        toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionLoaderStatus('SUCCESS');
       }
     } catch (err) {
@@ -842,9 +834,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             </button>
           )}
           {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-            <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
-              Approve
-            </button>
+            <div className="flex gap-4">
+              <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+                Approve
+              </button>
+              {isExecutableAfterApprove && (
+                <button className="secondary small whitespace-nowrap" onClick={handleExecuteTransaction}>
+                  Approve & Execute
+                </button>
+              )}
+            </div>
           )}
           {status === 'AUTHORIZATION_REQUIRED' && transactionStatus === 'EXECUTABLE' && (
             <button
@@ -857,7 +856,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
             <button
               className="secondary small whitespace-nowrap"
-              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              disabled={transactionLoaderStatus === 'IN_PROGRESS'}
               onClick={() => {
                 setShowFundingContractModal(true);
               }}>
@@ -865,13 +864,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             </button>
           )}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
-            <button
-              className="secondary small whitespace-nowrap"
-              onClick={() => {
-                setShowFundingContractModal(true);
-              }}>
-              Approve Funding
-            </button>
+            <div className="flex gap-4">
+              <button className="secondary small whitespace-nowrap" onClick={handleApproveTransaction}>
+                Approve Funding
+              </button>
+              {isExecutableAfterApprove && (
+                <button className="secondary small whitespace-nowrap" onClick={handleExecuteFundingTransaction}>
+                  Approve & Execute Funding
+                </button>
+              )}
+            </div>
           )}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'WAITING_APPROVAL' && (
             <button
@@ -931,7 +933,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         </div>
         <div className="min-w-[136px] flex-grow py-3 flex-shrink-0 bg-[#eaecf0] border-t border-[#d0d5dd]"></div>
       </div>
-      {recipients.map((recipient, index) => {
+      {recipients.map((recipient) => {
         return (
           <RecipientRow
             id={recipient.id}

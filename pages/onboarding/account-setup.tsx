@@ -14,6 +14,7 @@ import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-fo
 import { emailPattern } from 'types/constants/validation-patterns';
 import { IRole, ITeamRole } from 'types/models/settings';
 import { WEBSITE_NAME } from 'utils/constants';
+import { VALIDATION_ERROR_MESSAGES, emailRegex } from 'utils/validator';
 
 interface Contributor {
   name: string;
@@ -243,7 +244,7 @@ const AccountSetupPage: NextPage = () => {
           <Controller
             name="companyEmail"
             control={control}
-            rules={{ required: true, pattern: emailPattern }}
+            rules={{ required: true, pattern: emailRegex }}
             render={({ field }) => (
               <Input
                 label="Your company email"
@@ -251,7 +252,13 @@ const AccountSetupPage: NextPage = () => {
                 className="md:col-span-2"
                 required
                 error={Boolean(errors.companyEmail)}
-                message={errors.companyEmail ? 'Please enter your company email' : ''}
+                message={
+                  errors?.companyEmail?.type === 'pattern'
+                    ? VALIDATION_ERROR_MESSAGES.EMAIL
+                    : errors?.companyEmail?.type === 'required'
+                    ? 'Please enter your company email'
+                    : ''
+                }
                 {...field}
               />
             )}
@@ -285,7 +292,7 @@ const AccountSetupPage: NextPage = () => {
                   <Controller
                     name={`contributors.${contributorIndex}.email`}
                     control={control}
-                    rules={{ required: true, pattern: emailPattern }}
+                    rules={{ required: true, pattern: emailRegex }}
                     render={({ field }) => (
                       <Input
                         label="Team member email"
@@ -293,7 +300,9 @@ const AccountSetupPage: NextPage = () => {
                         required
                         error={Boolean(getContributorState(contributorIndex).email.state.error)}
                         message={
-                          getContributorState(contributorIndex).email.state.error
+                          getContributorState(contributorIndex).email.state.error?.type === 'pattern'
+                            ? VALIDATION_ERROR_MESSAGES.EMAIL
+                            : getContributorState(contributorIndex).email.state.error?.type === 'required'
                             ? 'Please enter team member email'
                             : ''
                         }

@@ -9,6 +9,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useVestingContext } from '@providers/vesting.context';
 import { useAuth } from '@store/useAuth';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
@@ -26,6 +27,7 @@ const Dashboard: NextPageWithLayout = () => {
   const { showLoading, hideLoading } = useLoaderContext();
   const { pendingTransactions } = useTransactionLoaderContext();
   const { ModalWrapper, showModal, hideModal } = useModal({});
+  const { setShowVestingSelectModal } = useVestingContext();
 
   const router = useRouter();
 
@@ -108,30 +110,10 @@ const Dashboard: NextPageWithLayout = () => {
             </div>
             <div className="flex flex-row items-center justify-start gap-2">
               <div className="group relative">
-                <button
-                  className="primary row-center"
-                  onClick={() => {
-                    // router.push('/vesting-schedule/add-recipients');
-                  }}>
+                <button className="primary row-center" onClick={() => setShowVestingSelectModal(true)}>
                   <PlusIcon className="w-5 h-5" />
                   <span className="whitespace-nowrap">Create</span>
                 </button>
-                <div className="hidden group-hover:block pt-3 absolute bottom-0 right-0 min-w-[200px] transform translate-y-full">
-                  <div className="bg-white border border-gray-100 rounded-2xl shadow-lg">
-                    <div
-                      className="flex items-center gap-2 px-3 pb-2 pt-3 rounded-t-2xl cursor-pointer hover:bg-primary-50 transition-all"
-                      onClick={showModal}>
-                      <img src="/icons/create-vesting-contract.svg" />
-                      Create contract
-                    </div>
-                    <div
-                      className="flex items-center gap-2 px-3 pb-3 pt-2 rounded-b-2xl cursor-pointer hover:bg-primary-50 transition-all"
-                      onClick={() => router.push('/vesting-schedule/add-recipients')}>
-                      <img src="/icons/create-vesting-schedule.svg" />
-                      Create schedule
-                    </div>
-                  </div>
-                </div>
               </div>
               {mintFormState.address && !mintFormState.isImported && mintFormState.supplyCap === 'UNLIMITED' && (
                 <button className="secondary row-center" onClick={() => router.push('/dashboard/mint-supply')}>

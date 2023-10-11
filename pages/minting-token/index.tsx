@@ -43,6 +43,7 @@ const MintingToken: NextPageWithLayout = () => {
       ...mintFormState,
       totalSupplyText: '',
       maxSupplyText: '',
+      initialSupplyText: 'initialValue',
       burnable: false
     }
   });
@@ -271,7 +272,10 @@ const MintingToken: NextPageWithLayout = () => {
                       }
                       placeholder="Enter amount"
                       type="number"
-                      error={Boolean(errors.maxSupply) || Number(maxSupply.value) <= 0}
+                      error={
+                        Boolean(errors.maxSupply) ||
+                        (Number(maxSupply.value) <= 0 && maxSupplyText.value !== 'initialValue')
+                      }
                       message={errors.maxSupply ? 'Please enter the initial total supply' : ''}
                       {...field}
                     />

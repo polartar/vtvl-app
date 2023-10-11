@@ -67,7 +67,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
         name: tokenName,
         symbol: tokenSymbol,
         decimals: tokenDecimals,
-        address: tokenAddress.value,
+        address: tokenAddress.value ? ethers.utils.getAddress(tokenAddress.value) : '',
         logo: '',
         organizationId: String(organizationId),
         imported: true,

@@ -16,7 +16,6 @@ import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
-import { sendRecipientInvite } from '@components/organisms/Recipient';
 import TextField from '@mui/material/TextField';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -53,21 +52,14 @@ import {
   transformCliffDurationType
 } from 'utils/vesting';
 
-type DateTimeType = Date | null;
-
 interface TemplateType {
   template?: SingleValue<IVestingTemplate> | undefined;
-}
-
-type CustomActionBarDateTimeField = 'startDate' | 'startTime' | 'endDate' | 'endTime';
-interface CustomActionBarProps {
-  field: CustomActionBarDateTimeField;
 }
 
 const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no_cliff';
 
 const ConfigureSchedule: NextPageWithLayout = () => {
-  const { organizationId, currentSafe, user } = useAuthContext();
+  const { organizationId, currentSafe } = useAuthContext();
   const { account, chainId, activate } = useWeb3React();
   const { updateVestingContract } = useDashboardContext();
   const { recipients, scheduleFormState, scheduleMode, scheduleState, updateScheduleFormState, setScheduleState } =
@@ -108,7 +100,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue,
     setError,
     clearErrors,
-    formState: { errors, isSubmitting, touchedFields, dirtyFields, isDirty }
+    formState: { errors, isSubmitting }
   } = useForm({
     defaultValues: {
       ...scheduleFormState,
@@ -337,21 +329,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
   };
 
-  // Handle the changes made when updating the amount to be vested.
-  const handleMinChange = (e: any) => {
-    console.log('Min changed', e);
-    // setValue('amountToBeVested', +e.target.value);
-  };
-
-  // These are used to show/hide the date or time pickers
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-  // These will be used to store current selection of date and time
-  const [pickerStartDateTime, setPickerStartDateTime] = useState(new Date());
-  const [pickerEndDateTime, setPickerEndDateTime] = useState(new Date());
-
   // Handlers for the template input
   // Create function that returns an object for the options list -- lowercased and no spaces.
   const createTemplate = (label: string) => ({ label, value: label.toLocaleLowerCase().replace(/W/g, '') });
@@ -373,7 +350,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     newValue: OnChangeValue<IVestingTemplate, false>,
     actionMeta: ActionMeta<IVestingTemplate>
   ) => {
-    console.log('Changing vaule', newValue, actionMeta);
+    console.log('Changing value', newValue, actionMeta);
     if (actionMeta.action === 'clear') {
       // remove selection
       tSetValue('template', null);
@@ -643,30 +620,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     if (field.includes('end')) {
       setValue('endDateTime', newDate);
       // setPickerEndDateTime(newDate);
-    }
-  };
-
-  const handleHidePickers = (field: CustomActionBarDateTimeField) => {
-    // Close the corresponding picker
-    switch (field) {
-      case 'startTime':
-        setShowStartTimePicker(false);
-        break;
-      case 'endTime':
-        setShowEndTimePicker(false);
-        // Focus on the step 3 section
-        goToActiveStep(2);
-        break;
-      case 'startDate':
-        setShowStartDatePicker(false);
-        break;
-      case 'endDate':
-        setShowEndDatePicker(false);
-        // Focus on the step 2 section
-        goToActiveStep(1);
-        break;
-      default:
-        break;
     }
   };
 
@@ -1134,7 +1087,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       //   newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email)
       // );
     }
-    console.log('creating vesting schedule');
+
     // Redirect to the success page to notify the user
     await Router.push('/vesting-schedule/success');
 
@@ -1149,11 +1102,16 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setSavingSchedule(false);
   };
 
-  const addNewMembers = async (emails: string[]): Promise<void> => {
+  const addNewMembers = async (emails: string[], organizationId: string): Promise<void> => {
     //TODO: extract api calls
-    await axios.post('/api/recipient/add-members', {
-      emails: emails
-    });
+    try {
+      await axios.post('/api/recipient/add-members', {
+        emails: emails,
+        organizationId
+      });
+    } catch (err) {
+      toast.warn('Something went wrong while registering as members');
+    }
   };
 
   return (

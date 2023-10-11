@@ -4,22 +4,19 @@ import Copy from '@components/atoms/Copy/Copy';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import Radio from '@components/atoms/FormControls/Radio/Radio';
-import LimitedSupply from '@components/molecules/FormControls/LimitedSupply/LimitedSupply';
 import WalletRadioButton from '@components/molecules/FormControls/WalletRadioButton/WalletRadioButton';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import { useAuthContext } from '@providers/auth.context';
-import { useDashboardContext } from '@providers/dashboard.context';
 import { useWeb3React } from '@web3-react/core';
 import { BigNumber, ethers } from 'ethers';
 import { useTokenContext } from 'providers/token.context';
 import CopyIcon from 'public/icons/copy-to-clipboard.svg';
 import { useEffect, useState } from 'react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Modal, { Styles } from 'react-modal';
 import { connectionAssets } from 'types/constants/shared';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { formatNumber, parseTokenAmount } from 'utils/token';
+import { formatNumber } from 'utils/token';
 
 interface IFundSource {
   selectedFundSource: string;

@@ -11,6 +11,7 @@ import { ethers } from 'ethers';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
+import { VTVLVesting__factory } from 'typechain/factories/VTVLVesting__factory';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 
 interface IVestingContractPendingActionProps {
@@ -56,14 +57,9 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         return;
       } else if (organizationId) {
         setTransactionStatus('PENDING');
-        const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI.abi);
-        const vestingContractEncoded = vestingContractInterface.encodeDeploy([mintFormState.address]);
-        const VestingFactory = new ethers.ContractFactory(
-          VTVL_VESTING_ABI.abi,
-          VTVL_VESTING_ABI.bytecode + vestingContractEncoded.slice(2),
-          library.getSigner()
-        );
-        const vestingContract = await VestingFactory.deploy(mintFormState.address);
+        const factory = new VTVLVesting__factory(library.getSigner());
+        const vestingContract = await factory.deploy(mintFormState.address ?? '');
+
         setTransactionStatus('IN_PROGRESS');
         await vestingContract.deployed();
         // const vestingContractId = await updateVestingContract(
@@ -187,7 +183,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
 
   return status === 'SUCCESS' ? null : shouldShow ? (
     <div className="flex bg-white text-[#667085] text-xs">
-      <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
+      <div className="flex items-center w-4 lg:w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center w-36 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{data.name}</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">Contract Deployment</div>
       <div className="flex items-center w-52 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
@@ -212,14 +208,18 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
       </div>
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]">{data.name}</div>
       <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd]">
-        <div className="flex gap-1.5 items-center">
-          <img className="w-4 h-4" src="icons/safe.png" />
-          Founders
-        </div>
+        {currentSafe ? (
+          <div className="flex gap-1.5 items-center">
+            <img className="w-4 h-4" src="icons/safe_wallet.svg" />
+            {currentSafe?.safe_name}&nbsp;{currentSafe?.address.slice(0, 4)}...{currentSafe?.address.slice(-4)}
+          </div>
+        ) : (
+          'N/A'
+        )}
       </div>
       <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
-      <div className="flex items-center min-w-[200px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd]">
+      <div className="flex items-center min-w-[205px] flex-grow py-3 pr-3 flex-shrink-0 justify-stretch border-t border-[#d0d5dd] bg-gradient-to-l from-white via-white to-transparent  sticky right-0">
         {status === 'AUTHORIZATION_REQUIRED' ? (
           <button className="secondary small" onClick={handleDeployVestingContract}>
             Deploy
@@ -229,7 +229,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             Transfer Ownership
           </button>
         ) : status === 'REMOVE_ORIGINAL_OWNERSHIP' ? (
-          <button className="secondary small whitespace-nowrap" onClick={handleRemoveDeployerOwnership}>
+          <button className="secondary small" onClick={handleRemoveDeployerOwnership}>
             Remove Original Ownership
           </button>
         ) : null}

@@ -1,6 +1,6 @@
 import Breadcrumb from '@components/atoms/Breadcrumb/Breadcrumb';
 import StepWizard from '@components/atoms/StepWizard/StepWizard';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface Crumbs {
   title: string;
@@ -21,6 +21,21 @@ interface SteppedLayoutProps extends React.AllHTMLAttributes<HTMLAllCollection> 
 }
 
 const SteppedLayout = ({ steps = [], currentStep = -1, padded = true, ...props }: SteppedLayoutProps) => {
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    function handleResize() {
+      setWidth(window.outerWidth);
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    handleResize();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [setWidth]);
   return (
     <div className="w-full h-full">
       <div className="text-left mb-5 px-6">
@@ -34,7 +49,11 @@ const SteppedLayout = ({ steps = [], currentStep = -1, padded = true, ...props }
           <>
             <h1 className="h2 text-neutral-900 mb-10">{props.title}</h1>
             <div className="mb-10">
-              <StepWizard steps={steps} status={currentStep} />
+              <StepWizard
+                steps={steps}
+                status={currentStep}
+                size={width > 1500 ? 'large' : width > 1000 ? 'default' : width > 800 ? 'small' : 'tiny'}
+              />
             </div>
           </>
         ) : null}

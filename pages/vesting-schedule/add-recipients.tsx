@@ -3,6 +3,7 @@ import { RecipientTable, RecipientTableRow } from '@components/molecules/Recipie
 import { VestingSetupPanel } from '@components/molecules/VestingSetupPanel';
 import ImportCSVFlow from '@components/organisms/Forms/ImportCSVFlow';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import { useVestingContract } from '@hooks/useVestingContract';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useVestingContext } from '@providers/vesting.context';
@@ -48,12 +49,13 @@ const crumbSteps = [
 
 const CreateVestingSchedule: NextPageWithLayout = () => {
   const { updateRecipients, setScheduleState, scheduleState, scheduleMode, recipients } = useVestingContext();
+  const { vestingFactoryContract } = useDashboardContext();
   const { vestings, recipients: allRecipients } = useDashboardContext();
   const {
     website: { name }
   } = useGlobalContext();
   const [rows, setRows] = useState<Array<RecipientTableRow>>([]);
-  const [state, setState] = useShallowState({ step: 0 });
+  const [state, setState] = useShallowState({ step: vestingFactoryContract ? 1 : 0 });
   const [duplicatedUsers, setDuplicatedUsers] = useState<Array<RecipientTableRow>>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const router = useRouter();
@@ -154,7 +156,6 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
 
   const handleContinue = useCallback(
     async (data: RecipientTableRow[], newErrors: string[]) => {
-      console.log({ scheduleState });
       if (scheduleState.vestingContractId) {
         const existingVestings = vestings
           .filter((vesting) => vesting.data.vestingContractId === scheduleState.vestingContractId)

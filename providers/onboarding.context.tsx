@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { auth } from 'services/auth/firebase';
 import { fetchMember } from 'services/db/member';
 import { IRole } from 'types/models/settings';
+import { boolean } from 'yup';
 
 import AuthContext from './auth.context';
 import { useGlobalContext } from './global.context';

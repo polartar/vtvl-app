@@ -1,5 +1,8 @@
 import styled from '@emotion/styled';
 import React from 'react';
+import { twMerge } from 'tailwind-merge';
+
+import DotLoader from '../DotLoader/DotLoader';
 
 const ConnectButton = styled.button`
   display: flex;
@@ -27,7 +30,6 @@ const ConnectButton = styled.button`
   &[disabled] {
     border: none;
     background: transparent !important;
-    opacity: 0.5 !important;
   }
 `;
 interface WalletButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -35,13 +37,20 @@ interface WalletButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   label: string;
   subLabel?: string | JSX.Element | JSX.Element[];
   disabled?: boolean;
+  isLoading?: boolean;
   onClick?: () => void;
 }
-const WalletButton = ({ image, label, subLabel, disabled = false, ...props }: WalletButtonProps) => {
+const WalletButton = ({ image, label, subLabel, disabled = false, isLoading = false, ...props }: WalletButtonProps) => {
   return (
-    <ConnectButton {...props} disabled={disabled} className={`wallet-button ${disabled ? 'grayscale' : ''}`}>
+    <ConnectButton
+      {...props}
+      disabled={disabled}
+      className={twMerge(
+        'wallet-button',
+        disabled && !isLoading ? 'grayscale opacity-50' : isLoading ? 'opacity-90' : ''
+      )}>
       {typeof image === 'string' ? <img src={image} alt={label} className="mb-5" /> : image}
-      <p className="text-sm font-medium text-neutral-800">{label}</p>
+      <div className="text-sm font-medium text-neutral-800">{isLoading ? <DotLoader /> : label}</div>
       {subLabel ? <p>{subLabel}</p> : null}
     </ConnectButton>
   );

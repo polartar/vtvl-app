@@ -37,7 +37,6 @@ import {
   getCliffAmount,
   getCliffDateTime,
   getDuration,
-  getNumberOfReleases,
   getReleaseFrequencyTimestamp
 } from 'utils/vesting';
 
@@ -47,7 +46,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   vestingSchedulesInfo
 }) => {
   const { account, chainId, activate, library } = useWeb3React();
-  const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   const {
     // fetchDashboardVestingContract,
     vestingContracts,
@@ -460,14 +459,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           ? getCliffDateTime(vestingStartTime, vesting.details.cliffDuration)
           : '';
       const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
-      const numberOfReleases =
-        vesting.details.startDateTime && vesting.details.endDateTime
-          ? getNumberOfReleases(
-              vesting.details.releaseFrequency,
-              cliffReleaseDate || vestingStartTime,
-              new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
-            )
-          : 0;
+
       const actualStartDateTime = vesting.details.cliffDuration !== 'no_cliff' ? cliffReleaseDate : vestingStartTime;
       const vestingEndTimestamp =
         vesting.details.endDateTime && actualStartDateTime
@@ -510,8 +502,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
-      const CREATE_CLAIMS_BATCH_INTERFACE =
-        'createClaimsBatch(address[],uint40[],uint40[],uint40[],uint40[],uint112[],uint112[])';
+
       const ABI = [CREATE_CLAIMS_BATCH_FUNCTION];
       const vestingContractInterface = new ethers.utils.Interface(ABI);
       const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [

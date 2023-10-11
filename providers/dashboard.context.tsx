@@ -3,6 +3,7 @@ import RevokingApiService from '@api-services/RevokingApiService';
 import VestingContractApiService from '@api-services/VestingContractApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
+import { useVestingContract } from '@hooks/useVestingContract';
 import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { transformVestingSchedule } from '@utils/vesting';
@@ -17,12 +18,16 @@ import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
+import { fetchMilestoneVestingsByQuery } from 'services/db/milestoneVesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
+import { IMilestoneForm } from 'types/milestone';
 import { IVesting } from 'types/models';
 import { IRecipient, IRecipientForm } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
+import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
-import { isV2 } from 'utils/multicall';
+import { TOAST_IDS } from 'utils/constants';
+import { getVestingContractABI } from 'utils/multicall';
 import { getRecipient } from 'utils/recipients';
 
 import { useAuthContext } from './auth.context';
@@ -36,7 +41,8 @@ interface IDashboardData {
   revokings: IRevoking[];
   recipients: IRecipient[];
   vestingContracts: IVestingContract[];
-  ownershipTransfered: boolean;
+  milestoneVestings: { id: string; data: IMilestoneForm }[];
+  vestingFactoryContract: IVestingContract | undefined;
   insufficientBalance: boolean;
   depositAmount: string;
   vestingsLoading: boolean;
@@ -53,7 +59,7 @@ interface IDashboardData {
   // fetchDashboardVestingContract: () => void;
   updateVestingContract: (data: IVestingContract) => void;
   fetchDashboardVestings: () => void;
-  setOwnershipTransfered: (v: boolean) => void;
+  setOwnershipTransferred: (v: boolean) => void;
   fetchDashboardData: () => void;
   setRemoveOwnership: (v: boolean) => void;
   setVestingsStatus: (v: { [key: string]: IVestingStatus }) => void;
@@ -74,13 +80,17 @@ export function DashboardContextProvider({ children }: any) {
   /* Vesting state */
   const [vestingsLoading, setVestingsLoading] = useState(false);
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
+  const [milestoneVestings, setMilestoneVestings] = useState<{ id: string; data: IMilestoneForm }[]>([]);
 
   /* Vesting Contract state */
   const [vestingContractLoading, setVestingContractLoading] = useState(false);
   const [vestingContracts, setVestingContracts] = useState<IVestingContract[]>([]);
 
   const [revokings, setRevokings] = useState<IRevoking[]>([]);
-  const [ownershipTransfered, setOwnershipTransfered] = useState(false);
+
+  const { vestingFactoryContract } = useVestingContract(organizationId, chainId);
+
+  const [ownershipTransferred, setOwnershipTransferred] = useState(false);
   const [removeOwnership, setRemoveOwnership] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
@@ -119,6 +129,24 @@ export function DashboardContextProvider({ children }: any) {
     setVestingsLoading(false);
   }, [organizationId, chainId, accessToken]);
 
+  const fetchDashboardMilestoneVestings = useCallback(async () => {
+    setVestingsLoading(true);
+    try {
+      const milestoneVestings = await fetchMilestoneVestingsByQuery(
+        ['organizationId', 'chainId'],
+        ['==', '=='],
+        [organizationId, chainId]
+      );
+      const filteredMilestoneVestings = milestoneVestings.filter(
+        (mv) => !mv.data.archive && mv.data.status !== 'REVOKED' && mv.data.chainId === chainId
+      );
+      setMilestoneVestings(filteredMilestoneVestings);
+    } catch (error) {
+      console.log('Milestone-based vesting error', error);
+    }
+    setVestingsLoading(false);
+  }, [organizationId, chainId]);
+
   /* Fetch all pending revokings by organizationId and chainId */
   const fetchDashboardRevokings = useCallback(async () => {
     if (chainId && organizationId) {
@@ -147,7 +175,12 @@ export function DashboardContextProvider({ children }: any) {
     if (organizationId && chainId) {
       showLoading();
       try {
-        await Promise.all([fetchDashboardVestings(), fetchDashboardRevokings(), fetchDashboardRecipients()]);
+        await Promise.all([
+          fetchDashboardVestings(),
+          fetchDashboardRevokings(),
+          fetchDashboardMilestoneVestings(),
+          fetchDashboardRecipients()
+        ]);
       } catch (err) {
         console.log('fetchDashboardData - ', err);
         setVestings([]);
@@ -215,10 +248,8 @@ export function DashboardContextProvider({ children }: any) {
               ...recipientWallets.map((recipientWallet) => ({
                 // Attach the contract address, recipient wallet and schedule ID
                 reference: `multicall-${vestingContract.address}-${recipientWallet}-${vestingSchedule?.id}`,
-                contractAddress: vestingContract.address ?? '',
-                abi: isV2(new Date(vestingContract.updatedAt).getTime() / 1000)
-                  ? VTVL2_VESTING_ABI.abi
-                  : VTVL_VESTING_ABI.abi,
+                contractAddress: vestingContract.address || '',
+                abi: getVestingContractABI(new Date(vestingContract.updatedAt).getTime() / 1000),
                 calls: [
                   {
                     // This gets the claimable amount by the recipient
@@ -302,7 +333,7 @@ export function DashboardContextProvider({ children }: any) {
                 address: currentRecipient.address,
                 // Ensure that the totalAllocation for each recipient is divided by the number of recipients
                 totalAllocation: totalAllocation,
-                // Set recipient's claimed and unclaimed datas
+                // Set recipient's claimed and unclaimed data
                 claimed: claimedAmount,
                 unclaimed: claimableAmount,
                 lockedTokens
@@ -360,7 +391,7 @@ export function DashboardContextProvider({ children }: any) {
           const newVestings = vestings.map((vesting) => {
             if (vesting.id === change.doc.id) {
               if (vestingInfo.status === 'LIVE') {
-                toast.success(`Added schedules successfully. ${vestingInfo.name}`);
+                toast.success(`${vestingInfo.name} has been added`, { toastId: TOAST_IDS.SUCCESS });
               }
               return {
                 id: vesting.id,
@@ -397,9 +428,10 @@ export function DashboardContextProvider({ children }: any) {
     () => ({
       vestings,
       revokings,
+      milestoneVestings,
       recipients,
       vestingContracts,
-      ownershipTransfered,
+      ownershipTransferred,
       insufficientBalance,
       depositAmount,
       vestingsLoading,
@@ -415,16 +447,18 @@ export function DashboardContextProvider({ children }: any) {
       safeTransactions,
       updateVestingContract,
       fetchDashboardVestings,
-      setOwnershipTransfered,
+      setOwnershipTransferred,
       fetchDashboardData,
       setRemoveOwnership,
       setVestingsStatus,
-      setSafeTransactions
+      setSafeTransactions,
+      vestingFactoryContract
     }),
     [
       vestings,
+      milestoneVestings,
       recipients,
-      ownershipTransfered,
+      ownershipTransferred,
       insufficientBalance,
       depositAmount,
       vestingsLoading,
@@ -439,7 +473,8 @@ export function DashboardContextProvider({ children }: any) {
       totalClaimable,
       claims,
       recipientTokenDetails,
-      safeTransactions
+      safeTransactions,
+      vestingFactoryContract
     ]
   );
 

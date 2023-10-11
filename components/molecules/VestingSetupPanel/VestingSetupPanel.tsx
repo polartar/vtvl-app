@@ -2,20 +2,15 @@ import Button from '@components/atoms/Button/Button';
 import Input from '@components/atoms/FormControls/Input/Input';
 import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
 import { ArrowLeftIcon } from '@components/atoms/Icons';
-import ReactSelectDownChevron from '@components/atoms/ReactSelectDropdown/DownChevron';
-import ReactSelectOption from '@components/atoms/ReactSelectDropdown/Option';
 import { ToggleButton } from '@components/atoms/ToggleButton';
 import { Typography } from '@components/atoms/Typography/Typography';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useShallowState } from 'hooks/useShallowState';
-import useToggle from 'hooks/useToggle';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Select, { OnChangeValue } from 'react-select';
 import { IScheduleState } from 'types/vesting';
 import { isBlankObject } from 'utils/regex';
-import { scrollIntoView } from 'utils/shared';
 
 export interface VestingSetupPanelProps {
   initialState: IScheduleState;
@@ -48,7 +43,7 @@ const ERROR_EMPTY_STATE = {
 
 export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialState, onReturn, onContinue }) => {
   const { vestingContracts } = useDashboardContext();
-  const { scheduleMode } = useVestingContext();
+  const { scheduleMode, isLinearVesting } = useVestingContext();
   const { currentSafe } = useAuthContext();
 
   const [form, setForm] = useShallowState({
@@ -79,9 +74,6 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
 
   const handleContinue = useCallback(() => {
     const newErrors = { ...ERROR_EMPTY_STATE };
-    if (!form.scheduleName) {
-      newErrors.scheduleName = 'This is a required field.';
-    }
 
     if (form.createNewContract && !form.contractName) {
       newErrors.contractName = 'This is a required field.';
@@ -104,22 +96,6 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
     });
   }, [form, onContinue]);
 
-  const handleToggle = useCallback(() => {
-    if (form.createNewContract && vestingContractOptions.length === 1) {
-      setForm(({ createNewContract }) => ({
-        createNewContract: !createNewContract,
-        vestingContract: vestingContractOptions[0]
-      }));
-    } else setForm(({ createNewContract }) => ({ createNewContract: !createNewContract }));
-  }, [form]);
-
-  const handleChangeVesting = useCallback(
-    (vestingContract: OnChangeValue<VestingContractOption, false>) => {
-      setForm({ vestingContract: vestingContract as VestingContractOption, contractName: vestingContract?.label });
-    },
-    [vestingContractOptions]
-  );
-
   useEffect(() => {
     const selectedVestingContract = vestingContractOptions?.find(
       (option) => option.value === initialState?.vestingContractId
@@ -141,19 +117,9 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
   // Contains 5 steps by default
   const [step, setStep] = useState<{ active: boolean; isExpanded: boolean; interactionCount: number; ref: any }[]>([
     { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
-    { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) },
     { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) }
+    // { active: false, isExpanded: true, interactionCount: 0, ref: useRef<any>(null) }
   ]);
-
-  const goToActiveStep = (indexUpdate: number) => {
-    setActiveStep(indexUpdate);
-    setTimeout(() => {
-      if (step[indexUpdate].ref && step[indexUpdate].ref.current) {
-        scrollIntoView(step[indexUpdate].ref.current);
-        step[indexUpdate].ref.current?.focus();
-      }
-    }, 600);
-  };
 
   const setActiveStep = (indexUpdate: number) => {
     setStep((prevState) => {
@@ -175,69 +141,18 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
     <div className="w-full mb-6 panel max-w-2xl p-0">
       <div className="p-6">
         <Typography className="font-semibold" size="subtitle">
-          {scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} Schedule &amp; Contract
+          {scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} Contract
         </Typography>
       </div>
 
-      <StepLabel
-        ref={step[0].ref}
-        isExpanded={step[0].isExpanded}
-        isActive={step[0].active}
-        step={1}
-        label="Schedule name"
-        description="Naming your schedule will help you determine your recipients collection."
-        required
-        onFocus={() => setActiveStep(0)}>
-        <Input
-          name="scheduleName"
-          value={form.scheduleName}
-          placeholder="Marketing Team Q1 Schedule"
-          error={!!errors.scheduleName}
-          message={errors.scheduleName}
-          onChange={handleChange}
-          onFocus={() => setActiveStep(0)}
-        />
-      </StepLabel>
-
       <hr className="mx-6" />
 
-      <StepLabel
-        ref={step[1].ref}
-        isExpanded={step[1].isExpanded}
-        isActive={step[1].active}
-        step={2}
-        label="Will this schedule include a previously added wallet address?"
-        description="A wallet address can only be used once in a single vesting contract, regardless of schedule."
-        required
-        onFocus={() => setActiveStep(1)}>
-        <>
-          <div className="flex flex-col gap-4">
-            <VestingSetupOption
-              shortTitle="Yes"
-              longTitle="Create a new contract"
-              selected={form.createNewContract}
-              onClick={handleToggle}
-              onFocus={() => setActiveStep(1)}
-            />
-            <VestingSetupOption
-              shortTitle="No"
-              longTitle="Select an existing contract"
-              selected={!form.createNewContract}
-              onClick={handleToggle}
-              onFocus={() => setActiveStep(1)}
-            />
-          </div>
-        </>
-      </StepLabel>
-
-      <hr className="mx-6" />
-
-      {form.createNewContract ? (
+      {form.createNewContract && (
         <StepLabel
-          ref={step[2].ref}
-          isExpanded={step[2].isExpanded}
-          isActive={step[2].active}
-          step={3}
+          ref={step[1].ref}
+          isExpanded={step[1].isExpanded}
+          isActive={step[1].active}
+          step={1}
           label="Contract name"
           description="Our vesting contract is built separately to the ERC-20 token contract for added security and flexibility."
           required>
@@ -248,35 +163,8 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
             error={!!errors.contractName}
             message={errors.contractName}
             onChange={handleChange}
-            onFocus={() => setActiveStep(2)}
+            onFocus={() => setActiveStep(1)}
           />
-        </StepLabel>
-      ) : (
-        <StepLabel
-          ref={step[2].ref}
-          isExpanded={step[2].isExpanded}
-          isActive={step[2].active}
-          step={3}
-          label="Contract name"
-          description="Our vesting contract is built separately to the ERC-20 token contract for added security and flexibility."
-          required>
-          <>
-            <Select
-              components={{
-                Option: ReactSelectOption,
-                DropdownIndicator: ReactSelectDownChevron,
-                IndicatorSeparator: CustomIndicatorSeparator
-              }}
-              options={vestingContractOptions as VestingContractOption[]}
-              value={form.vestingContract as VestingContractOption}
-              classNamePrefix="select"
-              menuPlacement="top"
-              onChange={handleChangeVesting}
-              onFocus={() => setActiveStep(2)}
-            />
-
-            {errors.vestingContract && <span className="input-component__message">{errors.vestingContract}</span>}
-          </>
         </StepLabel>
       )}
 
@@ -291,16 +179,11 @@ export const VestingSetupPanel: React.FC<VestingSetupPanelProps> = ({ initialSta
           </Typography>
         </button>
         <Button type="button" outline primary onClick={handleContinue}>
-          {scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} schedule
+          {scheduleMode && scheduleMode.edit ? 'Update' : 'Create'} contract
         </Button>
       </div>
     </div>
   );
-};
-
-// Blank out the separator
-const CustomIndicatorSeparator = ({ ...props }) => {
-  return <div {...props}></div>;
 };
 
 export const VestingSetupStep: React.FC<{

@@ -14,6 +14,8 @@ import { useAuth } from '@store/useAuth';
 // react-query imports
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Web3ReactProvider } from '@web3-react/core';
+import Aos from 'aos';
+import 'aos/dist/aos.css';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
@@ -58,6 +60,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   useEffect(() => {
     hotjar.initialize(Number(process.env.NEXT_PUBLIC_HOTJAR_HJID), Number(process.env.NEXT_PUBLIC_HOTJAR_HJSV));
+    Aos.init({ duration: 300, delay: 150, once: true, anchorPlacement: 'center-center' });
   }, []);
 
   Modal.setAppElement('#react-modal');

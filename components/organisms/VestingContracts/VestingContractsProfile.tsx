@@ -17,11 +17,21 @@ interface IContractProfile {
 const VestingContractsProfile = ({
   vestingContractsInfo,
   count,
-  title
+  title,
+  showWithdrawn = true,
+  showUnclaimed = true,
+  showUnallocated = true,
+  showLocked = true,
+  showTotalAllocation = true
 }: {
   vestingContractsInfo: VestingContractInfo[];
   count: number;
   title: string;
+  showWithdrawn?: boolean;
+  showUnclaimed?: boolean;
+  showUnallocated?: boolean;
+  showLocked?: boolean;
+  showTotalAllocation?: boolean;
 }) => {
   const cardsInfo = useMemo(() => {
     let items: IContractProfile[];
@@ -72,10 +82,22 @@ const VestingContractsProfile = ({
     }
   }, [vestingContractsInfo]);
 
+  const filteredCards = cardsInfo.filter((card, cardIndex) => {
+    if (cardIndex === 0) return true;
+    if (card.title.toLowerCase() === 'withdrawn' && showWithdrawn) return true;
+    if (card.title.toLowerCase() === 'unclaimed' && showUnclaimed) return true;
+    if (card.title.toLowerCase() === 'unallocated' && showUnallocated) return true;
+    if (card.title.toLowerCase() === 'total locked' && showLocked) return true;
+    if (card.title.toLowerCase() === 'total allocation' && showTotalAllocation) return true;
+    return false;
+  });
+
+  console.log('VESTING CONTRACT PROFILE', vestingContractsInfo, filteredCards);
+
   return (
     <div className="w-full">
-      <div className="grid  2xl:grid-cols-6 xl:grid-cols-3 md:grid-cols-2 gap-6">
-        {cardsInfo.map((card, index) => {
+      <div className="grid 2xl:grid-cols-6 xl:grid-cols-5 md:grid-cols-3 gap-6">
+        {filteredCards.map((card, index) => {
           return (
             <StandardCard
               // isLoading={isLoadingDetails}

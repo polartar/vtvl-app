@@ -1,4 +1,5 @@
 import { CollectionReference, DocumentData, collection, getFirestore } from 'firebase/firestore';
+import { IMilestoneForm } from 'types/milestone';
 import type {
   IInvitee,
   IMember,
@@ -11,6 +12,7 @@ import type {
   IVestingTemplate,
   IWebsite
 } from 'types/models';
+import { IMilestoneTemplate } from 'types/models/milestoneTemplate';
 
 import firebase from '../auth/firebase';
 
@@ -31,3 +33,5 @@ export const tokenCollection = getCollection<IToken>('tokens');
 export const inviteeCollection = getCollection<IInvitee>('invitee');
 export const recipientCollection = getCollection<IRecipient>('recipients');
 export const websiteCollection = getCollection<IWebsite>('websites');
+export const milestoneTemplateCollection = getCollection<IMilestoneTemplate>('milestoneTemplates');
+export const milestoneVesting = getCollection<IMilestoneForm>('milestoneVestings');

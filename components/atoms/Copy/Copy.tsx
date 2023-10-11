@@ -20,9 +20,9 @@ const Copy = ({ text, children, removeIcon = false }: CopyProps) => {
 
   return (
     <CopyToClipboard text={text} onCopy={() => setCopied(true)}>
-      <div className="cursor-pointer relative inline-flex flex-row items-center gap-2 group">
+      <div className="cursor-pointer relative inline-flex flex-row items-center gap-1.5 group">
         {!removeIcon ? (
-          <CopyIcon className="fill-current h-4 cursor-pointer transform-gpu transition-all group-hover:-translate-y-px group-hover:text-secondary-900" />
+          <CopyIcon className="fill-current h-4 cursor-pointer transform-gpu transition-all group-hover:text-secondary-900" />
         ) : null}
         {copied ? (
           <div className={`absolute z-50 -bottom-2 w-full ${!removeIcon ? 'text-right -right-7' : 'text-center '}`}>

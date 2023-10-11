@@ -76,7 +76,7 @@ export const EditableTypography = ({
   return editable ? (
     <input
       id={`recipient-col-${id}`}
-      type="text"
+      type={type}
       className={inputClassName}
       value={value}
       placeholder={placeholder}

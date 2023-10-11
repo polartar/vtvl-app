@@ -8,7 +8,6 @@ import { useWeb3React } from '@web3-react/core';
 import LimitedSupplyABI from 'contracts/abi/FullPremintERC20Token.json';
 import UnlimitedSupplyABI from 'contracts/abi/VariableSupplyERC20Token.json';
 import { ethers } from 'ethers';
-import useTokenBalance from 'hooks/useTokenBalance';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -19,7 +18,7 @@ interface ITokenBurnModalProps {
 }
 
 const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
-  const { account, chainId, library } = useWeb3React();
+  const { account, library } = useWeb3React();
   const { mintFormState } = useTokenContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
 

@@ -7,7 +7,7 @@ const nextConfig = {
     VERCEL_ENV: process.env.VERCEL_ENV
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production'
+    // removeConsole: process.env.NODE_ENV === 'production'
   },
   reactStrictMode: true,
   swcMinify: true,
@@ -43,6 +43,19 @@ const nextConfig = {
         permanent: true
       }
     ];
+  },
+  async rewrites() {
+    return [
+      // These adds a did.json and wc-notify-config.json for Wallet Connect V2 verification
+      {
+        source: '/.well-known/did.json',
+        destination: '/api/walletconnect/did'
+      },
+      {
+        source: '/.well-known/wc-notify-config.json',
+        destination: '/api/walletconnect/wc-notify-config'
+      }
+    ];
   }
 };
 
@@ -60,7 +73,8 @@ module.exports = withSentryConfig(
     silent: true,
 
     org: 'vtvl',
-    project: 'vtvl-app-v2'
+    project: 'vtvl-app-v2',
+    authToken: process.env.SENTRY_AUTH_TOKEN
   },
   {
     // For all available options, see:

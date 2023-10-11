@@ -5,13 +5,13 @@ import { useWeb3React } from '@web3-react/core';
 import { useShallowState } from 'hooks/useShallowState';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { MultiValue } from 'react-select';
 import { CliffDuration, DateDurationOptionValues, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IRecipient, IVesting } from 'types/models';
 import { IScheduleMode, IScheduleState } from 'types/vesting';
 import { getActualDateTime } from 'utils/shared';
 
 import { useAuthContext } from './auth.context';
+import { useDashboardContext } from './dashboard.context';
 import { useLoaderContext } from './loader.context';
 
 export interface IScheduleFormState {
@@ -45,8 +45,6 @@ export const INITIAL_VESTING_FORM_STATE: IScheduleFormState = {
   amountUnclaimed: 0
 };
 
-const INITIAL_RECIPIENT_FORM_STATE = [] as MultiValue<IRecipient[]>;
-
 const INITIAL_SCHEDULE_MODE: IScheduleMode = {
   id: '',
   edit: false,
@@ -78,6 +76,10 @@ interface IVestingData {
   setDeleteInProgress: (v: boolean) => void;
   showDeleteModal: boolean;
   setShowDeleteModal: (v: boolean) => void;
+  isLinearVesting: boolean;
+  setIsLinearVesting: (v: boolean) => void;
+  showVestingSelectModal: boolean;
+  setShowVestingSelectModal: (v: boolean) => void;
 }
 
 const VestingContext = createContext({} as IVestingData);
@@ -86,6 +88,7 @@ export function VestingContextProvider({ children }: any) {
   const { account, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
   const { showLoading, hideLoading } = useLoaderContext();
+  const { vestingFactoryContract } = useDashboardContext();
 
   const [vestings, setVestings] = useState<{ id: string; data: IVesting }[]>([]);
   // This contains all the details regarding the schedule form in the /configure
@@ -99,6 +102,8 @@ export function VestingContextProvider({ children }: any) {
 
   const [deleteInProgress, setDeleteInProgress] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [showVestingSelectModal, setShowVestingSelectModal] = useState<boolean>(false);
+  const [isLinearVesting, setIsLinearVesting] = useState<boolean>(true);
 
   const router = useRouter();
 
@@ -106,8 +111,12 @@ export function VestingContextProvider({ children }: any) {
     setScheduleFormState(INITIAL_VESTING_FORM_STATE);
     setRecipients([]);
     setScheduleMode(INITIAL_SCHEDULE_MODE);
-    setScheduleState(INITIAL_SCHEDULE_STATE);
-  }, []);
+    setScheduleState({
+      ...INITIAL_SCHEDULE_STATE,
+      contractName: vestingFactoryContract?.name,
+      vestingContractId: vestingFactoryContract?.id
+    });
+  }, [vestingFactoryContract]);
 
   // Updates the states related to the vesting schedule to be edited
   const updateScheduleStates = (id: string, data: IVesting) => {
@@ -234,7 +243,11 @@ export function VestingContextProvider({ children }: any) {
       deleteInProgress,
       setDeleteInProgress,
       showDeleteModal,
-      setShowDeleteModal
+      setShowDeleteModal,
+      isLinearVesting,
+      setIsLinearVesting,
+      showVestingSelectModal,
+      setShowVestingSelectModal
     }),
     [
       scheduleFormState,
@@ -244,7 +257,9 @@ export function VestingContextProvider({ children }: any) {
       deleteInProgress,
       showDeleteModal,
       setScheduleState,
-      setShowDeleteModal
+      setShowDeleteModal,
+      isLinearVesting,
+      showVestingSelectModal
     ]
   );
 

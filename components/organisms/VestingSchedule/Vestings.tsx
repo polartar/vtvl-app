@@ -9,7 +9,7 @@ import { ethers } from 'ethers';
 import { BigNumber } from 'ethers/lib/ethers';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import { IStatus } from 'interfaces/vesting';
-import React, { useMemo } from 'react';
+import React from 'react';
 import useSWR from 'swr';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting } from 'types/models';
@@ -124,63 +124,6 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
         })
       : [];
   }); //, [vestings, filter, transactions, revokedSchedules]);
-
-  const filteredVestingCounts = useMemo(() => {
-    let executeCount = 0;
-    let fundCount = 0,
-      createCount = 0,
-      revokeCount = 0,
-      completedCount = 0;
-    vestings.forEach(async (vesting) => {
-      const transaction = transactions.find((t) => t.id === vesting.data.transactionId && t.status === 'PENDING');
-      let isFund;
-      let safeTx;
-
-      if (transaction && transaction.safeHash && currentSafe) {
-        safeTx = await fetchSafeTransactionFromHash(transaction.safeHash);
-        isFund = transaction.type === 'FUNDING_CONTRACT' && vesting.data.status === 'WAITING_APPROVAL';
-      } else {
-        isFund =
-          vestingSchedulesInfo.length &&
-          BigNumber.from(totalBalance).gte(BigNumber.from(vestingSchedulesInfo[0].numTokensReservedForVesting)) &&
-          BigNumber.from(totalBalance)
-            .sub(BigNumber.from(vestingSchedulesInfo[0].numTokensReservedForVesting))
-            .lt(ethers.utils.parseEther(vesting.data.details.amountToBeVested.toString())) &&
-          vesting.data.status !== 'LIVE';
-      }
-      const ethAdapter = new EthersAdapter({
-        ethers: ethers,
-        signer: library?.getSigner(0)
-      });
-      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address || '' });
-      const threshold = await safeSdk.getThreshold();
-
-      if (safeTx && threshold && safeTx.signatures.size >= threshold && !isFund) {
-        executeCount++;
-      }
-
-      if (isFund) {
-        fundCount++;
-      }
-      if (
-        (vesting.data.status === 'INITIALIZED' && !isFund) ||
-        (vesting.data.status === 'WAITING_APPROVAL' && !vesting.data.transactionId)
-      ) {
-        createCount++;
-      }
-      if (
-        vesting.data.status === 'REVOKED' ||
-        (vesting.data.status === 'WAITING_APPROVAL' &&
-          revokedSchedules?.find((schedule) => schedule.vestingId === vesting.id))
-      ) {
-        revokeCount++;
-      }
-      if (vesting.data.status === 'LIVE') {
-        completedCount++;
-      }
-    });
-    return [vestings.length, fundCount, createCount, executeCount, revokeCount, completedCount];
-  }, [vestings, transactions, revokedSchedules, fetchSafeTransactionFromHash]);
 
   return (
     <div className="w-full">

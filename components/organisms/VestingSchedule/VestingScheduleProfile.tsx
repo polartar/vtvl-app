@@ -135,9 +135,9 @@ const VestingScheduleProfile = ({
       {cardsInfo && cardsInfo.length > 0 && (
         <DashboardBarChart
           totalAllocation={BigNumber.from(ethers.utils.parseUnits(vesting.details.amountToBeVested.toString(), 18))}
-          totalLocked={cardsInfo[3].data!}
-          unlocked={cardsInfo[1].data!.add(cardsInfo[2].data!)}
-          withdrawn={cardsInfo[1].data!}
+          totalLocked={cardsInfo[3].data ?? BigNumber.from('0')}
+          unlocked={cardsInfo[1].data ?? BigNumber.from('0').add(cardsInfo[2].data ?? BigNumber.from('0'))}
+          withdrawn={cardsInfo[1].data ?? BigNumber.from('0')}
         />
       )}
     </div>

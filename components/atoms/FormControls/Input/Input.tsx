@@ -9,6 +9,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   success?: boolean;
   icon?: string;
+  innerLabel?: string;
   max?: number;
   iconPosition?: 'left' | 'right';
 }
@@ -29,6 +30,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
  */
 const Input = ({
   label = '',
+  innerLabel = '',
   required = false,
   className = '',
   message = '',
@@ -79,9 +81,30 @@ const Input = ({
               isAllowed={(values) => {
                 const { formattedValue, floatValue } = values;
                 console.log('IS ALLOWED', formattedValue, floatValue);
-                return formattedValue === '' || (floatValue ? floatValue >= 0 && floatValue <= 99 : false);
+                return formattedValue === '' || (floatValue ? floatValue >= 0 && floatValue <= 100 : false);
               }}
             />
+          ) : props.type === 'percentLabel' ? (
+            <div className="flex justify-between w-full">
+              <span>{innerLabel}</span>
+              <div className="flex w-full">
+                <NumericFormat
+                  {...props}
+                  defaultValue={props.defaultValue as string | number}
+                  value={props.value as string | number}
+                  type="text"
+                  decimalScale={2}
+                  thousandSeparator=","
+                  className="grow w-full outline-0 border-0 bg-transparent text-right"
+                  isAllowed={(values) => {
+                    const { formattedValue, floatValue } = values;
+                    console.log('IS ALLOWED', formattedValue, floatValue);
+                    return formattedValue === '' || (floatValue ? floatValue >= 0 && floatValue <= 100 : false);
+                  }}
+                />
+                <span>%</span>
+              </div>
+            </div>
           ) : (
             <input type="text" {...props} className="grow w-full outline-0 border-0 bg-transparent" />
           )}

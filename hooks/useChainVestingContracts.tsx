@@ -1,7 +1,5 @@
 import { useWeb3React } from '@web3-react/core';
-import VTVL2_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
-import getUnixTime from 'date-fns/getUnixTime';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
 import { BigNumber } from 'ethers/lib/ethers';
@@ -9,9 +7,8 @@ import { useEffect } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting } from 'types/models';
 import { IRecipient } from 'types/models/recipient';
-import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
-import { getVestingContractABI, isV2 } from 'utils/multicall';
+import { getVestingContractABI } from 'utils/multicall';
 
 import { useShallowState } from './useShallowState';
 

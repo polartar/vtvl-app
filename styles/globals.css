@@ -301,7 +301,7 @@
   }
 
   button.small {
-    @apply py-0.5 px-3 text-sm;
+    @apply py-0.5 px-3 h-7 text-sm;
   }
   button.large {
     @apply py-3 py-6 text-lg;
@@ -397,8 +397,8 @@
   }
 
   /* Other disabled styles */
-  :disabled:not(fieldset):not(.card-radio),
-  [disabled]:not(fieldset):not(.card-radio) {
+  :disabled:not(fieldset):not(.card-radio):not(.wallet-button),
+  [disabled]:not(fieldset):not(.card-radio):not(.wallet-button) {
     @apply opacity-80;
   }
 
@@ -558,10 +558,6 @@
   table tbody tr td {
     @apply py-3.5 px-6;
   }
-  table thead th:not(:first-child),
-  table tbody tr td:not(:first-child) {
-    @apply border-l border-gray-200;
-  }
 
   table tbody tr:last-child {
     @apply border-b-0;
@@ -668,29 +664,6 @@
   }
   .select__indicator {
     @apply py-0 pr-1 pl-2 !important;
-  }
-
-  /* Progress bar customization */
-  /* Mozilla browser */
-  /* progress, */
-  /* Other browsers */
-  progress::-webkit-progress-bar {
-    padding: 4px;
-    background: var(--neutral-100);
-    border: 1px solid var(--neutral-300);
-    border-radius: 48px;
-    height: 18px;
-    box-sizing: border-box;
-  }
-  /* Other browsers */
-  progress::-webkit-progress-value {
-    /* Mozilla browser */
-    /* progress::-moz-progress-bar { */
-    height: 8px;
-    border-radius: 48px;
-    border: 1px solid var(--primary-900);
-    background: var(--primary-900);
-    background: linear-gradient(90deg, rgba(27, 54, 154, 1) 0%, rgba(70, 98, 203, 1) 50%, rgba(98, 122, 207, 1) 100%);
   }
 }
 
@@ -905,4 +878,92 @@ body {
   max-width: 480px;
   min-width: 320px;
   width: auto;
+}
+
+/* Progress bar customization */
+/* Mozilla browser */
+/* progress, */
+/* Other browsers */
+progress::-webkit-progress-bar,
+progress.milestone::-webkit-progress-bar {
+  padding: 4px;
+  background: var(--neutral-100);
+  border: 1px solid var(--neutral-300);
+  border-radius: 48px;
+  height: 18px;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+}
+/* Other browsers */
+progress::-webkit-progress-value,
+progress.milestone::-webkit-progress-value {
+  /* Mozilla browser */
+  /* progress::-moz-progress-bar { */
+  height: 8px;
+  border-radius: 48px;
+  border: 1px solid var(--primary-900);
+  background: var(--primary-900);
+  background: linear-gradient(90deg, rgba(27, 54, 154, 1) 0%, rgba(70, 98, 203, 1) 50%, rgba(98, 122, 207, 1) 100%);
+}
+
+progress.milestone::-webkit-progress-bar {
+  height: 10px;
+  padding: 0;
+  border-radius: 3px;
+}
+progress.milestone::-webkit-progress-value {
+  border: none;
+  background: var(--success-500);
+  border-radius: 0;
+}
+
+/* Scrollbar overrides */
+.invisible-scroll,
+.vtvl-scroll,
+body {
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+.invisible-scroll::-webkit-scrollbar-track,
+.vtvl-scroll::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  -webkit-box-shadow: none;
+  background-color: transparent;
+  border-radius: 10px;
+}
+.invisible-scroll::-webkit-scrollbar,
+.vtvl-scroll::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  height: 6px;
+  background-color: transparent;
+}
+body::-webkit-scrollbar {
+  width: 4px;
+}
+.invisible-scroll::-webkit-scrollbar,
+.vtvl-scroll::-webkit-scrollbar {
+  width: 2px;
+}
+.invisible-scroll::-webkit-scrollbar-thumb,
+.vtvl-scroll::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: var(--primary-400, #a0a0a0);
+}
+
+.invisible-scroll::-webkit-scrollbar-track,
+.invisible-scroll::-webkit-scrollbar,
+.invisible-scroll::-webkit-scrollbar-thumb {
+  opacity: 0;
+  width: 0;
+  background: transparent;
+}
+.box {
+  position: relative;
+}
+
+.box.fixed {
+  position: fixed;
+  top: 100px;
 }

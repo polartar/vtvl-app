@@ -37,7 +37,11 @@ const PromptModal = ({ isOpen = false, hideModal, size = 'default', ...props }: 
 
   return (
     <>
-      <Modal isOpen={isOpen} className={`z-50 ${size === 'default' ? 'max-w-2xl w-full' : ''}`} style={modalStyles}>
+      <Modal
+        isOpen={isOpen}
+        className={`z-50 ${size === 'default' ? 'max-w-2xl w-full' : ''}`}
+        style={modalStyles}
+        shouldCloseOnEsc={true}>
         <>{props.children}</>
       </Modal>
     </>

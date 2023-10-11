@@ -10,6 +10,7 @@ import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import ERC20ABI from 'contracts/abi/ERC20.json';
 import VestingABI from 'contracts/abi/VtvlVesting.json';
@@ -17,15 +18,12 @@ import { ethers } from 'ethers';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import useIsAdmin from 'hooks/useIsAdmin';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVestingDoc } from 'types/models/vesting';
 import { isV2 } from 'utils/multicall';
 import { formatNumber } from 'utils/token';
-import { string } from 'yup';
 
 import ContractsProfile from './VestingContractsProfile';
 import VestingFilter from './Vestings';
@@ -40,17 +38,17 @@ export default function VestingContract({ vestingContractId }: { vestingContract
   const { mintFormState } = useTokenContext();
   const [revokings, setRevokings] = useState<IRevoking[]>();
 
-  const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   const {
     setTransactionStatus: setTransactionLoaderStatus,
     updateTransactions,
     transactions
   } = useTransactionLoaderContext();
+  const { setShowVestingSelectModal } = useVestingContext();
 
   const [withdrawAmount, setWithdrawAmount] = useState(ethers.BigNumber.from(0));
   const [withdrawTransactions, setWithdrawTransactions] = useState<ITransaction[]>([]);
 
-  const router = useRouter();
   const vestings = useMemo(() => {
     return allVestings.filter((vesting) => vesting.data.vestingContractId === vestingContractId);
   }, [allVestings]);
@@ -82,22 +80,6 @@ export default function VestingContract({ vestingContractId }: { vestingContract
     allVestings,
     allRecipients
   );
-
-  const availableRevokings = useMemo(() => {
-    if (revokings && vestings && allRecipients) {
-      return revokings.filter((revoking) => {
-        const rc = allRecipients.find(
-          (recipient) =>
-            recipient.vestingId === revoking.vestingId &&
-            recipient.id === revoking.recipeId &&
-            vestings.map((vesting) => vesting.id).includes(recipient.vestingId)
-        );
-        return rc && Number(rc.allocations) !== 0;
-      });
-    } else {
-      return [];
-    }
-  }, [revokings, allRecipients, vestings]);
 
   const vestingContractsInfo = useMemo(() => {
     if (!vestingSchedulesInfo || !vestingSchedulesInfo.length || !vestingContracts.length) return undefined;
@@ -157,7 +139,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
         const ADMIN_WITHDRAW_FUNCTION = isV2(vestingContracts[0].updatedAt)
           ? 'function withdrawAdmin(uint256 _amountRequested)'
-          : 'function withdrawAdmin(112 _amountRequested)';
+          : 'function withdrawAdmin(uint112 _amountRequested)';
         const ABI = [ADMIN_WITHDRAW_FUNCTION];
         const vestingContractInterface = new ethers.utils.Interface(ABI);
         const adminWithdrawEncoded = vestingContractInterface.encodeFunctionData('withdrawAdmin', [
@@ -301,7 +283,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
           <Typography size="title" variant="inter" className=" font-semibold text-neutral-900 ">
             Contract
           </Typography>
-          <button className="primary row-center" onClick={() => router.push('/vesting-schedule/add-recipients')}>
+          <button className="primary row-center" onClick={() => setShowVestingSelectModal(true)}>
             <PlusIcon className="w-5 h-5" />
             <span className="whitespace-nowrap">Create</span>
           </button>

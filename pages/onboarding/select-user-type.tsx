@@ -21,11 +21,16 @@ const Container = styled.div`
   text-align: center;
 `;
 
+enum EUserTypes {
+  FOUNDER = 'founder',
+  INVESTOR = 'investor'
+}
+
 const SelectUserTypePage: NextPage = () => {
-  const { onNext, startOnboarding, completeOnboarding, inProgress } = useContext(OnboardingContext);
+  const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
   const { emailSignUp, user } = useContext(AuthContext);
   const { active, account, chainId } = useWeb3React();
-  const [selected, setSelected] = React.useState<IRole | undefined>();
+  const [selected, setSelected] = React.useState<IRole | undefined>(IRole.FOUNDER);
   const [member, setMember] = React.useState<IMember>();
   const {
     website: { assets, organizationId: webOrgId, features }

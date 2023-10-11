@@ -31,7 +31,7 @@ const sizes = {
 
 // eslint-disable-next-line no-undef
 module.exports = {
-  content: ['./{pages,components}/**/*.{js,jsx,ts,tsx}', './stories/**/*.{ts,tsx}'],
+  content: ['./{hooks,pages,components}/**/*.{js,jsx,ts,tsx}', './stories/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -96,5 +96,5 @@ module.exports = {
     }
   },
   mode: 'jit',
-  purge: ['./{pages,components}/**/*.{js,jsx,ts,tsx}', './stories/**/*.{ts,tsx}']
+  purge: ['./{hooks,pages,components}/**/*.{js,jsx,ts,tsx}', './stories/**/*.{ts,tsx}']
 };

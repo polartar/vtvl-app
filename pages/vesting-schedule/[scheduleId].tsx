@@ -30,7 +30,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
   const { account, library, chainId } = useWeb3React();
   const { vestings: allVestings, vestingContracts: allVestingContracts } = useDashboardContext();
   const { mintFormState } = useTokenContext();
-  const { currentSafe, organizationId } = useAuthContext();
+  const { currentSafe } = useAuthContext();
   const { loading, hideLoading, showLoading } = useLoaderContext();
   const { transactions } = useTransactionLoaderContext();
 

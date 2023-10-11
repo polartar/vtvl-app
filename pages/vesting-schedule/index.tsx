@@ -4,19 +4,23 @@ import Button from '@components/atoms/Button/Button';
 import CardRadio from '@components/atoms/CardRadio/CardRadio';
 import Chip from '@components/atoms/Chip/Chip';
 import Copy from '@components/atoms/Copy/Copy';
+import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
 import ProgressCircle from '@components/atoms/ProgressCircle/ProgressCircle';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import StatusIndicator from '@components/atoms/StatusIndicator/StatusIndicator';
+import { Typography } from '@components/atoms/Typography/Typography';
 import DropdownMenu from '@components/molecules/DropdownMenu/DropdownMenu';
+import MilestoneVesting from '@components/molecules/MilestoneVesting';
 import Table from '@components/molecules/Table/Table';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
-import VestingOverview from '@components/molecules/VestingOverview/VestingOverview';
 import VestingScheduleFilter from '@components/molecules/VestingScheduleFilter';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import ContractsProfile from '@components/organisms/VestingContracts/VestingContractsProfile';
 import VestingSummary from '@components/organisms/VestingSchedule/VestingSummary';
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
+import useChainVestingContracts from '@hooks/useChainVestingContracts';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
@@ -26,19 +30,24 @@ import { injected } from 'connectors';
 import VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
+import { useDrawer } from 'hooks/useDrawer';
 import useIsAdmin from 'hooks/useIsAdmin';
 import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
 import PlusIcon from 'public/icons/plus.svg';
-import { ReactElement, useEffect, useMemo, useState } from 'react';
+import VestingMilestoneBasedIcon from 'public/icons/vesting-milestone-based.svg';
+import VestingTimeBasedIcon from 'public/icons/vesting-time-based.svg';
+import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IRecipient, IVesting } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
+import { compareAddresses } from 'utils';
+import { TOAST_IDS } from 'utils/constants';
 import { convertToActualDateTime, formatDate, formatTime, getActualDateTime, minifyAddress } from 'utils/shared';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -56,14 +65,21 @@ import {
 const VestingScheduleProject: NextPageWithLayout = () => {
   const router = useRouter();
   const { account, library, activate, chainId } = useWeb3React();
-  const { organizationId, currentSafe } = useAuthContext();
 
   const { setTransactionStatus, updateTransactions } = useTransactionLoaderContext();
+  const { organizationId, currentSafe } = useAuthContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { mintFormState, isTokenLoading } = useTokenContext();
-  const { vestings: vestingSchedules, recipients, vestingContracts, fetchDashboardData } = useDashboardContext();
-  const { editSchedule, setShowDeleteModal, deleteSchedulePrompt } = useVestingContext();
+  const {
+    vestings: vestingSchedules,
+    recipients,
+    vestingContracts,
+    milestoneVestings,
+    fetchDashboardData
+  } = useDashboardContext();
+  const { editSchedule, setShowDeleteModal, deleteSchedulePrompt, setShowVestingSelectModal } = useVestingContext();
   const [selectedSchedule, setSelectedSchedule] = useState<IVestingDoc>();
+  const [selectedMilestoneVesting, setSelectedMilestoneVesting] = useState<IVestingDoc>();
   const [selected, setSelected] = useState('manual');
   const [vestingScheduleDataCounts, setVestingScheduleDataCounts] = useState({
     totalSchedules: 0,
@@ -78,6 +94,53 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     status: 'ALL' | 'FUND' | 'INITIALIZED' | 'LIVE' | 'PENDING';
   }>({ keyword: '', status: 'ALL' });
   const [vestingContract, setVestingContract] = useState<IVestingContract | undefined>();
+
+  const isAdmin = useIsAdmin(currentSafe ? currentSafe.address : account ? account : '', vestingContract);
+
+  const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
+    vestingContracts,
+    vestingSchedules,
+    recipients
+  );
+
+  console.log('SCHEDULES INFO', vestingSchedulesInfo);
+
+  const getVestingInfoByContract = useCallback(
+    (contractAddress: string) => {
+      const vestings = vestingSchedulesInfo.filter((vi) => compareAddresses(vi.address, contractAddress));
+      let allocation = BigNumber.from(0),
+        unclaimed = BigNumber.from(0),
+        withdrawn = BigNumber.from(0),
+        locked = BigNumber.from(0);
+      vestings.forEach((vesting) => {
+        allocation = allocation.add(vesting.allocation);
+        unclaimed = unclaimed.add(vesting.unclaimed);
+        withdrawn = withdrawn.add(vesting.withdrawn);
+        locked = locked.add(vesting.locked);
+      });
+
+      const vestingContract = vestingContracts.find((contract) => compareAddresses(contract.address, contractAddress));
+
+      return {
+        address: contractAddress,
+        recipient: '',
+        allocation: allocation,
+        unclaimed: unclaimed,
+        withdrawn: withdrawn,
+        locked: locked,
+        reserved: vestings.length
+          ? BigNumber.from(vestingContract?.balance || '0').sub(vestings[0].numTokensReservedForVesting || '0')
+          : BigNumber.from(0)
+      };
+    },
+    [vestingSchedulesInfo, vestingContracts]
+  );
+
+  const vestingContractsInfo = useMemo(() => {
+    return vestingContracts.map((vestingContract) => getVestingInfoByContract(vestingContract.address || ''));
+  }, [vestingSchedulesInfo, getVestingInfoByContract, vestingContracts]);
+
+  console.log('MILESTONE VESTINGS', milestoneVestings);
 
   const filteredVestingSchedules = useMemo(() => {
     return vestingSchedules && vestingSchedules.length > 0
@@ -184,14 +247,121 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     }
   };
 
+  // Vesting schedule type tabs
+  const [tab, setTab] = useState('time-based');
+  const vestingTabs = useMemo(
+    () => [
+      {
+        label: 'Time-based',
+        value: 'time-based',
+        // description: 'Place holder for the time-based vesting schedules.',
+        icon: <VestingTimeBasedIcon className="w-4 h-4" />,
+        counter: vestingSchedules.length
+      },
+      {
+        label: 'Milestone-based',
+        value: 'milestone-based',
+        // description: 'Place holder for the milestone-based vesting schedules.',
+        icon: <VestingMilestoneBasedIcon className="w-4 h-4" />,
+        counter: milestoneVestings.length
+      }
+    ],
+    [vestingSchedules, milestoneVestings]
+  );
+  const handleTabChange = (e: any) => {
+    // Show the list based on what tab is active (time-based or milestone-based)
+    setTab(e.target.value);
+    console.log('TAB CHANGE', e.target.value);
+  };
+
   // const recipientTypes = convertAllToOptions(['All', 'Employee', 'Investor']);
+  const { Drawer, showDrawer, hideDrawer } = useDrawer({});
+
+  const handleScheduleClick = (rowData: any) => {
+    console.log('Showing schedule', rowData, tab);
+    switch (tab) {
+      case 'time-based':
+        router.push(`/vesting-schedule/${rowData.original.id}`);
+        break;
+      case 'milestone-based':
+        // LOAD MILESTONE DATA HERE
+        showDrawer();
+        break;
+      default:
+        break;
+    }
+  };
+
+  // SAMPLE DATA --- START
+  const allocations = {
+    withdrawn: { amount: 6250, progress: 50 },
+    unclaimed: { amount: 1250, progress: 10 },
+    locked: { amount: 18750, progress: 20 }
+  };
+
+  const milestones = [
+    {
+      title: 'Milestone Title 01',
+      active: true,
+      description:
+        'This vesting milestone allocates 75% of tokens based on performance goals. As goals are achieved, recipients receive 1,565.5 tokens monthly, promoting alignment with company objectives and rewarding hard work and dedication.',
+      duration: '1 year',
+      allocation: '15% = 60,000',
+      releaseAmount: '5,000',
+      releaseFrequency: 'monthly',
+      totalMonths: 12,
+      progress: 2,
+      remaining: '50,000',
+      released: '10,000',
+      unlockDate: 1687342168000,
+      actions: (
+        <>
+          <Button className="primary font-semibold" size="small" onClick={hideDrawer}>
+            Approved Milestone
+          </Button>
+          <Button className="primary font-semibold" size="small" outline onClick={hideDrawer}>
+            View Report
+          </Button>
+        </>
+      )
+    },
+    {
+      title: 'Milestone Title 02',
+      active: false,
+      description:
+        'This vesting milestone allocates 75% of tokens based on performance goals. As goals are achieved, recipients receive 1,565.5 tokens monthly, promoting alignment with company objectives and rewarding hard work and dedication.',
+      duration: '1 year',
+      allocation: '60% = 240,000',
+      releaseAmount: '20,000',
+      releaseFrequency: 'monthly',
+      totalMonths: 12,
+      progress: 0,
+      remaining: '240,000',
+      released: '0',
+      unlockDate: 1687342168000
+    },
+    {
+      title: 'Milestone Title 03',
+      active: false,
+      description:
+        'This vesting milestone allocates 75% of tokens based on performance goals. As goals are achieved, recipients receive 1,565.5 tokens monthly, promoting alignment with company objectives and rewarding hard work and dedication.',
+      duration: '4 months',
+      allocation: '25% = 100,000',
+      releaseAmount: '25,000',
+      releaseFrequency: 'monthly',
+      totalMonths: 4,
+      progress: 0,
+      remaining: '100,000',
+      released: '0',
+      unlockDate: 1687342168000
+    }
+  ];
+  // SAMPLE DATA --- END
 
   // Renderer for schedule name -- with scenario for COMPLETED status
   const CellScheduleName = ({ value, row, ...props }: any) => {
     return (
-      <div
-        className="row-center cursor-pointer underline-offset-3	 underline"
-        onClick={() => router.push(`/vesting-schedule/${row.original.id}`)}>
+      <div className="row-center cursor-pointer underline-offset-3	 underline" onClick={() => handleScheduleClick(row)}>
         {row.original.data.status === 'COMPLETED' ? <StatusIndicator size="small" color="success" /> : null}
         <span className="font-medium text-neutral-800 ">{value}</span>
       </div>
@@ -376,7 +546,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     if (rowInfo) {
       const { status, archive } = rowInfo.original.data;
       return {
-        className: status === 'COMPLETED' ? 'bg-success-50' : archive ? 'bg-gray-50' : ''
+        className: status === 'COMPLETED' ? 'bg-success-50' : archive ? 'bg-gray-50' : '',
+        stickyActions: true
       };
     }
     return {};
@@ -542,10 +713,66 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         })
       }
     ],
-    []
+    [tab, filteredVestingSchedules]
   );
 
-  console.log('Data counts', vestingScheduleDataCounts);
+  const MilestoneCellActions = (props: any) => {
+    const onMilestoneVestingSelect = async () => {
+      setSelectedMilestoneVesting(props.row.original);
+      setTimeout(() => {
+        // Show the data
+        handleScheduleClick(props.row);
+      }, 300);
+    };
+    return (
+      <div className="flex items-center justify-end flex-nowrap">
+        <button className="primary" onClick={() => onMilestoneVestingSelect()}>
+          Quick preview
+        </button>
+      </div>
+    );
+  };
+
+  const milestoneTableColumns = useMemo(
+    () => [
+      {
+        id: 'recipient',
+        Header: 'Recipient',
+        accessor: 'data.recipientName'
+      },
+      {
+        id: 'type',
+        Header: 'Type',
+        accessor: 'data.type'
+      },
+      {
+        id: 'milestones',
+        Header: 'Milestones',
+        accessor: 'data.milestones',
+        Cell: ({ row }: any) => row.original.data.milestones.length
+      },
+      {
+        id: 'status',
+        Header: 'Status',
+        accessor: 'data.status'
+      },
+      {
+        id: 'progress',
+        Header: 'Progress',
+        accessor: 'data',
+        Cell: 0
+      },
+      {
+        id: 'actions',
+        Header: '',
+        accessor: 'actions',
+        Cell: MilestoneCellActions
+      }
+    ],
+    [tab, milestoneVestings]
+  );
+
+  console.log('Data counts', milestoneVestings);
   /**
    * This function is intended to be used as a callback for clicking the "Batch transaction" button in the Table component.
    * This will pass all the selected rows in the selectedRows argument.
@@ -648,6 +875,15 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         vestingLinearVestAmounts = [...vestingLinearVestAmounts, ...vestingLinearVestAmounts1];
         vestingCliffAmounts = [...vestingCliffAmounts, ...vestingCliffAmounts1];
       });
+
+      vestingEndTimestamps = vestingEndTimestamps.map((endTimeStamp: number, index: number) => {
+        if ((endTimeStamp - vestingStartTimestamps[index]) % vestingReleaseIntervals[index] !== 0) {
+          const times = Math.floor(endTimeStamp / vestingReleaseIntervals[index]);
+          return vestingStartTimestamps[index] + vestingReleaseIntervals[index] * (times + 1);
+        }
+        return endTimeStamp;
+      });
+
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
       const CREATE_CLAIMS_BATCH_INTERFACE =
@@ -825,7 +1061,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             );
           })
         );
-        toast.success('Added schedules successfully.');
+        toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionStatus('SUCCESS');
       }
     } catch (err) {
@@ -856,62 +1092,81 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     <>
       {vestingSchedules?.length && mintFormState ? (
         <>
-          <div className="w-full h-full">
-            <p className="text-neutral-500 text-sm font-medium mb-2">Overview</p>
-            <div className="flex flex-col lg:flex-row justify-between gap-5 mb-8">
-              <div>
-                <TokenProfile {...mintFormState} className="mb-2" />
-                <Copy text={mintFormState.address as string}>
-                  <p className="text-sm font-medium text-netural-900">
-                    Token address: <span className="text-neutral-500">{mintFormState.address}</span>
-                  </p>
-                </Copy>
-              </div>
+          <div className="w-full h-full mb-1 px-6">
+            <div className="flex flex-row items-center justify-between mb-2">
+              <Typography size="title" variant="inter" className=" font-semibold text-neutral-900 ">
+                Schedules
+              </Typography>
               <div className="flex flex-row items-center justify-start gap-2">
-                <button
-                  className="secondary row-center"
-                  onClick={() => Router.push('/vesting-schedule/add-recipients')}>
+                <button className="primary row-center" onClick={() => setShowVestingSelectModal(true)}>
                   <PlusIcon className="w-5 h-5" />
-                  <span className="whitespace-nowrap">Create Schedule</span>
+                  <span className="whitespace-nowrap">Create</span>
                 </button>
               </div>
             </div>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 mb-4">
+              <div>
+                <TokenProfile
+                  name={mintFormState.name}
+                  address={mintFormState.address}
+                  logo={mintFormState.logo}
+                  size="small"
+                />
+                {/* <Copy text={mintFormState.address}>
+                  <p className="text-sm font-medium text-netural-900">
+                    Token address: <span className="text-neutral-500">{mintFormState.address}</span>
+                  </p>
+                </Copy> */}
+              </div>
+            </div>
+            <BarRadio name="vesting-tabs" variant="tab" value={tab} options={vestingTabs} onChange={handleTabChange} />
           </div>
-          <div className="p-5 mb-6 border-b border-gray-200 w-full">
-            <VestingOverview
-              token={mintFormState.symbol}
-              {...vestingScheduleDataCounts}
-              remainingAllocation={remaining}
-              totalAllocation={Number(mintFormState.totalSupply) || 0}
-            />
+          <div className="w-full p-6 bg-gray-50 border-t border-gray-200">
+            <div className="w-full">
+              <ContractsProfile
+                vestingContractsInfo={vestingContractsInfo}
+                count={vestingSchedules.length}
+                title="Schedules"
+                showUnallocated={false}
+              />
+            </div>
+            <div className="w-full my-5">
+              <VestingScheduleFilter filter={filter} updateFilter={setFilter} />
+            </div>
+            {tab === 'time-based' ? (
+              <Table
+                columns={columns}
+                data={filteredVestingSchedules}
+                getTrProps={getTrProps}
+                selectable
+                pagination
+                batchOptions={{
+                  label: 'Batch transactions',
+                  onBatchProcessClick: handleBatchProcess
+                }}
+              />
+            ) : tab === 'milestone-based' ? (
+              <Table columns={milestoneTableColumns} data={milestoneVestings} selectable pagination />
+            ) : null}
+            <Drawer>
+              <MilestoneVesting
+                name="ISS-0132"
+                allocations={allocations}
+                milestones={milestones}
+                totalAllocation="400,000"
+                totalDuration="1 year 6 months"
+                totalRecipients={4}
+                onClose={hideDrawer}
+                actions={
+                  <>
+                    <Button className="primary block mx-auto mb-3" onClick={hideDrawer}>
+                      View Full Details
+                    </Button>
+                  </>
+                }
+              />
+            </Drawer>
           </div>
-          <div className="w-full">
-            <VestingScheduleFilter filter={filter} updateFilter={setFilter} />
-          </div>
-          {/* <div className="grid sm:grid-cols-3 lg:grid-cols-10 gap-2 mt-7 mb-8">
-            <Input
-              label="Schedule name"
-              placeholder="Enter schedule"
-              className="col-span-2 sm:col-span-1 lg:col-span-2"
-            />
-            <SelectInput label="Start" options={recipientTypes} />
-            <SelectInput label="End" options={recipientTypes} />
-            <SelectInput label="Progress" options={recipientTypes} />
-            <SelectInput label="Cliff release" options={recipientTypes} />
-            <SelectInput label="Status" options={recipientTypes} />
-            <Input label="Amount" placeholder="Enter the amount" className="lg:col-span-2" />
-          </div> */}
-          <Table
-            columns={columns}
-            data={filteredVestingSchedules}
-            getTrProps={getTrProps}
-            selectable
-            pagination
-            batchOptions={{
-              label: 'Batch transactions',
-              onBatchProcessClick: handleBatchProcess
-            }}
-          />
         </>
       ) : (
         <>
@@ -964,7 +1219,7 @@ VestingScheduleProject.getLayout = function getLayout(page: ReactElement) {
   // Update these into a state coming from the context
   const crumbSteps = [{ title: 'Vesting schedule', route: '/vesting-schedule' }];
   return (
-    <SteppedLayout title="Vesting schedule" crumbs={crumbSteps}>
+    <SteppedLayout title="Vesting schedule" crumbs={crumbSteps} padded={false}>
       {page}
     </SteppedLayout>
   );

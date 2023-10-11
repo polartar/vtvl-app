@@ -22,6 +22,7 @@ export default function VestingContracts() {
   const { mintFormState: token } = useTokenContext();
   const { ModalWrapper, showModal, hideModal } = useModal({});
   const router = useRouter();
+  const { vestingFactoryContract } = useDashboardContext();
 
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
     vestingContracts,
@@ -42,8 +43,6 @@ export default function VestingContracts() {
         withdrawn = withdrawn.add(vesting.withdrawn);
         locked = locked.add(vesting.locked);
       });
-
-      const vestingContract = vestingContracts.find((contract) => compareAddresses(contract.address, contractAddress));
 
       return {
         address: contractAddress ?? '',
@@ -75,10 +74,12 @@ export default function VestingContracts() {
           <Typography size="title" variant="inter" className=" font-semibold text-neutral-900 ">
             Contracts
           </Typography>
-          <button className="primary row-center" onClick={showModal}>
-            <PlusIcon className="w-5 h-5" />
-            <span className="whitespace-nowrap">Create</span>
-          </button>
+          {!vestingFactoryContract && (
+            <button className="primary row-center" onClick={showModal}>
+              <PlusIcon className="w-5 h-5" />
+              <span className="whitespace-nowrap">Create</span>
+            </button>
+          )}
         </div>
 
         <div className="flex items-center mt-2">
@@ -120,23 +121,25 @@ export default function VestingContracts() {
               );
             })}
 
-        <div
-          className={`w-full border border-primary-50 rounded-10 p-6 font-medium flex justify-center items-center min-h-[272px]`}>
-          <div className="flex flex-col items-center gap-3">
-            <Image src={'/icons/vesting-contract.svg'} alt="token-image" width={18} height={18} />
-            <Typography size="subtitle" variant="inter" className=" font-bold text-neutral-800 ">
-              New Contract
-            </Typography>
-            <button
-              type="button"
-              className="px-5 bg-secondary-900 border border-secondary-900 rounded-8 p-1"
-              onClick={showModal}>
-              <Typography className="text-center text-white font-medium" size="base">
-                Create
+        {!vestingFactoryContract && (
+          <div
+            className={`w-full border border-primary-50 rounded-10 p-6 font-medium flex justify-center items-center min-h-[272px]`}>
+            <div className="flex flex-col items-center gap-3">
+              <Image src={'/icons/vesting-contract.svg'} alt="token-image" width={18} height={18} />
+              <Typography size="subtitle" variant="inter" className=" font-bold text-neutral-800 ">
+                New Contract
               </Typography>
-            </button>
+              <button
+                type="button"
+                className="px-5 bg-secondary-900 border border-secondary-900 rounded-8 p-1"
+                onClick={showModal}>
+                <Typography className="text-center text-white font-medium" size="base">
+                  Create
+                </Typography>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
       <ModalWrapper>
         <CreateVestingContractModal hideModal={hideModal} />

@@ -4,6 +4,7 @@ export enum SupportedChainId {
   MAINNET = 1,
   GOERLI = 5,
   BINANCE = 56,
+  BINANCE_TESTNET = 97,
   POLYGON = 137,
   MUMBAI = 80001,
   AVALANCHE = 43113,
@@ -14,7 +15,10 @@ export enum SupportedChainId {
   OKC_MAINNET = 66,
   OKC_TESTNET = 65,
   BASE_GOERLI = 84531,
-  SATOSHI_MAINNET = 12009
+  SATOSHI_MAINNET = 12009,
+  GANACHE_NETWORK = 999,
+  OPTIMISM_MAINNET = 10,
+  OPTIMISM_GOERLI = 420
 }
 
 export const PROD_SUPPORTED_CHAIN_IDS = [
@@ -25,14 +29,17 @@ export const PROD_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.FANTOM,
   SupportedChainId.CRONOS,
   SupportedChainId.OKC_MAINNET,
-  SupportedChainId.SATOSHI_MAINNET
+  SupportedChainId.SATOSHI_MAINNET,
+  SupportedChainId.OPTIMISM_MAINNET
 ];
 
 export const DEMO_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.GOERLI,
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
-  SupportedChainId.BASE_GOERLI
+  SupportedChainId.BASE_GOERLI,
+  SupportedChainId.BINANCE_TESTNET,
+  SupportedChainId.OPTIMISM_GOERLI
 ];
 
 export const DEV_SUPPORTED_CHAIN_IDS = [
@@ -47,7 +54,10 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
-  SupportedChainId.SATOSHI_MAINNET
+  SupportedChainId.SATOSHI_MAINNET,
+  SupportedChainId.BINANCE_TESTNET,
+  SupportedChainId.GANACHE_NETWORK,
+  SupportedChainId.OPTIMISM_GOERLI
 ];
 
 export const SUPPORTED_CHAIN_IDS =
@@ -75,7 +85,7 @@ export const prodSupportedChains: ChainsType = {
     code: 'ETH',
     rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     explorer: 'https://etherscan.io',
-    multisigTxUrl: 'https://safe-transaction.mainnet.gnosis.io'
+    multisigTxUrl: 'https://safe-transaction-mainnet.safe.global'
   },
   [SupportedChainId.BINANCE]: {
     id: 56,
@@ -116,7 +126,7 @@ export const prodSupportedChains: ChainsType = {
   [SupportedChainId.CRONOS]: {
     id: 25,
     icon: '/icons/chains/cronos.svg',
-    title: 'Cronos',
+    title: 'Cronos Mainnet Beta',
     code: 'CRO',
     rpc: 'https://evm.cronos.org',
     explorer: 'https://cronos.crypto.org/explorer',
@@ -126,7 +136,7 @@ export const prodSupportedChains: ChainsType = {
   [SupportedChainId.OKC_MAINNET]: {
     id: 66,
     icon: '/icons/chains/okc.png',
-    title: 'OKC Mainnet',
+    title: 'OKXChain Mainnet',
     code: 'OKT',
     rpc: 'https://exchainrpc.okex.org',
     explorer: 'https://www.oklink.com/en/okc',
@@ -140,6 +150,15 @@ export const prodSupportedChains: ChainsType = {
     rpc: 'https://mainnet-rpc.satoshichain.io',
     explorer: 'https://satoshiscan.io',
     multisigTxUrl: ''
+  },
+  [SupportedChainId.OPTIMISM_MAINNET]: {
+    id: 10,
+    icon: '/icons/chains/optimism.png',
+    title: 'OP Mainnet',
+    code: 'ETH',
+    rpc: 'https://mainnet.optimism.io/',
+    explorer: 'https://optimistic.etherscan.io/',
+    multisigTxUrl: 'https://safe-transaction-optimism.safe.global/'
   }
 };
 
@@ -166,7 +185,7 @@ export const demoSupportedChains: ChainsType = {
   [SupportedChainId.OKC_TESTNET]: {
     id: 65,
     icon: '/icons/chains/okc.png',
-    title: 'OKC Testnet',
+    title: 'OKExChain Testnet',
     code: 'OKT',
     rpc: 'https://exchaintestrpc.okex.org/',
     explorer: 'https://www.oklink.com/en/okc-test',
@@ -180,6 +199,24 @@ export const demoSupportedChains: ChainsType = {
     rpc: 'https://goerli.base.org/',
     explorer: 'https://goerli.basescan.org',
     multisigTxUrl: ''
+  },
+  [SupportedChainId.BINANCE_TESTNET]: {
+    id: 97,
+    icon: '/icons/chains/bsc.svg',
+    title: 'Binance Testnet',
+    code: 'BNB',
+    rpc: 'https://bsc-testnet.publicnode.com',
+    explorer: 'https://testnet.bscscan.com/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.OPTIMISM_GOERLI]: {
+    id: 420,
+    icon: '/icons/chains/optimism.png',
+    title: 'Optimism Goerli Testnet',
+    code: 'ETH',
+    rpc: 'https://goerli.optimism.io',
+    explorer: 'https://goerli-optimism.etherscan.io/',
+    multisigTxUrl: ''
   }
 };
 
@@ -191,7 +228,7 @@ export const devSupportedChains: ChainsType = {
     code: 'ETH',
     rpc: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     explorer: 'https://etherscan.io',
-    multisigTxUrl: 'https://safe-transaction.mainnet.gnosis.io'
+    multisigTxUrl: 'https://safe-transaction-mainnet.safe.global'
   },
   [SupportedChainId.BINANCE]: {
     id: 56,
@@ -232,7 +269,7 @@ export const devSupportedChains: ChainsType = {
   [SupportedChainId.CRONOS]: {
     id: 25,
     icon: '/icons/chains/cronos.svg',
-    title: 'Cronos',
+    title: 'Cronos Mainnet Beta',
     code: 'CRO',
     rpc: 'https://evm.cronos.org',
     explorer: 'https://cronos.crypto.org/explorer',
@@ -242,7 +279,7 @@ export const devSupportedChains: ChainsType = {
   [SupportedChainId.OKC_MAINNET]: {
     id: 66,
     icon: '/icons/chains/okc.png',
-    title: 'OKC Mainnet',
+    title: 'OKXChain Mainnet',
     code: 'OKT',
     rpc: 'https://exchainrpc.okex.org',
     explorer: 'https://www.oklink.com/en/okc',
@@ -270,7 +307,7 @@ export const devSupportedChains: ChainsType = {
   [SupportedChainId.OKC_TESTNET]: {
     id: 65,
     icon: '/icons/chains/okc.png',
-    title: 'OKC Testnet',
+    title: 'OKExChain Testnet',
     code: 'OKT',
     rpc: 'https://exchaintestrpc.okex.org/',
     explorer: 'https://www.oklink.com/en/okc-test',
@@ -292,6 +329,33 @@ export const devSupportedChains: ChainsType = {
     code: 'SATS',
     rpc: 'https://mainnet-rpc.satoshichain.io',
     explorer: 'https://satoshiscan.io',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.BINANCE_TESTNET]: {
+    id: 97,
+    icon: '/icons/chains/bsc.svg',
+    title: 'BNB Smart Chain Testnet',
+    code: 'tBNB',
+    rpc: 'https://bsc-testnet.publicnode.com',
+    explorer: 'https://testnet.bscscan.com/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.GANACHE_NETWORK]: {
+    id: 999,
+    icon: '/icons/chains/ganache.png',
+    title: 'Ganache Network',
+    code: 'WAN',
+    rpc: 'http://13.42.77.252:8545',
+    explorer: '',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.OPTIMISM_GOERLI]: {
+    id: 420,
+    icon: '/icons/chains/optimism.png',
+    title: 'Optimism Goerli Testnet',
+    code: 'ETH',
+    rpc: 'https://goerli.optimism.io',
+    explorer: 'https://goerli-optimism.etherscan.io/',
     multisigTxUrl: ''
   }
 };

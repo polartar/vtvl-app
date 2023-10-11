@@ -83,6 +83,7 @@ const SafeSelector = () => {
               }`}
               onClick={async () => {
                 setCurrentSafe(undefined);
+                setCurrentSafeId('');
                 setShowSafes(false);
               }}>
               <SafeItem />

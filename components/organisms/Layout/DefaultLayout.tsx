@@ -1,17 +1,16 @@
 import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
+import { ArrowLeftIcon } from '@components/atoms/Icons';
 import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
-import ThemeLoader from '@components/atoms/ThemeLoader/ThemeLoader';
+import { Typography } from '@components/atoms/Typography/Typography';
 import ConnectWalletOptionsProps from '@components/molecules/ConnectWalletOptions/ConnectWalletOptions';
 import Header from '@components/molecules/Header/Header';
 import Sidebar from '@components/molecules/Sidebar/Sidebar';
 import styled from '@emotion/styled';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useGlobalContext } from '@providers/global.context';
-import OnboardingContext from '@providers/onboarding.context';
 import { useVestingContext } from '@providers/vesting.context';
-import { useUser } from '@store/useUser';
 import { useWeb3React } from '@web3-react/core';
 import { motion } from 'framer-motion';
 import useEagerConnect from 'hooks/useEagerConnect';
@@ -56,24 +55,10 @@ interface DefaultLayoutProps {
  *  This has a sidebar prop to determine if the Sidebar component should be shown or not.
  */
 const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
-  const {
-    user,
-    recipient,
-    currentSafe,
-    error,
-    logOut,
-    showSideBar,
-    sidebarIsExpanded,
-    toggleSideBar,
-    refreshUser,
-    switchRole,
-    roleOverride
-  } = useContext(AuthContext);
-  const { inProgress } = useContext(OnboardingContext);
+  const { user, logOut, sidebarIsExpanded, toggleSideBar, refreshUser, switchRole, roleOverride } =
+    useContext(AuthContext);
   const { loading } = useLoaderContext();
-  const {
-    website: { theme }
-  } = useGlobalContext();
+
   const {
     isLoading,
     website: { name, assets }
@@ -375,7 +360,10 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     deleteInProgress,
     setDeleteInProgress,
     showDeleteModal,
-    setShowDeleteModal
+    setShowDeleteModal,
+    setIsLinearVesting,
+    showVestingSelectModal,
+    setShowVestingSelectModal
   } = useVestingContext();
   const {
     website: { organizationId: webOrgId }
@@ -410,16 +398,17 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       backgroundColor: 'rgba(0,0,0,0.3)',
       zIndex: '900',
       overflowY: 'auto',
-      paddingTop: '3rem',
-      paddingBottom: '3rem'
+      paddingTop: '1rem',
+      paddingBottom: '1rem'
     },
     content: {
-      maxWidth: '600px',
+      width: '100%',
+      maxWidth: '480px',
       backgroundColor: '#fff',
       position: 'absolute',
       filter: 'drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08))',
       borderRadius: '1.5rem',
-      left: '50%',
+      inset: '24px 40px 24px 50%',
       transform: 'translateX(-50%)'
     }
   };
@@ -477,6 +466,16 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     </>
   );
 
+  const goSchedulePage = (isLinear: boolean) => {
+    if (isLinear) {
+      router.push('/vesting-schedule/add-recipients');
+    } else {
+      router.push('/vesting-schedule/milestone/add-recipients');
+    }
+    setIsLinearVesting(isLinear);
+    setShowVestingSelectModal(false);
+  };
+
   return (
     <>
       <Container>
@@ -521,6 +520,49 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
       <Modal isOpen={connectWalletModal} style={modalStyles}>
         <ConnectWalletOptionsProps onConnect={handleWalletConnection} />
       </Modal>
+
+      <PromptModal isOpen={showVestingSelectModal} hideModal={() => setShowVestingSelectModal(false)} size="small">
+        <div className="text-center flex items-center justify-center flex-col gap-3 p-6">
+          <div className=" text-xl font-bold">Create Schedule</div>
+          <div className=" text-xs text-[#667085]">Select your vesting type</div>
+          <div className="flex gap-6 mt-5">
+            <div
+              className="bg-[#f9fafb] rounded-lg flex items-center justify-center flex-col gap-4 p-5 pt-8 cursor-pointer border-2 border-transparent transition-all group hover:border-2 box-border hover:border-primary-900"
+              onClick={() => goSchedulePage(true)}>
+              <img
+                src={'/images/linear-vesting.png'}
+                alt="linear-vesting"
+                className="transition-all group-hover:-translate-y-2"
+                width={200}
+              />
+              <div className="font-bold transition-all delay-150 group-hover:-translate-y-1">Time-based</div>
+            </div>
+
+            <div
+              className="bg-[#f9fafb] rounded-lg flex items-center justify-center flex-col border-2 border-transparent gap-2 p-5 pt-8 cursor-pointer transition-all group hover:border-2 box-border hover:border-primary-900"
+              onClick={() => goSchedulePage(false)}>
+              <img
+                src={'/images/milestone-based-icn.svg'}
+                alt="linear-vesting"
+                className="transition-all group-hover:-translate-y-2"
+                width={200}
+              />
+              <div className="font-bold transition-all delay-150 group-hover:-translate-y-1">Milestone-based</div>
+            </div>
+          </div>
+          <div className="mt-5 flex justify-start w-full">
+            <button
+              type="button"
+              className="flex items-center gap-2 bg-transparent hover:bg-neutral-100"
+              onClick={() => setShowVestingSelectModal(false)}>
+              <ArrowLeftIcon className="w-6 h-6" />
+              <Typography variant="inter" size="body">
+                Back
+              </Typography>
+            </button>
+          </div>
+        </div>
+      </PromptModal>
 
       {/* DELETE SCHEDULE MODAL PROMP */}
       <PromptModal isOpen={showDeleteModal} hideModal={handleHideModal} size="small">

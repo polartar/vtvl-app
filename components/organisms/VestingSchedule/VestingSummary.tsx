@@ -11,7 +11,6 @@ import { fetchMember } from 'services/db/member';
 import useSWR from 'swr';
 import { IRecipient, ISafe } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
-import { IVestingContractDoc } from 'types/models/vestingContract';
 import { getDuration } from 'utils/vesting';
 
 import VestingSummaryTable from './VestingSummaryTable';
@@ -49,7 +48,7 @@ const VestingSummary = ({
   }, [vestingContracts]);
 
   const { vestingSchedules: vestingSchedulesInfo } = useChainVestingContracts(
-    [vestingContract!],
+    vestingContract ? [vestingContract] : [],
     [vestingSchedule],
     recipients
   );
