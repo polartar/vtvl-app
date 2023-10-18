@@ -19,5 +19,8 @@ export const QUERY_KEYS = {
   VESTING_INFO: {
     FROM_CONTRACTS: 'get-vesting-info-from-contract'
   },
+  API_KEYS: {
+    GET_KEYS: 'get-api-key'
+  },
   USD_PRICE: 'get_usd_price'
 };

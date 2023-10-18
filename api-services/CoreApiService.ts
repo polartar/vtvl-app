@@ -6,6 +6,7 @@ const API = process.env.NEXT_PUBLIC_VTVL_API;
 
 const headers = () => {
   const { accessToken } = getAuthStore();
+
   return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 };
 
@@ -24,8 +25,8 @@ const handleError = (error: AxiosError) => {
 };
 
 class CoreApiService {
-  get = async <R>(url: string, params: AnyObject = {}) =>
-    axios
+  get = async <R>(url: string, params: AnyObject = {}) => {
+    return axios
       .request<R>({
         method: 'get',
         url: `${API}${url}`,
@@ -34,6 +35,7 @@ class CoreApiService {
       })
       .then<R>(responseData)
       .catch(handleError);
+  };
 
   post = async <R>(url: string, data: AnyObject = {}, { headers: headers_, ...config }: AxiosRequestConfig = {}) =>
     axios
