@@ -327,7 +327,7 @@ const NewSafePage: NextPage = () => {
       console.error('error getting safe info ', error);
       // setFormMessage(`Multisig error: ${(error as any)?.message}`);
       if (((error as any)?.message as string).includes('user rejected transaction')) {
-        setFormMessage(`Multisig error: User rejected transaction.`);
+        setFormMessage(`Multisig error: You have rejected the transaction.`);
       } else if (((error as any)?.message as string).includes('invalid address')) {
         setFormMessage(`Multisig error: Invalid arguments.`);
       } else {
