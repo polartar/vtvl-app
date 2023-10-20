@@ -476,6 +476,11 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     setShowVestingSelectModal(false);
   };
 
+  const isSignIn = () => {
+    console.log(router.pathname);
+    return router.pathname.includes('/auth/login') || router.pathname.includes('/auth/register');
+  };
+
   return (
     <>
       <Container>
@@ -505,7 +510,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
           transition={{ duration: 0.3 }}>
           <Layout className="flex flex-row w-full">
             {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
-            <div className={`relative ${router.pathname.includes('/auth') ? 'sign-background' : ''}`}>
+            <div className={`relative ${isSignIn() ? 'sign-background' : ''}`}>
               {loading && router.pathname !== '/' && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
               <Main
                 sidebarIsExpanded={sidebarIsExpanded}
@@ -514,9 +519,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
                 {props.children}
               </Main>
             </div>
-            {router.pathname.includes('/auth') && (
-              <div className="absolute bottom-9 text-center w-full inter text-sm">© VTVL 2023</div>
-            )}
+            {isSignIn() && <div className="absolute bottom-9 text-center w-full inter text-sm">© VTVL 2023</div>}
           </Layout>
         </motion.div>
       </Container>
