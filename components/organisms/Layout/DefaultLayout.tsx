@@ -477,7 +477,6 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
   };
 
   const isSignIn = () => {
-    console.log(router.pathname);
     return router.pathname.includes('/auth/login') || router.pathname.includes('/auth/register');
   };
 

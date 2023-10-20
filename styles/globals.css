@@ -976,8 +976,8 @@ body::-webkit-scrollbar-thumb {
   align-items: center;
 }
 
-@media (min-height: 760px) {
+@media (min-height: 850px) {
   .sign-background main {
-    margin-top: -100px;
+    margin-top: -210px;
   }
 }
