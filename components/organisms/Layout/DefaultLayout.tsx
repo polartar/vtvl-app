@@ -518,7 +518,11 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
                 {props.children}
               </Main>
             </div>
-            {isSignIn() && <div className="absolute bottom-9 text-center w-full inter text-sm">© VTVL 2023</div>}
+            {isSignIn() && (
+              <div className="absolute bottom-9 text-center w-full inter text-sm">
+                © VTVL {new Date().getFullYear()}
+              </div>
+            )}
           </Layout>
         </motion.div>
       </Container>
