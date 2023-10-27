@@ -8,6 +8,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
+import VTVL_VESTING_V2_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
 import useIsAdmin from 'hooks/useIsAdmin';
@@ -22,6 +23,7 @@ import { createTransaction } from 'services/db/transaction';
 import { updateVesting } from 'services/db/vesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVestingContract } from 'types/models';
+import { isV2 } from 'utils/multicall';
 
 interface IndeterminateCheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
   indeterminate?: boolean;
@@ -175,7 +177,9 @@ const Table = ({
         );
         const VestingContract = new ethers.Contract(
           vestingContract?.data.address ?? '',
-          VTVL_VESTING_ABI.abi,
+          vestingContract?.data.updatedAt && isV2(vestingContract?.data.updatedAt)
+            ? VTVL_VESTING_V2_ABI.abi
+            : VTVL_VESTING_ABI.abi,
           ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
         );
 
