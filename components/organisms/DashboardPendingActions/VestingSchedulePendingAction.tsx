@@ -156,20 +156,20 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         });
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
         const threshold = await safeSdk.getThreshold();
-        const approvers = transaction.approvers ? [...transaction.approvers] : [];
-        safeTx.signatures.forEach((signature) => {
-          if (!approvers.find((approver) => approver === signature.signer)) {
-            approvers.push(signature.signer);
-          }
-        });
-        if (approvers.length >= threshold) {
+        // const approvers = transaction.approvers ? [...transaction.approvers] : [];
+        // safeTx.signatures.forEach((signature) => {
+        //   if (!approvers.find((approver) => approver === signature.signer)) {
+        //     approvers.push(signature.signer);
+        //   }
+        // });
+        if (safeTx.signatures.size >= threshold) {
           setStatus(transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
             ...vestingsStatus,
             [id]: transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
           });
-        } else if (safeTx.signatures.has(account.toLowerCase()) || approvers.find((approver) => approver === account)) {
+        } else if (safeTx.signatures.has(account.toLowerCase())) {
           setStatus(transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'AUTHORIZATION_REQUIRED');
           setTransactionStatus('WAITING_APPROVAL');
           setVestingsStatus({
@@ -183,7 +183,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             ...vestingsStatus,
             [id]: transaction.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'PENDING'
           });
-          if (approvers.length === threshold - 1) {
+          if (safeTx.signatures.size === threshold - 1) {
             setIsExecutableAfterApprove(true);
           }
         }
@@ -423,7 +423,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
-              approvers: [account],
+              // approvers: [account],
               fundingAmount: amount,
               chainId
             });
@@ -604,8 +604,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
             chainId,
-            vestingIds: [vestingId],
-            approvers: [account]
+            vestingIds: [vestingId]
+            // approvers: [account]
           });
           updateTransactions(transaction);
           await VestingScheduleApiService.updateVestingSchedule(
@@ -717,10 +717,10 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.safeHash as string));
-        const t = await TransactionApiService.updateTransaction(transaction.id, {
-          approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
-        });
-        updateTransactions(t);
+        // const t = await TransactionApiService.updateTransaction(transaction.id, {
+        //   approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
+        // });
+        // updateTransactions({...transaction, approvers:});
         toast.success('Approved successfully.');
         setTransactionStatus('EXECUTABLE');
         setTransactionLoaderStatus('SUCCESS');
