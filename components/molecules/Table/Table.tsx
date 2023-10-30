@@ -175,6 +175,12 @@ const Table = ({
           ],
           ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
         );
+        console.log(
+          'checkContractBalance - ',
+          mintFormState.address,
+          vestingContract?.data.address,
+          ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
+        );
         const VestingContract = new ethers.Contract(
           vestingContract?.data.address ?? '',
           vestingContract?.data.updatedAt && isV2(vestingContract?.data.updatedAt)
