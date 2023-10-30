@@ -81,8 +81,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               <LoaderContextProvider>
                 <TokenContextProvider>
                   <OnboardingContextProvider>
-                    <VestingContextProvider>
-                      <DashboardContextProvider>
+                    <DashboardContextProvider>
+                      <VestingContextProvider>
                         <TransactionLoaderContextProvider>
                           <TeammateContextProvider>
                             <ClaimTokensContextProvider>
@@ -93,8 +93,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                             </ClaimTokensContextProvider>
                           </TeammateContextProvider>
                         </TransactionLoaderContextProvider>
-                      </DashboardContextProvider>
-                    </VestingContextProvider>
+                      </VestingContextProvider>
+                    </DashboardContextProvider>
                   </OnboardingContextProvider>
                 </TokenContextProvider>
               </LoaderContextProvider>

@@ -61,7 +61,7 @@ const defaultCliffDurationOption: DateDurationOptionValues | CliffDuration = 'no
 const ConfigureSchedule: NextPageWithLayout = () => {
   const { organizationId, currentSafe } = useAuthContext();
   const { account, chainId, activate } = useWeb3React();
-  const { updateVestingContract } = useDashboardContext();
+  const { updateVestingContract, vestingFactoryContract } = useDashboardContext();
   const { recipients, scheduleFormState, scheduleMode, scheduleState, updateScheduleFormState, setScheduleState } =
     useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
@@ -100,7 +100,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue,
     setError,
     clearErrors,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting, isDirty }
   } = useForm({
     defaultValues: {
       ...scheduleFormState,
@@ -685,23 +685,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   //   }
   // }, [startDateTime.value, endDateTime.value]);
 
-  useEffect(() => {
-    if (isScheduleValid()) {
-      setFormError(false);
-      setFormSuccess(true);
-      setFormMessage('');
-    } else {
-      setFormError(true);
-      setFormSuccess(false);
-      setFormMessage('');
-    }
-  }, [amountToBeVested.value]);
-
-  // Update form error message when the dates and cliff duration does not match
-  useEffect(() => {
-    const validity = isScheduleValid();
-  }, [startDateTime.value, endDateTime.value, cliffDuration.value]);
-
   const isScheduleValid = () => {
     if (startDateTime.value && endDateTime.value) {
       // Compute duration of start and end dates
@@ -740,6 +723,13 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       setFormError(true);
       setFormSuccess(false);
       setFormMessage("Amount to be vested can't be 0");
+      return false;
+    }
+
+    if (!scheduleName.value) {
+      setFormError(true);
+      setFormSuccess(false);
+      setFormMessage('Please add a schedule name');
       return false;
     }
 
@@ -834,11 +824,12 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     setValue: fuSetValue,
     setError: fuSetError,
     clearErrors: fuClearErrors,
-    formState: { errors: fuErrors, isSubmitting: fuIsSubmitting }
+    formState: { isDirty: fuIsDirty, errors: fuErrors, isSubmitting: fuIsSubmitting }
   } = useForm({
     defaultValues: {
       formUsage: '',
       templateName: '',
+      scheduleName: '',
       saveAsTemplate: false
     }
   });
@@ -846,6 +837,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   // Stores all related data about the template prompt and its behavior.
   const formUsage = { value: fuWatch('formUsage'), state: fuGetFieldState('formUsage') };
   const templateName = { value: fuWatch('templateName'), state: fuGetFieldState('templateName') };
+  const scheduleName = { value: fuWatch('scheduleName'), state: fuGetFieldState('scheduleName') };
   const saveAsTemplate = { value: fuWatch('saveAsTemplate'), state: fuGetFieldState('saveAsTemplate') };
 
   // Checks for the prompt status first before letting the user interact with the form
@@ -974,7 +966,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     // const ABI = [PERFORM_CREATE_FUNCTION];
 
     // Set the vestingContractId based on the scheduleState value coming from the previous forms.
-    let vestingContractId = scheduleState.vestingContractId;
+    let vestingContractId = scheduleState?.vestingContractId;
     // If the contract is set to be a new one, let's create one.
     if (scheduleState.createNewContract) {
       const vestingContract = await VestingContractApiService.createVestingContract({
@@ -1095,9 +1087,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     // resetVestingState();
     setScheduleState({
       name: '',
-      contractName: '',
-      createNewContract: false,
-      vestingContractId: ''
+      contractName: vestingFactoryContract?.name ?? '',
+      createNewContract: !vestingFactoryContract?.id,
+      vestingContractId: vestingFactoryContract?.id ?? ''
     });
     setSavingSchedule(false);
   };
@@ -1113,6 +1105,18 @@ const ConfigureSchedule: NextPageWithLayout = () => {
       toast.warn('Something went wrong while registering as members');
     }
   };
+
+  // Validation monitoring
+  // Update form error message when the dates and cliff duration does not match
+  useEffect(() => {
+    if (isDirty || fuIsDirty) {
+      isScheduleValid();
+    }
+  }, [amountToBeVested.value, scheduleName.value, startDateTime.value, endDateTime.value, cliffDuration.value]);
+
+  useEffect(() => {
+    setScheduleState({ name: scheduleName.value });
+  }, [scheduleName.value]);
 
   return (
     <div className="max-w-2xl">
@@ -1614,6 +1618,24 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               </div> */}
             </StepLabel>
 
+            <hr className="mx-6" />
+            <div className="px-6 pb-6">
+              <Controller
+                name="scheduleName"
+                control={fuControl}
+                rules={{ required: true }}
+                render={({ field, fieldState }) => (
+                  <Input
+                    label="Schedule name"
+                    placeholder="Enter schedule name"
+                    className="mt-3"
+                    error={Boolean(fieldState.error)}
+                    message={fieldState.error ? 'Please enter schedule name' : ''}
+                    {...field}
+                  />
+                )}
+              />
+            </div>
             <hr className="mx-6" />
             <div className="px-6 pt-6">
               {/* Convert to component later */}

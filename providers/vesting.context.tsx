@@ -68,7 +68,7 @@ interface IVestingData {
   updateScheduleFormState: (v: any) => void;
   updateRecipients: (v: any) => void;
   resetVestingState: () => void;
-  setScheduleState: (v: IScheduleState) => void;
+  setScheduleState: (v: Partial<IScheduleState>) => void;
   editSchedule: (id: string, data: IVesting) => void;
   deleteSchedulePrompt: (id: string, data: IVesting) => void;
   deleteSchedule: (id: string) => void;
@@ -114,7 +114,8 @@ export function VestingContextProvider({ children }: any) {
     setScheduleState({
       ...INITIAL_SCHEDULE_STATE,
       contractName: vestingFactoryContract?.name,
-      vestingContractId: vestingFactoryContract?.id
+      vestingContractId: vestingFactoryContract?.id,
+      createNewContract: !vestingFactoryContract?.id
     });
   }, [vestingFactoryContract]);
 
@@ -273,6 +274,15 @@ export function VestingContextProvider({ children }: any) {
       // });
     }
   }, [account]);
+
+  useEffect(() => {
+    setScheduleState({
+      ...INITIAL_SCHEDULE_STATE,
+      createNewContract: !vestingFactoryContract?.id,
+      contractName: vestingFactoryContract?.name || '',
+      vestingContractId: vestingFactoryContract?.id || ''
+    });
+  }, [vestingFactoryContract]);
 
   useEffect(() => {
     if (organizationId && chainId) getVestingSchedules();
