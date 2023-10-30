@@ -101,7 +101,7 @@ export const prodSupportedChains: ChainsType = {
     icon: '/icons/chains/polygon.svg',
     title: 'Polygon',
     code: 'MATIC',
-    rpc: 'https://polygon-rpc.com',
+    rpc: 'https://polygon.llamarpc.com',
     explorer: 'https://polygonscan.com/',
     multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
   },
@@ -244,7 +244,7 @@ export const devSupportedChains: ChainsType = {
     icon: '/icons/chains/polygon.svg',
     title: 'Polygon',
     code: 'MATIC',
-    rpc: 'https://polygon-rpc.com',
+    rpc: 'https://polygon.llamarpc.com',
     explorer: 'https://polygonscan.com/',
     multisigTxUrl: 'https://safe-transaction-polygon.safe.global'
   },
