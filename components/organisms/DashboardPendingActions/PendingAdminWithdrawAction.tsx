@@ -84,7 +84,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
       const threshold = await safeSdk.getThreshold();
       if (safeTx) {
         setSafeTransaction(safeTx);
-        const approvers = data.approvers ? [...data.approvers] : [];
+        const approvers: string[] = [];
         safeTx.signatures.forEach((signature) => {
           if (!approvers.find((approver) => approver === signature.signer)) {
             approvers.push(signature.signer);
@@ -146,10 +146,10 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(data?.safeHash as string));
-        const t = await TransactionApiService.updateTransaction(id, {
-          approvers: data.approvers ? [...data.approvers, account] : [account]
-        });
-        updateTransactions(t);
+        // const t = await TransactionApiService.updateTransaction(id, {
+        //   approvers: data.approvers ? [...data.approvers, account] : [account]
+        // });
+        // updateTransactions(t);
         setTransactionStatus('WAITING_APPROVAL');
         setStatus('AUTHORIZATION_REQUIRED');
         toast.success('Approved successfully.');

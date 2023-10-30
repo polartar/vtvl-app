@@ -38,9 +38,16 @@ export const CACHE_KEY = 'vtvl_cache';
 export const WEBSITE_NAME = 'VTVL';
 export const WEBSITE_EMAIL = 'no-reply@vtvl.io';
 
-export const FACTORY_CONTRACTS: { [key: number]: string } = {
-  5: '0x48CC6FFb03B14Cbf6315e99c8bfa42642848d7AA',
-  12009: '0x41d3f5e5744df065B34bc30be2021DDf8Ff72480'
+export const MILESTONE_FACTORY_CONTRACTS: { [key: number]: string } = {
+  5: '0x27D55Bb85B10326971212B773Bd55CbeAC916a59',
+  12009: '',
+  80001: '0xeB743FB4dD1EA47e57fd1135882143AdBb8595F8'
+};
+
+export const TIME_FACTORY_CONTRACTS: { [key: number]: string } = {
+  5: '0x4e0C356DBbb3946E7f7d9B43A237182029F85433',
+  12009: '0x41d3f5e5744df065B34bc30be2021DDf8Ff72480',
+  80001: '0xF409eDc80a93E96F224d615Df92F5ab3Aa8aFCfE'
 };
 export const PLATFORM_NAME = 'app';
 

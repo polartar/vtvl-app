@@ -18,7 +18,7 @@ interface ITransactionRequest {
   fundingAmount?: string;
   withdrawAmount?: string;
   vestingContractId?: string;
-  approvers?: string[];
+  // approvers?: string[];
 }
 
 interface ITransaction extends ITransactionRequest {

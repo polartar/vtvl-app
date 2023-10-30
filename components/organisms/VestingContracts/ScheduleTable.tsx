@@ -158,7 +158,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
       if (safeTx) {
         setSafeTransaction(safeTx);
-        const approvers = transaction.approvers ? [...transaction.approvers] : [];
+        // const approvers = transaction.approvers ? [...transaction.approvers] : [];
+        const approvers: string[] = [];
         safeTx.signatures.forEach((signature) => {
           if (!approvers.find((approver) => approver === signature.signer)) {
             approvers.push(signature.signer);
@@ -565,8 +566,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
             chainId,
-            vestingIds: [vestingId],
-            approvers: [account]
+            vestingIds: [vestingId]
+            // approvers: [account]
           });
           updateTransactions(transaction);
           await VestingScheduleApiService.updateVestingSchedule(
@@ -678,10 +679,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.safeHash as string));
-        const t = await TransactionApiService.updateTransaction(transaction.id, {
-          approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
-        });
-        updateTransactions(t);
+        // const t = await TransactionApiService.updateTransaction(transaction.id, {
+        //   approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
+        // });
+        // updateTransactions(t);
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
