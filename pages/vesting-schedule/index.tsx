@@ -257,14 +257,14 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         // description: 'Place holder for the time-based vesting schedules.',
         icon: <VestingTimeBasedIcon className="w-4 h-4" />,
         counter: vestingSchedules.length
-      },
-      {
-        label: 'Milestone-based',
-        value: 'milestone-based',
-        // description: 'Place holder for the milestone-based vesting schedules.',
-        icon: <VestingMilestoneBasedIcon className="w-4 h-4" />,
-        counter: milestoneVestings.length
       }
+      // {
+      //   label: 'Milestone-based',
+      //   value: 'milestone-based',
+      //   // description: 'Place holder for the milestone-based vesting schedules.',
+      //   icon: <VestingMilestoneBasedIcon className="w-4 h-4" />,
+      //   counter: milestoneVestings.length
+      // }
     ],
     [vestingSchedules, milestoneVestings]
   );

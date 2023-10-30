@@ -369,7 +369,7 @@ const Table = ({
                   <th
                     {...column.getHeaderProps()}
                     className={
-                      getTrProps(page[0]).stickyActions && headerGroup.headers.length - 1 === columnIndex
+                      getTrProps(page[0])?.stickyActions && headerGroup.headers.length - 1 === columnIndex
                         ? 'sticky right-0 bg-gradient-to-l from-neutral-100 via-neutral-100 to-transparent'
                         : ''
                     }>
@@ -389,7 +389,7 @@ const Table = ({
                       <td
                         {...cell.getCellProps()}
                         className={
-                          getTrProps(row).stickyActions && row.cells.length - 1 === cellIndex
+                          getTrProps(row)?.stickyActions && row.cells.length - 1 === cellIndex
                             ? 'sticky right-0 bg-gradient-to-l from-white via-white to-transparent'
                             : ''
                         }>
