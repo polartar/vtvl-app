@@ -47,10 +47,8 @@ const DashboardImportToken: NextPageWithLayout = () => {
   const [tokenDecimals, setTokenDecimals] = useState(18);
   const [loading, setLoading] = useState(false);
 
-  const onSubmit: SubmitHandler<IImportToken> = async (data) => {
+  const onSubmit: SubmitHandler<IImportToken> = async () => {
     // Place integration codes here for truly importing the token
-    console.log('Submitted the data', data);
-    console.log({ tokenName, tokenSymbol, chainId });
     // These are just a samples, remove or modify this when doing the integration.
     if (!tokenAddress.value || tokenAddress.value.length !== 42) {
       setError(true);
