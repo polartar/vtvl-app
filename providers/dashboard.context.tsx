@@ -14,6 +14,7 @@ import getUnixTime from 'date-fns/getUnixTime';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
 import { onSnapshot, query, where } from 'firebase/firestore';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';

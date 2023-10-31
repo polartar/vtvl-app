@@ -1,3 +1,5 @@
+import { IVestingContract } from 'interfaces/vestingContract';
+
 export interface IFundContractProps {
   name?: string;
   logo?: string;

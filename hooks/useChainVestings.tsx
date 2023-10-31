@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useWeb3React } from '@web3-react/core';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { useMemo } from 'react';
 import { SupportedChainId } from 'types/constants/supported-chains';
 import { IVestingContractDoc } from 'types/models/vestingContract';

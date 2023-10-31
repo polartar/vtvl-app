@@ -34,6 +34,7 @@ import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import { useDrawer } from 'hooks/useDrawer';
 import useIsAdmin from 'hooks/useIsAdmin';
+import { IVestingContract } from 'interfaces/vestingContract';
 import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';

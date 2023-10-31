@@ -9,6 +9,7 @@ import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import { useAuthContext } from '@providers/auth.context';
 import { useWeb3React } from '@web3-react/core';
 import { BigNumber, ethers } from 'ethers';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { useTokenContext } from 'providers/token.context';
 import CopyIcon from 'public/icons/copy-to-clipboard.svg';
 import { useEffect, useState } from 'react';

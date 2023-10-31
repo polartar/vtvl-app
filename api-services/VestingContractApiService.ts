@@ -1,4 +1,9 @@
 import CoreApiService from '@api-services/CoreApiService';
+import {
+  ICreateVestingContractRequest,
+  IDeployVestingContractRequest,
+  IVestingContract
+} from 'interfaces/vestingContract';
 
 class VestingContractApiService {
   // Token APIs
