@@ -172,7 +172,7 @@ export function VestingContextProvider({ children }: any) {
   // Removes the schedule from the DB
   const deleteSchedule = async (id: string) => {
     console.log('DELETE:::: DELETING', id);
-    return await VestingScheduleApiService.removeVestingSchedule(id);
+    return await VestingScheduleApiService.removeVestingSchedule(organizationId ?? '', id);
   };
 
   // Checks for routes and apply necessary state updates
