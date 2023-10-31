@@ -12,6 +12,7 @@ import eachWeekOfInterval from 'date-fns/eachWeekOfInterval';
 import eachYearOfInterval from 'date-fns/eachYearOfInterval';
 import format from 'date-fns/format';
 import formatDuration from 'date-fns/formatDuration';
+import formatISO from 'date-fns/formatISO';
 import getUnixTime from 'date-fns/getUnixTime';
 import intervalToDuration from 'date-fns/intervalToDuration';
 import Decimal from 'decimal.js';
@@ -609,12 +610,11 @@ export const transformVestingPayload: (data: IVesting) => Partial<IVestingSchedu
   } = data;
   return {
     organizationId,
-    vestingContractId,
-    transactionId,
     name,
-    startedAt: format(new Date(startDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
-    endedAt: format(new Date(endDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
-    originalEndedAt: format(new Date(originalEndDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
+    // Use ISO 8601 format
+    startedAt: formatISO(new Date(startDateTime!)),
+    endedAt: formatISO(new Date(endDateTime!)),
+    originalEndedAt: formatISO(new Date(originalEndDateTime!)),
     // releaseFrequencyType: EReleaseFrequencyTypes;
     releaseFrequencyType: releaseFrequencySelectedOption as ReleaseFrequency,
     releaseFrequency: customReleaseFrequencyNumber,

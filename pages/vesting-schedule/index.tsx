@@ -275,7 +275,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   };
 
   // const recipientTypes = convertAllToOptions(['All', 'Employee', 'Investor']);
-  const { Drawer, showDrawer, hideDrawer } = useDrawer({});
+  const { Drawer, showDrawer, hideDrawer, open } = useDrawer({});
 
   const handleScheduleClick = (rowData: any) => {
     console.log('Showing schedule', rowData, tab);
@@ -1148,24 +1148,26 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             ) : tab === 'milestone-based' ? (
               <Table columns={milestoneTableColumns} data={milestoneVestings} selectable pagination />
             ) : null}
-            <Drawer>
-              <MilestoneVesting
-                name="ISS-0132"
-                allocations={allocations}
-                milestones={milestones}
-                totalAllocation="400,000"
-                totalDuration="1 year 6 months"
-                totalRecipients={4}
-                onClose={hideDrawer}
-                actions={
-                  <>
-                    <Button className="primary block mx-auto mb-3" onClick={hideDrawer}>
-                      View Full Details
-                    </Button>
-                  </>
-                }
-              />
-            </Drawer>
+            {open ? (
+              <Drawer>
+                <MilestoneVesting
+                  name="ISS-0132"
+                  allocations={allocations}
+                  milestones={milestones}
+                  totalAllocation="400,000"
+                  totalDuration="1 year 6 months"
+                  totalRecipients={4}
+                  onClose={hideDrawer}
+                  actions={
+                    <>
+                      <Button className="primary block mx-auto mb-3" onClick={hideDrawer}>
+                        View Full Details
+                      </Button>
+                    </>
+                  }
+                />
+              </Drawer>
+            ) : null}
           </div>
         </>
       ) : (

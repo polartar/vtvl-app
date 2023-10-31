@@ -829,7 +829,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     defaultValues: {
       formUsage: '',
       templateName: '',
-      scheduleName: '',
+      scheduleName: scheduleMode?.data?.name ?? '',
       saveAsTemplate: false
     }
   });
@@ -1086,7 +1086,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     // Reset the value of everything else from the previous forms
     // resetVestingState();
     setScheduleState({
-      name: '',
+      name: scheduleMode?.data?.name ?? '',
       contractName: vestingFactoryContract?.name ?? '',
       createNewContract: !vestingFactoryContract?.id,
       vestingContractId: vestingFactoryContract?.id ?? ''

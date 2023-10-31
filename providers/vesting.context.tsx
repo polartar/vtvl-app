@@ -138,9 +138,9 @@ export function VestingContextProvider({ children }: any) {
     // Sets the schedule state
     setScheduleState({
       name: data.name,
-      contractName: '',
-      createNewContract: false,
-      vestingContractId: data.vestingContractId
+      contractName: vestingFactoryContract?.name,
+      createNewContract: !vestingFactoryContract?.id,
+      vestingContractId: vestingFactoryContract?.id
     });
   };
 
