@@ -16,6 +16,7 @@ import MILESTONE_FACTORY_ABI from 'contracts/abi/MilestoneFactory.json';
 import TIME_FACTORY_ABI from 'contracts/abi/TimeFactory.json';
 import VTVL_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import { ethers } from 'ethers';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -60,7 +61,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
   );
 
   const [transactionStatus, setTransactionStatus] = useState<
-    'INITIALIZE' | 'EXECUTABLE' | 'WAITING_APPROVAL' | 'APPROVAL_REQUIRED' | ''
+    'INITIALIZE' | 'EXECUTABLE' | 'WAITING_APPROVAL' | 'APPROVAL_REQUIRED' | '' | 'DEPLOYED'
   >('');
 
   const [status, setStatus] = useState<IStatus>('');
@@ -104,6 +105,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
       } else if (organizationId) {
         if (currentSafe) {
           setTransactionLoaderStatus('PENDING');
+
           const factoryContractInterface = new ethers.utils.Interface(TIME_FACTORY_ABI.abi);
           const createVestingContractEncoded = factoryContractInterface.encodeFunctionData('createVestingContract', [
             mintFormState.address
@@ -162,8 +164,11 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             TIME_FACTORY_ABI.abi,
             library.getSigner()
           );
+
           setTransactionLoaderStatus('IN_PROGRESS');
-          const vestingContractTx = await (await factoryContract.createVestingContract(mintFormState.address)).wait();
+          const vestingContractTx = await (
+            await factoryContract.createVestingContract(mintFormState.address, 0)
+          ).wait();
           const factoryInterface = new ethers.utils.Interface(TIME_FACTORY_ABI.abi);
           const vestingContractAddress = getParamFromEvent(
             factoryInterface,
@@ -171,17 +176,19 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             'CreateVestingContract(address,address)',
             0
           );
+          const newData = { ...data };
+          delete newData.token;
           await VestingContractApiService.updateVestingContract(id, {
-            ...data,
+            ...newData,
             tokenId: mintFormState.id,
             address: vestingContractAddress,
             status: 'SUCCESS',
-            isDeployed: true,
-            isActive: true,
-            updatedAt: Math.floor(new Date().getTime() / 1000).toString()
+            isDeployed: true
           });
           setTransactionLoaderStatus('SUCCESS');
         }
+
+        setTransactionStatus('DEPLOYED');
       }
     } catch (err) {
       console.log('handleDeployVestingContract - ', err);
@@ -450,6 +457,8 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             <button className="secondary small" onClick={handleDeployVestingContract}>
               Deploy
             </button>
+          ) : transactionStatus === 'DEPLOYED' ? (
+            <></>
           ) : (
             <button className="secondary small" onClick={handleDeployVestingContract}>
               Deploy

@@ -1,3 +1,5 @@
+import { IToken } from 'types/models';
+
 interface IVestingContract {
   id: string;
   createdAt: string;
@@ -10,6 +12,7 @@ interface IVestingContract {
   balance?: string | number;
   chainId: number;
   isDeployed: boolean;
+  token?: IToken;
   isActive: boolean;
   status: 'PENDING' | 'SUCCESS' | 'FAILED' | 'INITIALIZED';
   createdAt: string;
