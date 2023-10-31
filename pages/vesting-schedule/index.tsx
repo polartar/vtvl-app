@@ -682,7 +682,15 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         vestingLinearVestAmounts,
         vestingCliffAmounts
       ]);
-
+      console.log('createClaimsBatch', {
+        addresses,
+        vestingStartTimestamps,
+        vestingEndTimestamps,
+        vestingCliffTimestamps,
+        vestingReleaseIntervals,
+        vestingLinearVestAmounts,
+        vestingCliffAmounts
+      });
       if (currentSafe?.address && account && chainId && organizationId) {
         const VestingContract = new ethers.Contract(
           vestingContract?.data.address ?? '',

@@ -15,6 +15,7 @@ import getUnixTime from 'date-fns/getUnixTime';
 import intervalToDuration from 'date-fns/intervalToDuration';
 import sub from 'date-fns/sub';
 import Decimal from 'decimal.js';
+import { ethers } from 'ethers';
 import { CliffDuration, DateDurationOptionsPlural, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { IChartDataTypes } from 'types/vesting';
 
@@ -102,8 +103,17 @@ export const getCliffAmount = (
   amountAfterCliff: number,
   amountToBeVested: number
 ): number => {
+  console.log({ amountToBeVested, amountAfterCliff });
   if (amountAfterCliff && cliffDuration !== 'no-cliff') {
-    return +amountToBeVested * (+amountAfterCliff / 100);
+    return parseFloat(
+      ethers.utils.formatEther(
+        ethers.utils
+          .parseEther((+amountToBeVested).toString())
+          .mul(ethers.utils.parseEther((+amountAfterCliff).toString()))
+          .div(ethers.utils.parseEther('100'))
+          .toString()
+      )
+    );
   }
   return 0;
 };
