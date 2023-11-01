@@ -1002,8 +1002,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     } else {
       const cliffAmount = getCliffAmount(
         scheduleFormState.cliffDuration,
-        +lumpSumReleaseAfterCliff,
-        scheduleFormState.amountToBeVested
+        +lumpSumReleaseAfterCliff.value,
+        +scheduleFormState.amountToBeVested
       );
 
       const vesting = await VestingScheduleApiService.createVestingSchedule({

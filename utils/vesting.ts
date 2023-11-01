@@ -579,7 +579,7 @@ export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IV
       releaseFrequencySelectedOption: releaseFrequencyType,
       customReleaseFrequencyNumber: releaseFrequency,
       customReleaseFrequencyOption: cliffDurationType, // Should be changed and provided by API
-      lumpSumReleaseAfterCliff: +cliffAmount,
+      lumpSumReleaseAfterCliff: (+cliffAmount / +amount) * 100, // convert to percentage
       amountToBeVested: +amount,
       amountToBeVestedText: amount,
       amountClaimed: 0,
@@ -620,8 +620,12 @@ export const transformVestingPayload: (data: IVesting) => Partial<IVestingSchedu
     releaseFrequency: customReleaseFrequencyNumber,
     cliffDurationType: cliffDurationOption as CliffDuration,
     // cliffDurationType: ECliffTypes;
-    cliffDuration: cliffDurationNumber,
-    cliffAmount: String(lumpSumReleaseAfterCliff),
+    cliffDuration: cliffDurationNumber ? +cliffDurationNumber : 0,
+    cliffAmount: getCliffAmount(
+      cliffDurationOption as CliffDuration,
+      +lumpSumReleaseAfterCliff,
+      +amountToBeVested
+    ).toString(), // compute from percentage
     amount: String(amountToBeVested),
     status
   };
