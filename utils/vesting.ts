@@ -612,9 +612,9 @@ export const transformVestingPayload: (data: IVesting) => Partial<IVestingSchedu
     vestingContractId,
     transactionId,
     name,
-    startedAt: format(new Date(startDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
-    endedAt: format(new Date(endDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
-    originalEndedAt: format(new Date(originalEndDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
+    startedAt: startDateTime?.toISOString(),
+    endedAt: endDateTime?.toISOString(),
+    originalEndedAt: originalEndDateTime?.toISOString(),
     // releaseFrequencyType: EReleaseFrequencyTypes;
     releaseFrequencyType: releaseFrequencySelectedOption as ReleaseFrequency,
     releaseFrequency: customReleaseFrequencyNumber,

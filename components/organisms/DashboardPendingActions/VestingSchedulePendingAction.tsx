@@ -358,11 +358,11 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         await fundTransaction.wait();
         // This should have a function to update the vesting schedule status
         // From INITIALIZED into WAITING_APPROVAL
+        console.log({ data });
         await VestingScheduleApiService.updateVestingSchedule(
           {
             ...data,
-            status: 'WAITING_APPROVAL',
-            updatedAt: Math.floor(new Date().getTime() / 1000)
+            status: 'WAITING_APPROVAL'
           },
           id
         );
