@@ -108,7 +108,8 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
 
           const factoryContractInterface = new ethers.utils.Interface(TIME_FACTORY_ABI.abi);
           const createVestingContractEncoded = factoryContractInterface.encodeFunctionData('createVestingContract', [
-            mintFormState.address
+            mintFormState.address,
+            0
           ]);
           const ethAdapter = new EthersAdapter({
             ethers: ethers,

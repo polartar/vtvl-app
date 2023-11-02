@@ -571,7 +571,7 @@ export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IV
       startDateTime: new Date(startedAt!),
       endDateTime: new Date(endedAt!),
       originalEndDateTime: new Date(originalEndedAt!),
-      cliffDuration: cliffDurationType,
+      cliffDuration: cliffDurationType !== 'no_cliff' ? `${cliffDuration}_${cliffDurationType}` : cliffDurationType,
       cliffDurationNumber: cliffDuration,
       cliffDurationOption: cliffDurationType,
       releaseFrequency: releaseFrequencyType,

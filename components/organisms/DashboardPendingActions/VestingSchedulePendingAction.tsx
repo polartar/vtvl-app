@@ -17,6 +17,7 @@ import {
 } from 'components/organisms/DashboardPendingActions';
 import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import getUnixTime from 'date-fns/getUnixTime';
 import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import useIsAdmin from 'hooks/useIsAdmin';
@@ -480,7 +481,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         return;
       }
 
-      const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+      const vestingStartTime = vesting.details.startDateTime!;
 
       const cliffReleaseDate =
         vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
@@ -493,7 +494,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
               start: actualStartDateTime,
-              end: new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+              end: vesting.details.endDateTime!,
               cliffDuration: vesting.details.cliffDuration,
               cliffAmount: cliffAmountPerUser,
               frequency: vesting.details.releaseFrequency,
@@ -501,9 +502,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             }).projectedEndDateTime
           : null;
       const vestingStartTimestamps = new Array(totalRecipients).fill(
-        cliffReleaseTimestamp
-          ? cliffReleaseTimestamp
-          : Math.floor((vesting.details.startDateTime as unknown as Timestamp).seconds)
+        cliffReleaseTimestamp ? cliffReleaseTimestamp : Math.floor(getUnixTime(vesting.details.startDateTime!))
       );
       let vestingEndTimestamps = new Array(totalRecipients).fill(Math.floor(vestingEndTimestamp!.getTime() / 1000));
       const vestingCliffTimestamps = new Array(totalRecipients).fill(cliffReleaseTimestamp);
