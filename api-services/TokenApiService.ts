@@ -5,7 +5,7 @@ class TokenApiService {
   createToken: (payload: ICreateDeployedTokenRequest) => Promise<IToken> = (payload) =>
     CoreApiService.post('/token', payload);
 
-  importToken = (payload: IImportTokenRequest) => CoreApiService.post('/token/import', payload);
+  importToken = (payload: IImportTokenRequest) => CoreApiService.post<IToken>('/token/import', payload);
 
   getTokens = () => CoreApiService.get<IToken[]>('/token');
 

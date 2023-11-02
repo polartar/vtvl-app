@@ -55,7 +55,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
       setMessage('Token address is invalid');
     } else if (tokenName && chainId) {
       setLoading(true);
-      await TokenApiService.importToken({
+      const token = await TokenApiService.importToken({
         organizationId: String(organizationId),
         chainId,
         logo: '',
@@ -63,9 +63,11 @@ const DashboardImportToken: NextPageWithLayout = () => {
         burnable: false
       });
       updateMintFormState({
+        id: token.id,
         name: tokenName,
         symbol: tokenSymbol,
         decimals: tokenDecimals,
+        totalSupply: token.totalSupply,
         address: tokenAddress.value ? ethers.utils.getAddress(tokenAddress.value) : '',
         logo: '',
         organizationId: String(organizationId),
