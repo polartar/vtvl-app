@@ -170,10 +170,14 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           toast.success('Revoking is done successfully.');
         }
         setTransactionStatus('SUCCESS');
-      } catch (err) {
+      } catch (err: any) {
         console.log('handleRevoke - ', err);
         toast.error('Something went wrong. Try agaiin later.');
-        setTransactionStatus('ERROR');
+        if (err.code === 'ACTION_REJECTED') {
+          setTransactionStatus('REJECTED');
+        } else {
+          setTransactionStatus('ERROR');
+        }
       }
     }
   };

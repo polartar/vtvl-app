@@ -191,9 +191,13 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
 
         setTransactionStatus('DEPLOYED');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleDeployVestingContract - ', err);
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -238,10 +242,14 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         }
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleApproveTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -296,10 +304,14 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         setStatus('SUCCESS');
         setTransactionStatus('');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleExecuteTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -317,9 +329,13 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         setTransactionLoaderStatus('SUCCESS');
         // fetchDashboardVestingContract();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleTransferOwnership - ', err);
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -352,9 +368,13 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         setStatus('SUCCESS');
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleTransferOwnership - ', err);
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 

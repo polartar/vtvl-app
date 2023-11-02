@@ -126,8 +126,13 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
 
       setTransactionStatus('SUCCESS');
       onBack();
-    } catch (error) {
-      setTransactionStatus('ERROR');
+    } catch (error: any) {
+      if (error.code === 'ACTION_REJECTED') {
+        setTransactionStatus('REJECTED');
+      } else {
+        setTransactionStatus('ERROR');
+      }
+
       console.error(error);
     }
   };

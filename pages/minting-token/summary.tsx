@@ -106,9 +106,13 @@ const Summary: NextPageWithLayout = () => {
         setTransactionStatus('SUCCESS');
         Router.push('/minting-token/complete');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleCreateToken - ', err);
-      setTransactionStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionStatus('REJECTED');
+      } else {
+        setTransactionStatus('ERROR');
+      }
       setLoading(false);
     }
   };

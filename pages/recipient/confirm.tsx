@@ -58,8 +58,12 @@ const RecipientCreate: NextPage = () => {
         jsonrpc: '2.0'
       });
       toast.success(MESSAGES.WALLET.SIGNED);
-    } catch (err) {
-      setTransactionStatus('ERROR');
+    } catch (err: any) {
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionStatus('REJECTED');
+      } else {
+        setTransactionStatus('ERROR');
+      }
       setIsSubmitting(false);
       toast.error(MESSAGES.WALLET.REJECT);
       return;

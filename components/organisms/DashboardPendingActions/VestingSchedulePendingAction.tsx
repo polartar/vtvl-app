@@ -310,10 +310,15 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         await fetchDashboardData();
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
       console.log('handleExecuteFundingTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      // setTransactionLoaderStatus('ERROR');
     }
   };
 
@@ -447,10 +452,14 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           }
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('fundContract - ', err);
       toast.error((err as any).reason ? (err as any).reason : 'Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -674,10 +683,14 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleCreateSignTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -718,10 +731,14 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         setTransactionStatus('EXECUTABLE');
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleApproveTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -793,10 +810,14 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         setTransactionLoaderStatus('SUCCESS');
         setTransactionStatus('');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleExecuteTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 

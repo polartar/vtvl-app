@@ -77,9 +77,13 @@ const TokenBurnModal: React.FC<ITokenBurnModalProps> = ({ hideModal }) => {
       setTransactionStatus('SUCCESS');
       toast.success('Tokens are burnt successfully');
       hideModal();
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleBurn - ', err);
-      setTransactionStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionStatus('REJECTED');
+      } else {
+        setTransactionStatus('ERROR');
+      }
     }
   };
 
