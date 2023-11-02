@@ -26,6 +26,7 @@ interface IImportTokenRequest {
   chainId: number;
   logo?: string;
   address: string;
+  burnable: false;
 }
 
 interface ICreateDeployedTokenRequest extends IImportTokenRequest {
