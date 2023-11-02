@@ -34,7 +34,7 @@ export interface IVestingSchedule {
   id?: string;
   organizationId: string;
   tokenId: string;
-  vestingContractId: string;
+  vestingContractId?: string;
   name: string;
   startedAt?: string;
   endedAt?: string;

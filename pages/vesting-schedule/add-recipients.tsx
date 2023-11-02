@@ -132,7 +132,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
   };
 
   const handleReturn = useCallback(() => {
-    if (state.step === 0) Router.push('/vesting-schedule');
+    if (state.step === 0 || vestingFactoryContract) Router.push('/vesting-schedule');
     else {
       Router.push(
         `/vesting-schedule/add-recipients${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`
@@ -228,10 +228,10 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
       setRows(
         recipients.map((record: IRecipient) => ({
           id: record.id,
-          name: record.name,
+          name: record?.name || record?.user?.name || '',
           address: record.address,
           allocations: record.allocations,
-          email: String(record.email),
+          email: record?.email || record?.user?.email || '',
           type: record.role,
           company: ''
         }))
