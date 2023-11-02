@@ -9,6 +9,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { REDIRECT_URIS } from '@utils/constants';
+import { toUTCString } from '@utils/date';
 import { getCliffAmount, transformCliffDurationType } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
@@ -82,9 +83,9 @@ const ScheduleSummary: NextPageWithLayout = () => {
           tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
           vestingContractId: String(vestingContractId),
           name: scheduleState.name,
-          startedAt: scheduleFormState.startDateTime?.toISOString(),
-          endedAt: scheduleFormState.endDateTime?.toISOString(),
-          originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
+          startedAt: toUTCString(scheduleFormState.startDateTime ?? new Date()),
+          endedAt: toUTCString(scheduleFormState.endDateTime ?? new Date()),
+          originalEndedAt: toUTCString(scheduleFormState.originalEndDateTime ?? new Date()),
           releaseFrequencyType: scheduleFormState.releaseFrequency,
           releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
           cliffDurationType: transformCliffDurationType(scheduleFormState.cliffDuration),

@@ -21,6 +21,8 @@ import { IVesting } from 'types/models';
 import { IVestingStatus } from 'types/models/vesting';
 import { IChartDataTypes } from 'types/vesting';
 
+import { toUTCString } from './date';
+
 /**
  * Quick function to format everything to align every record of the chart
  */
@@ -611,9 +613,9 @@ export const transformVestingPayload: (data: IVesting) => Partial<IVestingSchedu
     organizationId,
     name,
     // Use ISO 8601 format
-    startedAt: startDateTime?.toISOString(),
-    endedAt: endDateTime?.toISOString(),
-    originalEndedAt: originalEndDateTime?.toISOString(),
+    startedAt: toUTCString(startDateTime ?? new Date()),
+    endedAt: toUTCString(endDateTime ?? new Date()),
+    originalEndedAt: toUTCString(originalEndDateTime ?? new Date()),
     // releaseFrequencyType: EReleaseFrequencyTypes;
     releaseFrequencyType: releaseFrequencySelectedOption as ReleaseFrequency,
     releaseFrequency: customReleaseFrequencyNumber,
