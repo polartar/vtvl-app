@@ -466,6 +466,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       const totalRecipients = vestingRecipients.length;
       const vesting = data;
       const vestingId = id;
+
       const cliffAmountPerUser =
         getCliffAmount(
           vesting.details.cliffDuration,
@@ -480,7 +481,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         return;
       }
 
-      const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+      const vestingStartTime = vesting.details.startDateTime ?? new Date();
 
       const cliffReleaseDate =
         vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
@@ -493,7 +494,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
               start: actualStartDateTime,
-              end: new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+              end: vesting.details.endDateTime,
               cliffDuration: vesting.details.cliffDuration,
               cliffAmount: cliffAmountPerUser,
               frequency: vesting.details.releaseFrequency,
@@ -506,6 +507,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           : Math.floor((vesting.details.startDateTime as unknown as Timestamp).seconds)
       );
       let vestingEndTimestamps = new Array(totalRecipients).fill(Math.floor(vestingEndTimestamp!.getTime() / 1000));
+
       const vestingCliffTimestamps = new Array(totalRecipients).fill(cliffReleaseTimestamp);
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
@@ -514,6 +516,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         vesting.details.cliffDuration
       );
       const vestingReleaseIntervals = new Array(totalRecipients).fill(releaseFrequencyTimestamp);
+
       const vestingLinearVestAmounts = vestingRecipients.map((recipient) => {
         return ethers.utils
           .parseUnits(recipient.allocations, 18)

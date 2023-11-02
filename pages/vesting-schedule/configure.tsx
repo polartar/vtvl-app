@@ -1007,7 +1007,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
       const vesting = await VestingScheduleApiService.createVestingSchedule({
         organizationId: String(organizationId),
-        tokenId: mintFormState.id,
+        tokenId: mintFormState.id ?? '',
         vestingContractId: vestingContractId as string,
         // tokenId,
         // vestingContractId: String(vestingContractId),
