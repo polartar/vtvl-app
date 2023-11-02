@@ -556,7 +556,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Handles the archiving process
   const handleArchiving = async (id: string, data: IVesting) => {
-    await VestingScheduleApiService.removeVestingSchedule(id);
+    await VestingScheduleApiService.removeVestingSchedule(organizationId ?? '', id);
     toast.success(`Schedule: ${data.name} archived!`);
     // toast.success(`Schedule: ${data.name} ${!data.archive ? '' : 'un'}archived!`);
     // getVestings(false);
