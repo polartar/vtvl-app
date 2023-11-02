@@ -1,6 +1,7 @@
 import { useWeb3React } from '@web3-react/core';
 import VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ethers } from 'ethers';
+import { IVestingContract } from 'interfaces/vestingContract';
 import React, { useEffect, useState } from 'react';
 import { SupportedChains } from 'types/constants/supported-chains';
 

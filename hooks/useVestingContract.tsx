@@ -1,5 +1,6 @@
 import VestingContractApiService from '@api-services/VestingContractApiService';
 import { useQuery } from '@tanstack/react-query';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { useMemo } from 'react';
 import { IVestingContractDoc } from 'types/models/vestingContract';
 import { QUERY_KEYS } from 'utils/queries';

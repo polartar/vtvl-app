@@ -24,7 +24,7 @@ export default function useAuth() {
   const { setOrganizationId, setOrganization, authenticateUser, user } = useAuthContext(); // Old context
   const router = useRouter();
 
-  const authorizeUser = async () => {
+  const authorizeUser = async (redirectUser = true) => {
     // Get me
     const profile = await getUserProfile();
     console.log('USER PROFILE', profile);
@@ -55,11 +55,13 @@ export default function useAuth() {
           } as IUser,
           orgs[0].role
         );
+        if (!redirectUser) return;
         router.push(orgs[0].role === IRole.FOUNDER ? REDIRECT_URIS.MAIN : REDIRECT_URIS.CLAIM);
       } else {
         // No associated org, new user
         // redirect to account setup
         // POST /organization
+        if (!redirectUser) return;
         router.push(REDIRECT_URIS.SETUP_ACCOUNT);
       }
       console.log('useMAGIC organizations', organizations, orgs);

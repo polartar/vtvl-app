@@ -13,6 +13,7 @@ import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
 import useIsAdmin from 'hooks/useIsAdmin';
+import { IVestingContract } from 'interfaces/vestingContract';
 import BatchIcon from 'public/icons/batch-transactions.svg';
 import DownloadIcon from 'public/icons/download.svg';
 import PrintIcon from 'public/icons/print.svg';

@@ -6,10 +6,11 @@ import Button from '@components/atoms/Button/Button';
 import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
+import useAuth from '@hooks/useAuth';
 import AuthContext from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
-import { useAuth } from '@store/useAuth';
+import { useAuth as useAuthStore } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { useUser } from '@store/useUser';
 import { REDIRECT_URIS, WEBSITE_NAME } from '@utils/constants';
@@ -38,7 +39,8 @@ type AccountForm = {
 };
 
 const AccountSetupPage: NextPage = () => {
-  const { userId } = useAuth();
+  const { userId } = useAuthStore();
+  const { authorizeUser } = useAuth();
   const { organizations } = useOrganization();
   const { logout } = useAuthAPI();
   const { updateUserProfile } = useUserAPI();
@@ -146,11 +148,6 @@ const AccountSetupPage: NextPage = () => {
 
       console.log('Create organization', userId, organizations, data);
 
-      if (newOrganization) {
-        // Save the user data when possible
-        saveUser({ organizationId: newOrganization.id, role: IRole.FOUNDER });
-      }
-
       // Add the same user as a member
       /**
        * @dev NO need to create new member here.
@@ -169,7 +166,12 @@ const AccountSetupPage: NextPage = () => {
       }
       setFormSuccess(true);
       // Update later with reusable onboarding steps
-      router.push('/v2/onboarding/setup-safes');
+      if (newOrganization) {
+        // Save the user data when possible
+        // saveUser({ organizationId: newOrganization.id, role: IRole.FOUNDER });
+        await authorizeUser(false);
+        router.push('/v2/onboarding/setup-safes');
+      }
     } catch (error) {
       console.error(error);
       setFormError(true);
