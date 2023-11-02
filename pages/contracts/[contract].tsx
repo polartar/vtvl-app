@@ -1,6 +1,7 @@
 import VestingContractApiService from '@api-services/VestingContractApiService';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
 import Contract from '@components/organisms/VestingContracts/VestingContract';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import React from 'react';
