@@ -772,7 +772,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   };
 
   const totalTokenSupply = parseFloat((mintFormState.totalSupply ?? '0').toString());
-
   // Handles the clicking of the "MAX" button in the amount to be vested section
   const handleMaxAmount = () => {
     const newMaxValue = totalTokenSupply;
@@ -1008,7 +1007,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
       const vesting = await VestingScheduleApiService.createVestingSchedule({
         organizationId: String(organizationId),
-        tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
+        tokenId: mintFormState.id,
         vestingContractId: vestingContractId as string,
         // tokenId,
         // vestingContractId: String(vestingContractId),
@@ -1586,7 +1585,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
                         placeholder="Enter amount"
                         type="number"
                         max={totalTokenSupply}
-                        error={Boolean(errors.amountToBeVestedText) || amountToBeVested.value > totalTokenSupply}
+                        error={Boolean(errors.amountToBeVestedText) || amountToBeVested.value >= totalTokenSupply}
                         message={errors.amountToBeVestedText ? 'Please enter amount to be vested' : ''}
                         onFocus={() => setActiveStep(4)}
                         {...field}
