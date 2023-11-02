@@ -1,5 +1,6 @@
 import { IScheduleFormState } from '@providers/vesting.context';
 import Decimal from 'decimal.js';
+import { BigNumberish } from 'ethers';
 
 export type IVestingStatus =
   | 'INITIALIZED'
@@ -59,4 +60,14 @@ export interface IVestingContractProps {
 export interface IVestingDoc {
   id: string;
   data: IVesting;
+}
+
+export interface ClaimInput {
+  startTimestamp: BigNumberish;
+  endTimestamp: BigNumberish;
+  cliffReleaseTimestamp: BigNumberish;
+  releaseIntervalSecs: BigNumberish;
+  linearVestAmount: BigNumberish;
+  cliffAmount: BigNumberish;
+  recipient: string;
 }

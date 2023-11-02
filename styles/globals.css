@@ -967,3 +967,17 @@ body::-webkit-scrollbar-thumb {
   position: fixed;
   top: 100px;
 }
+.sign-background {
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-image: url(/images/signin_background.png);
+  display: flex;
+  align-items: center;
+}
+
+@media (min-height: 850px) {
+  .sign-background main {
+    margin-top: -210px;
+  }
+}

@@ -241,8 +241,8 @@ export const MilestoneConfigureSchedule: React.FC<MilestoneConfigureProps> = ({ 
   };
 
   return (
-    <div className="flex flex-wrap gap-2 justify-between w-full max-w-[1200px]">
-      <div className="w-full mb-6 panel max-w-2xl p-0">
+    <div className="grid lg:grid-cols-12 gap-6 justify-between w-full max-w-[1200px] relative">
+      <div className="lg:col-span-7 panel p-0">
         <div className="p-6">
           <Typography className="font-semibold" size="subtitle">
             Setup schedule
@@ -355,8 +355,10 @@ export const MilestoneConfigureSchedule: React.FC<MilestoneConfigureProps> = ({ 
         </div>
       </div>
 
-      <div className="w-full max-w-lg panel items-center h-max" id="summary-parent">
-        <MilestoneSummary form={form} />
+      <div className="lg:col-span-5">
+        <div className="lg:sticky top-[104px]">
+          <MilestoneSummary form={form} />
+        </div>
       </div>
     </div>
   );

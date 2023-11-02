@@ -68,7 +68,7 @@ interface IVestingData {
   updateScheduleFormState: (v: any) => void;
   updateRecipients: (v: any) => void;
   resetVestingState: () => void;
-  setScheduleState: (v: IScheduleState) => void;
+  setScheduleState: (v: Partial<IScheduleState>) => void;
   editSchedule: (id: string, data: IVesting) => void;
   deleteSchedulePrompt: (id: string, data: IVesting) => void;
   deleteSchedule: (id: string) => void;
@@ -114,7 +114,8 @@ export function VestingContextProvider({ children }: any) {
     setScheduleState({
       ...INITIAL_SCHEDULE_STATE,
       contractName: vestingFactoryContract?.name,
-      vestingContractId: vestingFactoryContract?.id
+      vestingContractId: vestingFactoryContract?.id,
+      createNewContract: !vestingFactoryContract?.id
     });
   }, [vestingFactoryContract]);
 
@@ -137,9 +138,9 @@ export function VestingContextProvider({ children }: any) {
     // Sets the schedule state
     setScheduleState({
       name: data.name,
-      contractName: '',
-      createNewContract: false,
-      vestingContractId: data.vestingContractId
+      contractName: vestingFactoryContract?.name,
+      createNewContract: !vestingFactoryContract?.id,
+      vestingContractId: vestingFactoryContract?.id
     });
   };
 
@@ -171,7 +172,7 @@ export function VestingContextProvider({ children }: any) {
   // Removes the schedule from the DB
   const deleteSchedule = async (id: string) => {
     console.log('DELETE:::: DELETING', id);
-    return await VestingScheduleApiService.removeVestingSchedule(id);
+    return await VestingScheduleApiService.removeVestingSchedule(organizationId ?? '', id);
   };
 
   // Checks for routes and apply necessary state updates
@@ -273,6 +274,15 @@ export function VestingContextProvider({ children }: any) {
       // });
     }
   }, [account]);
+
+  useEffect(() => {
+    setScheduleState({
+      ...INITIAL_SCHEDULE_STATE,
+      createNewContract: !vestingFactoryContract?.id,
+      contractName: vestingFactoryContract?.name || '',
+      vestingContractId: vestingFactoryContract?.id || ''
+    });
+  }, [vestingFactoryContract]);
 
   useEffect(() => {
     if (organizationId && chainId) getVestingSchedules();

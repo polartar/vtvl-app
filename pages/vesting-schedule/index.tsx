@@ -34,6 +34,7 @@ import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import { useDrawer } from 'hooks/useDrawer';
 import useIsAdmin from 'hooks/useIsAdmin';
+import { IVestingContract } from 'interfaces/vestingContract';
 import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
@@ -257,14 +258,14 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         // description: 'Place holder for the time-based vesting schedules.',
         icon: <VestingTimeBasedIcon className="w-4 h-4" />,
         counter: vestingSchedules.length
-      },
-      {
-        label: 'Milestone-based',
-        value: 'milestone-based',
-        // description: 'Place holder for the milestone-based vesting schedules.',
-        icon: <VestingMilestoneBasedIcon className="w-4 h-4" />,
-        counter: milestoneVestings.length
       }
+      // {
+      //   label: 'Milestone-based',
+      //   value: 'milestone-based',
+      //   // description: 'Place holder for the milestone-based vesting schedules.',
+      //   icon: <VestingMilestoneBasedIcon className="w-4 h-4" />,
+      //   counter: milestoneVestings.length
+      // }
     ],
     [vestingSchedules, milestoneVestings]
   );
@@ -275,7 +276,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
   };
 
   // const recipientTypes = convertAllToOptions(['All', 'Employee', 'Investor']);
-  const { Drawer, showDrawer, hideDrawer } = useDrawer({});
+  const { Drawer, showDrawer, hideDrawer, open } = useDrawer({});
 
   const handleScheduleClick = (rowData: any) => {
     console.log('Showing schedule', rowData, tab);
@@ -555,7 +556,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
   // Handles the archiving process
   const handleArchiving = async (id: string, data: IVesting) => {
-    await VestingScheduleApiService.removeVestingSchedule(id);
+    await VestingScheduleApiService.removeVestingSchedule(organizationId ?? '', id);
     toast.success(`Schedule: ${data.name} archived!`);
     // toast.success(`Schedule: ${data.name} ${!data.archive ? '' : 'un'}archived!`);
     // getVestings(false);
@@ -808,29 +809,24 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const addresses1 = vesting.recipients.map((recipient: any) => recipient.walletAddress);
         const cliffReleaseDate =
           vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
-            ? getCliffDateTime(
-                new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-                vesting.details.cliffDuration
-              )
+            ? getCliffDateTime(vesting.details.startDateTime!, vesting.details.cliffDuration)
             : '';
         const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
         const numberOfReleases =
           vesting.details.startDateTime && vesting.details.endDateTime
             ? getNumberOfReleases(
                 vesting.details.releaseFrequency,
-                cliffReleaseDate || new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-                new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
+                cliffReleaseDate || vesting.details.startDateTime!,
+                vesting.details.endDateTime!
               )
             : 0;
         const actualStartDateTime =
-          vesting.details.cliffDuration !== 'no_cliff'
-            ? cliffReleaseDate
-            : new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+          vesting.details.cliffDuration !== 'no_cliff' ? cliffReleaseDate : vesting.details.startDateTime;
         const vestingEndTimestamp =
           vesting.details.endDateTime && actualStartDateTime
             ? getChartData({
                 start: actualStartDateTime,
-                end: new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+                end: vesting.details.endDateTime!,
                 cliffDuration: vesting.details.cliffDuration,
                 cliffAmount: cliffAmountPerUser,
                 frequency: vesting.details.releaseFrequency,
@@ -1148,24 +1144,26 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             ) : tab === 'milestone-based' ? (
               <Table columns={milestoneTableColumns} data={milestoneVestings} selectable pagination />
             ) : null}
-            <Drawer>
-              <MilestoneVesting
-                name="ISS-0132"
-                allocations={allocations}
-                milestones={milestones}
-                totalAllocation="400,000"
-                totalDuration="1 year 6 months"
-                totalRecipients={4}
-                onClose={hideDrawer}
-                actions={
-                  <>
-                    <Button className="primary block mx-auto mb-3" onClick={hideDrawer}>
-                      View Full Details
-                    </Button>
-                  </>
-                }
-              />
-            </Drawer>
+            {open ? (
+              <Drawer>
+                <MilestoneVesting
+                  name="ISS-0132"
+                  allocations={allocations}
+                  milestones={milestones}
+                  totalAllocation="400,000"
+                  totalDuration="1 year 6 months"
+                  totalRecipients={4}
+                  onClose={hideDrawer}
+                  actions={
+                    <>
+                      <Button className="primary block mx-auto mb-3" onClick={hideDrawer}>
+                        View Full Details
+                      </Button>
+                    </>
+                  }
+                />
+              </Drawer>
+            ) : null}
           </div>
         </>
       ) : (

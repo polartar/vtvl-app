@@ -21,6 +21,8 @@ import { IVesting } from 'types/models';
 import { IVestingStatus } from 'types/models/vesting';
 import { IChartDataTypes } from 'types/vesting';
 
+import { toUTCString } from './date';
+
 /**
  * Quick function to format everything to align every record of the chart
  */
@@ -571,14 +573,14 @@ export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IV
       startDateTime: new Date(startedAt!),
       endDateTime: new Date(endedAt!),
       originalEndDateTime: new Date(originalEndedAt!),
-      cliffDuration: cliffDurationType,
+      cliffDuration: cliffDurationType !== 'no_cliff' ? `${cliffDuration}_${cliffDurationType}` : cliffDurationType,
       cliffDurationNumber: cliffDuration,
       cliffDurationOption: cliffDurationType,
       releaseFrequency: releaseFrequencyType,
       releaseFrequencySelectedOption: releaseFrequencyType,
       customReleaseFrequencyNumber: releaseFrequency,
       customReleaseFrequencyOption: cliffDurationType, // Should be changed and provided by API
-      lumpSumReleaseAfterCliff: +cliffAmount,
+      lumpSumReleaseAfterCliff: (+cliffAmount / +amount) * 100, // convert to percentage
       amountToBeVested: +amount,
       amountToBeVestedText: amount,
       amountClaimed: 0,
@@ -609,19 +611,22 @@ export const transformVestingPayload: (data: IVesting) => Partial<IVestingSchedu
   } = data;
   return {
     organizationId,
-    vestingContractId,
-    transactionId,
     name,
-    startedAt: format(new Date(startDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
-    endedAt: format(new Date(endDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
-    originalEndedAt: format(new Date(originalEndDateTime!), 'yyyy-MM-ddXhh-mm-ss.SSSZ'),
+    // Use ISO 8601 format
+    startedAt: toUTCString(startDateTime ?? new Date()),
+    endedAt: toUTCString(endDateTime ?? new Date()),
+    originalEndedAt: toUTCString(originalEndDateTime ?? new Date()),
     // releaseFrequencyType: EReleaseFrequencyTypes;
     releaseFrequencyType: releaseFrequencySelectedOption as ReleaseFrequency,
     releaseFrequency: customReleaseFrequencyNumber,
     cliffDurationType: cliffDurationOption as CliffDuration,
     // cliffDurationType: ECliffTypes;
-    cliffDuration: cliffDurationNumber,
-    cliffAmount: String(lumpSumReleaseAfterCliff),
+    cliffDuration: cliffDurationNumber ? +cliffDurationNumber : 0,
+    cliffAmount: getCliffAmount(
+      cliffDurationOption as CliffDuration,
+      +lumpSumReleaseAfterCliff,
+      +amountToBeVested
+    ).toString(), // compute from percentage
     amount: String(amountToBeVested),
     status
   };

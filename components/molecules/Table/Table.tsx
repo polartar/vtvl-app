@@ -13,6 +13,7 @@ import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
 import useIsAdmin from 'hooks/useIsAdmin';
+import { IVestingContract } from 'interfaces/vestingContract';
 import BatchIcon from 'public/icons/batch-transactions.svg';
 import DownloadIcon from 'public/icons/download.svg';
 import PrintIcon from 'public/icons/print.svg';
@@ -318,7 +319,7 @@ const Table = ({
               createdAt: Math.floor(new Date().getTime() / 1000),
               updatedAt: Math.floor(new Date().getTime() / 1000),
               organizationId: organizationId,
-              approvers: [account],
+              // approvers: [account],
               fundingAmount: amount,
               chainId
             });
@@ -369,7 +370,7 @@ const Table = ({
                   <th
                     {...column.getHeaderProps()}
                     className={
-                      getTrProps(page[0]).stickyActions && headerGroup.headers.length - 1 === columnIndex
+                      getTrProps(page[0])?.stickyActions && headerGroup.headers.length - 1 === columnIndex
                         ? 'sticky right-0 bg-gradient-to-l from-neutral-100 via-neutral-100 to-transparent'
                         : ''
                     }>
@@ -389,7 +390,7 @@ const Table = ({
                       <td
                         {...cell.getCellProps()}
                         className={
-                          getTrProps(row).stickyActions && row.cells.length - 1 === cellIndex
+                          getTrProps(row)?.stickyActions && row.cells.length - 1 === cellIndex
                             ? 'sticky right-0 bg-gradient-to-l from-white via-white to-transparent'
                             : ''
                         }>

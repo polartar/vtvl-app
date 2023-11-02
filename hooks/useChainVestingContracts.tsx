@@ -3,6 +3,7 @@ import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
 import { BigNumber } from 'ethers/lib/ethers';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { useEffect } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting } from 'types/models';

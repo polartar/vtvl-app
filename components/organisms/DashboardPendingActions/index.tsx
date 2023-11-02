@@ -9,6 +9,7 @@ import VestingContractPendingAction from 'components/organisms/DashboardPendingA
 import VestingSchedulePendingAction from 'components/organisms/DashboardPendingActions/VestingSchedulePendingAction';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { BigNumber, ethers } from 'ethers';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useEffect, useState } from 'react';

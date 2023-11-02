@@ -9,6 +9,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { REDIRECT_URIS } from '@utils/constants';
+import { toUTCString } from '@utils/date';
 import { getCliffAmount, transformCliffDurationType } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
@@ -18,6 +19,7 @@ import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { ReactElement } from 'react';
+import { toast } from 'react-toastify';
 import { CliffDuration, ReleaseFrequency } from 'types/constants/schedule-configuration';
 import { formatRecipientsDocToForm } from 'utils/recipients';
 import { formatNumber } from 'utils/token';
@@ -40,109 +42,77 @@ const ScheduleSummary: NextPageWithLayout = () => {
       activate(injected);
       return;
     }
+    try {
+      let vestingContractId = scheduleState.vestingContractId;
+      if (scheduleState.createNewContract) {
+        const vestingContract = await VestingContractApiService.createVestingContract({
+          name: scheduleState.contractName!,
+          tokenId: mintFormState.id ?? '',
+          organizationId: organizationId!,
+          chainId: chainId ?? 0
+        });
+        vestingContractId = vestingContract.id;
+        updateVestingContract(vestingContract);
+      }
 
-    // const PERFORM_CREATE_FUNCTION = 'function performCreate(uint256 value, bytes memory deploymentData)';
-    // const PERFORM_CREATE_INTERFACE = 'performCreate(uint256,bytes)';
-    // const ABI = [PERFORM_CREATE_FUNCTION];
+      // Create a draft vesting record -- which has a status of "CREATING".
+      // Draft records can still be edited or deleted as long as it's not yet funded.
+      if (scheduleMode && scheduleMode.edit && scheduleMode.id && scheduleMode.data) {
+        await VestingScheduleApiService.updateVestingSchedule(
+          {
+            ...scheduleMode.data,
+            name: scheduleState.name,
+            details: { ...scheduleFormState },
+            updatedAt: Math.floor(new Date().getTime() / 1000),
+            transactionId: ''
+            // vestingContractId
+          },
+          scheduleMode.id
+        );
 
-    // If the contract is set to be a new one, let's create one.
-
-    let vestingContractId = scheduleState.vestingContractId;
-    if (scheduleState.createNewContract) {
-      const vestingContract = await VestingContractApiService.createVestingContract({
-        name: scheduleState.contractName!,
-        tokenId: mintFormState.id ?? '',
-        organizationId: organizationId!,
-        chainId: chainId ?? 0
-      });
-      vestingContractId = vestingContract.id;
-      updateVestingContract(vestingContract);
-    }
-
-    // Create a draft vesting record -- which has a status of "CREATING".
-    // Draft records can still be edited or deleted as long as it's not yet funded.
-    if (scheduleMode && scheduleMode.edit && scheduleMode.id && scheduleMode.data) {
-      await VestingScheduleApiService.updateVestingSchedule(
-        {
-          ...scheduleMode.data,
+        await Promise.all(
+          recipients
+            .filter((recipient) => Boolean(recipient.id))
+            .map((recipient) => RecipientApiService.updateRecipient(recipient.id, recipient))
+        );
+      } else {
+        const vesting = await VestingScheduleApiService.createVestingSchedule({
+          organizationId: organizationId!,
+          status: 'INITIALIZED',
+          // vestingContractId,
+          tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
+          vestingContractId: String(vestingContractId),
           name: scheduleState.name,
-          details: { ...scheduleFormState },
-          updatedAt: Math.floor(new Date().getTime() / 1000),
-          transactionId: ''
-          // vestingContractId
-        },
-        scheduleMode.id
-      );
+          startedAt: toUTCString(scheduleFormState.startDateTime ?? new Date()),
+          endedAt: toUTCString(scheduleFormState.endDateTime ?? new Date()),
+          originalEndedAt: toUTCString(scheduleFormState.originalEndDateTime ?? new Date()),
+          releaseFrequencyType: scheduleFormState.releaseFrequency,
+          releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
+          cliffDurationType: transformCliffDurationType(scheduleFormState.cliffDuration),
+          cliffDuration: Number(scheduleFormState.cliffDurationNumber),
+          cliffAmount: '1111111',
+          amount: Number(scheduleFormState.amountToBeVested).toString(),
+          recipes: [],
+          redirectUri: REDIRECT_URIS.RECIPIENT_INVITE
+        });
+      }
 
-      await Promise.all(
-        recipients
-          .filter((recipient) => Boolean(recipient.id))
-          .map((recipient) => RecipientApiService.updateRecipient(recipient.id, recipient))
-      );
-    } else {
-      const vesting = await VestingScheduleApiService.createVestingSchedule({
-        organizationId: organizationId!,
-        status: 'INITIALIZED',
-        // vestingContractId,
-        tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
-        vestingContractId: String(vestingContractId),
-        name: scheduleState.name,
-        startedAt: scheduleFormState.startDateTime?.toISOString(),
-        endedAt: scheduleFormState.endDateTime?.toISOString(),
-        originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
-        releaseFrequencyType: scheduleFormState.releaseFrequency,
-        releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
-        cliffDurationType: transformCliffDurationType(scheduleFormState.cliffDuration),
-        cliffDuration: Number(scheduleFormState.cliffDurationNumber),
-        cliffAmount: '1111111',
-        amount: Number(scheduleFormState.amountToBeVested).toString(),
-        recipes: [],
-        redirectUri: REDIRECT_URIS.RECIPIENT_INVITE
+      console.log('creating vesting schedule');
+      // Redirect to the success page to notify the user
+      await Router.push('/vesting-schedule/success');
+
+      // Reset the value of everything else from the previous forms
+      // resetVestingState();
+      setScheduleState({
+        name: '',
+        contractName: '',
+        createNewContract: false,
+        vestingContractId: ''
       });
-
-      // const vestingId = await createVesting({
-      //   name: scheduleState.name,
-      //   details: { ...scheduleFormState },
-      //   organizationId: organizationId!,
-      //   status: 'INITIALIZED',
-      //   createdAt: Math.floor(new Date().getTime() / 1000),
-      //   updatedAt: Math.floor(new Date().getTime() / 1000),
-      //   transactionId: '',
-      //   vestingContractId,
-      //   tokenAddress: mintFormState.address,
-      //   tokenId,
-      //   chainId,
-      //   createdBy: user?.uid
-      // });
-
-      // const newRecipients = recipients.map((recipient) =>
-      //   createRecipient({
-      //     vestingId: String(vesting.id),
-      //     organizationId: String(organizationId),
-      //     name: recipient.name,
-      //     email: recipient.email,
-      //     allocations: String(recipient.allocations ?? 0),
-      //     walletAddress: String(recipient.address),
-      //     recipientType: String(recipient.role),
-      //     status: recipient.address ? 'accepted' : 'delivered'
-      //   })
-      // );
-
-      // await Promise.all(newRecipients);
+    } catch (err) {
+      toast.error('Something went wrong. Try again later.');
+      throw err;
     }
-
-    console.log('creating vesting schedule');
-    // Redirect to the success page to notify the user
-    await Router.push('/vesting-schedule/success');
-
-    // Reset the value of everything else from the previous forms
-    // resetVestingState();
-    setScheduleState({
-      name: '',
-      contractName: '',
-      createNewContract: false,
-      vestingContractId: ''
-    });
   };
 
   return (

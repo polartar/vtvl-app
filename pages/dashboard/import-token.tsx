@@ -47,10 +47,8 @@ const DashboardImportToken: NextPageWithLayout = () => {
   const [tokenDecimals, setTokenDecimals] = useState(18);
   const [loading, setLoading] = useState(false);
 
-  const onSubmit: SubmitHandler<IImportToken> = async (data) => {
+  const onSubmit: SubmitHandler<IImportToken> = async () => {
     // Place integration codes here for truly importing the token
-    console.log('Submitted the data', data);
-
     // These are just a samples, remove or modify this when doing the integration.
     if (!tokenAddress.value || tokenAddress.value.length !== 42) {
       setError(true);
@@ -61,7 +59,8 @@ const DashboardImportToken: NextPageWithLayout = () => {
         organizationId: String(organizationId),
         chainId,
         logo: '',
-        address: tokenAddress.value
+        address: tokenAddress.value,
+        burnable: false
       });
       updateMintFormState({
         name: tokenName,
@@ -98,8 +97,10 @@ const DashboardImportToken: NextPageWithLayout = () => {
         ],
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
+
       const symbol = await tokenContract.symbol();
       const name = await tokenContract.name();
+
       const decimals = await tokenContract.decimals();
       setTokenName(name);
       setTokenSymbol(symbol);

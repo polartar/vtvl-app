@@ -2,6 +2,7 @@ import VTVL2_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { BigNumber, BigNumberish, ethers } from 'ethers';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';

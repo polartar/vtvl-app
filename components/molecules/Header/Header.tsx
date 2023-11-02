@@ -5,11 +5,12 @@ import WalletConnect from '@components/atoms/WalletConnect/WalletConnect';
 import { useGlobalContext } from '@providers/global.context';
 import { useWeb3React } from '@web3-react/core';
 import Router, { useRouter } from 'next/router';
-import React from 'react';
+import React, { useCallback } from 'react';
 import Fade from 'react-reveal/Fade';
+import { twMerge } from 'tailwind-merge';
 import { IUser } from 'types/models';
 import { IRole } from 'types/models/settings';
-import { NO_CONNECT_WALLET_BUTTON_PAGES, WEBSITE_NAME } from 'utils/constants';
+import { NO_CONNECT_WALLET_BUTTON_PAGES, PUBLIC_DOMAIN_NAME, REDIRECT_URIS, WEBSITE_NAME } from 'utils/constants';
 
 interface HeaderProps {
   user: IUser | undefined;
@@ -24,22 +25,24 @@ interface HeaderProps {
 const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSideBar, onConnect }: HeaderProps) => {
   const { active, account } = useWeb3React();
   const { pathname } = useRouter();
+  const currentPath = `${PUBLIC_DOMAIN_NAME}${pathname}`;
   const {
     website: { assets, name }
   } = useGlobalContext();
 
   // Redirects the user to the right URL depending on the user's login state eg., /onboarding for non-logged in, /dashboard for logged-in users
-  const redirectToHome = () => {
-    let url = '/onboarding';
+  const redirectToHome = useCallback(() => {
+    let url = REDIRECT_URIS.AUTH_LOGIN;
     if (user) {
       if (user?.memberInfo?.role === IRole.EMPLOYEE) {
         url = '/onboarding/member';
       } else {
-        url = '/dashboard';
+        url = REDIRECT_URIS.MAIN;
       }
     }
-    Router.push(url);
-  };
+    // Trigger redirect only when outside the expected URL
+    if (currentPath !== url) Router.push(url);
+  }, [user, pathname]);
 
   const displayWalletConnect = NO_CONNECT_WALLET_BUTTON_PAGES.every((o) => pathname !== o);
 
@@ -66,13 +69,17 @@ const Header = ({ connected, onLogin, onLogout, user, onCreateAccount, toggleSid
     <header className={`sticky top-0 z-40 w-full h-20 bg-gray-50 flex flex-col items-center border-b border-gray-300`}>
       {/* Header with wallet and network selection section */}
       <Fade top when={displayWalletConnect}>
-        <div className="w-full flex flex-row gap-3 md:gap-5 justify-between h-20 absolute z-10 px-3 md:px-6 ">
+        <div
+          className={twMerge(
+            'w-full flex flex-row gap-3 md:gap-5 h-20 absolute z-10 px-3 md:px-6',
+            displayWalletConnect ? 'justify-between' : 'justify-center'
+          )}>
           {renderVTVLLogo()}
           <div
             className={`flex-row items-center gap-1.5 sm:gap-2 lg:gap-3.5 flex-shrink-0 transition-all delay-300 ${
               displayWalletConnect ? 'flex w-auto' : 'hidden w-0'
             }`}>
-            {user && user.uid && <SafeSelector />}
+            {user && <SafeSelector />}
             <NetworkSelector />
             <WalletConnect connected={active} account={account || ''} onConnect={onConnect} />
           </div>

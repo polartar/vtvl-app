@@ -19,6 +19,7 @@ import {
 import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import format from 'date-fns/format';
+import getUnixTime from 'date-fns/getUnixTime';
 import { BigNumber, ethers } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
@@ -158,7 +159,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
       if (safeTx) {
         setSafeTransaction(safeTx);
-        const approvers = transaction.approvers ? [...transaction.approvers] : [];
+        // const approvers = transaction.approvers ? [...transaction.approvers] : [];
+        const approvers: string[] = [];
         safeTx.signatures.forEach((signature) => {
           if (!approvers.find((approver) => approver === signature.signer)) {
             approvers.push(signature.signer);
@@ -452,7 +454,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       const vestingAmountPerUser = +vesting.details.amountToBeVested / totalRecipients - cliffAmountPerUser;
       const addresses = vestingRecipients.map((recipient) => recipient.address);
 
-      const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+      const vestingStartTime = vesting.details.startDateTime!;
 
       const cliffReleaseDate =
         vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
@@ -465,7 +467,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
               start: actualStartDateTime,
-              end: new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+              end: vesting.details.endDateTime!,
               cliffDuration: vesting.details.cliffDuration,
               cliffAmount: cliffAmountPerUser,
               frequency: vesting.details.releaseFrequency,
@@ -479,9 +481,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             //   )
             null;
       const vestingStartTimestamps = new Array(totalRecipients).fill(
-        cliffReleaseTimestamp
-          ? cliffReleaseTimestamp
-          : Math.floor((vesting.details.startDateTime as unknown as Timestamp).seconds)
+        cliffReleaseTimestamp ? cliffReleaseTimestamp : Math.floor(getUnixTime(vesting.details.startDateTime!))
       );
       const vestingEndTimestamps = new Array(totalRecipients).fill(Math.floor(vestingEndTimestamp!.getTime() / 1000));
       const vestingCliffTimestamps = new Array(totalRecipients).fill(cliffReleaseTimestamp);
@@ -565,8 +565,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
             chainId,
-            vestingIds: [vestingId],
-            approvers: [account]
+            vestingIds: [vestingId]
+            // approvers: [account]
           });
           updateTransactions(transaction);
           await VestingScheduleApiService.updateVestingSchedule(
@@ -678,10 +678,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('IN_PROGRESS');
         await approveTxResponse.transactionResponse?.wait();
         setSafeTransaction(await fetchSafeTransactionFromHash(transaction?.safeHash as string));
-        const t = await TransactionApiService.updateTransaction(transaction.id, {
-          approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
-        });
-        updateTransactions(t);
+        // const t = await TransactionApiService.updateTransaction(transaction.id, {
+        //   approvers: transaction.approvers ? [...transaction.approvers, account] : [account]
+        // });
+        // updateTransactions(t);
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }

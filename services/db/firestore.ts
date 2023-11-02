@@ -1,4 +1,5 @@
 import { CollectionReference, DocumentData, collection, getFirestore } from 'firebase/firestore';
+import { IVestingContract } from 'interfaces/vestingContract';
 import { IMilestoneForm } from 'types/milestone';
 import type {
   IInvitee,
