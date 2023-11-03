@@ -149,7 +149,7 @@ export const getReleaseFrequencyTimestamp = (
       ? 60
       : Math.round((getUnixTime(endDate) - getUnixTime(actualStartDateTime)) / intervals); //startWithIntervalSeconds - getUnixTime(actualStartDateTime);
 
-  return intervalSeconds;
+  return intervalSeconds === 0 ? 1 : intervalSeconds;
 };
 
 /**

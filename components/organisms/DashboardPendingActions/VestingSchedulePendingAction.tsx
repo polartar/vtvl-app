@@ -422,8 +422,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               status: 'PENDING',
               to: vestingContract?.address ?? '',
               type: 'FUNDING_CONTRACT',
-              createdAt: Math.floor(new Date().getTime() / 1000),
-              updatedAt: Math.floor(new Date().getTime() / 1000),
+
               organizationId: organizationId,
               // approvers: [account],
               fundingAmount: amount,
@@ -558,6 +557,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           recipient: recipient.address
         };
       });
+      console.log({ claimInputs });
 
       const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI);
       const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [claimInputs]);
@@ -609,8 +609,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             status: 'PENDING',
             to: vestingContract?.address ?? '',
             type: 'ADDING_CLAIMS',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
+
             organizationId: organizationId,
             chainId,
             vestingIds: [vestingId]
@@ -657,8 +656,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           status: 'PENDING',
           to: vestingContract?.address ?? '',
           type: 'ADDING_CLAIMS',
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
           organizationId: organizationId,
           chainId,
           vestingIds: [vestingId]

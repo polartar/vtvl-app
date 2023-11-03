@@ -147,8 +147,6 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             status: 'PENDING',
             to: '',
             type: 'VESTING_DEPLOYMENT',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
             chainId
           });
