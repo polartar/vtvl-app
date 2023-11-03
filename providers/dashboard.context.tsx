@@ -28,7 +28,7 @@ import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
 import { TOAST_IDS } from 'utils/constants';
-import { getVestingContractABI } from 'utils/multicall';
+import { getVestingAbiIndex, getVestingContractABI } from 'utils/multicall';
 import { getRecipient } from 'utils/recipients';
 
 import { useAuthContext } from './auth.context';
@@ -239,45 +239,48 @@ export function DashboardContextProvider({ children }: any) {
       });
 
       // Setup multicall
-      const contractCallContext: ContractCallContext[] = vestingContracts.reduce((res, vestingContract) => {
-        // Ensure that what we add in the call has vesting contract address
-        if (vestingContract && vestingContract.address) {
-          const vestingSchedule = vestings.find((schedule) => schedule.data.vestingContractId === vestingContract.id);
-          if (vestingSchedule) {
-            res = [
-              ...res,
-              ...recipientWallets.map((recipientWallet) => ({
-                // Attach the contract address, recipient wallet and schedule ID
-                reference: `multicall-${vestingContract.address}-${recipientWallet}-${vestingSchedule?.id}`,
-                contractAddress: vestingContract.address || '',
-                abi: getVestingContractABI(new Date(vestingContract.updatedAt).getTime() / 1000),
-                calls: [
-                  {
-                    // This gets the claimable amount by the recipient
-                    reference: 'claimableAmount',
-                    methodName: 'claimableAmount',
-                    methodParameters: [recipientWallet]
-                  },
-                  // {
-                  //   // This gets the total vested amount for the recipient (includes everything)
-                  //   reference: 'finalVestedAmount',
-                  //   methodName: 'finalVestedAmount',
-                  //   methodParameters: [recipient]
-                  // },
-                  // {
-                  //   // This gets the current vested amount as of date (currently unlocked tokens, both claimed and unclaimed)
-                  //   reference: 'vestedAmount',
-                  //   methodName: 'vestedAmount',
-                  //   methodParameters: [recipient, getUnixTime(new Date())]
-                  // },
-                  { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipientWallet] }
-                ]
-              }))
-            ];
+      const contractCallContext: ContractCallContext[] = vestingContracts
+        .filter((contract) => !!contract.address)
+        .reduce((res, vestingContract) => {
+          // Ensure that what we add in the call has vesting contract address
+          if (vestingContract && vestingContract.address) {
+            const vestingSchedule = vestings.find((schedule) => schedule.data.vestingContractId === vestingContract.id);
+            if (vestingSchedule) {
+              res = [
+                ...res,
+                ...recipientWallets.map((recipientWallet) => ({
+                  // Attach the contract address, recipient wallet and schedule ID
+                  reference: `multicall-${vestingContract.address}-${recipientWallet}-${vestingSchedule?.id}`,
+                  contractAddress: vestingContract.address || '',
+                  abi: getVestingContractABI(vestingContract.updatedAt),
+                  calls:
+                    getVestingAbiIndex(vestingContract.updatedAt) === 3
+                      ? [
+                          {
+                            // This gets the claimable amount by the recipient
+                            reference: 'claimableAmount',
+                            methodName: 'claimableAmount',
+                            methodParameters: [recipientWallet, 0] /// Now scheduleIndex is 0, but it could be multiple values.
+                          },
+
+                          { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipientWallet, 0] }
+                        ]
+                      : [
+                          {
+                            // This gets the claimable amount by the recipient
+                            reference: 'claimableAmount',
+                            methodName: 'claimableAmount',
+                            methodParameters: [recipientWallet]
+                          },
+
+                          { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipientWallet] }
+                        ]
+                }))
+              ];
+            }
           }
-        }
-        return res;
-      }, [] as ContractCallContext[]);
+          return res;
+        }, [] as ContractCallContext[]);
 
       // Initialize the recipients for the cap table
       const recipientsTokenDetails: TCapTableRecipientTokenDetails[] = [];
@@ -300,6 +303,9 @@ export function DashboardContextProvider({ children }: any) {
 
           Object.keys(res.results).forEach((key, index) => {
             const record = res.results[key].callsReturnContext;
+            if (record[CLAIMABLE_AMOUNT_CALL].returnValues.length === 0) {
+              return;
+            }
             // Gets the claimable amount of the recipient
             const claimableAmount = record[CLAIMABLE_AMOUNT_CALL].returnValues[0];
             // Gets the total allocation of the recipient

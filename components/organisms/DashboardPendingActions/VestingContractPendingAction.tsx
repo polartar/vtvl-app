@@ -108,7 +108,8 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
 
           const factoryContractInterface = new ethers.utils.Interface(TIME_FACTORY_ABI.abi);
           const createVestingContractEncoded = factoryContractInterface.encodeFunctionData('createVestingContract', [
-            mintFormState.address
+            mintFormState.address,
+            0
           ]);
           const ethAdapter = new EthersAdapter({
             ethers: ethers,
@@ -146,8 +147,6 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             status: 'PENDING',
             to: '',
             type: 'VESTING_DEPLOYMENT',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
             chainId
           });
@@ -185,6 +184,8 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             status: 'SUCCESS',
             isDeployed: true
           });
+          await updateVestingContract({ ...data, address: vestingContractAddress, status: 'SUCCESS' });
+
           setTransactionLoaderStatus('SUCCESS');
         }
 

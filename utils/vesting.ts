@@ -137,7 +137,11 @@ export const getReleaseFrequencyTimestamp = (
   const actualStartDateTime =
     cliffDuration && cliffDuration !== 'no_cliff' ? getCliffDateTime(startDate, cliffDuration) : startDate;
 
-  const intervals = getNumberOfReleases(releaseFrequency, actualStartDateTime, endDate);
+  let intervals = getNumberOfReleases(releaseFrequency, actualStartDateTime, endDate);
+  if (intervals < 0) {
+    intervals = 1;
+  }
+
   const intervalSeconds =
     releaseFrequency === 'continuous'
       ? 1
@@ -145,7 +149,7 @@ export const getReleaseFrequencyTimestamp = (
       ? 60
       : Math.round((getUnixTime(endDate) - getUnixTime(actualStartDateTime)) / intervals); //startWithIntervalSeconds - getUnixTime(actualStartDateTime);
 
-  return intervalSeconds;
+  return intervalSeconds === 0 ? 1 : intervalSeconds;
 };
 
 /**
@@ -571,7 +575,7 @@ export const transformVestingSchedule: (vestingSchedule: IVestingSchedule) => IV
       startDateTime: new Date(startedAt!),
       endDateTime: new Date(endedAt!),
       originalEndDateTime: new Date(originalEndedAt!),
-      cliffDuration: cliffDurationType,
+      cliffDuration: cliffDurationType !== 'no_cliff' ? `${cliffDuration}_${cliffDurationType}` : cliffDurationType,
       cliffDurationNumber: cliffDuration,
       cliffDurationOption: cliffDurationType,
       releaseFrequency: releaseFrequencyType,

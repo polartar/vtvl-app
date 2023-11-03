@@ -1,27 +1,49 @@
+import FACTORY_VESTING_ABI from 'contracts/abi/FactoryVesting.json';
 import VTVL2_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { BigNumber, BigNumberish, ethers } from 'ethers';
 import { IVestingContract } from 'interfaces/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
 
 const LINEAR_AMOUNT_INDEX = 4;
 const WITHDRAWN_AMOUNT_INDEX = 5;
 const CLIFF_AMOUNT_INDEX = 6;
+const V3_CONTRACT_AT = Number(process.env.NEXT_PUBLIC_V3_CONTRACT_AT) || 1698668802;
 
 export function isV2(deployedAt: number | string) {
+  let timestamp;
   if (typeof deployedAt == 'number') {
-    return (deployedAt as number) >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT);
+    timestamp = deployedAt;
   } else {
-    return new Date(deployedAt).getTime() / 1000 >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT);
+    timestamp = Math.floor(new Date(deployedAt).getTime() / 1000);
+  }
+
+  return timestamp >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT) && timestamp <= V3_CONTRACT_AT;
+}
+
+export function getVestingContractABI(deployedAt: string) {
+  if (getVestingAbiIndex(deployedAt) === 3) {
+    return FACTORY_VESTING_ABI;
+  } else if (getVestingAbiIndex(deployedAt) === 2) {
+    return VTVL2_VESTING_ABI.abi;
+  } else {
+    return VTVL_VESTING_ABI.abi;
   }
 }
 
-export function getVestingContractABI(deployedAt: number) {
-  return isV2(deployedAt) ? VTVL2_VESTING_ABI.abi : VTVL_VESTING_ABI.abi;
+export function getVestingAbiIndex(deployedAt: string) {
+  const deployedTime = Math.floor(new Date(deployedAt).getTime() / 1000);
+  if (deployedTime > V3_CONTRACT_AT) {
+    return 3;
+  } else if (deployedTime >= Number(process.env.NEXT_PUBLIC_V2_CONTRACT_AT)) {
+    return 2;
+  } else {
+    return 1;
+  }
 }
+
 /**
  * Create multicall class instance
  */
@@ -41,24 +63,30 @@ export const getVestingDetailsFromContracts = async (
   operator: string
 ) => {
   const multicall = getMulticallInstance(chainId);
-
   const contractCallContext: ContractCallContext[] = contracts.reduce((res, contract) => {
     if (!contract.address) {
       return [...res];
     }
+
     return [
       ...res,
       {
         reference: `withdrawn-${contract.address}`,
         contractAddress: contract.address,
-        abi: getVestingContractABI(new Date(contract.updatedAt).getTime() / 1000),
-        calls: [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator] }]
+        abi: getVestingContractABI(contract.updatedAt),
+        calls:
+          getVestingAbiIndex(contract.updatedAt) === 3
+            ? [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator, 0] }]
+            : [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator] }]
       },
       {
         reference: `unclaimed-${contract.address}`,
         contractAddress: contract.address,
-        abi: getVestingContractABI(new Date(contract.updatedAt).getTime() / 1000),
-        calls: [{ reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [operator] }]
+        abi: getVestingContractABI(contract.updatedAt),
+        calls:
+          getVestingAbiIndex(contract.updatedAt) === 3
+            ? [{ reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [operator, 0] }]
+            : [{ reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [operator] }]
       }
     ];
   }, [] as ContractCallContext[]);
@@ -74,6 +102,9 @@ export const getVestingDetailsFromContracts = async (
 
   Object.keys(response.results).forEach((key) => {
     const value = response.results[key];
+    if (value.callsReturnContext[0].returnValues.length === 0) {
+      return;
+    }
     const fields = key.split('-');
     const reference = fields[0];
     const address = fields[1];

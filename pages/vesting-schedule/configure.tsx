@@ -1012,7 +1012,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         // tokenId,
         // vestingContractId: String(vestingContractId),
         name: scheduleState.name,
-        startedAt: scheduleFormState.startDateTime?.toISOString() || '',
+        startedAt: scheduleFormState.startDateTime?.toISOString(),
         endedAt: scheduleFormState.endDateTime?.toISOString(),
         originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
         releaseFrequencyType: scheduleFormState.releaseFrequency,

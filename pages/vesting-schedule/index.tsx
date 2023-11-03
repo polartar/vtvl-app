@@ -809,29 +809,24 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const addresses1 = vesting.recipients.map((recipient: any) => recipient.walletAddress);
         const cliffReleaseDate =
           vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
-            ? getCliffDateTime(
-                new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-                vesting.details.cliffDuration
-              )
+            ? getCliffDateTime(vesting.details.startDateTime!, vesting.details.cliffDuration)
             : '';
         const cliffReleaseTimestamp = cliffReleaseDate ? Math.floor(cliffReleaseDate.getTime() / 1000) : 0;
         const numberOfReleases =
           vesting.details.startDateTime && vesting.details.endDateTime
             ? getNumberOfReleases(
                 vesting.details.releaseFrequency,
-                cliffReleaseDate || new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis()),
-                new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis())
+                cliffReleaseDate || vesting.details.startDateTime!,
+                vesting.details.endDateTime!
               )
             : 0;
         const actualStartDateTime =
-          vesting.details.cliffDuration !== 'no_cliff'
-            ? cliffReleaseDate
-            : new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+          vesting.details.cliffDuration !== 'no_cliff' ? cliffReleaseDate : vesting.details.startDateTime;
         const vestingEndTimestamp =
           vesting.details.endDateTime && actualStartDateTime
             ? getChartData({
                 start: actualStartDateTime,
-                end: new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+                end: vesting.details.endDateTime!,
                 cliffDuration: vesting.details.cliffDuration,
                 cliffAmount: cliffAmountPerUser,
                 frequency: vesting.details.releaseFrequency,

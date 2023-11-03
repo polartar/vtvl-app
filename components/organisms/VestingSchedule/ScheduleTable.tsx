@@ -17,6 +17,7 @@ import {
 } from 'components/organisms/DashboardPendingActions';
 import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import getUnixTime from 'date-fns/getUnixTime';
 import { BigNumber, ethers } from 'ethers';
 import { Timestamp } from 'firebase/firestore';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
@@ -442,7 +443,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       const vestingAmountPerUser = +vesting.details.amountToBeVested / recipients.length - cliffAmountPerUser;
       const addresses = recipients.map((recipient) => recipient.address);
 
-      const vestingStartTime = new Date((vesting.details.startDateTime as unknown as Timestamp).toMillis());
+      const vestingStartTime = vesting.details.startDateTime!;
 
       const cliffReleaseDate =
         vesting.details.startDateTime && vesting.details.cliffDuration !== 'no_cliff'
@@ -455,7 +456,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         vesting.details.endDateTime && actualStartDateTime
           ? getChartData({
               start: actualStartDateTime,
-              end: new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
+              end: vesting.details.endDateTime!,
               cliffDuration: vesting.details.cliffDuration,
               cliffAmount: cliffAmountPerUser,
               frequency: vesting.details.releaseFrequency,
@@ -469,9 +470,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             //   )
             null;
       const vestingStartTimestamps = new Array(recipients.length).fill(
-        cliffReleaseTimestamp
-          ? cliffReleaseTimestamp
-          : Math.floor((vesting.details.startDateTime as unknown as Timestamp).seconds)
+        cliffReleaseTimestamp ? cliffReleaseTimestamp : Math.floor(getUnixTime(vesting.details.startDateTime!))
       );
       const vestingEndTimestamps = new Array(recipients.length).fill(Math.floor(vestingEndTimestamp!.getTime() / 1000));
       const vestingCliffTimestamps = new Array(recipients.length).fill(cliffReleaseTimestamp);
