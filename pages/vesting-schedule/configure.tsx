@@ -24,7 +24,6 @@ import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { REDIRECT_URIS } from '@utils/constants';
-import { toUTCString } from '@utils/date';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import { injected } from 'connectors';
@@ -1013,9 +1012,9 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         // tokenId,
         // vestingContractId: String(vestingContractId),
         name: scheduleState.name,
-        startedAt: toUTCString(scheduleFormState.startDateTime ?? new Date()),
-        endedAt: toUTCString(scheduleFormState.endDateTime ?? new Date()),
-        originalEndedAt: toUTCString(scheduleFormState.originalEndDateTime ?? new Date()),
+        startedAt: scheduleFormState.startDateTime?.toISOString(),
+        endedAt: scheduleFormState.endDateTime?.toISOString(),
+        originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
         releaseFrequencyType: scheduleFormState.releaseFrequency,
         releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
         cliffDurationType: transformCliffDurationType(scheduleFormState.cliffDuration),
