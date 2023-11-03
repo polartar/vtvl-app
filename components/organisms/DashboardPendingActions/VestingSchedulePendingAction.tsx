@@ -468,6 +468,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       const totalRecipients = vestingRecipients.length;
       const vesting = data;
       const vestingId = id;
+
       const cliffAmountPerUser =
         getCliffAmount(
           vesting.details.cliffDuration,

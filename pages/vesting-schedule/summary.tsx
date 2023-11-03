@@ -76,11 +76,12 @@ const ScheduleSummary: NextPageWithLayout = () => {
             .map((recipient) => RecipientApiService.updateRecipient(recipient.id, recipient))
         );
       } else {
+        console.log({ mintFormState });
         const vesting = await VestingScheduleApiService.createVestingSchedule({
           organizationId: organizationId!,
           status: 'INITIALIZED',
           // vestingContractId,
-          tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
+          tokenId: mintFormState.id ?? '',
           vestingContractId: String(vestingContractId),
           name: scheduleState.name,
           startedAt: toUTCString(scheduleFormState.startDateTime ?? new Date()),
