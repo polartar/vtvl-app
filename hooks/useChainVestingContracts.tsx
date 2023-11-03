@@ -9,7 +9,7 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 import { IVesting } from 'types/models';
 import { IRecipient } from 'types/models/recipient';
 import { compareAddresses } from 'utils';
-import { getVestingContractABI } from 'utils/multicall';
+import { getVestingAbiIndex, getVestingContractABI } from 'utils/multicall';
 
 import { useShallowState } from './useShallowState';
 
@@ -81,28 +81,29 @@ export default function useChainVestingContracts(
                   {
                     reference: `multicall-${vestingContract.address}-${recipient.address}`,
                     contractAddress: vestingContract.address,
-                    abi: getVestingContractABI(new Date(vestingContract.updatedAt).getTime() / 1000),
-                    calls: [
-                      {
-                        //   // This gets the claimable amount by the recipient
-                        reference: 'claimableAmount',
-                        methodName: 'claimableAmount',
-                        methodParameters: [recipient.address]
-                      },
-                      // {
-                      //   // This gets the total vested amount for the recipient (includes everything)
-                      //   reference: 'finalVestedAmount',
-                      //   methodName: 'finalVestedAmount',
-                      //   methodParameters: [recipient.walletAddress]
-                      // },
-                      // {
-                      //   // This gets the current vested amount as of date (currently unlocked tokens, both claimed and unclaimed)
-                      //   reference: 'vestedAmount',
-                      //   methodName: 'vestedAmount',
-                      //   methodParameters: [recipient.walletAddress, getUnixTime(new Date())]
-                      // },
-                      { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.address] }
-                    ]
+                    abi: getVestingContractABI(vestingContract.updatedAt),
+                    calls:
+                      getVestingAbiIndex(vestingContract.updatedAt) === 3
+                        ? [
+                            {
+                              //   // This gets the claimable amount by the recipient
+                              reference: 'claimableAmount',
+                              methodName: 'claimableAmount',
+                              methodParameters: [recipient.address, 0]
+                            },
+
+                            { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.address, 0] }
+                          ]
+                        : [
+                            {
+                              //   // This gets the claimable amount by the recipient
+                              reference: 'claimableAmount',
+                              methodName: 'claimableAmount',
+                              methodParameters: [recipient.address]
+                            },
+
+                            { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.address] }
+                          ]
                   }
                 ]);
               }
