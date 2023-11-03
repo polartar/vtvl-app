@@ -10,8 +10,8 @@ interface ITransactionRequest {
     | 'TOKEN_DEPLOYMENT'
     | 'REVOKE_CLAIM'
     | 'ADMIN_WITHDRAW';
-  createdAt: number;
-  updatedAt: number;
+  createdAt?: number;
+  updatedAt?: number;
   organizationId: string;
   chainId: number;
   vestingIds?: string[];

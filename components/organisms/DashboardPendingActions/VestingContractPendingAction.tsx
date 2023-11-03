@@ -184,6 +184,8 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             status: 'SUCCESS',
             isDeployed: true
           });
+          await updateVestingContract({ ...data, address: vestingContractAddress, status: 'SUCCESS' });
+
           setTransactionLoaderStatus('SUCCESS');
         }
 
