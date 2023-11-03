@@ -558,12 +558,11 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           recipient: recipient.address
         };
       });
-      console.log({ claimInputs });
 
       const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI);
       const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [claimInputs]);
       setIsCloseAvailable(false);
-      console.log('>>>>>>>');
+
       if (currentSafe?.address && account && chainId && organizationId) {
         if (!isAdmin) {
           toast.error(
