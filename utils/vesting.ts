@@ -137,7 +137,11 @@ export const getReleaseFrequencyTimestamp = (
   const actualStartDateTime =
     cliffDuration && cliffDuration !== 'no_cliff' ? getCliffDateTime(startDate, cliffDuration) : startDate;
 
-  const intervals = getNumberOfReleases(releaseFrequency, actualStartDateTime, endDate);
+  let intervals = getNumberOfReleases(releaseFrequency, actualStartDateTime, endDate);
+  if (intervals < 0) {
+    intervals = 1;
+  }
+
   const intervalSeconds =
     releaseFrequency === 'continuous'
       ? 1

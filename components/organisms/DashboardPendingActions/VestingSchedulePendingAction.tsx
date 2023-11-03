@@ -508,6 +508,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       // );
       // let vestingEndTimestamps = new Array(totalRecipients).fill(getUnixTime(vestingEndTimestamp ?? new Date()));
       // const vestingCliffTimestamps = new Array(totalRecipients).fill(cliffReleaseTimestamp);
+
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
         vestingEndTimestamp!,
@@ -537,18 +538,27 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       //   }
       //   return endTimeStamp;
       // });
+      const startTime = cliffReleaseTimestamp
+        ? cliffReleaseTimestamp
+        : Math.floor(getUnixTime(vesting.details.startDateTime!));
+      let endTimeStamp = getUnixTime(vestingEndTimestamp ?? new Date());
+      if ((endTimeStamp - startTime) % releaseFrequencyTimestamp !== 0) {
+        const times = Math.floor(endTimeStamp / releaseFrequencyTimestamp);
+        endTimeStamp = startTime + releaseFrequencyTimestamp * (times + 1);
+      }
 
       const claimInputs: ClaimInput[] = vestingRecipients.map((recipient) => {
         return {
-          startTimestamp: getUnixTime(vestingStartTime ?? new Date()),
-          endTimestamp: getUnixTime(vestingEndTimestamp ?? new Date()),
+          startTimestamp: startTime,
+          endTimestamp: endTimeStamp,
           cliffReleaseTimestamp: cliffReleaseTimestamp,
           releaseIntervalSecs: releaseFrequencyTimestamp,
-          linearVestAmount: vestingAmountPerUser,
-          cliffAmount: cliffAmountPerUser,
+          linearVestAmount: ethers.utils.parseEther(vestingAmountPerUser.toString()),
+          cliffAmount: ethers.utils.parseEther(cliffAmountPerUser.toString()),
           recipient: recipient.address
         };
       });
+      console.log({ claimInputs });
 
       const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI);
       const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [claimInputs]);
