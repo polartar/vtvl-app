@@ -673,7 +673,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         );
         await addingClaimsTransaction.wait();
         const t = await TransactionApiService.updateTransaction(transaction.id, {
-          status: 'SUCCESS'
+          status: 'SUCCESS',
+          organizationId
         });
         updateTransactions(t);
         await fetchDashboardData();
