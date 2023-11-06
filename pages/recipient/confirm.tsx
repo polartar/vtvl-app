@@ -4,6 +4,7 @@ import Chip from '@components/atoms/Chip/Chip';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import useAuth from '@hooks/useAuth';
+import useSafePush from '@hooks/useSafePush';
 import { useAuthContext } from '@providers/auth.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useAuth as useAuthStore } from '@store/useAuth';
@@ -30,12 +31,13 @@ const RecipientCreate: NextPage = () => {
   const { authorizeUser } = useAuth(); // hook
 
   const router = useRouter();
+  const { safePush } = useSafePush();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setTransactionStatus } = useTransactionLoaderContext();
 
   useEffect(() => {
     if (recipient && recipient && recipient.address) {
-      router.push('/claim-portal');
+      safePush('/claim-portal');
     }
   }, [recipient, router, recipient?.address]);
   const onSign = async () => {
@@ -43,7 +45,7 @@ const RecipientCreate: NextPage = () => {
       return;
     }
     if (!recipient || !recipient?.id) {
-      router.push('/claim-portal');
+      safePush('/claim-portal');
     }
     setIsSubmitting(true);
 

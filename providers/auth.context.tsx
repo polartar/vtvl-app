@@ -1,6 +1,7 @@
 import useOrgAPI from '@api-hooks/useOrganization';
 import useSafeAPI from '@api-hooks/useSafe';
 import RecipientApiService from '@api-services/RecipientApiService';
+import useSafePush from '@hooks/useSafePush';
 import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { useUser } from '@store/useUser';
@@ -137,6 +138,7 @@ export function AuthContextProvider({ children }: any) {
 
   const { inProgress, completeOnboarding } = useOnboardingContext();
   const router = useRouter();
+  const { safePush } = useSafePush();
 
   const { clear: clearAuth } = useAuth();
   const { clear: clearUser, ...userStore } = useUser();
@@ -223,7 +225,7 @@ export function AuthContextProvider({ children }: any) {
     // Update setCache for persistency
     await setCache(updatedAuthData);
     // Update the global state for the auth and role -- automatically redirects the user.
-    router.push(newRole === IRole.INVESTOR ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
+    safePush(newRole === IRole.INVESTOR ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
   };
 
   // A function to abstract all authentication from different authentication methods
@@ -700,15 +702,15 @@ export function AuthContextProvider({ children }: any) {
       !router.asPath.includes('welcome')
     ) {
       if (user.memberInfo.role === IRole.INVESTOR && (!recipient || (recipient && !recipient.address))) {
-        Router.push('/recipient/schedule');
+        safePush('/recipient/schedule');
       } else if (isNewUser) {
         if (connection === 'metamask') {
-          Router.push('/welcome');
+          safePush('/welcome');
         } else {
           completeOnboarding();
         }
       } else if (user.memberInfo.role !== IRole.ANONYMOUS) {
-        Router.push('/claim-portal');
+        safePush('/claim-portal');
       }
 
       return;

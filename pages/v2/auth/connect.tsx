@@ -5,15 +5,14 @@ import ConnectWalletOptions from '@components/molecules/ConnectWalletOptions/Con
 import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
 import useAuth from '@hooks/useAuth';
+import useSafePush from '@hooks/useSafePush';
 import { useGlobalContext } from '@providers/global.context';
 import { REDIRECT_URIS } from '@utils/constants';
 import { toUTCString } from '@utils/date';
-import { transformOrganization } from '@utils/organization';
 import { SIGN_MESSAGE_TEMPLATE } from '@utils/web3';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 
 const OnboardingContainer = styled.div`
@@ -52,7 +51,7 @@ const ConnectWalletPage: NextPage = () => {
   const {
     website: { assets, features }
   } = useGlobalContext();
-  const router = useRouter();
+  const { safePush } = useSafePush();
 
   // When a wallet is connected
   const handleConnectedState = () => {
@@ -87,7 +86,7 @@ const ConnectWalletPage: NextPage = () => {
               } catch (err) {
                 // Handle wallet signing rejection / error
                 await deactivate();
-                router.push(REDIRECT_URIS.AUTH_LOGIN);
+                safePush(REDIRECT_URIS.AUTH_LOGIN);
               }
             })();
           }

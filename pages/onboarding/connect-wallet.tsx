@@ -2,13 +2,13 @@ import Carousel from '@components/atoms/Carousel/Carousel';
 import ConnectWalletOptions from '@components/molecules/ConnectWalletOptions/ConnectWalletOptions';
 import PaddedLayout from '@components/organisms/Layout/PaddedLayout';
 import styled from '@emotion/styled';
+import useSafePush from '@hooks/useSafePush';
 import AuthContext from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import { NextPage } from 'next';
-import Router from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 
 const Vesting = styled.div<{ background?: string }>`
@@ -21,6 +21,7 @@ const ConnectWalletPage: NextPage = () => {
   const { active, activate } = useWeb3React();
   const { onNext, startOnboarding, completeOnboarding } = useContext(OnboardingContext);
   const { user } = useContext(AuthContext);
+  const { safePush } = useSafePush();
   const [activated, setActivated] = useState(false);
   const {
     website: { assets, features }
@@ -40,7 +41,7 @@ const ConnectWalletPage: NextPage = () => {
         (async () => {
           await activate(injected, undefined, true);
           if (user) completeOnboarding();
-          else if (!activated) Router.push(`/onboarding/${features?.auth?.memberOnly ? 'member-login' : 'sign-up'}`);
+          else if (!activated) safePush(`/onboarding/${features?.auth?.memberOnly ? 'member-login' : 'sign-up'}`);
         })();
       }
     });

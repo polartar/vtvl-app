@@ -21,6 +21,7 @@ import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
 import useChainVestingContracts from '@hooks/useChainVestingContracts';
+import useSafePush from '@hooks/useSafePush';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
@@ -35,12 +36,10 @@ import { Timestamp } from 'firebase/firestore';
 import { useDrawer } from 'hooks/useDrawer';
 import useIsAdmin from 'hooks/useIsAdmin';
 import { IVestingContract } from 'interfaces/vestingContract';
-import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { useAuthContext } from 'providers/auth.context';
 import { useTransactionLoaderContext } from 'providers/transaction-loader.context';
 import PlusIcon from 'public/icons/plus.svg';
-import VestingMilestoneBasedIcon from 'public/icons/vesting-milestone-based.svg';
 import VestingTimeBasedIcon from 'public/icons/vesting-time-based.svg';
 import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -64,7 +63,7 @@ import {
  * This page should have an async fetch feature that gets the vesting schedule details from the database.
  */
 const VestingScheduleProject: NextPageWithLayout = () => {
-  const router = useRouter();
+  const { safePush } = useSafePush();
   const { account, library, activate, chainId } = useWeb3React();
 
   const { setTransactionStatus, updateTransactions } = useTransactionLoaderContext();
@@ -282,7 +281,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     console.log('Showing schedule', rowData, tab);
     switch (tab) {
       case 'time-based':
-        router.push(`/vesting-schedule/${rowData.original.id}`);
+        safePush(`/vesting-schedule/${rowData.original.id}`);
         break;
       case 'milestone-based':
         // LOAD MILESTONE DATA HERE
@@ -1182,7 +1181,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
               />
             ))}
           </div>
-          <button className="primary" onClick={() => Router.push(selections[selected].url)}>
+          <button className="primary" onClick={() => safePush(selections[selected].url)}>
             {selections[selected].label}
           </button>
         </>
@@ -1203,7 +1202,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
             <Button
               className="primary"
               label="View all details"
-              onClick={() => router.push(`/vesting-schedule/${selectedSchedule?.id}`)}
+              onClick={() => safePush(`/vesting-schedule/${selectedSchedule?.id}`)}
             />
           </div>
         </div>

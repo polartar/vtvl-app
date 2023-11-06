@@ -1,12 +1,12 @@
 import Consent from '@components/molecules/Consent/Consent';
 import Wallets from '@components/molecules/Wallets/Wallets';
+import useSafePush from '@hooks/useSafePush';
 import AuthContext from '@providers/auth.context';
 import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import { injected, walletconnect } from 'connectors';
 import { NextPage } from 'next';
-import { useRouter } from 'next/router';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { IMember } from 'types/models';
@@ -16,7 +16,7 @@ const MemberWalletPage: NextPage = () => {
   const { user, signUpWithToken } = useContext(AuthContext);
   const { activate } = useWeb3React();
   const [member, setMember] = React.useState<IMember>();
-  const router = useRouter();
+  const { safePush } = useSafePush();
   // Works as a debounce
   let timeout: NodeJS.Timeout;
 
@@ -49,10 +49,10 @@ const MemberWalletPage: NextPage = () => {
           })
           .catch(async (err) => {
             if (err.response.data.message === 'jwt expired') {
-              router.push({ pathname: '/expired', query: { loginToken: token } });
+              safePush({ pathname: '/expired', query: { loginToken: token } });
             } else {
               await toast.error('The token is invalid');
-              router.push('/onboarding');
+              safePush('/onboarding');
             }
           });
       }
@@ -89,10 +89,10 @@ const MemberWalletPage: NextPage = () => {
         })
         .catch(async (err) => {
           if (err.response.data.message === 'jwt expired') {
-            router.push({ pathname: '/expired', query: { loginToken: token } });
+            safePush({ pathname: '/expired', query: { loginToken: token } });
           } else {
             await toast.error('The token is invalid');
-            router.push('/onboarding');
+            safePush('/onboarding');
           }
         });
     }

@@ -5,10 +5,12 @@ import BackButton from '@components/atoms/BackButton/BackButton';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { REDIRECT_URIS } from '@utils/constants';
+import { toUTCString } from '@utils/date';
 import { getCliffAmount, transformCliffDurationType } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
@@ -28,6 +30,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
   const { updateVestingContract } = useDashboardContext();
   const { recipients, scheduleFormState, scheduleState, scheduleMode, setScheduleState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
+  const { safePush } = useSafePush();
 
   /**
    * Handles the click function when user clicks the "Create schedule"
@@ -87,9 +90,9 @@ const ScheduleSummary: NextPageWithLayout = () => {
         tokenId: tokenId || '4a64cfcd-03d7-45d9-b9df-e0d088f18546',
         vestingContractId: String(vestingContractId),
         name: scheduleState.name,
-        startedAt: scheduleFormState.startDateTime?.toISOString(),
-        endedAt: scheduleFormState.endDateTime?.toISOString(),
-        originalEndedAt: scheduleFormState.originalEndDateTime?.toISOString(),
+        startedAt: toUTCString(scheduleFormState.startDateTime ?? new Date()),
+        endedAt: toUTCString(scheduleFormState.endDateTime ?? new Date()),
+        originalEndedAt: toUTCString(scheduleFormState.originalEndDateTime ?? new Date()),
         releaseFrequencyType: scheduleFormState.releaseFrequency,
         releaseFrequency: Number(scheduleFormState.customReleaseFrequencyNumber),
         cliffDurationType: transformCliffDurationType(scheduleFormState.cliffDuration),
@@ -99,41 +102,11 @@ const ScheduleSummary: NextPageWithLayout = () => {
         recipes: [],
         redirectUri: REDIRECT_URIS.RECIPIENT_INVITE
       });
-
-      // const vestingId = await createVesting({
-      //   name: scheduleState.name,
-      //   details: { ...scheduleFormState },
-      //   organizationId: organizationId!,
-      //   status: 'INITIALIZED',
-      //   createdAt: Math.floor(new Date().getTime() / 1000),
-      //   updatedAt: Math.floor(new Date().getTime() / 1000),
-      //   transactionId: '',
-      //   vestingContractId,
-      //   tokenAddress: mintFormState.address,
-      //   tokenId,
-      //   chainId,
-      //   createdBy: user?.uid
-      // });
-
-      // const newRecipients = recipients.map((recipient) =>
-      //   createRecipient({
-      //     vestingId: String(vesting.id),
-      //     organizationId: String(organizationId),
-      //     name: recipient.name,
-      //     email: recipient.email,
-      //     allocations: String(recipient.allocations ?? 0),
-      //     walletAddress: String(recipient.address),
-      //     recipientType: String(recipient.role),
-      //     status: recipient.address ? 'accepted' : 'delivered'
-      //   })
-      // );
-
-      // await Promise.all(newRecipients);
     }
 
     console.log('creating vesting schedule');
     // Redirect to the success page to notify the user
-    await Router.push('/vesting-schedule/success');
+    await safePush('/vesting-schedule/success');
 
     // Reset the value of everything else from the previous forms
     // resetVestingState();
@@ -143,6 +116,36 @@ const ScheduleSummary: NextPageWithLayout = () => {
       createNewContract: false,
       vestingContractId: ''
     });
+
+    // const vestingId = await createVesting({
+    //   name: scheduleState.name,
+    //   details: { ...scheduleFormState },
+    //   organizationId: organizationId!,
+    //   status: 'INITIALIZED',
+    //   createdAt: Math.floor(new Date().getTime() / 1000),
+    //   updatedAt: Math.floor(new Date().getTime() / 1000),
+    //   transactionId: '',
+    //   vestingContractId,
+    //   tokenAddress: mintFormState.address,
+    //   tokenId,
+    //   chainId,
+    //   createdBy: user?.uid
+    // });
+
+    // const newRecipients = recipients.map((recipient) =>
+    //   createRecipient({
+    //     vestingId: String(vesting.id),
+    //     organizationId: String(organizationId),
+    //     name: recipient.name,
+    //     email: recipient.email,
+    //     allocations: String(recipient.allocations ?? 0),
+    //     walletAddress: String(recipient.address),
+    //     recipientType: String(recipient.role),
+    //     status: recipient.address ? 'accepted' : 'delivered'
+    //   })
+    // );
+
+    // await Promise.all(newRecipients);
   };
 
   return (

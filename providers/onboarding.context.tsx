@@ -1,3 +1,4 @@
+import useSafePush from '@hooks/useSafePush';
 import { TRoleGroup } from '@utils/routes';
 import { useRouter } from 'next/router';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
@@ -75,6 +76,7 @@ export function OnboardingContextProvider({ children }: any) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { safePush } = useSafePush();
 
   useEffect(() => {
     router.beforePopState(({ as }) => {
@@ -121,12 +123,12 @@ export function OnboardingContextProvider({ children }: any) {
 
       if (skipSafe) {
         // Redirects the user to the dashboard when the last step is met
-        await router.push('/dashboard');
+        await safePush('/dashboard');
         return;
       }
 
       // Redirects the user to the safe success page -- assumes that the user does not skip safe setup
-      await router.push('/onboarding/setup-safe-success');
+      await safePush('/onboarding/setup-safe-success');
       return;
     }
 
@@ -145,7 +147,7 @@ export function OnboardingContextProvider({ children }: any) {
 
     // if the user is a new user, go to the onboarding process continuation
     if (nextstep == Step.UserTypeSetup) {
-      await router.push(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
+      await safePush(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
       return;
     }
 
@@ -161,9 +163,9 @@ export function OnboardingContextProvider({ children }: any) {
 
     // When the website is set to members-only, users should be redirected to the login page after connecting their wallet.
     if (nextstep === Step.SignUp && features?.auth?.memberOnly) {
-      await router.push('/onboarding/member-login');
+      await safePush('/onboarding/member-login');
     } else {
-      await router.push(States[nextstep as Step].route);
+      await safePush(States[nextstep as Step].route);
     }
   };
 

@@ -1,31 +1,26 @@
 import TokenApiService from '@api-services/TokenApiService';
-import TransactionApiService from '@api-services/TransactionApiService';
 import BackButton from '@components/atoms/BackButton/BackButton';
 import Button from '@components/atoms/Button/Button';
-import DotLoader from '@components/atoms/DotLoader/DotLoader';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
-import { Skeleton } from '@mui/material';
+import useSafePush from '@hooks/useSafePush';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
-import { InjectedConnector } from '@web3-react/injected-connector';
 import { injected } from 'connectors';
 import FullPremintERC20Token from 'contracts/abi/FullPremintERC20Token.json';
 import VariableSupplyERC20Token from 'contracts/abi/VariableSupplyERC20Token.json';
 import { ethers } from 'ethers';
-import { addDoc, collection, getDocs, getFirestore } from 'firebase/firestore/lite';
-import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useEffect } from 'react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import { db } from 'services/auth/firebase';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 
 const Summary: NextPageWithLayout = () => {
   const { organizationId } = useAuthContext();
+  const { safePush } = useSafePush();
   const { library, account, activate, chainId } = useWeb3React();
   const { mintFormState, updateMintFormState, updateTokenId } = useTokenContext();
   const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
@@ -104,7 +99,7 @@ const Summary: NextPageWithLayout = () => {
         toast.success('Token created successfully');
         setLoading(false);
         setTransactionStatus('SUCCESS');
-        Router.push('/minting-token/complete');
+        safePush('/minting-token/complete');
       }
     } catch (err) {
       console.log('handleCreateToken - ', err);
@@ -115,7 +110,7 @@ const Summary: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (!name) {
-      Router.push('/minting-token');
+      safePush('/minting-token');
     }
   }, [name]);
 
@@ -147,7 +142,7 @@ const Summary: NextPageWithLayout = () => {
         </label>
       </div>
       <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-        <BackButton label="Back to details" onClick={() => Router.push('/minting-token')} />
+        <BackButton label="Back to details" onClick={() => safePush('/minting-token')} />
         <Button className="primary" type="button" onClick={handleCreateToken} loading={loading}>
           Create transaction
         </Button>
