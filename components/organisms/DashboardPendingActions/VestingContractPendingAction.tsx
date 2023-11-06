@@ -113,12 +113,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         return;
       }
 
-      if (
-        organizationId &&
-        currentSafe &&
-        currentSafe.address &&
-        currentSafe.owners.find((owner) => owner.address.toLowerCase() === account.toLowerCase())
-      ) {
+      if (organizationId && currentSafe && currentSafe.address) {
         setTransactionStatus('PENDING');
         const vestingContract = new ethers.Contract(data.address, VTVL_VESTING_ABI.abi, library.getSigner());
         const transactionResponse = await vestingContract.setAdmin(account, false);
