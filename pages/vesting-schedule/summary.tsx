@@ -5,6 +5,7 @@ import BackButton from '@components/atoms/BackButton/BackButton';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTokenContext } from '@providers/token.context';
 import { useVestingContext } from '@providers/vesting.context';
@@ -30,6 +31,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
   const { updateVestingContract } = useDashboardContext();
   const { recipients, scheduleFormState, scheduleState, scheduleMode, setScheduleState } = useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
+  const { safePush } = useSafePush();
 
   /**
    * Handles the click function when user clicks the "Create schedule"
@@ -99,7 +101,7 @@ const ScheduleSummary: NextPageWithLayout = () => {
 
       console.log('creating vesting schedule');
       // Redirect to the success page to notify the user
-      await Router.push('/vesting-schedule/success');
+      await safePush('/vesting-schedule/success');
 
       // Reset the value of everything else from the previous forms
       // resetVestingState();

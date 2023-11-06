@@ -480,6 +480,8 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     return router.pathname.includes('/auth/login') || router.pathname.includes('/auth/register');
   };
 
+  const routeIsIndex = router.pathname === '/';
+
   return (
     <>
       <Container>
@@ -491,7 +493,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
             ? renderFavicons(assets.logoFavicon.src)
             : renderFavicons('/favicon.ico')}
         </Head>
-        {router.pathname !== '/' ? (
+        {!routeIsIndex ? (
           <Header
             connected={active}
             user={user}
@@ -508,13 +510,13 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
           exit={{ y: -20 }}
           transition={{ duration: 0.3 }}>
           <Layout className="flex flex-row w-full">
-            {displaySideBar ? <Sidebar {...sidebarProperties} /> : null}
+            {displaySideBar && !routeIsIndex ? <Sidebar {...sidebarProperties} /> : null}
             <div className={`relative ${isSignIn() ? 'sign-background' : ''}`}>
-              {loading && router.pathname !== '/' && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
+              {loading && !routeIsIndex && <PageLoader loader={webOrgId ? 'global' : 'default'} />}
               <Main
-                sidebarIsExpanded={sidebarIsExpanded}
-                sidebarIsShown={displaySideBar}
-                className={`flex flex-col items-center ${router.pathname !== '/' ? 'pt-7' : ''}  `}>
+                sidebarIsExpanded={sidebarIsExpanded && !routeIsIndex}
+                sidebarIsShown={displaySideBar && !routeIsIndex}
+                className={`flex flex-col items-center ${!routeIsIndex ? 'pt-7' : ''}  `}>
                 {props.children}
               </Main>
             </div>

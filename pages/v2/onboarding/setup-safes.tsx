@@ -5,24 +5,22 @@ import SafesListItem from '@components/atoms/SafesListItem/SafesListItem';
 import { Typography } from '@components/atoms/Typography/Typography';
 import MetamaskUnsupportedChainModal from '@components/organisms/MetamaskUnsupportedChainModal';
 import UnsupportedChainModal from '@components/organisms/UnsupportedChainModal';
-import AuthContext from '@providers/auth.context';
-import OnboardingContext, { Step } from '@providers/onboarding.context';
+import useSafePush from '@hooks/useSafePush';
 import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core';
 import { useModal } from 'hooks/useModal';
 import { NextPage } from 'next';
-import Router, { useRouter } from 'next/router';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { fetchSafes } from 'services/gnosois';
 import { SafeSupportedChains } from 'types/constants/supported-chains';
 
 const YourSafesPage: NextPage = () => {
-  const { active, account, chainId, library, error } = useWeb3React();
+  const { account, chainId, library, error } = useWeb3React();
   const { ModalWrapper: ModalWrapper1, showModal: showModal1, hideModal: hideModal1 } = useModal({});
   const { ModalWrapper: ModalWrapper2, showModal: showModal2, hideModal: hideModal2 } = useModal({});
   const [safes, setSafes] = useState<string[]>();
   const [importSafeError, setImportSafeError] = useState();
-  const router = useRouter();
+  const { safePush } = useSafePush();
 
   useEffect(() => {
     if (error instanceof UnsupportedChainIdError) {
@@ -48,7 +46,7 @@ const YourSafesPage: NextPage = () => {
   }, [account, library, chainId, error]);
 
   const importSafe = async (address: string) => {
-    router.push({
+    safePush({
       pathname: '/onboarding/new-safe',
       query: { address }
     });
@@ -111,7 +109,7 @@ const YourSafesPage: NextPage = () => {
                 className="primary"
                 type="button"
                 disabled={importSafeError}
-                onClick={() => router.push('/v2/onboarding/new-safe')}>
+                onClick={() => safePush('/v2/onboarding/new-safe')}>
                 Create new Safe
               </button>
             </div>
@@ -119,11 +117,11 @@ const YourSafesPage: NextPage = () => {
         </div>
 
         <div className="flex flex-row justify-between items-center mt-6">
-          <BackButton label="Back to account setup" onClick={() => router.push('/v2/onboarding/account-setup')} />
+          <BackButton label="Back to account setup" onClick={() => safePush('/v2/onboarding/account-setup')} />
           <button
             className="flex flex-row items-center gap-2 primary line group transition-all transform"
             type="button"
-            onClick={() => router.push('/dashboard')}>
+            onClick={() => safePush('/dashboard')}>
             I'm good without multi-sig{' '}
             <ArrowIcon
               alt="Proceed"

@@ -1,13 +1,13 @@
 import useAuthAPI from '@api-hooks/useAuth';
+import useSafePush from '@hooks/useSafePush';
 import { REDIRECT_URIS } from '@utils/constants';
-import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
 export default function useGoogleAuth() {
   let timeout: NodeJS.Timeout;
 
   const { loginWithGoogle } = useAuthAPI();
-  const router = useRouter();
+  const { safePush } = useSafePush();
 
   const initializeGoogleAuth = async () => {
     try {
@@ -16,10 +16,10 @@ export default function useGoogleAuth() {
       console.log('Google Sign in', params, code);
 
       await loginWithGoogle({ code, redirectUri: REDIRECT_URIS.AUTH_GOOGLE_CALLBACK });
-      router.push(REDIRECT_URIS.AUTH_GOOGLE_LOGIN);
+      safePush(REDIRECT_URIS.AUTH_GOOGLE_LOGIN);
     } catch (error) {
       console.log('Google signin: Something went wrong', error);
-      router.push(REDIRECT_URIS.AUTH_GOOGLE_LOGIN);
+      safePush(REDIRECT_URIS.AUTH_GOOGLE_LOGIN);
     }
   };
 

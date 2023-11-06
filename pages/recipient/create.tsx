@@ -2,6 +2,7 @@ import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
+import useSafePush from '@hooks/useSafePush';
 import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { NextPage } from 'next';
@@ -20,6 +21,7 @@ const RecipientCreate: NextPage = () => {
   } = useGlobalContext();
 
   const router = useRouter();
+  const { safePush } = useSafePush();
   const [recipient, setRecipient] = useState<IRecipient>();
   const [token, setToken] = useState('');
   const {
@@ -55,7 +57,7 @@ const RecipientCreate: NextPage = () => {
         })
         .catch(async (err) => {
           // if (err.response.data.message === 'jwt expired') {
-          //   router.push({ pathname: '/expired', query: { loginToken: token } });
+          //   safePush({ pathname: '/expired', query: { loginToken: token } });
           // } else {
           await toast.error('The token is invalid');
           // }
@@ -99,7 +101,7 @@ const RecipientCreate: NextPage = () => {
       //   })
       //   .catch(async (err) => {
       //     if (err.response.data.message === 'jwt expired') {
-      //       router.push({ pathname: '/expired', query: { loginToken: token } });
+      //       safePush({ pathname: '/expired', query: { loginToken: token } });
       //     } else {
       //       await toast.error('The token is invalid');
       //     }
@@ -119,7 +121,7 @@ const RecipientCreate: NextPage = () => {
       // signUpWithToken(newRecipient, token);
       setCurrentRecipient(recipient);
       setOrganizationId(recipient?.organizationId);
-      router.push('/recipient/confirm?code=' + token);
+      safePush('/recipient/confirm?code=' + token);
     }
   };
 

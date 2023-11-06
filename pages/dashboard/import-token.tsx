@@ -5,12 +5,11 @@ import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import TokenDetails from '@components/atoms/TokenDetails/TokenDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
-import Router, { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
-import { useAuthContext } from 'providers/auth.context';
 import { useTokenContext } from 'providers/token.context';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -22,7 +21,7 @@ interface IImportToken {
 
 const DashboardImportToken: NextPageWithLayout = () => {
   const { chainId } = useWeb3React();
-  const router = useRouter();
+  const { safePush } = useSafePush();
   const { organizationId } = useOrganization();
   const { updateMintFormState } = useTokenContext();
   console.log({ organizationId });
@@ -77,7 +76,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
         chainId
       });
       setLoading(false);
-      router.push('/dashboard');
+      safePush('/dashboard');
     }
   };
 
@@ -166,7 +165,7 @@ const DashboardImportToken: NextPageWithLayout = () => {
           <BackButton
             label="Back"
             onClick={() => {
-              Router.push('/dashboard');
+              safePush('/dashboard');
             }}
           />
           <Button

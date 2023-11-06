@@ -16,6 +16,7 @@ import StepLabel from '@components/atoms/FormControls/StepLabel/StepLabel';
 import PromptModal from '@components/atoms/PromptModal/PromptModal';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import TextField from '@mui/material/TextField';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -29,7 +30,6 @@ import { useWeb3React } from '@web3-react/core';
 import axios from 'axios';
 import { injected } from 'connectors';
 import { add, addDays, differenceInHours, differenceInSeconds, isAfter, isBefore, subDays } from 'date-fns';
-import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { IScheduleFormState, useVestingContext } from 'providers/vesting.context';
 import ContractsIcon from 'public/icons/contracts-colored.svg';
@@ -66,6 +66,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   const { recipients, scheduleFormState, scheduleMode, scheduleState, updateScheduleFormState, setScheduleState } =
     useVestingContext();
   const { mintFormState, tokenId } = useTokenContext();
+  const { safePush } = useSafePush();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formMessage, setFormMessage] = useState('');
@@ -933,7 +934,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   console.log('TOUCHED AND DIRTY', releaseFrequency.state.isTouched, releaseFrequency.state.isDirty);
 
   useEffect(() => {
-    if (totalAllocations <= 0) Router.push('/vesting-schedule/add-recipients');
+    if (totalAllocations <= 0) safePush('/vesting-schedule/add-recipients');
   }, [totalAllocations]);
 
   useEffect(() => {
@@ -1082,7 +1083,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
     }
 
     // Redirect to the success page to notify the user
-    await Router.push('/vesting-schedule/success');
+    await safePush('/vesting-schedule/success');
 
     // Reset the value of everything else from the previous forms
     // resetVestingState();
@@ -1669,7 +1670,7 @@ const ConfigureSchedule: NextPageWithLayout = () => {
               <BackButton
                 label="Back"
                 onClick={() =>
-                  Router.push(
+                  safePush(
                     `/vesting-schedule/add-recipients?step=1${
                       scheduleMode && scheduleMode.edit ? '&id=' + scheduleMode.id : ''
                     }`

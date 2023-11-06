@@ -1,11 +1,11 @@
 import Button from '@components/atoms/Button/Button';
 import Chip from '@components/atoms/Chip/Chip';
 import ScheduleDetails from '@components/molecules/ScheduleDetails/ScheduleDetails';
+import useSafePush from '@hooks/useSafePush';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
-import { useRouter } from 'next/router';
 import WarningIcon from 'public/icons/warning.svg';
 import { useEffect, useState } from 'react';
 import { IVesting } from 'types/models';
@@ -18,7 +18,7 @@ const RecipientSchedule = () => {
   const { loading, hideLoading, showLoading } = useLoaderContext();
   const { recipient } = useAuthContext();
 
-  const router = useRouter();
+  const { safePush } = useSafePush();
 
   const getVestingScheduleDetails = async () => {
     const schedule = recipient?.vestingId;
@@ -51,7 +51,7 @@ const RecipientSchedule = () => {
   }, [recipient]);
 
   if (recipient?.address) {
-    router.push('/claim-portal');
+    safePush('/claim-portal');
   }
   return (
     <div className="w-full mb-6 panel max-w-2xl">
@@ -79,7 +79,7 @@ const RecipientSchedule = () => {
             color="warningAlt"
             rounded
           />
-          <Button className="primary" onClick={() => router.push('/recipient/confirm')}>
+          <Button className="primary" onClick={() => safePush('/recipient/confirm')}>
             Confirm
           </Button>
         </div>

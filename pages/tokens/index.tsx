@@ -1,18 +1,19 @@
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import { useClaimTokensContext } from '@providers/claim-tokens.context';
-import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useEffect } from 'react';
 
 const MyTokenStatus: NextPageWithLayout = () => {
   const { vestingSchedules } = useClaimTokensContext();
+  const { safePush } = useSafePush();
 
   // Check for Vesting schedules, then redirect to the first record
   useEffect(() => {
     if (vestingSchedules && vestingSchedules.length) {
       const selectFirst = vestingSchedules[0];
-      Router.push(`/tokens/${selectFirst.id}`);
+      safePush(`/tokens/${selectFirst.id}`);
     }
   }, [vestingSchedules]);
 

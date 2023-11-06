@@ -8,15 +8,14 @@ import Input from '@components/atoms/FormControls/Input/Input';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
 import TokenProfile from '@components/molecules/TokenProfile/TokenProfile';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import { useAuthContext } from '@providers/auth.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from 'connectors';
 import VariableSupplyERC20Token from 'contracts/abi/VariableSupplyERC20Token.json';
-import parse from 'date-fns/parse';
 import { ethers } from 'ethers';
-import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -36,7 +35,8 @@ const defaultValues: IAdditionalSupply = {
 const MintSupply: NextPageWithLayout = () => {
   const { library, account, activate, chainId } = useWeb3React();
   const { organizationId } = useAuthContext();
-  const { transactionStatus, setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
+  const { safePush } = useSafePush();
+  const { setTransactionStatus, setIsCloseAvailable } = useTransactionLoaderContext();
   const { mintFormState, tokenId, updateMintFormState } = useTokenContext();
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -110,7 +110,7 @@ const MintSupply: NextPageWithLayout = () => {
         toast.success('Additional tokens successfully minted!');
         setTransactionStatus('SUCCESS');
         setTimeout(() => {
-          Router.push('/dashboard');
+          safePush('/dashboard');
         }, 1000);
         return;
       }
@@ -119,7 +119,7 @@ const MintSupply: NextPageWithLayout = () => {
       toast.error('Additional tokens minting failed!');
       setTransactionStatus('ERROR');
       setTimeout(() => {
-        Router.push('/dashboard');
+        safePush('/dashboard');
       }, 1000);
       return;
     }
@@ -256,7 +256,7 @@ const MintSupply: NextPageWithLayout = () => {
           <BackButton
             label="Back to dashboard"
             onClick={() => {
-              Router.push('/dashboard');
+              safePush('/dashboard');
             }}
           />
           <Button

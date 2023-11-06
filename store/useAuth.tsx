@@ -1,5 +1,6 @@
 import { ERROR_MESSAGES } from '@api-hooks/messages';
 import useUserAPI from '@api-hooks/useUser';
+import useSafePush from '@hooks/useSafePush';
 import { REDIRECT_URIS, TOAST_NOTIFICATION_IDS } from '@utils/constants';
 import { getCache } from '@utils/localStorage';
 import { platformRoutes } from '@utils/routes';
@@ -56,6 +57,7 @@ export const useAuth = () => {
 
   const { getUserProfile } = useUserAPI();
   const router = useRouter();
+  const { safePush } = useSafePush();
 
   // Check for access token validity
   // Serves as the AUTH and ROLE Guard
@@ -69,7 +71,7 @@ export const useAuth = () => {
           // Check for role overrides
           const cachedUserData = await getCache();
           const { roleOverride } = cachedUserData;
-          router.push(roleOverride === IRole.INVESTOR ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
+          safePush(roleOverride === IRole.INVESTOR ? REDIRECT_URIS.CLAIM : REDIRECT_URIS.MAIN);
         } else throw userProfile;
       } else if (currentRouteIsProtected) throw 'Deny access';
     } catch (error) {
@@ -77,7 +79,7 @@ export const useAuth = () => {
       const isRouteProtected = platformRoutes.find((r) => r.path === router.pathname);
       if (isRouteProtected) {
         toast.error(ERROR_MESSAGES.EN.TOKEN_EXPIRED, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
-        router.push(REDIRECT_URIS.AUTH_LOGIN);
+        safePush(REDIRECT_URIS.AUTH_LOGIN);
       }
     }
   };
