@@ -1,5 +1,6 @@
 import RecipientApiService from '@api-services/RecipientApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
+import useSafePush from '@hooks/useSafePush';
 import { transformVestingSchedule } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { useShallowState } from 'hooks/useShallowState';
@@ -106,6 +107,7 @@ export function VestingContextProvider({ children }: any) {
   const [isLinearVesting, setIsLinearVesting] = useState<boolean>(true);
 
   const router = useRouter();
+  const { safePush } = useSafePush();
 
   const resetVestingState = useCallback(() => {
     setScheduleFormState(INITIAL_VESTING_FORM_STATE);
@@ -156,7 +158,7 @@ export function VestingContextProvider({ children }: any) {
       updateScheduleStates(id, data);
       setRecipients(recipientsData);
 
-      router.push(`/vesting-schedule/add-recipients?id=${id}`);
+      safePush(`/vesting-schedule/add-recipients?id=${id}`);
 
       hideLoading();
     },

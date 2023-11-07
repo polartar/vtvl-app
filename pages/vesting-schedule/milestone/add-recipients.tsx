@@ -1,11 +1,12 @@
 import { MilestoneConfigureSchedule } from '@components/molecules/MilestoneVesting/ConfigureSchedule';
 import { VestingSetupPanel } from '@components/molecules/VestingSetupPanel';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useShallowState } from 'hooks/useShallowState';
-import Router, { useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import React, { useCallback, useEffect } from 'react';
 import { toast } from 'react-toastify';
@@ -34,6 +35,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
   const { vestingFactoryContract } = useDashboardContext();
   const [state, setState] = useShallowState({ step: vestingFactoryContract ? 1 : 0 });
   const router = useRouter();
+  const { safePush } = useSafePush();
 
   useEffect(() => {
     if (isLinearVesting) {
@@ -42,9 +44,9 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
   }, [isLinearVesting]);
 
   const handleReturn = useCallback(() => {
-    if (state.step === 0) Router.push('/vesting-schedule');
+    if (state.step === 0) safePush('/vesting-schedule');
     else {
-      Router.push(
+      safePush(
         `/vesting-schedule/milestone/add-recipients${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`
       );
       setState(({ step }) => ({ step: step - 1 }));
@@ -74,7 +76,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
         createdBy: user?.memberInfo?.name || user?.displayName || user?.memberInfo?.email || ''
       });
       toast.success('The schedule was created successfully');
-      router.push('/dashboard');
+      safePush('/dashboard');
     } catch (err) {
       toast.error('Something went wrong while saving');
     }

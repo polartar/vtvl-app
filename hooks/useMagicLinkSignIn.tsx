@@ -1,13 +1,12 @@
 import useAuth from '@api-hooks/useAuth';
-import useOrganization from '@api-hooks/useOrganization';
 import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useOnboardingContext } from '@providers/onboarding.context';
-import { getOrgStore } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { IMember } from 'types/models';
+
+import useSafePush from './useSafePush';
 
 /**
  * This hook is to be used on ALL MAGIC LINK ENTRY points in the app
@@ -36,13 +35,11 @@ export default function useMagicLinkSignIn(callback?: () => void) {
   } = useGlobalContext();
   const { emailSignUp } = useAuthContext();
   const { completeOnboarding } = useOnboardingContext();
-  const router = useRouter();
   const [isExpired, setIsExpired] = useState(false);
   let timeout: NodeJS.Timeout;
-  const { validateVerificationCode, connectWallet } = useAuth();
-  const { getOrganizations } = useOrganization();
-  const { organizations } = getOrgStore();
-  const { active, account, library } = useWeb3React();
+  const { validateVerificationCode } = useAuth();
+  const { account, library } = useWeb3React();
+  const { safePush } = useSafePush();
 
   const signInWithMagicLink = async (member: IMember, newUser: boolean) => {
     try {
@@ -52,7 +49,7 @@ export default function useMagicLinkSignIn(callback?: () => void) {
       const params: any = new URL(window.location.toString());
       const redir = params.searchParams.get('redir');
       // Redirect to the declared page
-      router.push(decodeURIComponent(redir) || '/404');
+      safePush(decodeURIComponent(redir) || '/404');
     } catch (error) {
       setIsExpired(true);
     }
@@ -74,7 +71,7 @@ export default function useMagicLinkSignIn(callback?: () => void) {
       await signInWithMagicLink(member, newUser);
     } else if (redir) {
       // Redirect to the declared page
-      router.push(decodeURIComponent(redir));
+      safePush(decodeURIComponent(redir));
     }
   };
 
@@ -88,7 +85,7 @@ export default function useMagicLinkSignIn(callback?: () => void) {
         const validation = await validateVerificationCode({ code });
         console.log('VALIDATING', validation);
         if (validation) {
-          router.push('/v2/auth/connect');
+          safePush('/v2/auth/connect');
         } else throw validation;
       } catch (err) {
         console.log('ERROR', err);

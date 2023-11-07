@@ -7,23 +7,18 @@ import Form from '@components/atoms/FormControls/Form/Form';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
 import useAuth from '@hooks/useAuth';
-import AuthContext from '@providers/auth.context';
+import useSafePush from '@hooks/useSafePush';
 import { useGlobalContext } from '@providers/global.context';
-import OnboardingContext, { Step } from '@providers/onboarding.context';
 import { useAuth as useAuthStore } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
-import { useUser } from '@store/useUser';
 import { REDIRECT_URIS, WEBSITE_NAME } from '@utils/constants';
 import { NextPage } from 'next';
-import { Router, useRouter } from 'next/router';
 import PlusIcon from 'public/icons/plus.svg';
 import TrashIcon from 'public/icons/trash.svg';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { addInvitee } from 'services/db/member';
 import { emailPattern } from 'types/constants/validation-patterns';
-import { IUserType } from 'types/models/member';
-import { IRole, ITeamRole } from 'types/models/settings';
+import { IRole } from 'types/models/settings';
 
 interface Contributor {
   name: string;
@@ -44,9 +39,8 @@ const AccountSetupPage: NextPage = () => {
   const { organizations } = useOrganization();
   const { logout } = useAuthAPI();
   const { updateUserProfile } = useUserAPI();
-  const { save: saveUser } = useUser();
-  const { createMember, createOrganization, inviteMember } = useOrgAPI();
-  const router = useRouter();
+  const { createOrganization, inviteMember } = useOrgAPI();
+  const { safePush } = useSafePush();
 
   const {
     website: { name }
@@ -170,7 +164,7 @@ const AccountSetupPage: NextPage = () => {
         // Save the user data when possible
         // saveUser({ organizationId: newOrganization.id, role: IRole.FOUNDER });
         await authorizeUser(false);
-        router.push('/v2/onboarding/setup-safes');
+        safePush('/v2/onboarding/setup-safes');
       }
     } catch (error) {
       console.error(error);
@@ -186,7 +180,7 @@ const AccountSetupPage: NextPage = () => {
 
   const handleCancel = async () => {
     await logout();
-    router.push('/');
+    safePush('/');
   };
 
   return (

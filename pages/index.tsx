@@ -1,23 +1,23 @@
 import MediaAsset from '@components/atoms/MediaAsset/MediaAsset';
+import useAuth from '@hooks/useAuth';
 import { useGlobalContext } from '@providers/global.context';
 import { WEBSITE_NAME } from '@utils/constants';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { NextPage } from 'next';
-import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 
 const Home: NextPage = () => {
   const {
     website: { assets, name }
   } = useGlobalContext();
-  const router = useRouter();
+  const { authorizeUser } = useAuth();
   const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
       setExiting(true);
       setTimeout(() => {
-        router.push('/v2/auth/register');
+        authorizeUser();
       }, 400);
     }, 2000);
   }, []);

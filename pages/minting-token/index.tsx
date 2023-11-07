@@ -8,9 +8,8 @@ import Radio from '@components/atoms/FormControls/Radio/Radio';
 import RangeSlider from '@components/atoms/FormControls/RangeSlider/RangeSlider';
 import Uploader from '@components/atoms/Uploader/Uploader';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import { useTokenContext } from '@providers/token.context';
-import Decimal from 'decimal.js';
-import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -27,6 +26,7 @@ interface FormTypes {
 
 const MintingToken: NextPageWithLayout = () => {
   const { mintFormState, updateMintFormState } = useTokenContext();
+  const { safePush } = useSafePush();
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
@@ -95,7 +95,7 @@ const MintingToken: NextPageWithLayout = () => {
     // return;
 
     updateMintFormState({ ...mintFormState, ...data });
-    Router.push('/minting-token/summary');
+    safePush('/minting-token/summary');
     return;
   };
 

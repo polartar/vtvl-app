@@ -1,17 +1,17 @@
 import Copy from '@components/atoms/Copy/Copy';
-import PageLoader from '@components/atoms/PageLoader/PageLoader';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import Link from 'next/link';
-import Router from 'next/router';
 import { NextPageWithLayout } from 'pages/_app';
 import ArrowIcon from 'public/icons/arrow-small-left.svg';
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, useEffect } from 'react';
 
 const Complete: NextPageWithLayout = () => {
   const { mintFormState, isTokenLoading } = useTokenContext();
   const { showLoading, hideLoading } = useLoaderContext();
+  const { safePush } = useSafePush();
 
   useEffect(() => {
     if (isTokenLoading) {
@@ -23,7 +23,7 @@ const Complete: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (!mintFormState) {
-      Router.push('/minting-token');
+      safePush('/minting-token');
     }
   }, [mintFormState]);
 
@@ -41,7 +41,7 @@ const Complete: NextPageWithLayout = () => {
           </Copy>
         </div>
         <div className="flex flex-row justify-between items-center border-t border-neutral-200 pt-5">
-          <button className="primary" type="button" onClick={() => Router.push('/vesting-schedule/add-recipients')}>
+          <button className="primary" type="button" onClick={() => safePush('/vesting-schedule/add-recipients')}>
             Create schedule
           </button>
           <Link href="/dashboard">

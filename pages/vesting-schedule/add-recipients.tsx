@@ -3,6 +3,7 @@ import { RecipientTable, RecipientTableRow } from '@components/molecules/Recipie
 import { VestingSetupPanel } from '@components/molecules/VestingSetupPanel';
 import ImportCSVFlow from '@components/organisms/Forms/ImportCSVFlow';
 import SteppedLayout from '@components/organisms/Layout/SteppedLayout';
+import useSafePush from '@hooks/useSafePush';
 import { useVestingContract } from '@hooks/useVestingContract';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useGlobalContext } from '@providers/global.context';
@@ -59,6 +60,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
   const [duplicatedUsers, setDuplicatedUsers] = useState<Array<RecipientTableRow>>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const router = useRouter();
+  const { safePush } = useSafePush();
 
   /**
    * Handles the modal step process
@@ -132,11 +134,9 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
   };
 
   const handleReturn = useCallback(() => {
-    if (state.step === 0 || vestingFactoryContract) Router.push('/vesting-schedule');
+    if (state.step === 0 || vestingFactoryContract) safePush('/vesting-schedule');
     else {
-      Router.push(
-        `/vesting-schedule/add-recipients${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`
-      );
+      safePush(`/vesting-schedule/add-recipients${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`);
       setState(({ step }) => ({ step: step - 1 }));
     }
   }, [state.step]);
@@ -198,7 +198,7 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
       );
 
       // Route to the next page and check if the current route is edit or add.
-      Router.push(`/vesting-schedule/configure${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`);
+      safePush(`/vesting-schedule/configure${scheduleMode && scheduleMode.edit ? '?id=' + scheduleMode.id : ''}`);
     },
     [scheduleState, rows, vestings, allRecipients, updateRecipients]
   );
