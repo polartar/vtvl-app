@@ -557,7 +557,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           recipient: recipient.address
         };
       });
-      console.log({ claimInputs });
 
       const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI);
       const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [claimInputs]);

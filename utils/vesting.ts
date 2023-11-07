@@ -106,7 +106,7 @@ export const getCliffAmount = (
   amountToBeVested: number
 ): number => {
   if (amountAfterCliff && cliffDuration !== 'no_cliff') {
-    return +amountToBeVested * (+amountAfterCliff / 100);
+    return +(+amountToBeVested * (+amountAfterCliff / 100)).toFixed(3);
   }
   return 0;
 };
