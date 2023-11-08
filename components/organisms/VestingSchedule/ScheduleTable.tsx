@@ -771,10 +771,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     return (
       data.details.startDateTime &&
       data.details.endDateTime &&
-      getDuration(
-        new Date((data.details.startDateTime as unknown as Timestamp).seconds * 1000),
-        new Date((data.details.endDateTime as unknown as Timestamp).seconds * 1000)
-      )
+      getDuration(data.details.startDateTime, data.details.endDateTime)
     );
   };
 
