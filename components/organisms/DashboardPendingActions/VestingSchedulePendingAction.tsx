@@ -475,7 +475,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           +vesting.details.amountToBeVested
         ) / totalRecipients;
       const vestingAmountPerUser = +vesting.details.amountToBeVested / totalRecipients - cliffAmountPerUser;
-      const addresses = vestingRecipients.map((recipient) => recipient.address);
 
       if (hasNoWalletAddress) {
         toast.error("Some recipients don't have wallet address.");
@@ -608,7 +607,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             status: 'PENDING',
             to: vestingContract?.address ?? '',
             type: 'ADDING_CLAIMS',
-
             organizationId: organizationId,
             chainId,
             vestingIds: [vestingId]
