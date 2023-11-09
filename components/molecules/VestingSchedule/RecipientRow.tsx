@@ -214,7 +214,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
       <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd] bg-[#f9fafb]">
         <Copy text={address}>
           <p className="paragraphy-small ">
-            {address.slice(0, 5)}...{address.slice(-4)}
+            {address?.slice(0, 5)}...{address?.slice(-4)}
           </p>
         </Copy>
       </div>
