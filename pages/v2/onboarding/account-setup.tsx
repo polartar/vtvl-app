@@ -156,7 +156,7 @@ const AccountSetupPage: NextPage = () => {
 
       // Add every other users as member for invitation
       if (data.contributors && data.contributors.length) {
-        await handleSaveContributors(values.contributors, newOrganization ? newOrganization.organizationId : undefined);
+        await handleSaveContributors(values.contributors, newOrganization ? newOrganization.id : undefined);
       }
       setFormSuccess(true);
       // Update later with reusable onboarding steps

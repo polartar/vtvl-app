@@ -70,8 +70,8 @@ const useOrgAPI = () => {
         toast.success(`${payload.name} has been invited`);
         return res;
       })
-      .catch((error) => {
-        toast.error(ERROR_MESSAGES.EN.INVITE_MEMBER, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
+      .catch(() => {
+        toast.error(`Can't invite member(${payload.email})`, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
       });
   }, []);
 
