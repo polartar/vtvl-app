@@ -477,7 +477,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       const vestingAmountPerUser = +vesting.details.amountToBeVested / totalRecipients - cliffAmountPerUser;
 
       if (hasNoWalletAddress) {
-        toast.error("Some recipients don't have wallet address.");
+        toast.error('Cannot deploy schedule until all recipients have a wallet address.');
         return;
       }
 
@@ -873,7 +873,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           <button
             className="secondary small whitespace-nowrap"
             onClick={handleCreateSignTransaction}
-            disabled={transactionLoaderStatus === 'IN_PROGRESS' || hasNoWalletAddress}>
+            disabled={transactionLoaderStatus === 'IN_PROGRESS'}>
             Deploy schedule
           </button>
         )}
