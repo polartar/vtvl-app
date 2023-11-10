@@ -145,7 +145,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             hash: '',
             safeHash: txHash,
             status: 'PENDING',
-            to: '',
+            to: TIME_FACTORY_CONTRACTS[chainId],
             type: 'VESTING_DEPLOYMENT',
             organizationId: organizationId,
             chainId
