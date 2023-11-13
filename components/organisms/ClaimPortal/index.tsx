@@ -40,9 +40,9 @@ export default function ClaimPortal() {
   const { isLoadingMyRecipes, myRecipes, myVestingIds, myOrganizationIds, schedulesByOrganization } = useMyRecipes();
   const { isLoadingOrganizations, organizations } = useOrganizationsFromIds(myOrganizationIds);
   const { vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);
-  console.log({ vestings });
   const { tokens } = useTokensFromIds(vestingTokenIds);
   const { vestingContracts, vestingContractAddresses } = useVestingContractsFromIds(vestingContractIds);
+  console.log('CLAIM PORTAL', { vestings, vestingContracts });
   const {
     isLoadingVestings: isLoadingChainVesting,
     vestings: vestingInfos,
@@ -165,15 +165,13 @@ export default function ClaimPortal() {
         // withdraw
         try {
           const contract = vestingContracts.find((c) => c.id === vestingSchedule.data.vestingContractId);
-          const vestingContract = new ethers.Contract(
-            vestingInfo.address,
-            getVestingContractABI(String(contract?.updatedAt || '')),
-            library.getSigner()
-          );
+          const abi = getVestingContractABI(String(contract?.updatedAt));
+          const vestingContract = new ethers.Contract(vestingInfo.address, abi, library.getSigner());
           setIsCloseAvailable(false);
           setTransactionStatus('PENDING');
 
-          const withdrawTx = await vestingContract.withdraw();
+          // Might change this to add param when using factory and remove param when using the old contracts
+          const withdrawTx = await vestingContract.withdraw(0);
           setTransactionStatus('IN_PROGRESS');
           await withdrawTx.wait();
 
@@ -193,7 +191,7 @@ export default function ClaimPortal() {
         }
       }
     },
-    [library]
+    [library, vestingContracts, vestings]
   );
 
   useEffect(() => {
