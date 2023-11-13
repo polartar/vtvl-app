@@ -67,7 +67,7 @@ export default function GonsisSafe() {
 
         // Use try catch here to hanle 404 status code from Safe API
         try {
-          const newAPISafe = await SafeApiService.getSafeWalletsByAddress(address);
+          const newAPISafe = await SafeApiService.getSafeWallet(organizationId, address);
           console.log('NEW API SAFE', newAPISafe);
           if (newAPISafe) {
             setCurrentSafe(

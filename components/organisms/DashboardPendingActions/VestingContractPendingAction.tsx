@@ -148,7 +148,8 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             to: TIME_FACTORY_CONTRACTS[chainId],
             type: 'VESTING_DEPLOYMENT',
             organizationId: organizationId,
-            chainId
+            chainId,
+            vestingContractId: id
           });
           await VestingContractApiService.updateVestingContract(id, {
             ...data,

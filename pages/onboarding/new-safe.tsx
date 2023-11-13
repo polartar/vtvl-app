@@ -191,7 +191,7 @@ const NewSafePage: NextPage = () => {
       // Use the correct value for authorized users by checking on the threshold.
       defaultValues.authorizedUsers = o.length > authThreshold ? authThreshold : o.length;
       //populate with existing safe if we have it stored
-      const savedSafe = await SafeApiService.getSafeWalletsByAddress(safe.getAddress());
+      const savedSafe = await SafeApiService.getSafeWallet(organizationId ?? '', safe.getAddress());
       if (savedSafe) {
         defaultValues.owners = savedSafe.safeOwners;
         defaultValues.organizationName = organization?.name;
