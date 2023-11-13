@@ -38,7 +38,7 @@ const Dashboard: NextPageWithLayout = () => {
     fetchDashboardData();
   }, []);
 
-  const isMintAvailabe = useMemo(() => {
+  const isMintAvailable = useMemo(() => {
     const mintingTransaction = pendingTransactions.find((transaction) => transaction.type === 'TOKEN_DEPLOYMENT');
     return !mintingTransaction;
   }, [pendingTransactions]);
@@ -78,7 +78,7 @@ const Dashboard: NextPageWithLayout = () => {
             <button
               type="button"
               className="line flex flex-row gap-2 items-center"
-              disabled={!isMintAvailabe}
+              disabled={!isMintAvailable}
               onClick={() => router.push('/minting-token')}>
               <PlusIcon className="w-5 h-5" />
               Mint a new token
