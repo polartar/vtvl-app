@@ -85,10 +85,12 @@ export const transformSafes: (payload: {
   organizationName: string;
   userId: string;
 }) => { id: string; data: ISafe }[] = ({ safes, organizationId, organizationName, userId }) => {
-  return safes?.map((safe) => {
-    return {
-      id: safe.id,
-      data: { ...transformSafe({ safe, organizationId, organizationName, userId }) }
-    };
-  });
+  return safes?.length
+    ? safes?.map((safe) => {
+        return {
+          id: safe.id,
+          data: { ...transformSafe({ safe, organizationId, organizationName, userId }) }
+        };
+      })
+    : [];
 };
