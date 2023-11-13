@@ -14,8 +14,7 @@ export const ERROR_MESSAGES = {
     SEND_SIGN_UP_EMAIL: 'Oops! Sending magic link failed. Please check with VTVL administrators',
 
     WALLET_CONNECT: 'Oh no! Your wallet failed to connect with VTVL. Please try again',
-    WALLET_CONNECT_USER:
-      'This wallet is already registered with a different email. Please disconnect your wallet and connect a new one.',
+    WALLET_CONNECT_USER: 'This wallet address is already registered with another user. Please connect a new wallet',
 
     TOKEN_EXPIRED: 'Oops! looks like your access has expired, please log in again',
 
