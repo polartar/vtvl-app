@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { IRole, ITeamRole } from 'types/models/settings';
 
 enum ETabs {
-  TEAM = 'Team',
+  // TEAM = 'Team',
   SAFE = 'Gnosis Safe',
   KEY = 'API Key'
 }
@@ -16,7 +16,8 @@ const Settings = () => {
   const { tab } = router?.query ?? {};
 
   const { user } = useAuthContext();
-  const [currentTab, setCurrentTab] = useState<ETabs>(tab === 'safe' ? ETabs.SAFE : ETabs.TEAM);
+  // const [currentTab, setCurrentTab] = useState<ETabs>(tab === 'safe' ? ETabs.SAFE : ETabs.TEAM);
+  const [currentTab, setCurrentTab] = useState<ETabs>(ETabs.SAFE);
 
   const isFounder = useMemo(() => {
     return user?.memberInfo?.role === IRole.FOUNDER;
