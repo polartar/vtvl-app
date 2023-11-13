@@ -35,6 +35,8 @@ const VestingSummary = ({
 
   const { data: creator } = useSWR(['fetch-member', vestingSchedule.data.createdBy], async () => {
     if (vestingSchedule.data.createdBy) {
+      // Update this later to get the creator name in the new API
+      // No API endpoint exists yet
       const member = await fetchMember(vestingSchedule.data.createdBy);
       console.log({ member });
       return member?.name || '';
