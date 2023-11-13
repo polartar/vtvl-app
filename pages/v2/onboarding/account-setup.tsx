@@ -288,7 +288,7 @@ const AccountSetupPage: NextPage = () => {
             )}
           />
         </div>
-        {userTypeRadio.value === 'organization' ? (
+        {/* {userTypeRadio.value === 'organization' ? (
           <>
             <label className="mb-3">
               <span>Invite team members to your organization</span>
@@ -348,7 +348,7 @@ const AccountSetupPage: NextPage = () => {
               Invite
             </button>
           </>
-        ) : null}
+        ) : null} */}
         <div className="flex flex-row justify-between items-center">
           <BackButton label="Cancel" onClick={handleCancel} />
           <Button className="primary" type="submit" loading={isSubmitting}>
