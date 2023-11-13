@@ -139,14 +139,16 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
           <div className="min-w-[200px] flex-grow py-3 flex-shrink-0 bg-[#f2f4f7]"></div>
         </div>
 
-        {filteredVestingSchedules?.map((vesting) => (
-          <ScheduleTable
-            id={vesting.id}
-            data={vesting.data}
-            key={vesting.id}
-            vestingSchedulesInfo={vestingSchedulesInfo}
-          />
-        ))}
+        {filteredVestingSchedules?.length
+          ? filteredVestingSchedules?.map((vesting) => (
+              <ScheduleTable
+                id={vesting.id}
+                data={vesting.data}
+                key={vesting.id}
+                vestingSchedulesInfo={vestingSchedulesInfo}
+              />
+            ))
+          : null}
       </div>
     </div>
   );
