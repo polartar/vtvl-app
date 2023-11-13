@@ -35,11 +35,12 @@ const RecipientCreate: NextPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setTransactionStatus } = useTransactionLoaderContext();
 
-  useEffect(() => {
-    if (recipient && recipient && recipient.address) {
-      safePush('/claim-portal');
-    }
-  }, [recipient, router, recipient?.address]);
+  // useEffect(() => {
+  //   if (recipient && recipient && recipient.address) {
+  //     safePush('/claim-portal');
+  //   }
+  // }, [recipient, router, recipient?.address]);
+
   const onSign = async () => {
     if (!account || !library) {
       return;

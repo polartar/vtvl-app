@@ -30,7 +30,7 @@ import VestingCard from '../Cards/VestingCard';
 import ProjectTabs, { ProjectOption } from '../Tabs/ProjectTabs';
 
 const formatDateTime = (dateTime: any) => {
-  return formatDate(new Date(dateTime.toMillis()));
+  return formatDate(new Date(dateTime));
 };
 
 export default function ClaimPortal() {
