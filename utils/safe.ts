@@ -70,7 +70,7 @@ export const transformSafe: (payload: {
     safe_name: safe.name,
     org_name: organizationName,
     org_id: organizationId,
-    address: safe.address,
+    address: ethers.utils.getAddress(safe.address),
     chainId: safe.chainId,
     owners: safe.safeOwners as IOwner[],
     threshold: safe.requiredConfirmations,

@@ -12,7 +12,7 @@ export const getSafeInfo = async (provider: any, safeAddress: string): Promise<S
     signer: provider?.getSigner(0)
   });
 
-  const safe: Safe = await Safe.create({ ethAdapter, safeAddress });
+  const safe: Safe = await Safe.create({ ethAdapter, safeAddress: ethers.utils.getAddress(safeAddress) });
   return safe;
 };
 
