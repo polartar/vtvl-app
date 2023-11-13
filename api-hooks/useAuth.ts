@@ -83,13 +83,13 @@ const useAuthAPI = () => {
         return res;
       })
       .catch((error) => {
-        if (error?.reponse?.status === 400) {
+        if (error?.response?.status === 400) {
           toast.error(ERROR_MESSAGES.EN.WALLET_CONNECT_USER, {
             toastId: TOAST_NOTIFICATION_IDS.ERROR,
             autoClose: 10000
           });
         } else {
-          toast.error(ERROR_MESSAGES.EN.WALLET_CONNECT, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
+          toast.error(error.message, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
         }
         return false;
       });

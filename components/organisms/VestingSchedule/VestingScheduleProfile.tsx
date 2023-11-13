@@ -65,17 +65,13 @@ const VestingScheduleProfile = ({
         },
         {
           title: 'Start',
-          content: moment((vesting.details.startDateTime as unknown as Timestamp).toDate().toString()).format(
-            'MMM D, YYYY'
-          ),
+          content: moment(vesting.details.startDateTime).format('MMM D, YYYY'),
           isCaret: true
         },
         {
           title: 'End',
           icon: <div className="w-3 h-3 bg-yellow-200 rounded-full flex-shrink-0" />,
-          content: moment((vesting.details.endDateTime as unknown as Timestamp).toDate().toString()).format(
-            'MMM D, YYYY'
-          )
+          content: moment(vesting.details.endDateTime).format('MMM D, YYYY')
         },
         {
           title: 'Progress',
@@ -93,13 +89,8 @@ const VestingScheduleProfile = ({
           content: ''
         }
       ];
-      const diff = moment((vesting.details.endDateTime as unknown as Timestamp).toDate().toString()).diff(
-        moment((vesting.details.startDateTime as unknown as Timestamp).toDate().toString()),
-        'months'
-      );
-      const diffFromNow = moment().diff(
-        moment((vesting.details.startDateTime as unknown as Timestamp).toDate().toString())
-      );
+      const diff = moment(vesting.details.endDateTime).diff(moment(vesting.details.startDateTime), 'months');
+      const diffFromNow = moment().diff(moment(vesting.details.startDateTime));
 
       let progress =
         vesting.status === 'LIVE' && diffFromNow >= 0 ? Math.floor((diffFromNow / diff) * 100).toString() : 0;

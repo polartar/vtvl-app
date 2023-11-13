@@ -353,10 +353,7 @@ export default function ClaimPortal() {
                   const contract = vestingContracts.find((c) => c.id === singleVesting.data.vestingContractId);
                   const vestingInfo = getVestingInfoByContract(String(contract?.address));
                   const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = singleVesting.data.details;
-                  const computeCliffDateTime = getCliffDateTime(
-                    new Date((startDateTime! as unknown as Timestamp).seconds * 1000),
-                    cliffDuration
-                  );
+                  const computeCliffDateTime = getCliffDateTime(startDateTime!, cliffDuration);
 
                   const actualDates = getActualDateTime(singleVesting.data.details);
                   let progress = 0;

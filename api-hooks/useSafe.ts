@@ -47,7 +47,7 @@ const useSafeAPI = () => {
       .catch((error) => {
         // Do something when there was an error adding a safe wallet
         toast.error(ERROR_MESSAGES.EN.GET_SAFE, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
-        return error;
+        return [];
       });
   }, []);
 

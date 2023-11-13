@@ -10,6 +10,7 @@ import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/s
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import { getVestingContractABI } from '@utils/multicall';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ethers } from 'ethers';
@@ -81,7 +82,8 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
 
   const handleRevoke = async () => {
     const signer = library?.getSigner(0);
-    const vestingAddress = vestingContracts.find((v) => v.id === vesting.vestingContractId)?.address;
+    const vestingContract = vestingContracts.find((v) => v.id === vesting.vestingContractId);
+    const vestingAddress = vestingContract?.address;
     if (!signer || !account || !chainId || !vestingAddress) return;
 
     const recipient = address;
@@ -96,7 +98,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             return;
           }
 
-          const vestingContractInterface = new ethers.utils.Interface([REVOKE_CLAIM_FUNCTION_ABI]);
+          const vestingContractInterface = new ethers.utils.Interface(getVestingContractABI(vestingContract.updatedAt));
 
           setTransactionStatus('IN_PROGRESS');
           const { hash: safeHash, nonce } = await createSafeTransaction(
@@ -107,7 +109,8 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             currentSafe?.owners?.map((owner) => owner.address) ?? [],
             {
               to: vestingAddress,
-              data: vestingContractInterface.encodeFunctionData('revokeClaim', [recipient]),
+              // Todo
+              data: vestingContractInterface.encodeFunctionData('revokeClaim', [recipient, 0]), // We need to figure the schedule Index in the future
               value: '0'
             }
           );
@@ -120,8 +123,6 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             vestingIds: [vestingId],
             to: vestingAddress,
             status: 'PENDING',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
             type: 'REVOKE_CLAIM'
           });
           updateTransactions(transaction);
@@ -139,10 +140,11 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
         } else {
           const vestingContractInstance = new ethers.Contract(
             vestingAddress,
-            VTVL_VESTING_ABI.abi,
+            getVestingContractABI(vestingContract.updatedAt),
             library.getSigner()
           );
-          const revokeTransaction = await vestingContractInstance.revokeClaim(recipient);
+          // Todo
+          const revokeTransaction = await vestingContractInstance.revokeClaim(recipient, 0); // We need to figure the schedule Index in the future
           setTransactionStatus('IN_PROGRESS');
           await revokeTransaction.wait();
           const transaction = await TransactionApiService.createTransaction({
@@ -153,8 +155,6 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             vestingIds: [vestingId],
             to: vestingAddress,
             status: 'SUCCESS',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
             type: 'REVOKE_CLAIM'
           });
           updateTransactions(transaction);
@@ -214,7 +214,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
       <div className="flex items-center w-32 py-3 flex-shrink-0 border-t border-[#d0d5dd] bg-[#f9fafb]">
         <Copy text={address}>
           <p className="paragraphy-small ">
-            {address.slice(0, 5)}...{address.slice(-4)}
+            {address?.slice(0, 5)}...{address?.slice(-4)}
           </p>
         </Copy>
       </div>
