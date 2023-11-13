@@ -806,7 +806,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   );
 
   const formatValue = (value: BigNumber | undefined) => {
-    return value ? Number(formatEther(value)).toFixed(2) : 0;
+    return value ? formatNumber(Number(formatEther(value))) : 0;
   };
 
   return (
