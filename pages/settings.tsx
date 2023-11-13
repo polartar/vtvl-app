@@ -43,9 +43,10 @@ const Settings = () => {
       </div>
 
       {isFounder ? (
-        currentTab === ETabs.TEAM ? (
-          <Team />
-        ) : currentTab === ETabs.SAFE ? (
+        // currentTab === ETabs.TEAM ? (
+        //   <Team />
+        // ) :
+        currentTab === ETabs.SAFE ? (
           <GonsisSafe />
         ) : (
           <APIKeyPage />
