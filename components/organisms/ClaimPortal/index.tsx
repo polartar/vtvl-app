@@ -6,6 +6,7 @@ import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useOrganizationsFromIds } from '@store/useOrganizations';
+import { getVestingContractABI } from '@utils/multicall';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
@@ -19,6 +20,7 @@ import { useVestingContractsFromIds } from 'hooks/useVestingContracts';
 import { useVestingsFromIds } from 'hooks/useVestings';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useMemo } from 'react';
+import { IVesting } from 'types/models';
 import { compareAddresses } from 'utils';
 import { formatDate, getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
@@ -149,17 +151,25 @@ export default function ClaimPortal() {
    * Claim Vesting
    */
   const handleClaim = useCallback(
-    async (vestingInfo: {
-      address: string;
-      allocations: string;
-      locked: string;
-      withdrawn: string;
-      unclaimed: string;
-    }) => {
+    async (
+      vestingInfo: {
+        address: string;
+        allocations: string;
+        locked: string;
+        withdrawn: string;
+        unclaimed: string;
+      },
+      vestingSchedule: { id: string; data: IVesting }
+    ) => {
       if (Number(vestingInfo.unclaimed) > 0) {
         // withdraw
         try {
-          const vestingContract = new ethers.Contract(vestingInfo.address, VTVL_VESTING_ABI.abi, library.getSigner());
+          const contract = vestingContracts.find((c) => c.id === vestingSchedule.data.vestingContractId);
+          const vestingContract = new ethers.Contract(
+            vestingInfo.address,
+            getVestingContractABI(String(contract?.updatedAt || '')),
+            library.getSigner()
+          );
           setIsCloseAvailable(false);
           setTransactionStatus('PENDING');
 
@@ -381,7 +391,7 @@ export default function ClaimPortal() {
                       buttonLabel={`CLAIM ${Number(String(vestingInfo?.unclaimed ?? 0)).toFixed(2)} ${getTokenSymbol(
                         String(singleVesting.data.tokenId)
                       )}`}
-                      buttonAction={() => vestingInfo && handleClaim(vestingInfo)}
+                      buttonAction={() => vestingInfo && handleClaim(vestingInfo, singleVesting)}
                       percentage={progress}
                       disabled={!vestingInfo || !Number(String(vestingInfo.unclaimed))}
                     />
