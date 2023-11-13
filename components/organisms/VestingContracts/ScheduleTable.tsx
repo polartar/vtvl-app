@@ -785,22 +785,28 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     return (
       data.details.startDateTime &&
       data.details.endDateTime &&
-      getDuration(
-        new Date((data.details.startDateTime as unknown as Timestamp).seconds * 1000),
-        new Date((data.details.endDateTime as unknown as Timestamp).seconds * 1000)
-      )
+      getDuration(data.details.startDateTime, data.details.endDateTime)
     );
   };
 
   const getRecipientInfo = useCallback(
     (wallet: string) => {
-      return vestingSchedulesInfo.find((vestingInfo) => compareAddresses(vestingInfo.recipient, wallet));
+      // Get the vesting schedule info for the current wallet from chain
+      if (vestingSchedulesInfo?.length)
+        return vestingSchedulesInfo.find((vestingInfo) => compareAddresses(vestingInfo.recipient, wallet));
+      // Fallback into using values in the vesting schedule coming from DB
+      return {
+        withdrawn: BigNumber.from(0),
+        unclaimed: BigNumber.from(0),
+        locked: BigNumber.from(0),
+        allocation: BigNumber.from(data?.details?.amountToBeVested || 0)
+      };
     },
     [vestingSchedulesInfo]
   );
 
   const formatValue = (value: BigNumber | undefined) => {
-    return value ? Number(formatEther(value)).toFixed(2) : 0;
+    return value ? formatNumber(Number(formatEther(value))) : 0;
   };
 
   return (

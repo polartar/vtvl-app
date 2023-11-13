@@ -6,6 +6,7 @@ import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useOrganizationsFromIds } from '@store/useOrganizations';
+import { getVestingContractABI } from '@utils/multicall';
 import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
@@ -19,6 +20,7 @@ import { useVestingContractsFromIds } from 'hooks/useVestingContracts';
 import { useVestingsFromIds } from 'hooks/useVestings';
 import Image from 'next/image';
 import React, { useCallback, useEffect, useMemo } from 'react';
+import { IVesting } from 'types/models';
 import { compareAddresses } from 'utils';
 import { formatDate, getActualDateTime } from 'utils/shared';
 import { formatNumber } from 'utils/token';
@@ -30,7 +32,7 @@ import VestingCard from '../Cards/VestingCard';
 import ProjectTabs, { ProjectOption } from '../Tabs/ProjectTabs';
 
 const formatDateTime = (dateTime: any) => {
-  return formatDate(new Date(dateTime.toMillis()));
+  return formatDate(new Date(dateTime));
 };
 
 export default function ClaimPortal() {
@@ -38,9 +40,9 @@ export default function ClaimPortal() {
   const { isLoadingMyRecipes, myRecipes, myVestingIds, myOrganizationIds, schedulesByOrganization } = useMyRecipes();
   const { isLoadingOrganizations, organizations } = useOrganizationsFromIds(myOrganizationIds);
   const { vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);
-  console.log({ vestings });
   const { tokens } = useTokensFromIds(vestingTokenIds);
   const { vestingContracts, vestingContractAddresses } = useVestingContractsFromIds(vestingContractIds);
+  console.log('CLAIM PORTAL', { vestings, vestingContracts });
   const {
     isLoadingVestings: isLoadingChainVesting,
     vestings: vestingInfos,
@@ -149,21 +151,27 @@ export default function ClaimPortal() {
    * Claim Vesting
    */
   const handleClaim = useCallback(
-    async (vestingInfo: {
-      address: string;
-      allocations: string;
-      locked: string;
-      withdrawn: string;
-      unclaimed: string;
-    }) => {
+    async (
+      vestingInfo: {
+        address: string;
+        allocations: string;
+        locked: string;
+        withdrawn: string;
+        unclaimed: string;
+      },
+      vestingSchedule: { id: string; data: IVesting }
+    ) => {
       if (Number(vestingInfo.unclaimed) > 0) {
         // withdraw
         try {
-          const vestingContract = new ethers.Contract(vestingInfo.address, VTVL_VESTING_ABI.abi, library.getSigner());
+          const contract = vestingContracts.find((c) => c.id === vestingSchedule.data.vestingContractId);
+          const abi = getVestingContractABI(String(contract?.updatedAt));
+          const vestingContract = new ethers.Contract(vestingInfo.address, abi, library.getSigner());
           setIsCloseAvailable(false);
           setTransactionStatus('PENDING');
 
-          const withdrawTx = await vestingContract.withdraw();
+          // Might change this to add param when using factory and remove param when using the old contracts
+          const withdrawTx = await vestingContract.withdraw(0);
           setTransactionStatus('IN_PROGRESS');
           await withdrawTx.wait();
 
@@ -183,7 +191,7 @@ export default function ClaimPortal() {
         }
       }
     },
-    [library]
+    [library, vestingContracts, vestings]
   );
 
   useEffect(() => {
@@ -345,10 +353,7 @@ export default function ClaimPortal() {
                   const contract = vestingContracts.find((c) => c.id === singleVesting.data.vestingContractId);
                   const vestingInfo = getVestingInfoByContract(String(contract?.address));
                   const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = singleVesting.data.details;
-                  const computeCliffDateTime = getCliffDateTime(
-                    new Date((startDateTime! as unknown as Timestamp).seconds * 1000),
-                    cliffDuration
-                  );
+                  const computeCliffDateTime = getCliffDateTime(startDateTime!, cliffDuration);
 
                   const actualDates = getActualDateTime(singleVesting.data.details);
                   let progress = 0;
@@ -381,7 +386,7 @@ export default function ClaimPortal() {
                       buttonLabel={`CLAIM ${Number(String(vestingInfo?.unclaimed ?? 0)).toFixed(2)} ${getTokenSymbol(
                         String(singleVesting.data.tokenId)
                       )}`}
-                      buttonAction={() => vestingInfo && handleClaim(vestingInfo)}
+                      buttonAction={() => vestingInfo && handleClaim(vestingInfo, singleVesting)}
                       percentage={progress}
                       disabled={!vestingInfo || !Number(String(vestingInfo.unclaimed))}
                     />

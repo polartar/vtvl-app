@@ -76,9 +76,9 @@ export const platformRoutes: Route[] = [
   { path: '/settings', allowedRoles: [IRole.FOUNDER] },
   // Recipient routes
   { path: '/recipient', allowedRoles: [IRole.FOUNDER] },
-  { path: '/recipient/create', allowedRoles: [IRole.FOUNDER] },
-  { path: '/recipient/confirm', allowedRoles: [IRole.FOUNDER] },
-  { path: '/recipient/schedule', allowedRoles: [IRole.FOUNDER] },
+  // { path: '/recipient/create', allowedRoles: [IRole.FOUNDER] },
+  // { path: '/recipient/confirm', allowedRoles: [IRole.FOUNDER] },
+  // { path: '/recipient/schedule', allowedRoles: [IRole.FOUNDER] },
   // Other routes
   // { path: '/privacy-policy', allowedRoles: [...allRoles] },
   // { path: '/terms', allowedRoles: [...allRoles] },

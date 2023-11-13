@@ -21,7 +21,7 @@ const ContractsPage: NextPageWithLayout = () => {
   ];
   return (
     <SteppedLayout title="Contracts" crumbs={crumbSteps}>
-      <Contract vestingContractId={contractId as string} />;
+      <Contract vestingContractId={contractId as string} />
     </SteppedLayout>
   );
 };
