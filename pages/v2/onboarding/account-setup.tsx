@@ -62,7 +62,7 @@ const AccountSetupPage: NextPage = () => {
       name: '',
       company: '',
       companyEmail: '',
-      type: 'organization',
+      type: 'hide-organization', // Update this into 'organization' to show the Invite team members section
       contributors: [
         {
           name: '',

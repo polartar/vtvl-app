@@ -16,7 +16,7 @@ const Settings = () => {
   const { tab } = router?.query ?? {};
 
   const { user } = useAuthContext();
-  const [currentTab, setCurrentTab] = useState<ETabs>(tab === 'safe' ? ETabs.SAFE : ETabs.TEAM);
+  const [currentTab, setCurrentTab] = useState<ETabs>(ETabs.SAFE); // Add condition for router query about ETabs.TEAM to show Team tab
 
   const isFounder = useMemo(() => {
     return user?.memberInfo?.role === IRole.FOUNDER;
@@ -28,7 +28,8 @@ const Settings = () => {
 
       <div className="w-full justify-center flex border-t-[1px] border-b-[1px] border-gray-200 mb-12 font-medium">
         {Object.values(ETabs).map((tab: ETabs) => {
-          return (
+          // Remove condition to show Team tab
+          return tab !== ETabs.TEAM ? (
             <div
               key={tab}
               className={`flex items-center h-14 mr-13 ${
@@ -37,7 +38,7 @@ const Settings = () => {
               onClick={() => setCurrentTab(tab)}>
               {tab}
             </div>
-          );
+          ) : null;
         })}
       </div>
 
