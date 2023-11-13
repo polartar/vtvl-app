@@ -29,8 +29,7 @@ const Settings = () => {
 
       <div className="w-full justify-center flex border-t-[1px] border-b-[1px] border-gray-200 mb-12 font-medium">
         {Object.values(ETabs).map((tab: ETabs) => {
-          // Remove condition to show Team tab
-          return tab !== ETabs.TEAM ? (
+          return (
             <div
               key={tab}
               className={`flex items-center h-14 mr-13 ${
@@ -39,7 +38,7 @@ const Settings = () => {
               onClick={() => setCurrentTab(tab)}>
               {tab}
             </div>
-          ) : null;
+          );
         })}
       </div>
 
