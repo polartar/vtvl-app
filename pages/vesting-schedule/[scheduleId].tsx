@@ -7,6 +7,7 @@ import Safe, { EthSignSignature } from '@gnosis.pm/safe-core-sdk';
 import { SafeTransaction } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import SafeServiceClient, { SafeMultisigTransactionResponse } from '@gnosis.pm/safe-service-client';
+import { useRecipientsByQuery } from '@hooks/useRecipientsByQuery';
 import { useAuthContext } from '@providers/auth.context';
 import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
@@ -38,7 +39,8 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     keyword: string;
     status: IStatus;
   }>({ keyword: '', status: IStatus.ALL });
-  const [recipients, setRecipients] = useState<IRecipient[]>([]);
+  // const [recipients, setRecipients] = useState<IRecipient[]>([]);
+  const { recipients } = useRecipientsByQuery(`vestingId=${scheduleId}`);
   const [vestingSchedule, setVestingSchedule] = useState<IVesting | undefined>(undefined);
 
   const vesting = useMemo(() => {
