@@ -2,9 +2,15 @@ import RecipientApiService from '@api-services/RecipientApiService';
 import Button from '@components/atoms/Button/Button';
 import Input from '@components/atoms/FormControls/Input/Input';
 import { Typography } from '@components/atoms/Typography/Typography';
+import useAuth from '@hooks/useAuth';
 import useSafePush from '@hooks/useSafePush';
 import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
+import { useAuth as useAuthStore } from '@store/useAuth';
+import { toUTCString } from '@utils/date';
+import { MESSAGES } from '@utils/messages';
+import { SIGN_MESSAGE_TEMPLATE } from '@utils/web3';
+import { useWeb3React } from '@web3-react/core';
 import { NextPage } from 'next';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -15,6 +21,7 @@ import { IRecipient } from 'types/models';
 import { WEBSITE_NAME } from 'utils/constants';
 
 const RecipientCreate: NextPage = () => {
+  const { account, library } = useWeb3React();
   const { setOrganizationId, setRecipient: setCurrentRecipient } = useAuthContext();
   const {
     website: { name: websiteName, assets }
@@ -24,6 +31,8 @@ const RecipientCreate: NextPage = () => {
   const { safePush } = useSafePush();
   const [recipient, setRecipient] = useState<IRecipient>();
   const [token, setToken] = useState('');
+  const { save: saveAuth } = useAuthStore();
+  const { authorizeUser } = useAuth(); // hook
   const {
     control,
     handleSubmit,
@@ -119,9 +128,57 @@ const RecipientCreate: NextPage = () => {
       // };
 
       // signUpWithToken(newRecipient, token);
-      setCurrentRecipient(recipient);
-      setOrganizationId(recipient?.organizationId);
-      safePush('/recipient/confirm?code=' + token);
+      if (recipient?.address) {
+        // Recipient already has a wallet address,
+        // let's make the user sign.
+        if (!account || !library) {
+          toast.error(MESSAGES.WALLET.CONNECT);
+          return;
+        }
+
+        const time = toUTCString();
+        const message = SIGN_MESSAGE_TEMPLATE(account, time);
+
+        // Open up the wallet and ask the user to sign the message here
+        let signature;
+        try {
+          signature = await library.provider.request({
+            method: 'personal_sign',
+            params: [message, account],
+            jsonrpc: '2.0'
+          });
+          toast.success(MESSAGES.WALLET.SIGNED);
+        } catch (err) {
+          toast.error(MESSAGES.WALLET.REJECT);
+          return;
+        }
+
+        try {
+          const token = router.query.code;
+          const response = await RecipientApiService.acceptInvitation({
+            code: token as string,
+            wallet: {
+              address: account,
+              signature,
+              utcTime: time
+            }
+          });
+
+          setCurrentRecipient(recipient);
+          setOrganizationId(recipient?.organizationId);
+          saveAuth(response);
+          // Authorize the user and handles redirection
+          await authorizeUser();
+        } catch (err) {
+          toast.error('The signature is invalid');
+        }
+      } else {
+        // No wallet address in the recipient,
+        // Let's make the user confirm one and sign there.
+        setCurrentRecipient(recipient);
+        setOrganizationId(recipient?.organizationId);
+        safePush('/recipient/confirm?code=' + token);
+      }
     }
   };
 

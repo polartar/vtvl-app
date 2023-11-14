@@ -6,6 +6,7 @@ export const MESSAGES = {
     }
   },
   WALLET: {
+    CONNECT: 'You need to connect your wallet first',
     ACCEPT_IMPORT_TOKEN: 'Congrats! your token is now imported',
     SIGNED: 'Your wallet address is signed',
     REJECT: 'Did you just cancel? Oh well, you can try again'
