@@ -98,7 +98,6 @@ export const NO_CONNECT_WALLET_MODAL_PAGES = [
   '/onboarding/login',
   '/onboarding/member-login',
   '/expired',
-  '/recipient/create',
   '/recipient/schedule'
 ];
 
