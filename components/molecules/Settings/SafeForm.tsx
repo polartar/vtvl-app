@@ -30,7 +30,7 @@ type ConfirmationForm = {
 };
 
 export default function SafeForm({ onBack }: { onBack: () => void }) {
-  const { active, library, chainId } = useWeb3React();
+  const { active, library, chainId, account } = useWeb3React();
   const { user, organizationId } = useAuthContext();
   const { setTransactionStatus } = useTransactionLoaderContext();
   const { ModalWrapper, showModal, hideModal } = useModal({});
@@ -45,7 +45,7 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
   } = useForm({
     defaultValues: {
       safeName: '',
-      owners: [{ name: '', address: '', email: '' }],
+      owners: [{ name: '', address: account ?? '', email: '' }],
       authorizedUsers: 1
     }
   });

@@ -37,7 +37,7 @@ type ConfirmationForm = {
 };
 
 const NewSafePage: NextPage = () => {
-  const { active, library, chainId, error } = useWeb3React();
+  const { active, library, chainId, error, account } = useWeb3React();
   const { fetchSafeFromDB } = useAuthContext();
   const { user, organization, organizationId } = useContext(AuthContext);
   const { onNext, onPrevious, inProgress, startOnboarding } = useContext(OnboardingContext);
@@ -68,36 +68,6 @@ const NewSafePage: NextPage = () => {
     }
   }, [query.address]);
 
-  const getSafeDetails = async (safeAddress: string) => {
-    if (!active || !chainId || !library) {
-      console.log('Please login with metamask to create safe');
-      return;
-    }
-
-    if (!user) {
-      console.log('Please login to import safe');
-      return;
-    }
-    try {
-      const safe = await getSafeInfo(library, safeAddress);
-      if (!safe) {
-        console.log(
-          "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
-        );
-        return;
-      }
-
-      setImportedSafe(safe);
-      const o = (await safe.getOwners()).map((o) => {
-        return { name: '', address: o, email: '' };
-      });
-      setOwners(o);
-      const t = await safe.getThreshold();
-      setThreshold(t);
-    } catch (error) {
-      console.log('error importing safe ', error);
-    }
-  };
   // Get to use the react-hook-form and set default values
   const {
     control,
@@ -112,7 +82,7 @@ const NewSafePage: NextPage = () => {
   } = useForm({
     defaultValues: {
       organizationName: '',
-      owners: [{ name: '', address: '', email: '' }],
+      owners: [{ name: '', address: account ?? '', email: '' }],
       authorizedUsers: 1
     }
   });
@@ -170,44 +140,37 @@ const NewSafePage: NextPage = () => {
       setFormMessage('Please login to setup safe!');
       return;
     }
-    try {
-      const safe = await getSafeInfo(library, address);
-      if (!safe) {
-        setFormError(true);
-        setFormMessage(
-          "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
-        );
-        return;
-      }
 
-      const o = (await safe.getOwners()).map((o) => {
-        return { name: '', address: o };
-      });
-
-      setImportedSafe(safe);
-      const defaultValues: any = {};
-      const authThreshold = await safe.getThreshold();
-      defaultValues.owners = o;
-      // Use the correct value for authorized users by checking on the threshold.
-      defaultValues.authorizedUsers = o.length > authThreshold ? authThreshold : o.length;
-      //populate with existing safe if we have it stored
-      const savedSafe = await SafeApiService.getSafeWallet(organizationId ?? '', safe.getAddress());
-      if (savedSafe) {
-        defaultValues.owners = savedSafe.safeOwners;
-        defaultValues.organizationName = organization?.name;
-        setSafeRef(savedSafe?.id);
-      }
-      // Set the options depending on the number of owners
-      // setOptions(defaultValues.authorizedUsers);
-      setOptions(o.length);
-      reset({ ...defaultValues });
-    } catch (error) {
-      console.log('error importing safe ', error);
+    const safe = await getSafeInfo(library, address);
+    if (!safe) {
       setFormError(true);
       setFormMessage(
         "Unable to get info for this safe address, please make sure it's a valid safe address or try again"
       );
+      return;
     }
+
+    const o = (await safe.getOwners()).map((o) => {
+      return { name: '', address: o };
+    });
+
+    setImportedSafe(safe);
+    const defaultValues: any = {};
+    const authThreshold = await safe.getThreshold();
+    defaultValues.owners = o;
+    // Use the correct value for authorized users by checking on the threshold.
+    defaultValues.authorizedUsers = o.length > authThreshold ? authThreshold : o.length;
+    //populate with existing safe if we have it stored
+    const savedSafe = await SafeApiService.getSafeWallet(organizationId ?? '', safe.getAddress());
+    if (savedSafe) {
+      defaultValues.owners = savedSafe.safeOwners;
+      defaultValues.organizationName = organization?.name;
+      setSafeRef(savedSafe?.id);
+    }
+    // Set the options depending on the number of owners
+    // setOptions(defaultValues.authorizedUsers);
+    setOptions(o.length);
+    reset({ ...defaultValues });
   };
 
   // Validates for duplicate wallet address and emails
