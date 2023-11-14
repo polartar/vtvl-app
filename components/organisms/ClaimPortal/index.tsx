@@ -2,16 +2,13 @@ import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import { VestingCalendarIcon, VestingScheduleIcon } from '@components/atoms/Icons';
 import MediaAsset from '@components/atoms/MediaAsset/MediaAsset';
 import { Typography } from '@components/atoms/Typography/Typography';
-import { useAuthContext } from '@providers/auth.context';
 import { useGlobalContext } from '@providers/global.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useOrganizationsFromIds } from '@store/useOrganizations';
 import { getVestingContractABI } from '@utils/multicall';
 import { useWeb3React } from '@web3-react/core';
-import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import { ethers } from 'ethers';
-import { Timestamp } from 'firebase/firestore';
 import { useChainVestings } from 'hooks/useChainVestings';
 import { useMyRecipes } from 'hooks/useRecipients';
 import { useShallowState } from 'hooks/useShallowState';
@@ -19,7 +16,7 @@ import { useTokensFromIds } from 'hooks/useTokens';
 import { useVestingContractsFromIds } from 'hooks/useVestingContracts';
 import { useVestingsFromIds } from 'hooks/useVestings';
 import Image from 'next/image';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { IVesting } from 'types/models';
 import { compareAddresses } from 'utils';
 import { formatDate, getActualDateTime } from 'utils/shared';
@@ -42,9 +39,9 @@ export default function ClaimPortal() {
   const { vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);
   const { tokens } = useTokensFromIds(vestingTokenIds);
   const { vestingContracts, vestingContractAddresses } = useVestingContractsFromIds(vestingContractIds);
-  console.log('CLAIM PORTAL', { vestings, vestingContracts });
+
   const {
-    isLoadingVestings: isLoadingChainVesting,
+    isLoadingVestings: isLoading,
     vestings: vestingInfos,
     refetchVestings: refetchChainVestings
   } = useChainVestings(vestingContracts);
@@ -55,12 +52,9 @@ export default function ClaimPortal() {
   const hasVestings = !!myRecipes?.length;
   const hasContracts = !!vestingContractAddresses?.length;
 
-  const isLoading = isLoadingMyRecipes || (isLoadingChainVesting && hasVestings && hasContracts);
-
   const {
     website: { assets }
   } = useGlobalContext();
-
   /**
    * Project Tabs data
    */
@@ -76,9 +70,9 @@ export default function ClaimPortal() {
   /**
    * Sum of total allocations from current(selected) organization
    */
-  const totalAllocations = useMemo(() => {
-    return myRecipes?.reduce((val, recipe) => val + Number(recipe?.allocations), 0) ?? 0;
-  }, [myRecipes]);
+  // const totalAllocations = useMemo(() => {
+  //   return myRecipes?.reduce((val, recipe) => val + Number(recipe?.allocations), 0) ?? 0;
+  // }, [myRecipes]);
 
   const vestingDetails = useMemo(
     () =>
@@ -95,12 +89,14 @@ export default function ClaimPortal() {
       }),
     [vestingInfos, vestingContracts, vestings]
   );
-
+  console.log({ selectedProject });
   const vestingDetail = useMemo(() => {
+    console.log({ vestingDetails });
     const vestingData = vestingDetails.filter((vd) => vd.organizationId === selectedProject.value);
 
     return vestingData.reduce(
       (val, vesting) => {
+        console.log({ vesting });
         return {
           allocations: val.allocations + Number(vesting.allocations),
           locked: val.locked + Number(vesting.locked),
@@ -111,7 +107,9 @@ export default function ClaimPortal() {
       { allocations: 0, locked: 0, withdrawn: 0, unclaimed: 0 }
     );
   }, [vestingDetails, selectedProject]);
-
+  const totalAllocations = useMemo(() => {
+    return vestingDetail.unclaimed + vestingDetail.withdrawn + vestingDetail.locked;
+  }, [vestingDetail]);
   /**
    * Current organization's governance token
    */
