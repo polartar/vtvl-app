@@ -154,6 +154,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
           });
           await VestingContractApiService.updateVestingContract(id, {
             ...data,
+            address: undefined,
             status: 'PENDING',
             transaction: transaction.id
           });
