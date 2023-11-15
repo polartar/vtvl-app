@@ -46,6 +46,7 @@ export default function useAuth() {
               memberInfo: {
                 ...user?.memberInfo,
                 id: profile.user.id,
+                email: profile.user.email,
                 user_id: profile.user.id,
                 name: profile.user.name,
                 wallets: [{ walletAddress: profile.wallet.address, chainId }],

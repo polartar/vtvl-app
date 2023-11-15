@@ -73,7 +73,6 @@ export default function ClaimPortal() {
   // const totalAllocations = useMemo(() => {
   //   return myRecipes?.reduce((val, recipe) => val + Number(recipe?.allocations), 0) ?? 0;
   // }, [myRecipes]);
-
   const vestingDetails = useMemo(
     () =>
       vestingInfos.map((vestingInfo) => {
@@ -350,7 +349,6 @@ export default function ClaimPortal() {
                   </div>
                 ))
               : vestings.map((singleVesting) => {
-                  console.log({ singleVesting });
                   const contract = vestingContracts.find((c) => c.id === singleVesting.data.vestingContractId);
                   const vestingInfo = getVestingInfoByContract(String(contract?.address));
                   const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = singleVesting.data.details;
