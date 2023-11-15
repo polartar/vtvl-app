@@ -1,5 +1,7 @@
 import { IToken } from 'types/models';
 
+import { VestingContractStatus } from './enums';
+
 interface IVestingContract {
   id: string;
   createdAt: string;
@@ -8,7 +10,7 @@ interface IVestingContract {
   tokenId: string;
   name: string;
   address: string | null;
-  transaction: string | null;
+  transactionId: string | null;
   balance?: string | number;
   chainId: number;
   isDeployed: boolean;
@@ -27,6 +29,18 @@ interface ICreateVestingContractRequest {
 }
 
 interface IDeployVestingContractRequest {
-  address: string;
+  organizationId: string;
+  address?: string;
+  chainId: number;
+  status: VestingContractStatus;
+  isDeployed: boolean;
+}
+
+interface IUpdateVestingContractRequest {
+  organizationId: string;
+  tokenId: string;
+  name: string;
+  address?: string;
+  transactionId: string;
   chainId: number;
 }
