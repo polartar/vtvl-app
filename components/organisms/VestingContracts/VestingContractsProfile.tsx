@@ -92,8 +92,6 @@ const VestingContractsProfile = ({
     return false;
   });
 
-  console.log('VESTING CONTRACT PROFILE', vestingContractsInfo, filteredCards);
-
   return (
     <div className="w-full">
       <div className="grid 2xl:grid-cols-6 xl:grid-cols-5 md:grid-cols-3 gap-6">

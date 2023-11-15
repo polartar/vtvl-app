@@ -97,7 +97,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   useEffect(() => {
     if (chainId && organizationId) {
       RevokingApiService.getRevokingsByQuery(
-        `organizationId=${organizationId}&chainId=${chainId}&vestingId=${id}&status='SUCCESS'`
+        `organizationId=${organizationId}&chainId=${chainId}&vestingId=${id}&status=SUCCESS`
       ).then((res) => {
         if (res) {
           setRevokings(res);
