@@ -61,7 +61,7 @@ export default function ClaimPortal() {
   const projects = useMemo(
     () =>
       organizations.map((org) => ({
-        label: org.data.name,
+        label: org.name,
         value: org.id
       })),
     [organizations]
@@ -89,14 +89,12 @@ export default function ClaimPortal() {
       }),
     [vestingInfos, vestingContracts, vestings]
   );
-  console.log({ selectedProject });
+
   const vestingDetail = useMemo(() => {
-    console.log({ vestingDetails });
     const vestingData = vestingDetails.filter((vd) => vd.organizationId === selectedProject.value);
 
     return vestingData.reduce(
       (val, vesting) => {
-        console.log({ vesting });
         return {
           allocations: val.allocations + Number(vesting.allocations),
           locked: val.locked + Number(vesting.locked),
@@ -107,6 +105,7 @@ export default function ClaimPortal() {
       { allocations: 0, locked: 0, withdrawn: 0, unclaimed: 0 }
     );
   }, [vestingDetails, selectedProject]);
+
   const totalAllocations = useMemo(() => {
     return vestingDetail.unclaimed + vestingDetail.withdrawn + vestingDetail.locked;
   }, [vestingDetail]);
@@ -114,7 +113,10 @@ export default function ClaimPortal() {
    * Current organization's governance token
    */
   const token = useMemo(
-    () => tokens?.find((token) => token.data.organizationId === selectedProject?.value),
+    () =>
+      tokens?.find((token) =>
+        token.data.organizations.map((organization) => organization.organizationId).includes(selectedProject?.value)
+      ),
     [selectedProject?.value, tokens]
   );
 
@@ -348,6 +350,7 @@ export default function ClaimPortal() {
                   </div>
                 ))
               : vestings.map((singleVesting) => {
+                  console.log({ singleVesting });
                   const contract = vestingContracts.find((c) => c.id === singleVesting.data.vestingContractId);
                   const vestingInfo = getVestingInfoByContract(String(contract?.address));
                   const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = singleVesting.data.details;
