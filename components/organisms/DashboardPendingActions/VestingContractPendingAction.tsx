@@ -182,7 +182,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
           await VestingContractApiService.updateVestingContract(id, {
             ...newData,
             tokenId: mintFormState.id,
-            address: vestingContractAddress,
+            address: ethers.utils.getAddress(vestingContractAddress),
             status: 'SUCCESS',
             isDeployed: true
           });
