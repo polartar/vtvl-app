@@ -92,8 +92,13 @@ export default function useChainVestingContracts(
                               methodParameters: [recipient.address, 0]
                             },
                             {
-                              reference: 'getClaim',
-                              methodName: 'getClaim',
+                              reference: 'vestedAmount',
+                              methodName: 'vestedAmount',
+                              methodParameters: [recipient.address, 0, Math.floor(new Date().getTime() / 1000)]
+                            },
+                            {
+                              reference: 'finalVestedAmount',
+                              methodName: 'finalVestedAmount',
                               methodParameters: [recipient.address, 0]
                             }
                           ]
@@ -105,7 +110,16 @@ export default function useChainVestingContracts(
                               methodParameters: [recipient.address]
                             },
 
-                            { reference: 'getClaim', methodName: 'getClaim', methodParameters: [recipient.address] }
+                            {
+                              reference: 'vestedAmount',
+                              methodName: 'vestedAmount',
+                              methodParameters: [recipient.address, Math.floor(new Date().getTime() / 1000)]
+                            },
+                            {
+                              reference: 'finalVestedAmount',
+                              methodName: 'finalVestedAmount',
+                              methodParameters: [recipient.address]
+                            }
                           ]
                   }
                 ]);
@@ -131,6 +145,7 @@ export default function useChainVestingContracts(
             numTokensReservedForVesting: BigNumber;
             locked: BigNumber;
           }> = [];
+
           Object.keys(response.results).forEach((key) => {
             const value = response.results[key];
             const fields = key.split('-');
@@ -160,22 +175,25 @@ export default function useChainVestingContracts(
               const record = value.callsReturnContext;
               // Gets the claimable amount of the recipient
               const claimableAmount = record[CLAIMABLE_AMOUNT_CALL].returnValues[0];
+              const vestedAmount = record[1].returnValues[0];
+              const finalVestedAmount = record[2].returnValues[0];
+
               // Gets the total allocation of the recipient
               // Gets the vested amount of the recipient -- which is the claimed and unclaimed tokens
               // Computes the actual withdrawn amount by getting the claimed tokens
               // unclaimed = claimableAmount
               // claimed = vested amount - unclaimed
-              const claimedAmount = record[WITHDRAWN_CALL].returnValues[5];
-              const linearAmount = record[WITHDRAWN_CALL].returnValues[4];
-              const cliffAmount = record[WITHDRAWN_CALL].returnValues[6];
-              const totalAllocation = BigNumber.from(linearAmount).add(cliffAmount);
+              // const claimedAmount = record[WITHDRAWN_CALL].returnValues[5];
+              // const linearAmount = record[WITHDRAWN_CALL].returnValues[4];
+              // const cliffAmount = record[WITHDRAWN_CALL].returnValues[6];
+              // const totalAllocation = BigNumber.from(linearAmount).add(cliffAmount);
 
               // Computes the locked tokens of the recipient
-              const lockedTokens = totalAllocation.sub(claimedAmount).sub(claimableAmount);
-              data.allocation = totalAllocation;
-              data.withdrawn = BigNumber.from(claimedAmount);
+              const lockedTokens = BigNumber.from(finalVestedAmount).sub(vestedAmount);
+              data.allocation = finalVestedAmount;
+              data.withdrawn = BigNumber.from(vestedAmount).sub(claimableAmount);
               data.unclaimed = BigNumber.from(claimableAmount);
-              data.locked = BigNumber.from(lockedTokens);
+              data.locked = lockedTokens;
             }
 
             if (index > -1) {

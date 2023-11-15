@@ -57,6 +57,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
     vesting ? [vesting] : [],
     recipients
   );
+  console.log({ vestingSchedulesInfo });
 
   const vestingScheduleDetails = useMemo(() => {
     if (!vestingSchedulesInfo || !vestingSchedulesInfo.length || !vestingContracts.length) return undefined;
