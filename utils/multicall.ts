@@ -70,23 +70,53 @@ export const getVestingDetailsFromContracts = async (
 
     return [
       ...res,
+      // {
+      //   reference: `withdrawn-${contract.address}`,
+      //   contractAddress: contract.address,
+      //   abi: getVestingContractABI(contract.updatedAt),
+      //   calls:
+      //     getVestingAbiIndex(contract.updatedAt) === 3
+      //       ? [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator, 0] }]
+      //       : [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator] }]
+      // },
       {
-        reference: `withdrawn-${contract.address}`,
+        reference: `vested-${contract.address}`,
         contractAddress: contract.address,
         abi: getVestingContractABI(contract.updatedAt),
-        calls:
-          getVestingAbiIndex(contract.updatedAt) === 3
-            ? [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator, 0] }]
-            : [{ reference: 'getClaim', methodName: 'getClaim', methodParameters: [operator] }]
+        calls: [
+          {
+            reference: 'vestedAmount',
+            methodName: 'vestedAmount',
+            methodParameters:
+              getVestingAbiIndex(contract.updatedAt) === 3
+                ? [operator, 0, Math.floor(new Date().getTime() / 1000)]
+                : [operator, Math.floor(new Date().getTime() / 1000)]
+          }
+        ]
+      },
+      {
+        reference: `final-${contract.address}`,
+        contractAddress: contract.address,
+        abi: getVestingContractABI(contract.updatedAt),
+        calls: [
+          {
+            reference: 'finalClaimableAmount',
+            methodName: 'finalClaimableAmount',
+            methodParameters: getVestingAbiIndex(contract.updatedAt) === 3 ? [operator, 0] : [operator]
+          }
+        ]
       },
       {
         reference: `unclaimed-${contract.address}`,
         contractAddress: contract.address,
         abi: getVestingContractABI(contract.updatedAt),
-        calls:
-          getVestingAbiIndex(contract.updatedAt) === 3
-            ? [{ reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [operator, 0] }]
-            : [{ reference: 'claimableAmount', methodName: 'claimableAmount', methodParameters: [operator] }]
+        calls: [
+          {
+            reference: 'claimableAmount',
+            methodName: 'claimableAmount',
+            methodParameters: getVestingAbiIndex(contract.updatedAt) === 3 ? [operator, 0] : [operator]
+          }
+        ]
       }
     ];
   }, [] as ContractCallContext[]);
@@ -94,12 +124,12 @@ export const getVestingDetailsFromContracts = async (
   const response = await multicall.call(contractCallContext);
   const chainData: Array<{
     address: string;
-    allocations: BigNumberish;
+    finalClaimableAmount: BigNumberish;
     locked: BigNumberish;
-    withdrawn: BigNumberish;
+    vestedAmount: BigNumberish;
     unclaimed: BigNumberish;
   }> = [];
-
+  console.log({ contracts });
   Object.keys(response.results).forEach((key) => {
     const value = response.results[key];
     if (value.callsReturnContext[0].returnValues.length === 0) {
@@ -114,19 +144,22 @@ export const getVestingDetailsFromContracts = async (
       index > -1
         ? chainData[index]
         : {
-            allocations: BigNumber.from(0),
-            withdrawn: BigNumber.from(0),
+            finalClaimableAmount: BigNumber.from(0),
+            vestedAmount: BigNumber.from(0),
             unclaimed: BigNumber.from(0),
             locked: BigNumber.from(0)
           };
 
-    if (reference === 'withdrawn') {
-      data.allocations = BigNumber.from(value.callsReturnContext[0].returnValues[LINEAR_AMOUNT_INDEX]).add(
-        value.callsReturnContext[0].returnValues[CLIFF_AMOUNT_INDEX]
-      );
-      data.withdrawn = BigNumber.from(value.callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_INDEX]);
-    } else {
+    if (reference === 'vested') {
+      // data.allocations = BigNumber.from(value.callsReturnContext[0].returnValues[LINEAR_AMOUNT_INDEX]).add(
+      //   value.callsReturnContext[0].returnValues[CLIFF_AMOUNT_INDEX]
+      // );
+      // data.withdrawn = BigNumber.from(value.callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_INDEX]);
+      data.vestedAmount = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
+    } else if (reference === 'unclaimed') {
       data.unclaimed = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
+    } else {
+      data.finalClaimableAmount = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
     }
 
     if (index > -1) {
@@ -137,14 +170,16 @@ export const getVestingDetailsFromContracts = async (
   });
 
   return chainData.map((data) => {
-    const locked = BigNumber.from(data.allocations)
-      .sub(BigNumber.from(data.withdrawn))
-      .sub(BigNumber.from(data.unclaimed));
+    // const locked = BigNumber.from(data.allocations)
+    //   .sub(BigNumber.from(data.withdrawn))
+    //   .sub(BigNumber.from(data.unclaimed));
+    const locked = BigNumber.from(data.finalClaimableAmount).sub(BigNumber.from(data.vestedAmount));
+    const withdrawn = BigNumber.from(data.vestedAmount).sub(BigNumber.from(data.unclaimed));
 
     return {
       address: data.address,
-      allocations: ethers.utils.formatEther(data.allocations.toString()),
-      withdrawn: ethers.utils.formatEther(data.withdrawn.toString()),
+      allocations: ethers.utils.formatEther(data.finalClaimableAmount.toString()),
+      withdrawn: ethers.utils.formatEther(withdrawn.toString()),
       unclaimed: ethers.utils.formatEther(data.unclaimed.toString()),
       locked: ethers.utils.formatEther((locked.gte(0) ? locked : BigNumber.from(0)).toString())
     };
