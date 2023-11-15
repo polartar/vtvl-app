@@ -97,8 +97,8 @@ export default function useChainVestingContracts(
                               methodParameters: [recipient.address, 0, Math.floor(new Date().getTime() / 1000)]
                             },
                             {
-                              reference: 'finalVestedAmount',
-                              methodName: 'finalVestedAmount',
+                              reference: 'finalClaimableAmount',
+                              methodName: 'finalClaimableAmount',
                               methodParameters: [recipient.address, 0]
                             }
                           ]
@@ -116,8 +116,8 @@ export default function useChainVestingContracts(
                               methodParameters: [recipient.address, Math.floor(new Date().getTime() / 1000)]
                             },
                             {
-                              reference: 'finalVestedAmount',
-                              methodName: 'finalVestedAmount',
+                              reference: 'finalClaimableAmount',
+                              methodName: 'finalClaimableAmount',
                               methodParameters: [recipient.address]
                             }
                           ]
@@ -176,7 +176,7 @@ export default function useChainVestingContracts(
               // Gets the claimable amount of the recipient
               const claimableAmount = record[CLAIMABLE_AMOUNT_CALL].returnValues[0];
               const vestedAmount = record[1].returnValues[0];
-              const finalVestedAmount = record[2].returnValues[0];
+              const finalClaimableAmount = record[2].returnValues[0];
 
               // Gets the total allocation of the recipient
               // Gets the vested amount of the recipient -- which is the claimed and unclaimed tokens
@@ -189,8 +189,8 @@ export default function useChainVestingContracts(
               // const totalAllocation = BigNumber.from(linearAmount).add(cliffAmount);
 
               // Computes the locked tokens of the recipient
-              const lockedTokens = BigNumber.from(finalVestedAmount).sub(vestedAmount);
-              data.allocation = finalVestedAmount;
+              const lockedTokens = BigNumber.from(finalClaimableAmount).sub(vestedAmount);
+              data.allocation = finalClaimableAmount;
               data.withdrawn = BigNumber.from(vestedAmount).sub(claimableAmount);
               data.unclaimed = BigNumber.from(claimableAmount);
               data.locked = lockedTokens;
