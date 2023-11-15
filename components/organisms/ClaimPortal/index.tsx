@@ -89,9 +89,8 @@ export default function ClaimPortal() {
       }),
     [vestingInfos, vestingContracts, vestings]
   );
-  console.log({ selectedProject });
+
   const vestingDetail = useMemo(() => {
-    console.log({ vestingDetails });
     const vestingData = vestingDetails.filter((vd) => vd.organizationId === selectedProject.value);
 
     return vestingData.reduce(
