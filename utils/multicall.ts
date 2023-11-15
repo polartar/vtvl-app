@@ -129,7 +129,7 @@ export const getVestingDetailsFromContracts = async (
     vestedAmount: BigNumberish;
     unclaimed: BigNumberish;
   }> = [];
-  console.log({ contracts });
+
   Object.keys(response.results).forEach((key) => {
     const value = response.results[key];
     if (value.callsReturnContext[0].returnValues.length === 0) {
