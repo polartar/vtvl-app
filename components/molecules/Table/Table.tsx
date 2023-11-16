@@ -293,7 +293,7 @@ const Table = ({
             const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
             const txData = {
-              to: mintFormState.address ?? '',
+              to: ethers.utils.getAddress(mintFormState.address ?? ''),
               data: transferEncoded,
               value: '0',
               nonce: nextNonce

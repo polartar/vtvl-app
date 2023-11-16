@@ -924,7 +924,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
         const txData = {
-          to: vestingContract?.address ?? '',
+          to: ethers.utils.getAddress(vestingContract?.address ?? ''),
           data: createClaimsBatchEncoded,
           value: '0',
           nonce: nextNonce

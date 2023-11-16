@@ -378,7 +378,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           'event Transfer(address indexed from, address indexed to, uint amount)'
         ]);
         const transferEncoded = tokenContractInterface.encodeFunctionData('transfer', [
-          vestingContract?.address,
+          ethers.utils.getAddress(vestingContract?.address ?? ''),
           ethers.utils.parseEther(amount)
         ]);
         if (currentSafe?.address && account && chainId && organizationId) {
@@ -396,7 +396,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
 
             const nextNonce = await safeService.getNextNonce(currentSafe.address);
             const txData = {
-              to: mintFormState.address ?? '',
+              to: ethers.utils.getAddress(mintFormState.address ?? ''),
               data: transferEncoded,
               value: '0',
               nonce: nextNonce
@@ -583,7 +583,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
         const txData = {
-          to: vestingContract?.address ?? '',
+          to: ethers.utils.getAddress(vestingContract?.address ?? ''),
           data: createClaimsBatchEncoded,
           value: '0',
           nonce: nextNonce

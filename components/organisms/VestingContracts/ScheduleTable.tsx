@@ -379,7 +379,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             const nextNonce = await safeService.getNextNonce(currentSafe.address);
 
             const txData = {
-              to: String(mintFormState.address),
+              to: ethers.utils.getAddress(String(mintFormState.address)),
               data: transferEncoded,
               value: '0',
               nonce: nextNonce
@@ -535,7 +535,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
 
         const nextNonce = await safeService.getNextNonce(currentSafe.address);
         const txData = {
-          to: vestingContract?.address ?? '',
+          to: ethers.utils.getAddress(vestingContract?.address ?? ''),
           data: createClaimsBatchEncoded,
           value: '0',
           nonce: nextNonce
