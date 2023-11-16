@@ -141,6 +141,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const initializeStatus = async () => {
     if (
       !vestingContract ||
+      !vestingContract.address ||
       vestingContract.status === 'INITIALIZED' ||
       (vestingContract.status === 'PENDING' && currentSafe?.address)
     ) {
@@ -853,7 +854,10 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               Execute
             </button>
           )}
-          {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
+
+          {/*
+           //Todo 
+           {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
             <button
               className="secondary small whitespace-nowrap"
               disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
@@ -862,7 +866,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               }}>
               Fund Contract
             </button>
-          )}
+          )} */}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
             <button
               className="secondary small whitespace-nowrap"
@@ -929,7 +933,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               <div className="flex items-center w-52 py-3">
                 <Copy text={recipient.address}>
                   <p className="paragraphy-small ">
-                    {recipient.address.slice(0, 5)}...{recipient.address.slice(-4)}
+                    {recipient.address?.slice(0, 5)}...{recipient.address?.slice(-4)}
                   </p>
                 </Copy>
               </div>
