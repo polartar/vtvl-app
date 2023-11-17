@@ -16,6 +16,7 @@ import MILESTONE_FACTORY_ABI from 'contracts/abi/MilestoneFactory.json';
 import TIME_FACTORY_ABI from 'contracts/abi/TimeFactory.json';
 import VTVL_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
 import { ethers } from 'ethers';
+import { VestingContractStatus } from 'interfaces/enums';
 import { IVestingContract } from 'interfaces/vestingContract';
 import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
@@ -56,7 +57,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
   const { updateVestingContract } = useDashboardContext();
 
   const transaction = useMemo(
-    () => transactions.find((t) => t.id === data.transaction && t.status === 'PENDING'),
+    () => transactions.find((t) => t.id === data.transactionId && t.status === 'PENDING'),
     [data, transactions]
   );
 
@@ -149,12 +150,21 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             type: 'VESTING_DEPLOYMENT',
             organizationId: organizationId,
             chainId,
-            vestingContractId: id
+            vestingContractId: id,
+            vestingIds: []
           });
           await VestingContractApiService.updateVestingContract(id, {
-            ...data,
-            status: 'PENDING',
-            transaction: transaction.id
+            organizationId: organizationId,
+            tokenId: data.tokenId,
+            name: data.name,
+            chainId: data.chainId,
+            transactionId: transaction.id
+          });
+          await VestingContractApiService.deployVestingContract(id, {
+            organizationId,
+            status: VestingContractStatus.PENDING,
+            chainId: data.chainId,
+            isDeployed: false
           });
           toast.success(`Created a safe transaction with nonce ${nextNonce} successfully`);
           setTransactionLoaderStatus('SUCCESS');
@@ -178,11 +188,11 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
           );
           const newData = { ...data };
           delete newData.token;
-          await VestingContractApiService.updateVestingContract(id, {
-            ...newData,
-            tokenId: mintFormState.id,
-            address: vestingContractAddress,
-            status: 'SUCCESS',
+          await VestingContractApiService.deployVestingContract(id, {
+            organizationId,
+            status: VestingContractStatus.SUCCESS,
+            chainId: data.chainId,
+            address: ethers.utils.getAddress(vestingContractAddress),
             isDeployed: true
           });
           await updateVestingContract({ ...data, address: vestingContractAddress, status: 'SUCCESS' });
@@ -291,6 +301,13 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
           0
         );
         await TransactionApiService.updateTransaction(transaction.id, { ...transaction, status: 'SUCCESS' });
+        await VestingContractApiService.deployVestingContract(id, {
+          organizationId,
+          status: VestingContractStatus.SUCCESS,
+          chainId: data.chainId,
+          isDeployed: true,
+          address: ethers.utils.getAddress(vestingContractAddress)
+        });
         await updateVestingContract({ ...data, address: vestingContractAddress, status: 'SUCCESS' });
         setTransactionLoaderStatus('SUCCESS');
         toast.success('Deployed a contract successfully.');
@@ -346,7 +363,6 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
         const res = await VestingContractApiService.updateVestingContract(id, {
           address: vestingContract.address,
           chainId,
-          status: 'SUCCESS',
           organizationId
         });
         updateVestingContract(res);

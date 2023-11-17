@@ -2,6 +2,7 @@ import CoreApiService from '@api-services/CoreApiService';
 import {
   ICreateVestingContractRequest,
   IDeployVestingContractRequest,
+  IUpdateVestingContractRequest,
   IVestingContract
 } from 'interfaces/vestingContract';
 
@@ -12,7 +13,7 @@ class VestingContractApiService {
 
   getVestingContractById = (id: string) => CoreApiService.get<IVestingContract>(`/vesting-contract/${id}`);
 
-  updateVestingContract = (id: string, payload: Partial<IVestingContract>) =>
+  updateVestingContract = (id: string, payload: Partial<IUpdateVestingContractRequest>) =>
     CoreApiService.put<IVestingContract>(`/vesting-contract/${id}`, payload);
 
   deployVestingContract = (id: string, payload: IDeployVestingContractRequest) =>

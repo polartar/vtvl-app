@@ -158,7 +158,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
         const nextNonce = await safeService.getNextNonce(currentSafe.address);
         const txData = {
-          to: vestingContractAddress,
+          to: ethers.utils.getAddress(vestingContractAddress),
           data: adminWithdrawEncoded,
           value: '0',
           nonce: nextNonce
