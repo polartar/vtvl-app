@@ -630,7 +630,8 @@ export const transformVestingPayload: (data: IVesting) => Partial<IVestingSchedu
       +amountToBeVested
     ).toString(), // compute from percentage
     amount: String(amountToBeVested),
-    status
+    status,
+    transactionId
   };
 };
 
