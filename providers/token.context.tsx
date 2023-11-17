@@ -4,6 +4,7 @@ import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { useWeb3React } from '@web3-react/core';
 import { ethers } from 'ethers';
+import { IToken } from 'interfaces/token';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 

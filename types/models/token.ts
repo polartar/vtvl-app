@@ -4,22 +4,22 @@ import { ethers } from 'ethers';
 type TokenNumber = number | Decimal | ethers.BigNumber;
 
 export interface IToken {
-  name: string;
-  symbol: string;
-  address: string;
-  logo: string;
-  organizationId: string;
+  name?: string;
+  symbol?: string;
+  address?: string;
+  logo?: string;
+  organizationId?: string;
   imported?: boolean;
   burnable?: boolean;
   burntAmount?: number;
-  createdAt?: number;
-  updatedAt?: number;
+  createdAt?: string;
+  updatedAt?: string;
   supplyCap?: string;
   maxSupply?: number;
   totalSupply?: number;
   status?: 'PENDING' | 'SUCCESS' | 'FAILED';
   decimals?: number;
-  chainId: number;
+  chainId?: number;
 }
 
 export interface TUserTokenDetails {

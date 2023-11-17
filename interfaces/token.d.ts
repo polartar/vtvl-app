@@ -20,7 +20,8 @@ interface IToken {
   createdAt?: string;
   updatedAt?: string;
   status?: 'PENDING' | 'SUCCESS' | 'FAILED';
-  organizations: {
+  organizationId?: string;
+  organizations?: {
     id: string;
     organizationId: string;
     tokenId: string;

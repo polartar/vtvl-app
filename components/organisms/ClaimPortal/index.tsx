@@ -114,7 +114,7 @@ export default function ClaimPortal() {
   const token = useMemo(
     () =>
       tokens?.find((token) =>
-        token.data.organizations.map((organization) => organization.organizationId).includes(selectedProject?.value)
+        token.data.organizations?.map((organization) => organization.organizationId).includes(selectedProject?.value)
       ),
     [selectedProject?.value, tokens]
   );
