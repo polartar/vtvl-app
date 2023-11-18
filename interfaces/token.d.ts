@@ -1,3 +1,5 @@
+import { IOrganizationResponse } from './organization';
+
 interface IToken {
   id?: string;
   name: string;
@@ -18,7 +20,12 @@ interface IToken {
   createdAt?: string;
   updatedAt?: string;
   status?: 'PENDING' | 'SUCCESS' | 'FAILED';
-  organizationId: string;
+  organizationId?: string;
+  organizations?: {
+    id: string;
+    organizationId: string;
+    tokenId: string;
+  }[];
 }
 
 interface IImportTokenRequest {

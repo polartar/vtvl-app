@@ -1,18 +1,8 @@
-import OrganizationApiService from '@api-services/OrganizationApiService';
 import TokenApiService from '@api-services/TokenApiService';
-import { useAuth } from '@store/useAuth';
-import { useOrganization as useOrgstore } from '@store/useOrganizations';
-import { TOAST_NOTIFICATION_IDS } from '@utils/constants';
-import { IOrgMemberInviteRequest, IOrgMemberRequest, IOrganizationRequest } from 'interfaces/organization';
+import { ICreateDeployedTokenRequest, IImportTokenRequest } from 'interfaces/token';
 import { useCallback, useMemo } from 'react';
-import { toast } from 'react-toastify';
-
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from './messages';
 
 const useTokenApi = () => {
-  const { save: saveOrg, add: addOrg, clear: clearOrg } = useOrgstore();
-  const { saveUser } = useAuth();
-
   const createToken = useCallback((payload: ICreateDeployedTokenRequest) => {
     return TokenApiService.createToken(payload)
       .then((res) => {

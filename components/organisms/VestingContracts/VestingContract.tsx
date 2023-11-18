@@ -55,13 +55,13 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
   useEffect(() => {
     if (chainId && organizationId) {
-      RevokingApiService.getRevokingsByQuery(
-        `organizationId=${organizationId}&chainId=${chainId}&status='SUCCESS'`
-      ).then((res) => {
-        if (res) {
-          setRevokings(res);
+      RevokingApiService.getRevokingsByQuery(`organizationId=${organizationId}&chainId=${chainId}&status=SUCCESS`).then(
+        (res) => {
+          if (res) {
+            setRevokings(res);
+          }
         }
-      });
+      );
     }
   }, [chainId, organizationId]);
 

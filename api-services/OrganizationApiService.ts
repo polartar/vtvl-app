@@ -7,6 +7,7 @@ import {
   IOrganizationRequest,
   IOrganizationResponse
 } from 'interfaces/organization';
+import { IOrganization } from 'types/models';
 
 class OrganizationApiService {
   // Organization APIs
@@ -16,6 +17,7 @@ class OrganizationApiService {
 
   // Organization Member APIs
   getMembers = (orgId: string) => CoreApiService.get<IMember[]>(`/organization/${orgId}/members/${PLATFORM_NAME}`);
+  getOrganization = (orgId: string) => CoreApiService.get<IOrganizationResponse>(`/organization/${orgId}/get`);
 
   createMember = (payload: IOrgMemberRequest) =>
     CoreApiService.post(`/organization/${payload.organizationId}/members/${PLATFORM_NAME}`, payload);
