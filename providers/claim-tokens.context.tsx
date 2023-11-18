@@ -4,6 +4,7 @@ import { useWeb3React } from '@web3-react/core';
 import Decimal from 'decimal.js';
 import { useMyRecipes } from 'hooks/useRecipients';
 import { useVestingsFromIds } from 'hooks/useVestings';
+import { IToken } from 'interfaces/token';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { IVesting } from 'types/models';
@@ -110,7 +111,9 @@ export function ClaimTokensContextProvider({ children }: any) {
         if (getTokenFromDB) {
           setSelectedToken(
             getTokenFromDB.find(
-              (token) => token.chainId === chainId! && token.organizationId === selectedSchedule?.data.organizationId
+              (token) =>
+                token.chainId === chainId! &&
+                token.organizations?.map((org) => org.organizationId).includes(selectedSchedule?.data.organizationId)
             )
           );
         }

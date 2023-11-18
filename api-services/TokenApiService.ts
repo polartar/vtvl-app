@@ -1,4 +1,5 @@
 import CoreApiService from '@api-services/CoreApiService';
+import { ICreateDeployedTokenRequest, IImportTokenRequest, IToken, IUpdateTokenRequest } from 'interfaces/token';
 
 class TokenApiService {
   // Token APIs

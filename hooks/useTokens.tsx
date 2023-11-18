@@ -1,7 +1,7 @@
 import TokenApiService from '@api-services/TokenApiService';
 import { useQuery } from '@tanstack/react-query';
+import { IToken } from 'interfaces/token';
 import { useMemo } from 'react';
-import { IToken } from 'types/models';
 import { QUERY_KEYS } from 'utils/queries';
 
 export const useTokensFromIds = (tokenIds: string[]) => {

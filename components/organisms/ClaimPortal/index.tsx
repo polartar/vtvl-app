@@ -61,7 +61,7 @@ export default function ClaimPortal() {
   const projects = useMemo(
     () =>
       organizations.map((org) => ({
-        label: org.data.name,
+        label: org.name,
         value: org.id
       })),
     [organizations]
@@ -73,7 +73,6 @@ export default function ClaimPortal() {
   // const totalAllocations = useMemo(() => {
   //   return myRecipes?.reduce((val, recipe) => val + Number(recipe?.allocations), 0) ?? 0;
   // }, [myRecipes]);
-
   const vestingDetails = useMemo(
     () =>
       vestingInfos.map((vestingInfo) => {
@@ -95,7 +94,6 @@ export default function ClaimPortal() {
 
     return vestingData.reduce(
       (val, vesting) => {
-        console.log({ vesting });
         return {
           allocations: val.allocations + Number(vesting.allocations),
           locked: val.locked + Number(vesting.locked),
@@ -106,6 +104,7 @@ export default function ClaimPortal() {
       { allocations: 0, locked: 0, withdrawn: 0, unclaimed: 0 }
     );
   }, [vestingDetails, selectedProject]);
+
   const totalAllocations = useMemo(() => {
     return vestingDetail.unclaimed + vestingDetail.withdrawn + vestingDetail.locked;
   }, [vestingDetail]);
@@ -113,7 +112,10 @@ export default function ClaimPortal() {
    * Current organization's governance token
    */
   const token = useMemo(
-    () => tokens?.find((token) => token.data.organizationId === selectedProject?.value),
+    () =>
+      tokens?.find((token) =>
+        token.data.organizations?.map((organization) => organization.organizationId).includes(selectedProject?.value)
+      ),
     [selectedProject?.value, tokens]
   );
 
