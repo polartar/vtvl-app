@@ -273,6 +273,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
           const t = await TransactionApiService.updateTransaction(data.transactionId, {
+            organizationId,
             status: 'SUCCESS'
           });
           updateTransactions(t);
@@ -634,8 +635,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         updateTransactions(transaction);
         await addingClaimsTransaction.wait();
         const t = await TransactionApiService.updateTransaction(transaction.id, {
-          status: 'SUCCESS',
-          updatedAt: Math.floor(new Date().getTime() / 1000)
+          organizationId,
+          status: 'SUCCESS'
         });
         updateTransactions(t);
         await fetchDashboardData();
@@ -732,6 +733,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
           const t = await TransactionApiService.updateTransaction(data.transactionId, {
+            organizationId,
             status: 'SUCCESS'
           });
           updateTransactions(t);

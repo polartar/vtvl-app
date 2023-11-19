@@ -268,6 +268,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
           const t = await TransactionApiService.updateTransaction(data.transactionId, {
+            organizationId,
             status: 'SUCCESS'
           });
           updateTransactions(t);
@@ -709,6 +710,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
           const t = await TransactionApiService.updateTransaction(data.transactionId, {
+            organizationId,
             status: 'SUCCESS'
           });
           updateTransactions(t);

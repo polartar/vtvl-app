@@ -199,6 +199,7 @@ const PendingAdminWithdrawAction: React.FC<{ id: string; data: ITransaction }> =
         await executeTransactionResponse.transactionResponse?.wait();
         if (data) {
           const t = await TransactionApiService.updateTransaction(id, {
+            organizationId,
             status: 'SUCCESS'
           });
           updateTransactions(t);

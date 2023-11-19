@@ -17,7 +17,7 @@ import { SupportedChainId, SupportedChains } from 'types/constants/supported-cha
 
 const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, data }) => {
   const { account, chainId, library } = useWeb3React();
-  const { currentSafe } = useAuthContext();
+  const { currentSafe, organizationId } = useAuthContext();
   const { vestingContracts, vestings, recipients, fetchDashboardData } = useDashboardContext();
   const {
     setTransactionStatus: setTransactionLoaderStatus,
@@ -193,6 +193,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         await executeTransactionResponse.transactionResponse?.wait();
         if (transaction) {
           const t = await TransactionApiService.updateTransaction(data.transactionId, {
+            organizationId,
             status: 'SUCCESS'
           });
           updateTransactions(t);
