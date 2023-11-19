@@ -1038,8 +1038,8 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         setTransactionStatus('IN_PROGRESS');
         await addingClaimsTransaction.wait();
         const t = await TransactionApiService.updateTransaction(transaction.id, {
-          status: 'SUCCESS',
-          updatedAt: Math.floor(new Date().getTime() / 1000)
+          organizationId,
+          status: 'SUCCESS'
         });
         updateTransactions(t);
         await Promise.all(

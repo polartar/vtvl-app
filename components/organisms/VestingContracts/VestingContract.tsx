@@ -215,8 +215,8 @@ export default function VestingContract({ vestingContractId }: { vestingContract
         updateTransactions(transaction);
         await withdrawTransaction.wait();
         const t = await TransactionApiService.updateTransaction(transaction.id, {
-          status: 'SUCCESS',
-          updatedAt: Math.floor(new Date().getTime() / 1000)
+          organizationId,
+          status: 'SUCCESS'
         });
         updateTransactions(t);
         toast.success('Withdrew tokens successfully.');

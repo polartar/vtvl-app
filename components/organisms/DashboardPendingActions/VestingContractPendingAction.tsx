@@ -300,7 +300,7 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
           'CreateVestingContract(address,address)',
           0
         );
-        await TransactionApiService.updateTransaction(transaction.id, { ...transaction, status: 'SUCCESS' });
+        await TransactionApiService.updateTransaction(transaction.id, { organizationId, status: 'SUCCESS' });
         await VestingContractApiService.deployVestingContract(id, {
           organizationId,
           status: VestingContractStatus.SUCCESS,
