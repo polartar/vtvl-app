@@ -41,7 +41,6 @@ const FundingContractModal = ({
   const { account, chainId } = useWeb3React();
   const { mintFormState } = useTokenContext();
   const { currentSafe, connection } = useAuthContext();
-
   // Make Modal styles scrollable when exceeding the device view height
   const modalStyles: Styles = {
     overlay: {
@@ -127,7 +126,6 @@ const FundingContractModal = ({
       setValue('amount', parseFloat(depositAmount));
     }
   }, [depositAmount, fundingMethod.value]);
-
   useEffect(() => {
     if (vestingContract && account) {
       const tokenContract = new ethers.Contract(

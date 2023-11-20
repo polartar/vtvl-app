@@ -155,11 +155,11 @@ export const getVestingDetailsFromContracts = async (
       //   value.callsReturnContext[0].returnValues[CLIFF_AMOUNT_INDEX]
       // );
       // data.withdrawn = BigNumber.from(value.callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_INDEX]);
-      data.vestedAmount = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
+      data.vestedAmount = BigNumber.from(value.callsReturnContext[0].returnValues[0] ?? '0');
     } else if (reference === 'unclaimed') {
-      data.unclaimed = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
+      data.unclaimed = BigNumber.from(value.callsReturnContext[0].returnValues[0] ?? '0');
     } else {
-      data.finalClaimableAmount = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
+      data.finalClaimableAmount = BigNumber.from(value.callsReturnContext[0].returnValues[0] ?? '0');
     }
 
     if (index > -1) {

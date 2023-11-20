@@ -170,13 +170,13 @@ export default function useChainVestingContracts(
                   };
 
             if (reference === 'numTokensReservedForVesting') {
-              data.numTokensReservedForVesting = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
+              data.numTokensReservedForVesting = BigNumber.from(value.callsReturnContext[0].returnValues[0] ?? '0');
             } else {
               const record = value.callsReturnContext;
               // Gets the claimable amount of the recipient
-              const claimableAmount = record[CLAIMABLE_AMOUNT_CALL].returnValues[0];
-              const vestedAmount = record[1].returnValues[0];
-              const finalClaimableAmount = record[2].returnValues[0];
+              const claimableAmount = record[CLAIMABLE_AMOUNT_CALL].returnValues[0] ?? BigNumber.from('0');
+              const vestedAmount = record[1].returnValues[0] ?? BigNumber.from('0');
+              const finalClaimableAmount = record[2].returnValues[0] ?? BigNumber.from('0');
 
               // Gets the total allocation of the recipient
               // Gets the vested amount of the recipient -- which is the claimed and unclaimed tokens

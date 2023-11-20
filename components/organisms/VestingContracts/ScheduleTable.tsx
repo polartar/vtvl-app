@@ -211,6 +211,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           .lt(ethers.utils.parseEther(data.details.amountToBeVested.toString()))
       ) {
         setStatus('FUNDING_REQUIRED');
+
         setDepositAmount(
           ethers.utils.formatEther(
             ethers.utils
@@ -771,12 +772,13 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   };
 
   useEffect(() => {
-    if (transactions.length) {
-      initializeStatus();
-    } else {
-      setStatus('FUNDING_REQUIRED');
-      setTransactionStatus('INITIALIZE');
-    }
+    initializeStatus();
+    // if (transactions.length) {
+    //   initializeStatus();
+    // } else {
+    //   setStatus('FUNDING_REQUIRED');
+    //   setTransactionStatus('INITIALIZE');
+    // }
   }, [data, currentSafe, account, vestingContract, transactions, transaction]);
 
   const CellCliff = () => {
@@ -856,19 +858,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               Execute
             </button>
           )}
-
-          {/*
-           //Todo 
-           {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
+          {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
             <button
               className="secondary small whitespace-nowrap"
-              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              // disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
               onClick={() => {
                 setShowFundingContractModal(true);
               }}>
               Fund Contract
             </button>
-          )} */}
+          )}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
             <button
               className="secondary small whitespace-nowrap"
