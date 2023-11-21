@@ -108,7 +108,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             currentSafe.address,
             currentSafe?.owners?.map((owner) => owner.address) ?? [],
             {
-              to: vestingAddress,
+              to: ethers.utils.getAddress(vestingAddress),
               // Todo
               data: vestingContractInterface.encodeFunctionData('revokeClaim', [recipient, 0]), // We need to figure the schedule Index in the future
               value: '0'

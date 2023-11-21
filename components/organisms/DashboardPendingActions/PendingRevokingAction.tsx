@@ -198,6 +198,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
           });
           updateTransactions(t);
           await RevokingApiService.updateRevoking(id, {
+            organizationId,
             status: 'SUCCESS'
           });
           await fetchDashboardData();
