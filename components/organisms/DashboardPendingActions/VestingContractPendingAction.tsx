@@ -47,11 +47,12 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
   const { account, chainId, activate, library } = useWeb3React();
   const { currentSafe } = useAuthContext();
   const { organizationId } = useOrganization();
-  const { safeTransactions, setSafeTransactions } = useDashboardContext();
+  const { safeTransactions, setSafeTransactions, fetchDashboardVestingContract } = useDashboardContext();
   const {
     setTransactionStatus: setTransactionLoaderStatus,
     setIsCloseAvailable,
-    transactions
+    transactions,
+    fetchTransactions
   } = useTransactionLoaderContext();
   const { mintFormState } = useTokenContext();
   const { updateVestingContract } = useDashboardContext();
@@ -166,6 +167,11 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
             chainId: data.chainId,
             isDeployed: false
           });
+
+          // Update necessary data
+          await fetchDashboardVestingContract();
+          await fetchTransactions();
+
           toast.success(`Created a safe transaction with nonce ${nextNonce} successfully`);
           setTransactionLoaderStatus('SUCCESS');
         } else {
