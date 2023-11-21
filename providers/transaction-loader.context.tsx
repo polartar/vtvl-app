@@ -1,7 +1,6 @@
 import TransactionApiService from '@api-services/TransactionApiService';
 import TransactionModal, { TransactionStatuses } from '@components/molecules/TransactionModal/TransactionModal';
 import { useWeb3React } from '@web3-react/core';
-import { onSnapshot, query, where } from 'firebase/firestore';
 import { useAuthContext } from 'providers/auth.context';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -9,6 +8,7 @@ interface ITransactionLoadeerData {
   transactionStatus: TransactionStatuses;
   setTransactionStatus: (v: TransactionStatuses) => void;
   updateTransactions: (data: ITransaction) => void;
+  fetchTransactions: () => void;
   transactions: ITransaction[];
   pendingTransactions: ITransaction[];
   setIsCloseAvailable: (v: boolean) => void;
@@ -23,6 +23,19 @@ export function TransactionLoaderContextProvider({ children }: any) {
   const [pendingTransactions, setPendingTransactions] = useState<ITransaction[]>([]);
   const [isCloseAvailable, setIsCloseAvailable] = useState<boolean>(true);
   const { currentSafe, organizationId } = useAuthContext();
+
+  const fetchTransactions = async () => {
+    try {
+      if (organizationId && chainId) {
+        const txs = await TransactionApiService.getTransactions(organizationId, chainId);
+        setTransactions(txs);
+        setPendingTransactions(txs.filter((t) => t.status === 'PENDING'));
+      }
+      throw 'No organizationId chainId';
+    } catch (err) {
+      console.error('Error fetching transactions: ', err);
+    }
+  };
 
   const updateTransactions = (data: ITransaction) => {
     if (transactions.find((t) => t.id === data.id)) {
@@ -49,7 +62,8 @@ export function TransactionLoaderContextProvider({ children }: any) {
       transactions,
       pendingTransactions,
       setIsCloseAvailable,
-      updateTransactions
+      updateTransactions,
+      fetchTransactions
     }),
     [transactionStatus, pendingTransactions, setTransactionStatus, transactions]
   );
@@ -57,10 +71,7 @@ export function TransactionLoaderContextProvider({ children }: any) {
   useEffect(() => {
     if (!organizationId || !chainId) return;
 
-    TransactionApiService.getTransactions(organizationId, chainId).then((res) => {
-      setTransactions(res);
-      setPendingTransactions(res.filter((t) => t.status === 'PENDING'));
-    });
+    fetchTransactions();
   }, [organizationId, chainId]);
 
   return (

@@ -57,7 +57,7 @@ interface IDashboardData {
   claims: number;
   recipientTokenDetails: TCapTableRecipientTokenDetails[];
   safeTransactions: { [key: string]: SafeTransaction };
-  // fetchDashboardVestingContract: () => void;
+  fetchDashboardVestingContract: () => void;
   updateVestingContract: (data: IVestingContract) => void;
   fetchDashboardVestings: () => void;
   setOwnershipTransferred: (v: boolean) => void;
@@ -171,12 +171,23 @@ export function DashboardContextProvider({ children }: any) {
     }
   }, [organizationId, chainId]);
 
+  /** Fetch all vesting contracts by organization */
+  const fetchDashboardVestingContract = useCallback(async () => {
+    try {
+      const res = await VestingContractApiService.getOrganizationVestingContracts(organizationId);
+      setVestingContracts(res);
+    } catch (err) {
+      console.error('Error fetching vesting contracts from db', err);
+    }
+  }, [organizationId]);
+
   /* Fetch vestings & pending revoking & transactions & recipients data by organizationId and chainId */
   const fetchDashboardData = useCallback(async () => {
     if (organizationId && chainId) {
       showLoading();
       try {
         await Promise.all([
+          fetchDashboardVestingContract(),
           fetchDashboardVestings(),
           fetchDashboardRevokings(),
           fetchDashboardMilestoneVestings(),
@@ -372,7 +383,7 @@ export function DashboardContextProvider({ children }: any) {
   useEffect(() => {
     if (!organizationId || !chainId || !accessToken) return;
 
-    VestingContractApiService.getOrganizationVestingContracts(organizationId).then((res) => setVestingContracts(res));
+    fetchDashboardVestingContract();
   }, [organizationId, chainId, accessToken]);
 
   useEffect(() => {
@@ -453,6 +464,7 @@ export function DashboardContextProvider({ children }: any) {
       recipientTokenDetails,
       safeTransactions,
       updateVestingContract,
+      fetchDashboardVestingContract,
       fetchDashboardVestings,
       setOwnershipTransferred,
       fetchDashboardData,
