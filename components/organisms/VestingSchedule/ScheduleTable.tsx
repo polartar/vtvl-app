@@ -20,6 +20,7 @@ import VTVL_VESTING_ABI from 'contracts/abi/FactoryVesting.json';
 // import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import getUnixTime from 'date-fns/getUnixTime';
 import { BigNumber, ethers } from 'ethers';
+import { parseEther } from 'ethers/lib/utils';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import useIsAdmin from 'hooks/useIsAdmin';
 import { useTokenContext } from 'providers/token.context';
@@ -441,12 +442,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       }
       const vesting = data;
       const vestingId = id;
-      const cliffAmountPerUser =
-        getCliffAmount(
-          vesting.details.cliffDuration,
-          +vesting.details.lumpSumReleaseAfterCliff,
-          +vesting.details.amountToBeVested
-        ) / recipients.length;
+      const cliffAmount = getCliffAmount(
+        vesting.details.cliffDuration,
+        +vesting.details.lumpSumReleaseAfterCliff,
+        +vesting.details.amountToBeVested
+      );
+      const cliffAmountPerToken = parseEther(cliffAmount.toString()).div(vesting.details.amountToBeVested);
+      const vestingAmountPerToken = parseEther(vesting.details.amountToBeVested.toString())
+        .sub(parseEther(cliffAmount.toString()))
+        .div(BigNumber.from(vesting.details.amountToBeVested));
+      const cliffAmountPerUser = cliffAmount / recipients.length;
       const vestingAmountPerUser = +vesting.details.amountToBeVested / recipients.length - cliffAmountPerUser;
 
       if (hasNoWalletAddress) {
@@ -495,8 +500,8 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           endTimestamp: endTimeStamp,
           cliffReleaseTimestamp: cliffReleaseTimestamp,
           releaseIntervalSecs: releaseFrequencyTimestamp,
-          linearVestAmount: ethers.utils.parseEther(vestingAmountPerUser.toString()),
-          cliffAmount: ethers.utils.parseEther(cliffAmountPerUser.toString()),
+          linearVestAmount: vestingAmountPerToken.mul(+recipient.allocations),
+          cliffAmount: cliffAmountPerToken.mul(+recipient.allocations),
           recipient: recipient.address
         };
       });

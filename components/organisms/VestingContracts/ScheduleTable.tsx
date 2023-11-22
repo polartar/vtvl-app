@@ -17,11 +17,11 @@ import {
   STATUS_MAPPING // TRANSACTION_STATUS_MAPPING
 } from 'components/organisms/DashboardPendingActions';
 import FundingContractModalV2 from 'components/organisms/FundingContractModal/FundingContractModalV2';
-import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
+import VTVL_VESTING_ABI from 'contracts/abi/FactoryVesting.json';
 import format from 'date-fns/format';
 import getUnixTime from 'date-fns/getUnixTime';
 import { BigNumber, ethers } from 'ethers';
-import { formatEther } from 'ethers/lib/utils';
+import { formatEther, parseEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import { VestingContractInfo } from 'hooks/useChainVestingContracts';
 import useIsAdmin from 'hooks/useIsAdmin';
@@ -31,6 +31,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting } from 'types/models';
+import { ClaimInput } from 'types/models/vesting';
 import { compareAddresses } from 'utils';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -109,6 +110,11 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
   const getRevoked = (recipeId: string) => {
     return revokings?.find((revoking) => revoking.id === recipeId);
   };
+
+  const hasNoWalletAddress = useMemo(() => {
+    const addresses = vestingRecipients.map((recipient) => recipient.address);
+    return addresses.filter((address) => !address).length > 0;
+  }, [vestingRecipients]);
 
   const isFundAvailable = useCallback(() => {
     const fundingTransaction = pendingTransactions.find((transaction) => transaction.type === 'FUNDING_CONTRACT');
@@ -193,7 +199,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     } else {
       const VestingContract = new ethers.Contract(
         vestingContract?.address || '',
-        VTVL_VESTING_ABI.abi,
+        VTVL_VESTING_ABI,
         ethers.getDefaultProvider(SupportedChains[chainId as SupportedChainId].rpc)
       );
 
@@ -444,17 +450,26 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         activate(injected);
         return;
       }
-      const totalRecipients = vestingRecipients.length;
+      if (hasNoWalletAddress) {
+        toast.error("Some recipients don't have wallet address.");
+        return;
+      }
+
       const vesting = data;
       const vestingId = id;
-      const cliffAmountPerUser =
-        getCliffAmount(
-          vesting.details.cliffDuration,
-          +vesting.details.lumpSumReleaseAfterCliff,
-          +vesting.details.amountToBeVested
-        ) / totalRecipients;
-      const vestingAmountPerUser = +vesting.details.amountToBeVested / totalRecipients - cliffAmountPerUser;
-      const addresses = vestingRecipients.map((recipient) => recipient.address);
+      const cliffAmount = getCliffAmount(
+        vesting.details.cliffDuration,
+        +vesting.details.lumpSumReleaseAfterCliff,
+        +vesting.details.amountToBeVested
+      );
+      const cliffAmountPerToken = parseEther(cliffAmount.toString()).div(vesting.details.amountToBeVested);
+      const vestingAmountPerToken = parseEther(vesting.details.amountToBeVested.toString())
+        .sub(parseEther(cliffAmount.toString()))
+        .div(BigNumber.from(vesting.details.amountToBeVested));
+      const cliffAmountPerUser = cliffAmount / vestingRecipients.length;
+      const vestingAmountPerUser = +vesting.details.amountToBeVested / vestingRecipients.length - cliffAmountPerUser;
+
+      // const addresses = vestingRecipients.map((recipient) => recipient.address);
 
       const vestingStartTime = vesting.details.startDateTime!;
 
@@ -475,47 +490,40 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               frequency: vesting.details.releaseFrequency,
               vestedAmount: vestingAmountPerUser
             }).projectedEndDateTime
-          : // getProjectedEndDateTime(
-            //     actualStartDateTime,
-            //     new Date((vesting.details.endDateTime as unknown as Timestamp).toMillis()),
-            //     numberOfReleases,
-            //     vesting.details.releaseFrequency
-            //   )
-            null;
-      const vestingStartTimestamps = new Array(totalRecipients).fill(
-        cliffReleaseTimestamp ? cliffReleaseTimestamp : Math.floor(getUnixTime(vesting.details.startDateTime!))
-      );
-      const vestingEndTimestamps = new Array(totalRecipients).fill(Math.floor(vestingEndTimestamp!.getTime() / 1000));
-      const vestingCliffTimestamps = new Array(totalRecipients).fill(cliffReleaseTimestamp);
+          : null;
+
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
         vestingEndTimestamp!,
         vesting.details.releaseFrequency,
         vesting.details.cliffDuration
       );
-      const vestingReleaseIntervals = new Array(totalRecipients).fill(releaseFrequencyTimestamp);
-      const vestingLinearVestAmounts = vestingRecipients.map((recipient) => {
-        const { cliffDuration, lumpSumReleaseAfterCliff } = vesting.details;
-        // Computes how many tokens are left after cliff based on percentage
-        const percentage = 1 - (cliffDuration !== 'no_cliff' ? +lumpSumReleaseAfterCliff : 0) / 100;
-        return parseTokenAmount(Number(recipient.allocations) * percentage, 18);
+
+      const startTime = cliffReleaseTimestamp
+        ? cliffReleaseTimestamp
+        : Math.floor(getUnixTime(vesting.details.startDateTime!));
+      let endTimeStamp = getUnixTime(vestingEndTimestamp ?? new Date());
+      if ((endTimeStamp - startTime) % releaseFrequencyTimestamp !== 0) {
+        const times = Math.floor(endTimeStamp / releaseFrequencyTimestamp);
+        endTimeStamp = startTime + releaseFrequencyTimestamp * (times + 1);
+      }
+
+      const claimInputs: ClaimInput[] = vestingRecipients.map((recipient) => {
+        return {
+          startTimestamp: startTime,
+          endTimestamp: endTimeStamp,
+          cliffReleaseTimestamp: cliffReleaseTimestamp,
+          releaseIntervalSecs: releaseFrequencyTimestamp,
+          linearVestAmount: vestingAmountPerToken.mul(+recipient.allocations),
+          cliffAmount: cliffAmountPerToken.mul(+recipient.allocations),
+          recipient: recipient.address
+        };
       });
-      const vestingCliffAmounts = new Array(totalRecipients).fill(parseTokenAmount(cliffAmountPerUser, 18));
 
-      const CREATE_CLAIMS_BATCH_FUNCTION =
-        'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
+      const vestingContractInterface = new ethers.utils.Interface(VTVL_VESTING_ABI);
+      console.log({ claimInputs });
+      const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [claimInputs]);
 
-      const ABI = [CREATE_CLAIMS_BATCH_FUNCTION];
-      const vestingContractInterface = new ethers.utils.Interface(ABI);
-      const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [
-        addresses,
-        vestingStartTimestamps,
-        vestingEndTimestamps,
-        vestingCliffTimestamps,
-        vestingReleaseIntervals,
-        vestingLinearVestAmounts,
-        vestingCliffAmounts
-      ]);
       setIsCloseAvailable(false);
       if (currentSafe?.address && account && chainId && organizationId) {
         if (!isAdmin) {
@@ -563,8 +571,6 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             status: 'PENDING',
             to: vestingContract?.address ?? '',
             type: 'ADDING_CLAIMS',
-            createdAt: Math.floor(new Date().getTime() / 1000),
-            updatedAt: Math.floor(new Date().getTime() / 1000),
             organizationId: organizationId,
             chainId,
             vestingIds: [vestingId]
@@ -597,18 +603,11 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('PENDING');
         const vestingContractInstance = new ethers.Contract(
           vestingContract?.address ?? '',
-          VTVL_VESTING_ABI.abi,
+          VTVL_VESTING_ABI,
           library.getSigner()
         );
-        const addingClaimsTransaction = await vestingContractInstance.createClaimsBatch(
-          addresses,
-          vestingStartTimestamps,
-          vestingEndTimestamps,
-          vestingCliffTimestamps,
-          vestingReleaseIntervals,
-          vestingLinearVestAmounts,
-          vestingCliffAmounts
-        );
+        const addingClaimsTransaction = await vestingContractInstance.createClaimsBatch(claimInputs);
+
         setTransactionLoaderStatus('IN_PROGRESS');
         const transactionData: ITransactionRequest = {
           hash: addingClaimsTransaction.hash,
@@ -616,8 +615,6 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           status: 'PENDING',
           to: vestingContract?.address ?? '',
           type: 'ADDING_CLAIMS',
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
           organizationId: organizationId,
           chainId,
           vestingIds: [vestingId]
