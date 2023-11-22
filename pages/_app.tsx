@@ -81,9 +81,9 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               <LoaderContextProvider>
                 <TokenContextProvider>
                   <OnboardingContextProvider>
-                    <DashboardContextProvider>
-                      <VestingContextProvider>
-                        <TransactionLoaderContextProvider>
+                    <TransactionLoaderContextProvider>
+                      <DashboardContextProvider>
+                        <VestingContextProvider>
                           <TeammateContextProvider>
                             <ClaimTokensContextProvider>
                               <AnimatePresence mode="wait">
@@ -92,9 +92,9 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
                               <ToastContainer autoClose={6000} style={{ top: '6rem', right: '1rem' }} />
                             </ClaimTokensContextProvider>
                           </TeammateContextProvider>
-                        </TransactionLoaderContextProvider>
-                      </VestingContextProvider>
-                    </DashboardContextProvider>
+                        </VestingContextProvider>
+                      </DashboardContextProvider>
+                    </TransactionLoaderContextProvider>
                   </OnboardingContextProvider>
                 </TokenContextProvider>
               </LoaderContextProvider>

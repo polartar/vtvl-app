@@ -34,6 +34,7 @@ import { getRecipient } from 'utils/recipients';
 import { useAuthContext } from './auth.context';
 import { useLoaderContext } from './loader.context';
 import { useTokenContext } from './token.context';
+import { useTransactionLoaderContext } from './transaction-loader.context';
 
 type IVestingStatus = 'FUNDING_REQUIRED' | 'PENDING' | 'EXECUTABLE' | 'LIVE';
 
@@ -76,6 +77,7 @@ export function DashboardContextProvider({ children }: any) {
   // const { organizationId, currentSafe } = useAuthContext();
   const { organizationId } = useOrganization();
   const { showLoading, hideLoading } = useLoaderContext();
+  const { fetchTransactions } = useTransactionLoaderContext();
   const router = useRouter();
 
   /* Vesting state */
@@ -188,6 +190,7 @@ export function DashboardContextProvider({ children }: any) {
       try {
         await Promise.all([
           fetchDashboardVestingContract(),
+          fetchTransactions(),
           fetchDashboardVestings(),
           fetchDashboardRevokings(),
           fetchDashboardMilestoneVestings(),
@@ -202,7 +205,7 @@ export function DashboardContextProvider({ children }: any) {
       setVestings([]);
       setRevokings([]);
     }
-  }, [organizationId, chainId]);
+  }, [organizationId, chainId, fetchTransactions]);
 
   const updateVestingContract = (data: IVestingContract) => {
     if (vestingContracts.find((vestingContract) => vestingContract.id === data.id)) {
