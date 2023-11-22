@@ -109,7 +109,7 @@ const YourSafesPage: NextPage = () => {
                 className="primary"
                 type="button"
                 disabled={importSafeError}
-                onClick={() => safePush('/v2/onboarding/new-safe')}>
+                onClick={() => safePush('/onboarding/new-safe')}>
                 Create new Safe
               </button>
             </div>
