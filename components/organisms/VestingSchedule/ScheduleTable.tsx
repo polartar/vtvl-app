@@ -1,4 +1,5 @@
 import RecipientApiService from '@api-services/RecipientApiService';
+import RevokingApiService from '@api-services/RevokingApiService';
 import TransactionApiService from '@api-services/TransactionApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
 import RecipientRow from '@components/molecules/VestingSchedule/RecipientRow';
@@ -715,6 +716,20 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           });
           updateTransactions(t);
 
+          // Check for revokings
+          const recipientsWithRevoking = await getRevokingFromRecipients();
+          if (recipientsWithRevoking?.length) {
+            // Update them to be revoked
+            recipientsWithRevoking.forEach(async (revokeId) => {
+              if (!revokeId) return;
+              await RevokingApiService.updateRevoking(revokeId, {
+                organizationId,
+                status: 'SUCCESS',
+                transactionId: t.id
+              });
+            });
+          }
+
           // Ensure that vestings list are updated
           await fetchDashboardVestings();
 
@@ -795,6 +810,25 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       RecipientApiService.getRecipients(`vestingId=${id}`).then((res) => setRecipients(res));
     }
   }, [id]);
+
+  const getRevokingFromRecipients = useCallback(async () => {
+    if (organizationId && id && recipients && chainId && transactions) {
+      const revokedRecipients = recipients
+        .map(async (recipient) => {
+          const revokingCall = await RevokingApiService.getUserRevokings(organizationId, chainId, id, recipient.id);
+          if (revokingCall && revokingCall[0]) {
+            const r = revokingCall[0];
+            return r.status === 'PENDING' ? r : null;
+          }
+          return null;
+        })
+        .filter((revoking) => revoking !== null);
+      return Promise.all(revokedRecipients).then((rev) => {
+        return rev.map((r) => r?.id).filter((r) => r);
+      });
+    }
+    return [];
+  }, [organizationId, id, recipients, chainId]);
 
   return (
     <>
