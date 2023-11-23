@@ -13,8 +13,7 @@ import { useTransactionLoaderContext } from '@providers/transaction-loader.conte
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
 import ERC20ABI from 'contracts/abi/ERC20.json';
-import VestingABI from 'contracts/abi/VtvlVesting.json';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import useChainVestingContracts from 'hooks/useChainVestingContracts';
 import useIsAdmin from 'hooks/useIsAdmin';
 import Image from 'next/image';
@@ -22,7 +21,7 @@ import PlusIcon from 'public/icons/plus.svg';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
-import { isV2 } from 'utils/multicall';
+import { getVestingContractABI, isV2 } from 'utils/multicall';
 import { formatNumber } from 'utils/token';
 
 import ContractsProfile from './VestingContractsProfile';
@@ -120,109 +119,119 @@ export default function VestingContract({ vestingContractId }: { vestingContract
 
     availableRecipients.forEach((recipient) => {
       RecipientApiService.updateRecipient(recipient.id, {
-        allocations: 0
+        organizationId,
+        allocations: '0'
       });
     });
   };
 
   const handleWithdraw = async () => {
     if (vestingContracts && vestingContracts.length > 0 && organizationId && chainId && account) {
+      const ABI = getVestingContractABI(vestingContracts[0].updatedAt);
       const vestingContractAddress = vestingContracts[0].address ?? '';
-      const vestingContract = new ethers.Contract(vestingContractAddress, VestingABI.abi, library.getSigner());
-      if (currentSafe?.address) {
-        if (!isAdmin) {
-          toast.error(
-            "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
-          );
-          return;
+      const vestingContract = new ethers.Contract(vestingContractAddress, ABI, library.getSigner());
+      try {
+        if (currentSafe?.address) {
+          if (!isAdmin) {
+            toast.error(
+              "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
+            );
+            return;
+          }
+
+          // const ADMIN_WITHDRAW_FUNCTION = isV2(vestingContracts[0].updatedAt)
+          //   ? 'function withdrawAdmin(uint256 _amountRequested)'
+          //   : 'function withdrawAdmin(uint112 _amountRequested)';
+          // const ABI = [ADMIN_WITHDRAW_FUNCTION];
+          // const vestingContractInterface = new ethers.utils.Interface(ABI);
+          // const adminWithdrawEncoded = vestingContractInterface.encodeFunctionData('withdrawAdmin', [
+          //   withdrawAmount.toString()
+          // ]);
+
+          const vestingContractInterface = new ethers.utils.Interface(ABI);
+          const adminWithdrawEncoded = vestingContractInterface.encodeFunctionData('withdrawAdmin', [
+            withdrawAmount.toString()
+          ]);
+          const ethAdapter = new EthersAdapter({
+            ethers: ethers,
+            signer: library?.getSigner(0)
+          });
+
+          const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
+          const safeService = new SafeServiceClient({
+            txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+            ethAdapter
+          });
+
+          const nextNonce = await safeService.getNextNonce(currentSafe.address);
+          const txData = {
+            to: ethers.utils.getAddress(vestingContractAddress),
+            data: adminWithdrawEncoded,
+            value: '0',
+            nonce: nextNonce
+          };
+          const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
+          const txHash = await safeSdk.getTransactionHash(safeTransaction);
+          const signature = await safeSdk.signTransactionHash(txHash);
+          setTransactionLoaderStatus('IN_PROGRESS');
+          safeTransaction.addSignature(signature);
+
+          await safeService.proposeTransaction({
+            safeAddress: currentSafe.address,
+            senderAddress: account,
+            safeTransactionData: safeTransaction.data,
+            safeTxHash: txHash,
+            senderSignature: signature.data
+          });
+          const transactionData: ITransactionRequest = {
+            hash: '',
+            safeHash: txHash,
+            status: 'PENDING',
+            to: vestingContractAddress,
+            type: 'ADMIN_WITHDRAW',
+            organizationId: organizationId,
+            chainId,
+            vestingIds: [],
+            withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimal || 18),
+            vestingContractId: vestingContracts[0].id
+          };
+          const transaction = await TransactionApiService.createTransaction(transactionData);
+          updateTransactions(transaction);
+
+          toast.success(`Withdraw transaction with nonce ${nextNonce} has been created successfully.`);
+        } else {
+          const withdrawTransaction = await vestingContract.withdrawAdmin(withdrawAmount);
+          const transactionData: ITransactionRequest = {
+            hash: withdrawTransaction.hash,
+            safeHash: '',
+            status: 'PENDING',
+            to: vestingContractAddress,
+            type: 'ADMIN_WITHDRAW',
+            organizationId: organizationId,
+            chainId,
+            vestingIds: [],
+            withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimal || 18),
+            vestingContractId: vestingContracts[0].id
+          };
+          const transaction = await TransactionApiService.createTransaction(transactionData);
+          updateTransactions(transaction);
+          await withdrawTransaction.wait();
+          const t = await TransactionApiService.updateTransaction(transaction.id, {
+            organizationId,
+            status: 'SUCCESS'
+          });
+          updateTransactions(t);
+
+          toast.success('Withdrew tokens successfully.');
         }
-
-        const ADMIN_WITHDRAW_FUNCTION = isV2(vestingContracts[0].updatedAt)
-          ? 'function withdrawAdmin(uint256 _amountRequested)'
-          : 'function withdrawAdmin(uint112 _amountRequested)';
-        const ABI = [ADMIN_WITHDRAW_FUNCTION];
-        const vestingContractInterface = new ethers.utils.Interface(ABI);
-        const adminWithdrawEncoded = vestingContractInterface.encodeFunctionData('withdrawAdmin', [
-          withdrawAmount.toString()
-        ]);
-        const ethAdapter = new EthersAdapter({
-          ethers: ethers,
-          signer: library?.getSigner(0)
-        });
-
-        const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
-        const safeService = new SafeServiceClient({
-          txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
-          ethAdapter
-        });
-
-        const nextNonce = await safeService.getNextNonce(currentSafe.address);
-        const txData = {
-          to: ethers.utils.getAddress(vestingContractAddress),
-          data: adminWithdrawEncoded,
-          value: '0',
-          nonce: nextNonce
-        };
-        const safeTransaction = await safeSdk.createTransaction({ safeTransactionData: txData });
-        const txHash = await safeSdk.getTransactionHash(safeTransaction);
-        const signature = await safeSdk.signTransactionHash(txHash);
-        setTransactionLoaderStatus('IN_PROGRESS');
-        safeTransaction.addSignature(signature);
-
-        await safeService.proposeTransaction({
-          safeAddress: currentSafe.address,
-          senderAddress: account,
-          safeTransactionData: safeTransaction.data,
-          safeTxHash: txHash,
-          senderSignature: signature.data
-        });
-        const transactionData: ITransactionRequest = {
-          hash: '',
-          safeHash: txHash,
-          status: 'PENDING',
-          to: vestingContractAddress,
-          type: 'ADMIN_WITHDRAW',
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
-          organizationId: organizationId,
-          chainId,
-          vestingIds: [],
-          withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimal || 18),
-          vestingContractId: vestingContracts[0].id
-        };
-        const transaction = await TransactionApiService.createTransaction(transactionData);
-        updateTransactions(transaction);
-
-        toast.success(`Withdraw transaction with nonce ${nextNonce} has been created successfully.`);
+        setWithdrawAmount(BigNumber.from('0'));
+        initRecipientAllocation(vestingContractAddress);
         setTransactionLoaderStatus('SUCCESS');
-      } else {
-        const withdrawTransaction = await vestingContract.withdrawAdmin(withdrawAmount);
-        const transactionData: ITransactionRequest = {
-          hash: withdrawTransaction.hash,
-          safeHash: '',
-          status: 'PENDING',
-          to: vestingContractAddress,
-          type: 'ADMIN_WITHDRAW',
-          createdAt: Math.floor(new Date().getTime() / 1000),
-          updatedAt: Math.floor(new Date().getTime() / 1000),
-          organizationId: organizationId,
-          chainId,
-          vestingIds: [],
-          withdrawAmount: ethers.utils.formatUnits(withdrawAmount, mintFormState?.decimal || 18),
-          vestingContractId: vestingContracts[0].id
-        };
-        const transaction = await TransactionApiService.createTransaction(transactionData);
-        updateTransactions(transaction);
-        await withdrawTransaction.wait();
-        const t = await TransactionApiService.updateTransaction(transaction.id, {
-          organizationId,
-          status: 'SUCCESS'
-        });
-        updateTransactions(t);
-        toast.success('Withdrew tokens successfully.');
-        setTransactionLoaderStatus('SUCCESS');
+      } catch (err) {
+        console.log('fundContract - ', err);
+        toast.error((err as any).reason ? (err as any).reason : 'Something went wrong. Try again later.');
+        setTransactionLoaderStatus('ERROR');
       }
-      initRecipientAllocation(vestingContractAddress);
     }
   };
 
