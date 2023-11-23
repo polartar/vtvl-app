@@ -197,7 +197,7 @@ const VestingScheduleDetailed: NextPageWithLayout = () => {
 // Assign a stepped layout -- to refactor later and put into a provider / service / utility function because this is a repetitive function
 VestingScheduleDetailed.getLayout = function getLayout(page: ReactElement) {
   const router = useRouter();
-  const { schedule } = router.query;
+  const { scheduleId: schedule } = router.query;
   // Update these into a state coming from the context
   const crumbSteps = [
     { title: 'Vesting schedule', route: '/vesting-schedule' },

@@ -15,7 +15,7 @@ import { useWeb3React } from '@web3-react/core';
 import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
 import { ethers } from 'ethers';
 import useIsAdmin from 'hooks/useIsAdmin';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IVesting } from 'types/models';
@@ -32,6 +32,7 @@ interface IRecipientRowProps {
   allocations?: string;
   vesting: IVesting;
   vestingId: string;
+  onRevoke?: () => void;
 }
 
 const RecipientRow: React.FC<IRecipientRowProps> = ({
@@ -43,11 +44,12 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
   locked = '',
   allocations = '',
   vesting,
-  vestingId
+  vestingId,
+  onRevoke
 }) => {
   const { chainId, library, account } = useWeb3React();
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
-  const { vestingContracts } = useDashboardContext();
+  const { vestingContracts, fetchDashboardData } = useDashboardContext();
   const { setTransactionStatus, setIsCloseAvailable, transactions, updateTransactions } = useTransactionLoaderContext();
 
   const isAdmin = useIsAdmin(
@@ -135,6 +137,10 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             status: 'PENDING'
           });
 
+          // Re-fetch the revoking data for up-to-date state
+          await fetchLatestRevoking();
+          await fetchDashboardData();
+          setTimeout(() => onRevoke?.(), 1000); // Temporary, refactor later for better UX
           toast.success(`Revoking transaction with nonce ${nonce} has been created successfully.`);
           console.info('Safe Transaction: ', safeHash);
         } else {
@@ -167,6 +173,10 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
             status: 'SUCCESS'
           });
           setRevoked(true);
+          // Re-fetch the revoking data for up-to-date state
+          await fetchLatestRevoking();
+          await fetchDashboardData();
+          setTimeout(() => onRevoke?.(), 1000); // Temporary, refactor later for better UX
           toast.success('Revoking is done successfully.');
         }
         setTransactionStatus('SUCCESS');
@@ -178,20 +188,31 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (chainId && vesting.status === 'LIVE' && organizationId) {
-      RevokingApiService.getUserRevokings(organizationId, chainId, vestingId, id).then((res) => {
-        if (res && res[0]) {
-          const revoking = res[0];
-          if (revoking) {
-            if (revoking.status === 'PENDING') {
-              setRevoking(revoking);
-            } else if (revoking.status === 'SUCCESS') {
-              setRevoked(true);
+  const fetchLatestRevoking = useCallback(async () => {
+    try {
+      if (organizationId && chainId && vestingId && id) {
+        RevokingApiService.getUserRevokings(organizationId, chainId, vestingId, id).then((res) => {
+          if (res && res[0]) {
+            const revoking = res[0];
+            if (revoking) {
+              if (revoking.status === 'PENDING') {
+                setRevoking(revoking);
+              } else if (revoking.status === 'SUCCESS') {
+                setRevoked(true);
+              }
             }
-          }
-        }
-      });
+          } else throw 'No revoking found';
+        });
+      } else throw 'Missing params';
+    } catch (err) {
+      // Error fetching revoking
+      console.error('Fetching revoking error', err);
+    }
+  }, [organizationId, chainId, vestingId, id]);
+
+  useEffect(() => {
+    if (chainId && organizationId) {
+      fetchLatestRevoking();
     }
   }, [vestingId, address, chainId, vesting, organizationId]);
 

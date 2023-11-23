@@ -111,7 +111,10 @@ export const NO_SIDEBAR_PAGES = [
   '/v2/auth/login',
   '/v2/auth/register',
   '/v2/onboarding/account-setup',
-  '/v2/onboarding/setup-safes'
+  '/v2/onboarding/setup-safes',
+  '/onboarding/new-safe',
+  '/onboarding/setup-safe-success',
+  '/onboarding/setup-safes'
 ];
 
 export const TOAST_IDS = {
