@@ -980,6 +980,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             allocations={recipient.allocations ? formatNumber(+recipient.allocations) : '0.00'}
             vesting={data}
             vestingId={id}
+            onRevoke={initializeStatus}
           />
         );
       })}

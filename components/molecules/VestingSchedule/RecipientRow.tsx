@@ -32,6 +32,7 @@ interface IRecipientRowProps {
   allocations?: string;
   vesting: IVesting;
   vestingId: string;
+  onRevoke?: () => void;
 }
 
 const RecipientRow: React.FC<IRecipientRowProps> = ({
@@ -43,7 +44,8 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
   locked = '',
   allocations = '',
   vesting,
-  vestingId
+  vestingId,
+  onRevoke
 }) => {
   const { chainId, library, account } = useWeb3React();
   const { currentSafe, organizationId, currentSafeId, setCurrentSafe } = useAuthContext();
@@ -91,7 +93,6 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
       try {
         setTransactionStatus('PENDING');
         if (currentSafe?.address) {
-          console.log('REVOKING via SAFE');
           if (!isAdmin) {
             toast.error(
               "You don't have enough privilege to run this transaction. Please select correct Multisig or Metamask account."
@@ -139,6 +140,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           // Re-fetch the revoking data for up-to-date state
           await fetchLatestRevoking();
           await fetchDashboardData();
+          setTimeout(() => onRevoke?.(), 1000); // Temporary, refactor later for better UX
           toast.success(`Revoking transaction with nonce ${nonce} has been created successfully.`);
           console.info('Safe Transaction: ', safeHash);
         } else {
@@ -174,6 +176,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           // Re-fetch the revoking data for up-to-date state
           await fetchLatestRevoking();
           await fetchDashboardData();
+          setTimeout(() => onRevoke?.(), 1000); // Temporary, refactor later for better UX
           toast.success('Revoking is done successfully.');
         }
         setTransactionStatus('SUCCESS');
