@@ -19,6 +19,7 @@ import FundingContractModalV2 from 'components/organisms/FundingContractModal/Fu
 import VTVL_VESTING_ABI from 'contracts/abi/FactoryVesting.json';
 import getUnixTime from 'date-fns/getUnixTime';
 import { BigNumber, ethers } from 'ethers';
+import { parseEther } from 'ethers/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import useIsAdmin from 'hooks/useIsAdmin';
 import { useTokenContext } from 'providers/token.context';
@@ -361,7 +362,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         await fundTransaction.wait();
         // This should have a function to update the vesting schedule status
         // From INITIALIZED into WAITING_APPROVAL
-        console.log({ data });
+
         await VestingScheduleApiService.updateVestingSchedule(
           {
             ...data,
@@ -469,6 +470,16 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       const vesting = data;
       const vestingId = id;
 
+      const cliffAmount = getCliffAmount(
+        vesting.details.cliffDuration,
+        +vesting.details.lumpSumReleaseAfterCliff,
+        +vesting.details.amountToBeVested
+      );
+      const cliffAmountPerToken = parseEther(cliffAmount.toString()).div(vesting.details.amountToBeVested);
+      const vestingAmountPerToken = parseEther(vesting.details.amountToBeVested.toString())
+        .sub(parseEther(cliffAmount.toString()))
+        .div(BigNumber.from(vesting.details.amountToBeVested));
+
       const cliffAmountPerUser =
         getCliffAmount(
           vesting.details.cliffDuration,
@@ -502,11 +513,6 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
               vestedAmount: vestingAmountPerUser
             }).projectedEndDateTime
           : null;
-      // const vestingStartTimestamps = new Array(totalRecipients).fill(
-      //   cliffReleaseTimestamp ? cliffReleaseTimestamp : Math.floor(getUnixTime(vesting.details.startDateTime!))
-      // );
-      // let vestingEndTimestamps = new Array(totalRecipients).fill(getUnixTime(vestingEndTimestamp ?? new Date()));
-      // const vestingCliffTimestamps = new Array(totalRecipients).fill(cliffReleaseTimestamp);
 
       const releaseFrequencyTimestamp = getReleaseFrequencyTimestamp(
         vestingStartTime,
@@ -514,29 +520,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         vesting.details.releaseFrequency,
         vesting.details.cliffDuration
       );
-      // const vestingReleaseIntervals = new Array(totalRecipients).fill(releaseFrequencyTimestamp);
-      // const vestingLinearVestAmounts = vestingRecipients.map((recipient) => {
-      //   return ethers.utils
-      //     .parseUnits(recipient.allocations, 18)
-      //     .sub(ethers.utils.parseUnits(cliffAmountPerUser.toString(), 18))
-      //     .toString();
-      // });
 
-      // vestingEndTimestamps = vestingEndTimestamps.map((endTimeStamp: number, index: number) => {
-      //   if ((endTimeStamp - vestingStartTimestamps[index]) % vestingReleaseIntervals[index] !== 0) {
-      //     const times = Math.floor(endTimeStamp / vestingReleaseIntervals[index]);
-      //     return vestingStartTimestamps[index] + vestingReleaseIntervals[index] * (times + 1);
-      //   }
-      //   return endTimeStamp;
-      // });
-
-      // vestingEndTimestamps = vestingEndTimestamps.map((endTimeStamp: number, index: number) => {
-      //   if ((endTimeStamp - vestingStartTimestamps[index]) % vestingReleaseIntervals[index] !== 0) {
-      //     const times = Math.floor(endTimeStamp / vestingReleaseIntervals[index]);
-      //     return vestingStartTimestamps[index] + vestingReleaseIntervals[index] * (times + 1);
-      //   }
-      //   return endTimeStamp;
-      // });
       const startTime = cliffReleaseTimestamp
         ? cliffReleaseTimestamp
         : Math.floor(getUnixTime(vesting.details.startDateTime!));
@@ -552,8 +536,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           endTimestamp: endTimeStamp,
           cliffReleaseTimestamp: cliffReleaseTimestamp,
           releaseIntervalSecs: releaseFrequencyTimestamp,
-          linearVestAmount: ethers.utils.parseEther(vestingAmountPerUser.toString()),
-          cliffAmount: ethers.utils.parseEther(cliffAmountPerUser.toString()),
+          linearVestAmount: vestingAmountPerToken.mul(+recipient.allocations),
+          cliffAmount: cliffAmountPerToken.mul(+recipient.allocations),
           recipient: recipient.address
         };
       });
