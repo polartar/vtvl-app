@@ -161,18 +161,23 @@ const NewSafePage: NextPage = () => {
     // Use the correct value for authorized users by checking on the threshold.
     defaultValues.authorizedUsers = o.length > authThreshold ? authThreshold : o.length;
     //populate with existing safe if we have it stored
-    const savedSafe = await SafeApiService.getSafeWallet(organizationId ?? '', safe.getAddress());
-    if (savedSafe) {
-      defaultValues.owners = savedSafe.safeOwners;
-      defaultValues.organizationName = organization?.name;
-      setSafeRef(savedSafe?.id);
+    try {
+      const savedSafe = await SafeApiService.getSafeWallet(organizationId ?? '', safe.getAddress());
+      if (savedSafe) {
+        defaultValues.owners = savedSafe.safeOwners;
+        defaultValues.organizationName = organization?.name;
+        setSafeRef(savedSafe?.id);
+      }
+      // Set the options depending on the number of owners
+      // setOptions(defaultValues.authorizedUsers);
+      setOptions(o.length);
+      reset({ ...defaultValues });
+    } catch (err) {
+      setOptions(o.length);
+      reset({ ...defaultValues });
     }
-    // Set the options depending on the number of owners
-    // setOptions(defaultValues.authorizedUsers);
-    setOptions(o.length);
-    reset({ ...defaultValues });
   };
-
+  console.log({ importSafe });
   // Validates for duplicate wallet address and emails
   const validateOwners = () => {
     const owners = getValues('owners');
@@ -267,7 +272,7 @@ const NewSafePage: NextPage = () => {
         address: safe.getAddress(),
         chainId: chainId || 0,
         name: '',
-        requiredConfirmations: values.authorizedUsers,
+        requiredConfirmations: +values.authorizedUsers,
         owners: values.owners as IOwner[]
       };
       // Already existing, update the safe

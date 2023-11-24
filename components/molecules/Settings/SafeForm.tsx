@@ -120,7 +120,7 @@ export default function SafeForm({ onBack }: { onBack: () => void }) {
         address: safe.getAddress(),
         chainId: chainId || 0,
         name: values.safeName || '',
-        requiredConfirmations: values.authorizedUsers,
+        requiredConfirmations: +values.authorizedUsers,
         owners: values.owners
       });
 
