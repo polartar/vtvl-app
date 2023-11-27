@@ -83,7 +83,8 @@ const NewSafePage: NextPage = () => {
     defaultValues: {
       organizationName: '',
       owners: [{ name: '', address: account ?? '', email: '' }],
-      authorizedUsers: 1
+      authorizedUsers: 1,
+      safeName: ''
     }
   });
 
@@ -271,7 +272,7 @@ const NewSafePage: NextPage = () => {
         organizationId: organizationId || '',
         address: safe.getAddress(),
         chainId: chainId || 0,
-        name: '',
+        name: values.safeName,
         requiredConfirmations: +values.authorizedUsers,
         owners: values.owners as IOwner[]
       };
@@ -361,6 +362,24 @@ const NewSafePage: NextPage = () => {
         <h2 className="h5 font-semibold text-neutral-900">Your Safes</h2>
         <p className="text-sm text-neutral-500">Create a new Safe or import an existing Safe</p>
         <div className="grid md:grid-cols-3 py-5 gap-5 border-b border-neutral-200 mb-5">
+          <Controller
+            name="safeName"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Input
+                label="Your safe wallet name"
+                placeholder="Enter your safe wallet name"
+                className="md:col-span-3"
+                error={Boolean(errors.safeName)}
+                required
+                message={errors.safeName ? 'Please enter your safe wallet name' : ''}
+                {...field}
+              />
+            )}
+          />
+        </div>
+        <div className="grid md:grid-cols-3 pb-5 gap-5 border-b border-neutral-200 mb-5">
           <Controller
             name="organizationName"
             control={control}

@@ -78,9 +78,7 @@ export default function GonsisSafe() {
                 userId: userId || ''
               })
             );
-          }
-        } catch (err) {
-          if (organization && safe) {
+          } else if (organization && safe) {
             const owners = await safe.getOwners();
             const threshold = await safe.getThreshold();
 
@@ -88,7 +86,6 @@ export default function GonsisSafe() {
               organizationId,
               address: safe.getAddress(),
               chainId: chainId || 0,
-              name: '',
               requiredConfirmations: threshold,
               owners: owners.map((owner) => ({
                 address: owner,
@@ -107,6 +104,38 @@ export default function GonsisSafe() {
                 address: owner,
                 name: ''
               })),
+              safe_name: saveSafe.name,
+              threshold
+            });
+          }
+        } catch (err) {
+          if (organization && safe) {
+            const owners = await safe.getOwners();
+            const threshold = await safe.getThreshold();
+
+            const saveSafe = await SafeApiService.addSafeWallet({
+              organizationId,
+              address: safe.getAddress(),
+              chainId: chainId || 0,
+              requiredConfirmations: threshold,
+              owners: owners.map((owner) => ({
+                address: owner,
+                name: ''
+              })) as ISafeOwner[]
+            });
+
+            setCurrentSafeId(saveSafe.id);
+            setCurrentSafe({
+              user_id: userId,
+              org_id: organizationId || '',
+              org_name: organization.name,
+              address: safe.getAddress(),
+              chainId: chainId || 0,
+              owners: owners.map((owner) => ({
+                address: owner,
+                name: ''
+              })),
+              safe_name: saveSafe.name,
               threshold
             });
           }
