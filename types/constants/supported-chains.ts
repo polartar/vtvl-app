@@ -7,7 +7,8 @@ export enum SupportedChainId {
   BINANCE_TESTNET = 97,
   POLYGON = 137,
   MUMBAI = 80001,
-  AVALANCHE = 43113,
+  AVALANCHE = 43114,
+  AVALANCHE_TESTNET = 43113,
   FANTOM = 250,
   FANTOM_TESTNET = 4002,
   CRONOS = 25,
@@ -365,4 +366,4 @@ export const AllChains = devSupportedChains;
 export const SupportedChains =
   env === 'production' ? prodSupportedChains : env === 'demo' ? demoSupportedChains : devSupportedChains;
 
-export const SafeSupportedChains = [1, 5, 56, 137];
+export const SafeSupportedChains = [1, 5, 56, 137, 43114];
