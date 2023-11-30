@@ -171,6 +171,10 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           }
         });
         if (approvers.length >= threshold) {
+          if (transaction.data.type === 'ADDING_CLAIMS') {
+            updateVesting({ ...data, status: 'LIVE' }, id);
+            updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
+          }
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
           setTransactionStatus('EXECUTABLE');
           setVestingsStatus({
