@@ -168,7 +168,6 @@ export const getUserTokenDetails = async (
     userTokenDetails.releaseAmount = releaseAmount;
     userTokenDetails.cliffDate = cliffDate;
     userTokenDetails.numberOfReleases = numberOfReleases;
-
     // Check for the vesting contract so we can query it in the blockchain
     const contractsFromDB = await VestingContractApiService.getOrganizationVestingContracts(
       selectedSchedule.data.organizationId

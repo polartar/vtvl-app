@@ -140,7 +140,7 @@ export function AuthContextProvider({ children }: any) {
   const router = useRouter();
   const { safePush } = useSafePush();
 
-  const { clear: clearAuth } = useAuth();
+  const { clear: clearAuth, accessToken } = useAuth();
   const { clear: clearUser, ...userStore } = useUser();
   const { clear: clearOrg, organizations } = useOrganization();
   const { getSafeWalletsByOrganization } = useSafeAPI();
@@ -721,13 +721,14 @@ export function AuthContextProvider({ children }: any) {
   }, [user, recipient, agreedOnConsent, connection]);
 
   useEffect(() => {
+    if (!accessToken) return;
     // Update organization name based on organizationId
     const currentOrganization = organizations.find((org) => org.organizationId === organizationId);
     if (currentOrganization && currentOrganization.organization)
       setOrganizationName(currentOrganization.organization.name);
 
     fetchSafeFromDB();
-  }, [organizationId]);
+  }, [organizationId, accessToken]);
 
   useEffect(() => {
     if (safes && safes.length > 0) {

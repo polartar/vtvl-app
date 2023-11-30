@@ -185,7 +185,7 @@ export function DashboardContextProvider({ children }: any) {
 
   /* Fetch vestings & pending revoking & transactions & recipients data by organizationId and chainId */
   const fetchDashboardData = useCallback(async () => {
-    if (organizationId && chainId) {
+    if (organizationId && chainId && accessToken) {
       showLoading();
       try {
         await Promise.all([
@@ -205,7 +205,7 @@ export function DashboardContextProvider({ children }: any) {
       setVestings([]);
       setRevokings([]);
     }
-  }, [organizationId, chainId, fetchTransactions]);
+  }, [organizationId, chainId, fetchTransactions, accessToken]);
 
   const updateVestingContract = (data: IVestingContract) => {
     if (vestingContracts.find((vestingContract) => vestingContract.id === data.id)) {
