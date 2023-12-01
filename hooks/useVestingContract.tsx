@@ -11,7 +11,7 @@ import { QUERY_KEYS } from 'utils/queries';
  */
 export const useVestingContract = (organizationId: string | undefined, chainId: number | undefined) => {
   const { isLoading, data } = useQuery<IVestingContract | null>(
-    [QUERY_KEYS.VESTING_CONTRACT.FROM_ORGANIZATION],
+    [QUERY_KEYS.VESTING_CONTRACT.FROM_ORGANIZATION, organizationId],
     async () => {
       const vestingContracts = await VestingContractApiService.getOrganizationVestingContracts(organizationId!);
       const vestingContractsByFactory = vestingContracts.filter(

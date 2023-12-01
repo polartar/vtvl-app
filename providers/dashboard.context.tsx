@@ -91,7 +91,9 @@ export function DashboardContextProvider({ children }: any) {
 
   const [revokings, setRevokings] = useState<IRevoking[]>([]);
 
-  const { vestingFactoryContract } = useVestingContract(organizationId, chainId);
+  const { vestingFactoryContract } = accessToken
+    ? useVestingContract(organizationId, chainId)
+    : { vestingFactoryContract: undefined };
 
   const [ownershipTransferred, setOwnershipTransferred] = useState(false);
   const [removeOwnership, setRemoveOwnership] = useState(false);

@@ -1,5 +1,6 @@
 import RecipientApiService from '@api-services/RecipientApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
+import useAuth from '@hooks/useAuth';
 import useSafePush from '@hooks/useSafePush';
 import { transformVestingSchedule } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
@@ -87,6 +88,7 @@ const VestingContext = createContext({} as IVestingData);
 
 export function VestingContextProvider({ children }: any) {
   const { account, chainId } = useWeb3React();
+  const { accessToken } = useAuth();
   const { organizationId } = useAuthContext();
   const { showLoading, hideLoading } = useLoaderContext();
   const { vestingFactoryContract } = useDashboardContext();
@@ -287,8 +289,8 @@ export function VestingContextProvider({ children }: any) {
   }, [vestingFactoryContract]);
 
   useEffect(() => {
-    if (organizationId && chainId) getVestingSchedules();
-  }, [organizationId, chainId]);
+    if (organizationId && chainId && accessToken) getVestingSchedules();
+  }, [organizationId, chainId, accessToken]);
 
   // Checks for the route changes related to the vesting schedule.
   useEffect(() => {
