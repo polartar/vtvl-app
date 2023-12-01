@@ -1,7 +1,7 @@
 import RecipientApiService from '@api-services/RecipientApiService';
 import VestingScheduleApiService from '@api-services/VestingScheduleApiService';
-import useAuth from '@hooks/useAuth';
 import useSafePush from '@hooks/useSafePush';
+import { useAuth } from '@store/useAuth';
 import { transformVestingSchedule } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { useShallowState } from 'hooks/useShallowState';
