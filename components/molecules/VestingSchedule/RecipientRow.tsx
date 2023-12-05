@@ -62,6 +62,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
   const [confirmations, setConfirmations] = useState(0);
   const [threshold, setThreshold] = useState(0);
   const [revoked, setRevoked] = useState(false);
+  const [approvers, setApprovers] = useState<string[]>([]);
 
   const fetchSafeTransactionFromHash = async (txHash: string) => {
     if (currentSafe?.address && chainId) {
@@ -78,6 +79,11 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
         ethAdapter
       });
       const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(txHash);
+      const signers: string[] = [];
+      apiTx.confirmations?.forEach((confirmation) => {
+        signers.push(confirmation.owner);
+      });
+      setApprovers(signers);
       setConfirmations(apiTx.confirmations?.length ?? 0);
     }
   };
@@ -140,7 +146,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
           // Re-fetch the revoking data for up-to-date state
           await fetchLatestRevoking();
           await fetchDashboardData();
-          setTimeout(() => onRevoke?.(), 1000); // Temporary, refactor later for better UX
+          // setTimeout(() => onRevoke?.(), 1000); // Temporary, refactor later for better UX
           toast.success(`Revoking transaction with nonce ${nonce} has been created successfully.`);
           console.info('Safe Transaction: ', safeHash);
         } else {
@@ -228,6 +234,24 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
     }
   }, [transaction]);
 
+  const ActionButton = () => {
+    if (vesting.status !== 'LIVE') {
+      return null;
+    }
+    if (!revoking) {
+      return <Button danger size="small" label="Revoke" onClick={handleRevoke} />;
+    }
+    if (!transaction) {
+      return null;
+    }
+    if (revoking.status === 'PENDING') {
+      if (approvers.find((approver) => approver.toLowerCase() === account?.toLowerCase())) {
+        return <Button disabled danger size="small" label="Approved" />;
+      }
+    }
+    return null;
+  };
+
   return (
     <div className="flex text-[#667085] text-xs">
       <div className="flex items-center w-16 py-3 flex-shrink-0 border-t border-[#d0d5dd] bg-[#f9fafb]"></div>
@@ -266,15 +290,7 @@ const RecipientRow: React.FC<IRecipientRowProps> = ({
         {allocations}
       </div>
       <div className="flex items-center min-w-[136px] flex-grow py-3 flex-shrink-0 border-t border-[#d0d5dd] bg-[#f9fafb]">
-        {(!revoking || revoking.status === 'PENDING') && vesting.status === 'LIVE' && (
-          <Button
-            disabled={revoking?.status === 'PENDING' || revoked}
-            danger
-            size="small"
-            label="Revoke"
-            onClick={handleRevoke}
-          />
-        )}
+        <ActionButton />
       </div>
     </div>
   );
