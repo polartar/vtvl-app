@@ -2,7 +2,6 @@ import VestingContractApiService from '@api-services/VestingContractApiService';
 import { useQuery } from '@tanstack/react-query';
 import { IVestingContract } from 'interfaces/vestingContract';
 import { useMemo } from 'react';
-import { IVestingContractDoc } from 'types/models/vestingContract';
 import { QUERY_KEYS } from 'utils/queries';
 
 /**
@@ -15,7 +14,8 @@ export const useVestingContract = (organizationId: string | undefined, chainId: 
     async () => {
       const vestingContracts = await VestingContractApiService.getOrganizationVestingContracts(organizationId!);
       const vestingContractsByFactory = vestingContracts.filter(
-        (vestingContract) => new Date(vestingContract.createdAt).getTime() / 1000 > 1695136710
+        (vestingContract) =>
+          new Date(vestingContract.createdAt).getTime() / 1000 > 1695136710 && chainId === vestingContract.chainId
       );
       return vestingContractsByFactory.length > 0 ? vestingContractsByFactory[0] : null;
     },

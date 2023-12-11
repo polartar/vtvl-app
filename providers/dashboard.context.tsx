@@ -90,7 +90,6 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingContracts, setVestingContracts] = useState<IVestingContract[]>([]);
 
   const [revokings, setRevokings] = useState<IRevoking[]>([]);
-
   const { vestingFactoryContract } = useVestingContract(organizationId, chainId);
 
   const [ownershipTransferred, setOwnershipTransferred] = useState(false);
@@ -121,7 +120,7 @@ export function DashboardContextProvider({ children }: any) {
       // Filter out without the archived records
       const filteredVestingSchedules = res
         .filter(
-          (v) => !v.archive && v.status !== 'REVOKED' //&& v.chainId === chainId
+          (v) => !v.archive && v.status !== 'REVOKED' && chainId === v.vestingContract?.chainId //&& v.chainId === chainId
         )
         .map((vestingSchedule) => ({ id: vestingSchedule.id!, data: transformVestingSchedule(vestingSchedule) }));
       setVestings(filteredVestingSchedules);
@@ -392,44 +391,6 @@ export function DashboardContextProvider({ children }: any) {
   useEffect(() => {
     if (chainId && (organizationId || (router && router.pathname === '/dashboard'))) fetchDashboardData();
   }, [organizationId, router, chainId]);
-
-  useEffect(() => {
-    if (!vestings) {
-      return;
-    }
-
-    const vestingIds: string[] = [];
-    vestings.forEach((vesting) => {
-      vestingIds.push(vesting.id);
-    });
-
-    if (!organizationId || !chainId) return;
-    const q = query(vestingCollection, where('organizationId', '==', organizationId), where('chainId', '==', chainId));
-    const subscribe = onSnapshot(q, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'modified') {
-          const vestingInfo = change.doc.data();
-          const newVestings = vestings.map((vesting) => {
-            if (vesting.id === change.doc.id) {
-              if (vestingInfo.status === 'LIVE') {
-                toast.success(`${vestingInfo.name} has been added`, { toastId: TOAST_IDS.SUCCESS });
-              }
-              return {
-                id: vesting.id,
-                data: vestingInfo
-              };
-            }
-            return vesting;
-          });
-          setVestings(newVestings);
-        }
-      });
-    });
-
-    return () => {
-      subscribe();
-    };
-  }, [vestings, organizationId, chainId]);
 
   useEffect(() => {
     if (vestings && vestings.length > 0) {
