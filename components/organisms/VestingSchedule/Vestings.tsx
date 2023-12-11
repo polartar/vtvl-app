@@ -75,7 +75,6 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
     return vestings && vestings.length > 0
       ? await asyncFilter(vestings, async (vesting: any) => {
           const transaction = transactions.find((t) => t.id === vesting.data.transactionId && t.status === 'PENDING');
-          console.log({ transaction });
           let isFund;
           let safeTx;
 
