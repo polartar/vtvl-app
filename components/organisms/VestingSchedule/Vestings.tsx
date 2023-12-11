@@ -56,23 +56,26 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
       return safeTx;
     }
   };
-
   const { data: filteredVestingSchedules } = useSWR(['filteredVestingSchedule', filter.status], async () => {
     const asyncFilter = async (arr: any[], predicate: any) => {
       const results = await Promise.all(arr.map(predicate));
 
       return arr.filter((_v, index) => results[index]);
     };
+
     const ethAdapter = new EthersAdapter({
       ethers: ethers,
       signer: library?.getSigner(0)
     });
-    const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address || '' });
-    const threshold = await safeSdk.getThreshold();
-
+    let threshold: number;
+    if (currentSafe?.address) {
+      const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address || '' });
+      threshold = await safeSdk.getThreshold();
+    }
     return vestings && vestings.length > 0
       ? await asyncFilter(vestings, async (vesting: any) => {
           const transaction = transactions.find((t) => t.id === vesting.data.transactionId && t.status === 'PENDING');
+          console.log({ transaction });
           let isFund;
           let safeTx;
 
