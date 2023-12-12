@@ -1,4 +1,5 @@
 import { ERROR_MESSAGES } from '@api-hooks/messages';
+import useOrgAPI from '@api-hooks/useOrganization';
 import useUserAPI from '@api-hooks/useUser';
 import useSafePush from '@hooks/useSafePush';
 import { REDIRECT_URIS, TOAST_NOTIFICATION_IDS } from '@utils/constants';
@@ -9,6 +10,9 @@ import { toast } from 'react-toastify';
 import { IRole } from 'types/models/settings';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+
+import { useOrganization } from './useOrganizations';
+import { useUser } from './useUser';
 
 const useAuthStore = create(
   persist<AuthStoreState & AuthStoreActions>(
@@ -52,6 +56,8 @@ export const useAuth = () => {
   const saveUser = useAuthStore(({ saveUser }: AuthStoreActions) => saveUser);
   const clear = useAuthStore(({ clear }: AuthStoreActions) => clear);
   const accessToken = useAuthStore(({ accessToken }: AuthStoreState) => accessToken);
+  const { clear: clearOrg } = useOrganization();
+  const { clear: clearUser } = useUser();
   const refreshToken = useAuthStore(({ refreshToken }: AuthStoreState) => refreshToken);
   const userId = useAuthStore(({ userId }: AuthStoreState) => userId);
 
@@ -78,6 +84,8 @@ export const useAuth = () => {
       console.log('ACCESS TOKEN NOT VALID', error);
       const isRouteProtected = platformRoutes.find((r) => r.path === router.pathname);
       if (isRouteProtected) {
+        clearOrg();
+        clearUser();
         toast.error(ERROR_MESSAGES.EN.TOKEN_EXPIRED, { toastId: TOAST_NOTIFICATION_IDS.ERROR });
         safePush(REDIRECT_URIS.AUTH_LOGIN);
       }
