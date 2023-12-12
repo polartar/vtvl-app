@@ -1,8 +1,9 @@
 import Chip from '@components/atoms/Chip/Chip';
 import { Typography } from '@components/atoms/Typography/Typography';
 import React, { useEffect, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
-interface Option {
+export interface Option {
   label: string | number;
   value: string | number;
   // Optionals for the Tab variant
@@ -20,7 +21,7 @@ interface BarRadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   message?: string | JSX.Element | JSX.Element[];
   error?: boolean;
   success?: boolean;
-  variant?: 'tab' | 'pill'; // termporarily remove 'input' variant
+  variant?: 'tab' | 'tab-small' | 'pill'; // termporarily remove 'input' variant
 }
 
 const BarRadio = ({ label = '', options, required, className, variant = 'pill', ...props }: BarRadioProps) => {
@@ -33,6 +34,12 @@ const BarRadio = ({ label = '', options, required, className, variant = 'pill', 
     tab: {
       container: `${defaultContainerClass} rounded-lg`,
       item: 'flex flex-row items-center justify-center gap-3 text-sm text-neutral-800 hover:bg-neutral-100 whitespace-nowrap max-w-[198px] py-2 px-3',
+      active: 'bg-neutral-100',
+      inactive: 'bg-white'
+    },
+    'tab-small': {
+      container: `${defaultContainerClass} rounded-lg`,
+      item: 'flex flex-row items-center justify-center gap-3 text-xs font-medium text-neutral-800 hover:bg-neutral-100 whitespace-nowrap max-w-[198px] py-1.5 px-4 h-8',
       active: 'bg-neutral-100',
       inactive: 'bg-white'
     },
@@ -75,16 +82,24 @@ const BarRadio = ({ label = '', options, required, className, variant = 'pill', 
             ) : null}
             <div className="flex flex-col gap-1">
               <Typography
-                size="body"
-                className={`font-semibold ${
+                size={variant === 'tab-small' ? 'caption' : 'body'}
+                className={twMerge(
+                  variant === 'tab-small' ? 'font-medium' : 'font-semibold',
                   variant === 'tab' ? (option.value === props.value ? 'text-primary-900' : 'text-neutral-900') : ''
-                }`}>
+                )}>
                 <div className="flex flex-row items-center gap-2">
                   {option.label}
-                  {option.counter ? <Chip rounded size="small" color="gray" label={option.counter.toString()} /> : null}
+                  {option.counter ? (
+                    <Chip
+                      rounded
+                      size={variant === 'tab-small' ? 'tiny' : 'small'}
+                      color="gray"
+                      label={option.counter.toString()}
+                    />
+                  ) : null}
                 </div>
               </Typography>
-              {variant === 'tab' && option.description ? (
+              {variant === 'tab' || (variant === 'tab-small' && option.description) ? (
                 <Typography size="caption" className="leading-tight">
                   {option.description}
                 </Typography>

@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Typography } from '../Typography/Typography';
+
 interface IEmptyStateProps extends React.BaseHTMLAttributes<HTMLDivElement> {
   image?: string | JSX.Element;
   imageSize?: 'small' | 'default' | 'large';
@@ -45,8 +47,12 @@ const EmptyState = ({
       ) : image ? (
         <div className="mb-3.5">{image}</div>
       ) : null}
-      {title ? <h2 className="h5 font-medium text-neutral-900 text-center mb-2">{title}</h2> : null}
-      {description ? <p className="text-neutral-500 text-center mb-8">{description}</p> : null}
+      {title ? (
+        <Typography size="paragraph" className="font-medium text-neutral-900 text-center mb-2">
+          {title}
+        </Typography>
+      ) : null}
+      {description ? <Typography className="text-neutral-500 text-center mb-8">{description}</Typography> : null}
       <div className="flex flex-row items-center justify-center gap-2 flex-wrap">{props.children}</div>
     </div>
   );

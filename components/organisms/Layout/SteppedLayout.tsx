@@ -18,9 +18,10 @@ interface SteppedLayoutProps extends React.AllHTMLAttributes<HTMLAllCollection> 
   steps?: Steps[];
   currentStep?: number;
   padded?: boolean;
+  actions?: JSX.Element;
 }
 
-const SteppedLayout = ({ steps = [], currentStep = -1, padded = true, ...props }: SteppedLayoutProps) => {
+const SteppedLayout = ({ steps = [], currentStep = -1, padded = true, actions, ...props }: SteppedLayoutProps) => {
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
@@ -38,8 +39,9 @@ const SteppedLayout = ({ steps = [], currentStep = -1, padded = true, ...props }
   }, [setWidth]);
   return (
     <div className="w-full h-full">
-      <div className="text-left mb-5 px-6">
+      <div className="text-left mb-5 px-6 flex flex-row items-center justify-between gap-3">
         <Breadcrumb steps={props.crumbs} />
+        {actions ?? null}
       </div>
       <div
         className={`flex flex-col items-center justify-center gap-4 mx-auto w-full h-full ${

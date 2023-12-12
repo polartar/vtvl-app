@@ -9,7 +9,7 @@
   /* Neutral */
   --neutral-900: #101828;
   --neutral-800: #1d2939;
-  --neutral-700: #101828;
+  --neutral-700: #344054;
   --neutral-600: #475467;
   --neutral-500: #667085;
   --neutral-400: #98a2b3;
@@ -301,10 +301,13 @@
   }
 
   button.small {
-    @apply py-0.5 px-3 h-7 text-sm;
+    @apply py-1 px-3 h-8 text-sm;
   }
   button.large {
-    @apply py-3 py-6 text-lg;
+    @apply py-3 px-6 text-lg;
+  }
+  button.tiny {
+    @apply py-0 px-3 h-6 text-xs;
   }
 
   button[disabled]:not(.wallet-button):not(.loading),
