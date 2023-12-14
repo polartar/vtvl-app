@@ -176,6 +176,9 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           if (transaction.data.type === 'ADDING_CLAIMS') {
             updateVesting({ ...data, status: 'LIVE' }, id);
             updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
+          } else if (transaction.data.type === 'REVOKE_CLAIM') {
+            updateVesting({ ...data, status: 'REVOKED' }, id);
+            updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
           }
           setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
           setTransactionStatus('EXECUTABLE');
