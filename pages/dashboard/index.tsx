@@ -3,6 +3,7 @@ import Card from '@components/atoms/Card/Card';
 import Chip from '@components/atoms/Chip/Chip';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
 import BarRadio from '@components/atoms/FormControls/BarRadio/BarRadio';
+import SearchInput from '@components/atoms/FormControls/SearchInput/SearchInput';
 import StepProgress from '@components/atoms/StepProgress/StepProgress';
 import TickContent from '@components/atoms/TickContent/TickContent';
 import { Typography } from '@components/atoms/Typography/Typography';
@@ -28,6 +29,7 @@ import { formatNumber } from '@utils/token';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import DownloadIcon from 'public/icons/downloading-data.svg';
+import FilterIcon from 'public/icons/filter-lines.svg';
 import ImportIcon from 'public/icons/import-icon.svg';
 import NotifIcon from 'public/icons/notification-icon.svg';
 import PlusIcon from 'public/icons/plus.svg';
@@ -143,6 +145,10 @@ const Dashboard: NextPageWithLayout = () => {
     { label: 'Export', icon: <DownloadIcon />, onClick: handleExport }
   ];
 
+  const handleSearchFilter = () => {
+    alert('Search Filter clicked!');
+  };
+
   const handleMyTaskFilterChange = (value: string) => {
     // Update filters here when the filter changes
     console.log('My Task Filter changed!', value);
@@ -207,7 +213,16 @@ const Dashboard: NextPageWithLayout = () => {
           </div>
 
           <div className="p-3 border border-neutral-300 rounded-xl mb-5">
-            <div className="flex flex-row items-center justify-between gap-3 mb-8">
+            <div className="flex flex-row items-center justify-between gap-5 mb-8">
+              <div className="flex-grow flex items-center gap-3">
+                <SearchInput size="small" />
+                <button
+                  className="flex items-center gap-2 h-8 py-1.5 px-4 h-8 border-neutral-300 bg-transparent rounded-lg font-medium text-sm hover:bg-neutral-100"
+                  onClick={handleSearchFilter}>
+                  <FilterIcon />
+                  Filter
+                </button>
+              </div>
               <BarRadio variant="tab-small" options={graphViewFilters} />
               <ButtonGroup buttons={buttonGroup} />
             </div>

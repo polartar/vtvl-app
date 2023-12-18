@@ -38,7 +38,7 @@ const BarRadio = ({ label = '', options, required, className, variant = 'pill', 
       inactive: 'bg-white'
     },
     'tab-small': {
-      container: `${defaultContainerClass} rounded-lg`,
+      container: `${defaultContainerClass} rounded-lg h-8`,
       item: 'flex flex-row items-center justify-center gap-3 text-xs font-medium text-neutral-800 hover:bg-neutral-100 whitespace-nowrap max-w-[198px] py-1.5 px-4 h-8',
       active: 'bg-neutral-100',
       inactive: 'bg-white'
