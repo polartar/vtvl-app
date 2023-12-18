@@ -6,7 +6,7 @@ const DashboardMyTask = () => {
   const rowDefaultClass = 'flex items-center h-16 py-2.5 px-6 flex-shrink-0 border-b border-primary-200';
 
   return (
-    <div className="flex flex-col justify-between min-h-[200px] border border-primary-200 rounded-xl overflow-hidden">
+    <div className="flex flex-col justify-between min-h-[200px] border border-neutral-300 rounded-xl overflow-hidden">
       <div className=" w-full max-h-[700px] overflow-y-auto">
         <div className="flex bg-neutral-100 text-neutral-600 text-caption font-medium">
           <div className="w-36 py-2.5 px-6 flex-shrink-0 border-b border-primary-200 bg-neutral-100">Schedules</div>
