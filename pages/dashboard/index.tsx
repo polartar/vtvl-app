@@ -1,3 +1,4 @@
+import ButtonGroup from '@components/atoms/ButtonGroup/ButtonGroup';
 import Card from '@components/atoms/Card/Card';
 import Chip from '@components/atoms/Chip/Chip';
 import EmptyState from '@components/atoms/EmptyState/EmptyState';
@@ -26,7 +27,9 @@ import { useAuth } from '@store/useAuth';
 import { formatNumber } from '@utils/token';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
+import DownloadIcon from 'public/icons/downloading-data.svg';
 import ImportIcon from 'public/icons/import-icon.svg';
+import NotifIcon from 'public/icons/notification-icon.svg';
 import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -125,6 +128,21 @@ const Dashboard: NextPageWithLayout = () => {
     { name: 'Dec', lineValue: 102, barValue: 53 }
   ];
 
+  // Button Group
+  const handleSetAlerts = () => {
+    console.log('Set Alerts clicked!');
+    alert('Set Alerts clicked!');
+  };
+
+  const handleExport = () => {
+    console.log('Export clicked!');
+    alert('Export clicked!');
+  };
+  const buttonGroup = [
+    { label: 'Set alerts', icon: <NotifIcon />, onClick: handleSetAlerts },
+    { label: 'Export', icon: <DownloadIcon />, onClick: handleExport }
+  ];
+
   const handleMyTaskFilterChange = (value: string) => {
     // Update filters here when the filter changes
     console.log('My Task Filter changed!', value);
@@ -191,6 +209,7 @@ const Dashboard: NextPageWithLayout = () => {
           <div className="p-3 border border-neutral-300 rounded-xl mb-5">
             <div className="flex flex-row items-center justify-between gap-3 mb-8">
               <BarRadio variant="tab-small" options={graphViewFilters} />
+              <ButtonGroup buttons={buttonGroup} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-2">
               <div>
