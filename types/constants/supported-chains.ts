@@ -40,7 +40,8 @@ export const DEMO_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
   SupportedChainId.BINANCE_TESTNET,
-  SupportedChainId.OPTIMISM_GOERLI
+  SupportedChainId.OPTIMISM_GOERLI,
+  SupportedChainId.AVALANCHE_TESTNET
 ];
 
 export const DEV_SUPPORTED_CHAIN_IDS = [
@@ -48,6 +49,7 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.BINANCE,
   SupportedChainId.POLYGON,
   SupportedChainId.AVALANCHE,
+  SupportedChainId.AVALANCHE_TESTNET,
   SupportedChainId.FANTOM,
   SupportedChainId.CRONOS,
   SupportedChainId.OKC_MAINNET,
@@ -218,6 +220,15 @@ export const demoSupportedChains: ChainsType = {
     rpc: 'https://goerli.optimism.io',
     explorer: 'https://goerli-optimism.etherscan.io/',
     multisigTxUrl: ''
+  },
+  [SupportedChainId.AVALANCHE_TESTNET]: {
+    id: 43113,
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5805.png',
+    title: 'Avalanche Fuji Testnet',
+    code: 'AVAX',
+    rpc: 'https://avalanche-fuji-c-chain.publicnode.com',
+    explorer: 'https://testnet.snowtrace.io/',
+    multisigTxUrl: ''
   }
 };
 
@@ -357,6 +368,15 @@ export const devSupportedChains: ChainsType = {
     code: 'ETH',
     rpc: 'https://goerli.optimism.io',
     explorer: 'https://goerli-optimism.etherscan.io/',
+    multisigTxUrl: ''
+  },
+  [SupportedChainId.AVALANCHE_TESTNET]: {
+    id: 43113,
+    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5805.png',
+    title: 'Avalanche Fuji Testnet',
+    code: 'AVAX',
+    rpc: 'https://avalanche-fuji-c-chain.publicnode.com',
+    explorer: 'https://testnet.snowtrace.io/',
     multisigTxUrl: ''
   }
 };

@@ -18,7 +18,8 @@ export const useVestingContract = (
     async () => {
       const vestingContracts = await VestingContractApiService.getOrganizationVestingContracts(organizationId!);
       const vestingContractsByFactory = vestingContracts.filter(
-        (vestingContract) => new Date(vestingContract.createdAt).getTime() / 1000 > 1695136710
+        (vestingContract) =>
+          new Date(vestingContract.createdAt).getTime() / 1000 > 1695136710 && chainId === vestingContract.chainId
       );
       return vestingContractsByFactory.length > 0 ? vestingContractsByFactory[0] : null;
     },

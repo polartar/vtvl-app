@@ -10,12 +10,9 @@ import { transformVestingSchedule } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
-import { onSnapshot, query, where } from 'firebase/firestore';
 import { IVestingContract } from 'interfaces/vestingContract';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
-import { vestingCollection } from 'services/db/firestore';
 import { fetchMilestoneVestingsByQuery } from 'services/db/milestoneVesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IMilestoneForm } from 'types/milestone';
@@ -23,7 +20,6 @@ import { IVesting } from 'types/models';
 import { IRecipient } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
 import { compareAddresses } from 'utils';
-import { TOAST_IDS } from 'utils/constants';
 import { getVestingAbiIndex, getVestingContractABI } from 'utils/multicall';
 
 import { useLoaderContext } from './loader.context';
@@ -115,7 +111,7 @@ export function DashboardContextProvider({ children }: any) {
       // Filter out without the archived records
       const filteredVestingSchedules = res
         .filter(
-          (v) => !v.archive && v.status !== 'REVOKED' //&& v.chainId === chainId
+          (v) => !v.archive && v.status !== 'REVOKED' && chainId === v.vestingContract?.chainId //&& v.chainId === chainId
         )
         .map((vestingSchedule) => ({ id: vestingSchedule.id!, data: transformVestingSchedule(vestingSchedule) }));
       setVestings(filteredVestingSchedules);
@@ -386,44 +382,6 @@ export function DashboardContextProvider({ children }: any) {
   useEffect(() => {
     if (chainId && (organizationId || (router && router.pathname === '/dashboard'))) fetchDashboardData();
   }, [organizationId, router, chainId]);
-
-  useEffect(() => {
-    if (!vestings) {
-      return;
-    }
-
-    const vestingIds: string[] = [];
-    vestings.forEach((vesting) => {
-      vestingIds.push(vesting.id);
-    });
-
-    if (!organizationId || !chainId) return;
-    const q = query(vestingCollection, where('organizationId', '==', organizationId), where('chainId', '==', chainId));
-    const subscribe = onSnapshot(q, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'modified') {
-          const vestingInfo = change.doc.data();
-          const newVestings = vestings.map((vesting) => {
-            if (vesting.id === change.doc.id) {
-              if (vestingInfo.status === 'LIVE') {
-                toast.success(`${vestingInfo.name} has been added`, { toastId: TOAST_IDS.SUCCESS });
-              }
-              return {
-                id: vesting.id,
-                data: vestingInfo
-              };
-            }
-            return vesting;
-          });
-          setVestings(newVestings);
-        }
-      });
-    });
-
-    return () => {
-      subscribe();
-    };
-  }, [vestings, organizationId, chainId]);
 
   useEffect(() => {
     if (vestings && vestings.length > 0) {
