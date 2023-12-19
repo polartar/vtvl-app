@@ -114,10 +114,14 @@ const MintSupply: NextPageWithLayout = () => {
         }, 1000);
         return;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('err - ', err);
       toast.error('Additional tokens minting failed!');
-      setTransactionStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionStatus('REJECTED');
+      } else {
+        setTransactionStatus('ERROR');
+      }
       setTimeout(() => {
         safePush('/dashboard');
       }, 1000);

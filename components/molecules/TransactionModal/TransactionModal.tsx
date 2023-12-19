@@ -10,7 +10,7 @@ import WalletConnectAnimation from 'public/walletconnect_loader.json';
 import { useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 
-export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'ERROR' | 'REVOKE_SUCCESS';
+export type TransactionStatuses = '' | 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'ERROR' | 'REVOKE_SUCCESS' | 'REJECTED';
 export interface TransactionModalProps {
   status: TransactionStatuses;
   isCloseAvailable: boolean;
@@ -111,6 +111,16 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
           selecting the vesting contract in the <b>Contracts tab.</b>
         </>
       )
+    },
+    REJECTED: {
+      image: <Lottie animationData={ErrorAnimation} style={{ width: '106px' }} />,
+      title: (
+        <div className="flex flex-row items-center gap-2">
+          <img src="/images/tx-failed.png" className="w-7 h-7" />
+          You have rejected the transaction
+        </div>
+      ),
+      description: <>No worries! Just try again later.</>
     }
   };
 
@@ -120,7 +130,7 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
   const progressAdditionBasedOnSeconds = 100 / ((3 * 1000) / 100);
 
   useEffect(() => {
-    if (status === 'SUCCESS' || status === 'ERROR' || status === 'REVOKE_SUCCESS') {
+    if (status === 'SUCCESS' || status === 'ERROR' || status === 'REVOKE_SUCCESS' || status === 'REJECTED') {
       setProgress(1);
       setIsOpen(true);
     } else if (status) {
@@ -142,7 +152,7 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
     <>
       {status ? (
         <Modal isOpen={isOpen} style={modalStyles}>
-          {status === 'SUCCESS' || status === 'ERROR' || status === 'REVOKE_SUCCESS' ? (
+          {status === 'SUCCESS' || status === 'ERROR' || status === 'REVOKE_SUCCESS' || status === 'REJECTED' ? (
             <Loader progress={progress} onComplete={() => setIsOpen(false)} />
           ) : null}
           {txTypes[status].image}
@@ -162,7 +172,7 @@ const TransactionModal = ({ status, isCloseAvailable }: TransactionModalProps) =
           ) : (
             <>
               {' '}
-              {status !== 'SUCCESS' && status !== 'REVOKE_SUCCESS' && status !== 'ERROR' && (
+              {status !== 'SUCCESS' && status !== 'REVOKE_SUCCESS' && status !== 'ERROR' && status !== 'REJECTED' && (
                 <Chip
                   label={
                     <div className="flex flex-row items-center gap-2">

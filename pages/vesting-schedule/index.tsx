@@ -1059,10 +1059,14 @@ const VestingScheduleProject: NextPageWithLayout = () => {
         toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleBatchProcess - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionStatus('REJECTED');
+      } else {
+        setTransactionStatus('ERROR');
+      }
     }
   };
 

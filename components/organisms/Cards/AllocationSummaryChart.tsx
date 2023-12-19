@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cell, Pie, PieChart } from 'recharts';
+import { Cell, Legend, Pie, PieChart } from 'recharts';
 
 export interface AllocationSummaryChartProps {
   width?: number;
@@ -8,6 +8,7 @@ export interface AllocationSummaryChartProps {
   outerRadius?: number;
   colors: Array<string>;
   data: Array<{ name: string; value: number }>;
+  legends?: boolean;
 }
 
 export default function AllocationSummaryChart({
@@ -16,7 +17,8 @@ export default function AllocationSummaryChart({
   innerRadius = 120,
   outerRadius = 144,
   data,
-  colors
+  colors,
+  legends = false
 }: AllocationSummaryChartProps) {
   return (
     <PieChart width={width} height={height}>
@@ -25,6 +27,7 @@ export default function AllocationSummaryChart({
           <Cell key={`cell-${index}`} fill={colors[index]} />
         ))}
       </Pie>
+      {legends && <Legend iconType="circle" />}
     </PieChart>
   );
 }

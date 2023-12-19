@@ -217,6 +217,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           .lt(ethers.utils.parseEther(data.details.amountToBeVested.toString()))
       ) {
         setStatus('FUNDING_REQUIRED');
+
         setDepositAmount(
           ethers.utils.formatEther(
             ethers.utils
@@ -303,10 +304,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         await fetchDashboardData();
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleExecuteFundingTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -437,10 +442,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         }
       }
       setShowFundingContractModal(false);
-    } catch (err) {
+    } catch (err: any) {
       console.log('fundContract - ', err);
       toast.error((err as any).reason ? (err as any).reason : 'Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -641,10 +650,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         toast.success('Added schedules successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleCreateSignTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -684,10 +697,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleApproveTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -760,20 +777,25 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('SUCCESS');
         setTransactionStatus('');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleExecuteTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
   useEffect(() => {
-    if (transactions.length) {
-      initializeStatus();
-    } else {
-      setStatus('FUNDING_REQUIRED');
-      setTransactionStatus('INITIALIZE');
-    }
+    initializeStatus();
+    // if (transactions.length) {
+    //   initializeStatus();
+    // } else {
+    //   setStatus('FUNDING_REQUIRED');
+    //   setTransactionStatus('INITIALIZE');
+    // }
   }, [data, currentSafe, account, vestingContract, transactions, transaction]);
 
   const CellCliff = () => {
@@ -853,19 +875,16 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
               Execute
             </button>
           )}
-
-          {/*
-           //Todo 
-           {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
+          {status === 'FUNDING_REQUIRED' && transactionStatus === 'INITIALIZE' && (
             <button
               className="secondary small whitespace-nowrap"
-              disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
+              // disabled={transactionLoaderStatus === 'IN_PROGRESS' || !isFundAvailable()}
               onClick={() => {
                 setShowFundingContractModal(true);
               }}>
               Fund Contract
             </button>
-          )} */}
+          )}
           {status === 'FUNDING_REQUIRED' && transactionStatus === 'APPROVAL_REQUIRED' && (
             <button
               className="secondary small whitespace-nowrap"

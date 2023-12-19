@@ -8,7 +8,11 @@ import { QUERY_KEYS } from 'utils/queries';
  * Get vesting contracts' detailed info from vesting contract ids.
  * Vesting contract ids is coming from vestings data.
  */
-export const useVestingContract = (organizationId: string | undefined, chainId: number | undefined) => {
+export const useVestingContract = (
+  organizationId: string | undefined,
+  chainId: number | undefined,
+  accessToken: string
+) => {
   const { isLoading, data } = useQuery<IVestingContract | null>(
     [QUERY_KEYS.VESTING_CONTRACT.FROM_ORGANIZATION],
     async () => {
@@ -20,7 +24,7 @@ export const useVestingContract = (organizationId: string | undefined, chainId: 
       return vestingContractsByFactory.length > 0 ? vestingContractsByFactory[0] : null;
     },
     {
-      enabled: !!organizationId && !!chainId
+      enabled: !!organizationId && !!chainId && !!accessToken
     }
   );
 

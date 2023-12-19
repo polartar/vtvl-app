@@ -428,10 +428,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         }
       }
       setShowFundingContractModal(false);
-    } catch (err) {
+    } catch (err: any) {
       console.log('fundContract - ', err);
       toast.error((err as any).reason ? (err as any).reason : 'Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -627,10 +631,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleCreateSignTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -670,10 +678,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleApproveTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -760,10 +772,14 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('SUCCESS');
         setTransactionStatus('');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleExecuteTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 

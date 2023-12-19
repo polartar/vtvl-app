@@ -147,10 +147,14 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         toast.success('Approved successfully.');
         setTransactionLoaderStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleApproveTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 
@@ -206,10 +210,14 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         setTransactionLoaderStatus('SUCCESS');
         setTransactionStatus('SUCCESS');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('handleExecuteTransaction - ', err);
       toast.error('Something went wrong. Try again later.');
-      setTransactionLoaderStatus('ERROR');
+      if (err.code === 'ACTION_REJECTED') {
+        setTransactionLoaderStatus('REJECTED');
+      } else {
+        setTransactionLoaderStatus('ERROR');
+      }
     }
   };
 

@@ -8,30 +8,20 @@ import { useAuth } from '@store/useAuth';
 import { useOrganization } from '@store/useOrganizations';
 import { transformVestingSchedule } from '@utils/vesting';
 import { useWeb3React } from '@web3-react/core';
-import VTVL2_VESTING_ABI from 'contracts/abi/Vtvl2Vesting.json';
-import VTVL_VESTING_ABI from 'contracts/abi/VtvlVesting.json';
-import getUnixTime from 'date-fns/getUnixTime';
 import { ContractCallContext, Multicall } from 'ethereum-multicall';
 import { ethers } from 'ethers';
-import { onSnapshot, query, where } from 'firebase/firestore';
 import { IVestingContract } from 'interfaces/vestingContract';
 import { useRouter } from 'next/router';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { toast } from 'react-toastify';
-import { vestingCollection, vestingContractCollection } from 'services/db/firestore';
 import { fetchMilestoneVestingsByQuery } from 'services/db/milestoneVesting';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { IMilestoneForm } from 'types/milestone';
 import { IVesting } from 'types/models';
-import { IRecipient, IRecipientForm } from 'types/models/recipient';
+import { IRecipient } from 'types/models/recipient';
 import { TCapTableRecipientTokenDetails } from 'types/models/token';
-import { IVestingContractDoc } from 'types/models/vestingContract';
 import { compareAddresses } from 'utils';
-import { TOAST_IDS } from 'utils/constants';
 import { getVestingAbiIndex, getVestingContractABI } from 'utils/multicall';
-import { getRecipient } from 'utils/recipients';
 
-import { useAuthContext } from './auth.context';
 import { useLoaderContext } from './loader.context';
 import { useTokenContext } from './token.context';
 import { useTransactionLoaderContext } from './transaction-loader.context';
@@ -90,7 +80,8 @@ export function DashboardContextProvider({ children }: any) {
   const [vestingContracts, setVestingContracts] = useState<IVestingContract[]>([]);
 
   const [revokings, setRevokings] = useState<IRevoking[]>([]);
-  const { vestingFactoryContract } = useVestingContract(organizationId, chainId);
+
+  const { vestingFactoryContract } = useVestingContract(organizationId, chainId, accessToken);
 
   const [ownershipTransferred, setOwnershipTransferred] = useState(false);
   const [removeOwnership, setRemoveOwnership] = useState(false);
@@ -184,7 +175,7 @@ export function DashboardContextProvider({ children }: any) {
 
   /* Fetch vestings & pending revoking & transactions & recipients data by organizationId and chainId */
   const fetchDashboardData = useCallback(async () => {
-    if (organizationId && chainId) {
+    if (organizationId && chainId && accessToken) {
       showLoading();
       try {
         await Promise.all([
@@ -204,7 +195,7 @@ export function DashboardContextProvider({ children }: any) {
       setVestings([]);
       setRevokings([]);
     }
-  }, [organizationId, chainId, fetchTransactions]);
+  }, [organizationId, chainId, fetchTransactions, accessToken]);
 
   const updateVestingContract = (data: IVestingContract) => {
     if (vestingContracts.find((vestingContract) => vestingContract.id === data.id)) {
