@@ -82,7 +82,10 @@ module.exports = {
       maxWidth: sizes,
       maxHeight: sizes,
       minWidth: sizes,
-      minHeight: sizes
+      minHeight: sizes,
+      scale: {
+        '-1': '-1'
+      }
     }
   },
   plugins: [],

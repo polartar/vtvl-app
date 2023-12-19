@@ -17,15 +17,13 @@ const SearchInput = (props: InputProps) => {
 
 const InputWrapper = styled.div<{ size?: string }>`
   width: 100%;
-
-  height: ${({ size }) => (size === 'small' ? '36px' : size === 'medium' ? '40px' : '44px')} !important;
+  height: ${({ size }) => (size === 'small' ? '32px' : size === 'medium' ? '40px' : '44px')} !important;
   border-radius: 10px;
   border: 1px solid #d0d5dd;
   display: flex;
   align-items: center;
   flex-direction: row;
   padding: 0 12px;
-  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   img {
     width: 20px;
     height: 20px;

@@ -6,8 +6,8 @@ interface HintProps extends React.AllHTMLAttributes<HTMLAllCollection> {
 const Hint = ({ tip, ...props }: HintProps) => {
   return (
     <span
-      className={`hint relative flex items-center justify-center font-bold text-xs text-neutral-500 cursor-pointer ${
-        props.children ? '' : 'p-1 rounded-full border border-gray-200 bg-gray-50 w-4 h-4'
+      className={`hint relative flex items-center justify-center font-bold text-xxs text-neutral-500 cursor-pointer ${
+        props.children ? '' : 'p-1 rounded-full border border-neutral-500 w-3.5 h-3.5'
       }`}>
       {props.children ?? '?'}
       <div className="hint-content absolute w-64 max-w-sm font-normal text-white text-xxs p-3 z-40 isolate top-7 -right-3">
