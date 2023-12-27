@@ -22,6 +22,7 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { updateRevoking } from 'services/db/revoking';
 import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
 import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
@@ -172,6 +173,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             approvers.push(signature.signer);
           }
         });
+
         if (approvers.length >= threshold) {
           if (transaction.data.type === 'ADDING_CLAIMS') {
             updateVesting({ ...data, status: 'LIVE' }, id);
@@ -179,13 +181,17 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           } else if (transaction.data.type === 'REVOKE_CLAIM') {
             updateVesting({ ...data, status: 'REVOKED' }, id);
             updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
+          } else if (transaction.data.type === 'FUNDING_CONTRACT') {
+            updateVesting({ ...data, status: 'WAITING_APPROVAL' }, id);
+            updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
           }
-          setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
-          setTransactionStatus('EXECUTABLE');
-          setVestingsStatus({
-            ...vestingsStatus,
-            [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
-          });
+
+          // setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
+          // setTransactionStatus('EXECUTABLE');
+          // setVestingsStatus({
+          //   ...vestingsStatus,
+          //   [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
+          // });
           setIsExecutableAfterApprove(false);
         } else if (
           safeTx.signatures.has(account.toLowerCase()) ||
