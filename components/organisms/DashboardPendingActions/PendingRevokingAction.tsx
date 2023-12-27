@@ -87,8 +87,19 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
           }
         });
         if (approvers.length >= threshold) {
-          setTransactionStatus('EXECUTABLE');
-          setStatus('AUTHORIZATION_REQUIRED');
+          if (transaction.data.type === 'REVOKE_CLAIM') {
+            await updateRevoking(
+              {
+                ...data,
+                status: 'SUCCESS'
+              },
+              id
+            );
+          } else {
+            setTransactionStatus('EXECUTABLE');
+            setStatus('AUTHORIZATION_REQUIRED');
+          }
+
           setIsExecutableAfterApprove(false);
         } else if (
           safeTx.signatures.has(account.toLowerCase()) ||
