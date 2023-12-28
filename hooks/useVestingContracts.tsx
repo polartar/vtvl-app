@@ -37,7 +37,7 @@ export const useVestingContractsFromIds = (vestingContractIds: string[]) => {
   return useMemo(
     () => ({
       isLoadingVestingContracts,
-      vestingContracts: vestingContracts ?? [],
+      vestingContracts: vestingContracts ? vestingContracts.filter((contract) => !!contract.data.address) : [],
       vestingContractAddresses
     }),
     [isLoadingVestingContracts, vestingContracts, vestingContractAddresses]
