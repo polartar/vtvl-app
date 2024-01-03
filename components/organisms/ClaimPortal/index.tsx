@@ -38,7 +38,6 @@ export default function ClaimPortal() {
   const { isLoadingMyRecipes, myRecipes, myVestingIds, myOrganizationIds, schedulesByOrganization } = useMyRecipes();
   const { isLoadingOrganizations, organizations } = useOrganizationsFromIds(myOrganizationIds);
   const { vestings, vestingTokenIds, vestingContractIds } = useVestingsFromIds(myVestingIds);
-  console.log({ vestings });
   const { tokens } = useTokensFromIds(vestingTokenIds);
   const { vestingContracts, vestingContractAddresses } = useVestingContractsFromIds(vestingContractIds);
   const {
