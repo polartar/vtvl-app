@@ -175,23 +175,31 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
         });
 
         if (approvers.length >= threshold) {
-          if (transaction.data.type === 'ADDING_CLAIMS') {
-            updateVesting({ ...data, status: 'LIVE' }, id);
-            updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
-          } else if (transaction.data.type === 'REVOKE_CLAIM') {
-            updateVesting({ ...data, status: 'REVOKED' }, id);
-            updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
-          } else if (transaction.data.type === 'FUNDING_CONTRACT') {
-            updateVesting({ ...data, status: 'WAITING_APPROVAL' }, id);
-            updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
+          const safeService = new SafeServiceClient({
+            txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+            ethAdapter
+          });
+          const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction.data.safeHash);
+          if (apiTx.isExecuted) {
+            if (transaction.data.type === 'ADDING_CLAIMS') {
+              updateVesting({ ...data, status: 'LIVE' }, id);
+              updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
+            } else if (transaction.data.type === 'REVOKE_CLAIM') {
+              updateVesting({ ...data, status: 'REVOKED' }, id);
+              updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
+            } else if (transaction.data.type === 'FUNDING_CONTRACT') {
+              updateVesting({ ...data, status: 'WAITING_APPROVAL' }, id);
+              updateTransaction({ ...transaction.data, status: 'SUCCESS' }, transaction.id);
+            }
+          } else {
+            setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
+            setTransactionStatus('EXECUTABLE');
+            setVestingsStatus({
+              ...vestingsStatus,
+              [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
+            });
           }
 
-          // setStatus(transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE');
-          // setTransactionStatus('EXECUTABLE');
-          // setVestingsStatus({
-          //   ...vestingsStatus,
-          //   [id]: transaction.data.type === 'FUNDING_CONTRACT' ? 'FUNDING_REQUIRED' : 'EXECUTABLE'
-          // });
           setIsExecutableAfterApprove(false);
         } else if (
           safeTx.signatures.has(account.toLowerCase()) ||
