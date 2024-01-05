@@ -87,7 +87,12 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
           }
         });
         if (approvers.length >= threshold) {
-          if (transaction.data.type === 'REVOKE_CLAIM') {
+          const safeService = new SafeServiceClient({
+            txServiceUrl: SupportedChains[chainId as SupportedChainId].multisigTxUrl,
+            ethAdapter
+          });
+          const apiTx: SafeMultisigTransactionResponse = await safeService.getTransaction(transaction.data.safeHash);
+          if (transaction.data.type === 'REVOKE_CLAIM' && apiTx.isExecuted) {
             await updateRevoking(
               {
                 ...data,
