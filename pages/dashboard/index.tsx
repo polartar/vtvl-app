@@ -13,7 +13,11 @@ import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import ImportIcon from 'public/icons/import-icon.svg';
 import PlusIcon from 'public/icons/plus.svg';
-import { ReactElement, useCallback, useEffect, useMemo } from 'react';
+import { ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CSVLink } from 'react-csv';
+import { fetchAllOrganizations, fetchOrg } from 'services/db/organization';
+import { fetchAllVestings, fetchVestingsByQuery } from 'services/db/vesting';
+import { fetchAllVestingContracts } from 'services/db/vestingContract';
 
 import { NextPageWithLayout } from '../_app';
 
@@ -55,6 +59,33 @@ const Dashboard: NextPageWithLayout = () => {
     }
   }, [organizationId]);
 
+  const [isFetching, setIsFetching] = useState(false);
+  const [organizations, setOrganizations] = useState<any[]>([]);
+  const csvLink = useRef<HTMLAnchorElement>(null);
+
+  const extractOrganizations = async () => {
+    if (isFetching) return;
+    setIsFetching(true);
+    const organizations = await fetchAllOrganizations();
+    const vestingContracts = await fetchAllVestingContracts();
+    const actualContracts = vestingContracts.filter((contract) => !!contract.address);
+    const actualOrganizationIds = actualContracts.map((contract) => contract.organizationId);
+    const actualOrganizations: any[] = organizations.filter((org) => actualOrganizationIds.includes(org.id));
+    // const vestings = await fetchVestingsByQuery(['status'], ['=='], ['LIVE']);
+    // console.log({ vestings });
+
+    setOrganizations(actualOrganizations);
+
+    setIsFetching(false);
+  };
+
+  useEffect(() => {
+    if (organizations && organizations.length > 0) {
+      if (csvLink.current) {
+        (csvLink.current as any).link.click();
+      }
+    }
+  }, [organizations]);
   return (
     <>
       {!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED' ? (
@@ -104,6 +135,16 @@ const Dashboard: NextPageWithLayout = () => {
                 </div>
               )} */}
             </div>
+            <button className="primary row-center" onClick={() => extractOrganizations()}>
+              <span className="whitespace-nowrap">{isFetching ? 'Loading' : 'Extract organizations'}</span>
+            </button>
+            <CSVLink
+              data={organizations}
+              filename="transactions.csv"
+              className="hidden"
+              ref={csvLink as any}
+              target="_blank"
+            />
             <div className="flex flex-row items-center justify-start gap-2">
               <div className="group relative">
                 <button

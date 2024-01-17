@@ -37,3 +37,12 @@ export const createOrg = async (org: IOrganization): Promise<string> => {
   });
   return orgRef.id;
 };
+
+export const fetchAllOrganizations = async () => {
+  const snapshot = await getDocs(orgCollection);
+  const documents: any[] = [];
+  snapshot.forEach((doc) => {
+    documents.push({ ...doc.data(), id: doc.id });
+  });
+  return documents;
+};

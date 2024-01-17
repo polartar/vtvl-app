@@ -53,3 +53,12 @@ export const createVestingContract = async (contract: IVestingContract): Promise
   const vestingContractRef = await addDoc(vestingContractCollection, contract);
   return vestingContractRef.id;
 };
+
+export const fetchAllVestingContracts = async () => {
+  const snapshot = await getDocs(vestingContractCollection);
+  const documents: any[] = [];
+  snapshot.forEach((doc) => {
+    documents.push({ ...doc.data(), id: doc.id });
+  });
+  return documents;
+};
