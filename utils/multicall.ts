@@ -59,6 +59,7 @@ export const getVestingDetailsFromContracts = async (
     locked: BigNumberish;
     withdrawn: BigNumberish;
     unclaimed: BigNumberish;
+    cliffAmount: BigNumberish;
   }> = [];
 
   Object.keys(response.results).forEach((key) => {
@@ -75,7 +76,8 @@ export const getVestingDetailsFromContracts = async (
             allocations: BigNumber.from(0),
             withdrawn: BigNumber.from(0),
             unclaimed: BigNumber.from(0),
-            locked: BigNumber.from(0)
+            locked: BigNumber.from(0),
+            cliffAmount: BigNumber.from(0)
           };
 
     const contract = contracts.find((c) => compareAddresses(c.data.address, address));
@@ -89,6 +91,7 @@ export const getVestingDetailsFromContracts = async (
         value.callsReturnContext[0].returnValues[CLIFF_AMOUNT_INDEX]
       );
       data.withdrawn = BigNumber.from(value.callsReturnContext[0].returnValues[WITHDRAWN_AMOUNT_INDEX]);
+      data.cliffAmount = BigNumber.from(value.callsReturnContext[0].returnValues[CLIFF_AMOUNT_INDEX]);
     } else {
       data.unclaimed = BigNumber.from(value.callsReturnContext[0].returnValues[0]);
     }
@@ -110,6 +113,7 @@ export const getVestingDetailsFromContracts = async (
       allocations: ethers.utils.formatEther(data.allocations.toString()),
       withdrawn: ethers.utils.formatEther(data.withdrawn.toString()),
       unclaimed: ethers.utils.formatEther(data.unclaimed.toString()),
+      cliffAmount: ethers.utils.formatEther(data.cliffAmount.toString()),
       locked: ethers.utils.formatEther((locked.gte(0) ? locked : BigNumber.from(0)).toString())
     };
   });

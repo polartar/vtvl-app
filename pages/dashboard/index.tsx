@@ -9,6 +9,8 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useLoaderContext } from '@providers/loader.context';
 import { useTokenContext } from '@providers/token.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
+import getUnixTime from 'date-fns/getUnixTime';
+import { Timestamp } from 'firebase/firestore';
 import { useModal } from 'hooks/useModal';
 import { useRouter } from 'next/router';
 import ImportIcon from 'public/icons/import-icon.svg';
@@ -16,10 +18,30 @@ import PlusIcon from 'public/icons/plus.svg';
 import { ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import { fetchAllOrganizations, fetchOrg } from 'services/db/organization';
+import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { fetchAllVestings, fetchVestingsByQuery } from 'services/db/vesting';
-import { fetchAllVestingContracts } from 'services/db/vestingContract';
+import { fetchAllVestingContracts, fetchVestingContractsByQuery } from 'services/db/vestingContract';
+import { IRecipientDoc } from 'types/models';
+import { getVestingDetailsFromContracts } from 'utils/multicall';
+import { getCliffDateTime, getNextUnlock } from 'utils/vesting';
 
 import { NextPageWithLayout } from '../_app';
+
+interface IRecipient {
+  company?: string;
+  name?: string;
+  type?: string;
+  email?: string;
+  wallet?: string;
+  unlockDate?: string;
+  cliff?: string;
+  endDate?: string;
+  releaseType?: string;
+  lockedAmount?: string;
+  vestedAmount?: string;
+  claimedAmount?: string;
+  totalAllocation?: string;
+}
 
 const Dashboard: NextPageWithLayout = () => {
   const { organizationId, emailSignUp } = useAuthContext();
@@ -61,7 +83,10 @@ const Dashboard: NextPageWithLayout = () => {
 
   const [isFetching, setIsFetching] = useState(false);
   const [organizations, setOrganizations] = useState<any[]>([]);
+  const [recipients, setRecipients] = useState<IRecipient[]>([]);
+  const [isRecipientFetching, setIsRecipientFetching] = useState(false);
   const csvLink = useRef<HTMLAnchorElement>(null);
+  const csvRecipientLink = useRef<HTMLAnchorElement>(null);
 
   const extractOrganizations = async () => {
     if (isFetching) return;
@@ -79,6 +104,64 @@ const Dashboard: NextPageWithLayout = () => {
     setIsFetching(false);
   };
 
+  const extractRecipients = async () => {
+    if (isRecipientFetching) return;
+    setIsRecipientFetching(true);
+    const result: IRecipient[] = [];
+    const recipients = await fetchRecipientsByQuery(['chainId'], ['=='], [1]);
+
+    const vestings = await fetchVestingsByQuery(['status', 'chainId'], ['==', '=='], ['LIVE', 1]);
+    const vestingContracts = await fetchVestingContractsByQuery(['chainId'], ['=='], [1]);
+
+    await Promise.all(
+      recipients.slice(5).map(async (recipient: IRecipientDoc) => {
+        const recipientInfo: IRecipient = {};
+        if (recipient.data.organizationId === 'REcJODJXmcoRQ3FVMNeF') {
+          recipientInfo.company = 'KAP Games';
+        } else recipientInfo.company = recipient.data.company;
+        recipientInfo.name = recipient.data.name;
+        recipientInfo.type = recipient.data.recipientType;
+        recipientInfo.email = recipient.data.email;
+        recipientInfo.wallet = recipient.data.walletAddress;
+
+        const vesting = vestings.find((v) => v.id === recipient.data.vestingId);
+        const vestingContract = vestingContracts.find((c) => c.id === vesting?.data.vestingContractId);
+        if (vesting && vestingContract) {
+          const vestingInfo = await getVestingDetailsFromContracts(1, [vestingContract], recipient.data.walletAddress);
+
+          const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = vesting.data.details;
+          const computeCliffDateTime = getCliffDateTime(
+            new Date((startDateTime! as unknown as Timestamp).seconds * 1000),
+            cliffDuration
+          );
+
+          const unlockDate =
+            Date.now() +
+            (vesting.data.details.releaseFrequency !== 'continuous' && endDateTime
+              ? getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime)
+              : 60) *
+              1000;
+          recipientInfo.cliff = vestingInfo[0].cliffAmount;
+          recipientInfo.unlockDate = new Date(unlockDate).toUTCString();
+          recipientInfo.endDate = new Date(
+            (vesting.data.details.endDateTime as unknown as Timestamp).seconds * 1000
+          ).toUTCString();
+          recipientInfo.releaseType = vesting.data.details.releaseFrequency;
+          recipientInfo.lockedAmount = vestingInfo[0].locked;
+          recipientInfo.vestedAmount = (+vestingInfo[0].unclaimed + +vestingInfo[0].withdrawn).toString();
+          recipientInfo.claimedAmount = vestingInfo[0].withdrawn;
+          recipientInfo.totalAllocation = vestingInfo[0].allocations;
+
+          result.push(recipientInfo);
+        }
+        return recipient;
+      })
+    );
+    setRecipients(result);
+
+    setIsRecipientFetching(false);
+  };
+
   useEffect(() => {
     if (organizations && organizations.length > 0) {
       if (csvLink.current) {
@@ -86,6 +169,14 @@ const Dashboard: NextPageWithLayout = () => {
       }
     }
   }, [organizations]);
+
+  useEffect(() => {
+    if (recipients && recipients.length > 0) {
+      if (csvRecipientLink.current) {
+        (csvRecipientLink.current as any).link.click();
+      }
+    }
+  }, [recipients]);
   return (
     <>
       {!mintFormState.address || mintFormState.status === 'PENDING' || mintFormState.status === 'FAILED' ? (
@@ -143,6 +234,16 @@ const Dashboard: NextPageWithLayout = () => {
               filename="transactions.csv"
               className="hidden"
               ref={csvLink as any}
+              target="_blank"
+            />
+            <button className="primary row-center" onClick={() => extractRecipients()}>
+              <span className="whitespace-nowrap">{isRecipientFetching ? 'Loading' : 'Extract Vestings'}</span>
+            </button>
+            <CSVLink
+              data={recipients}
+              filename="recipients.csv"
+              className="hidden"
+              ref={csvRecipientLink as any}
               target="_blank"
             />
             <div className="flex flex-row items-center justify-start gap-2">
