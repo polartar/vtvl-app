@@ -114,9 +114,11 @@ const Dashboard: NextPageWithLayout = () => {
     await Promise.all(
       recipients.map(async (recipient: IRecipientDoc) => {
         const recipientInfo: IRecipient = {};
+
         if (recipient.data.organizationId === 'REcJODJXmcoRQ3FVMNeF') {
           recipientInfo.company = 'KAP Games';
         } else recipientInfo.company = recipient.data.company;
+
         recipientInfo.name = recipient.data.name;
         recipientInfo.type = recipient.data.recipientType;
         recipientInfo.email = recipient.data.email;
@@ -124,6 +126,7 @@ const Dashboard: NextPageWithLayout = () => {
 
         const vesting = vestings.find((v) => v.id === recipient.data.vestingId);
         const vestingContract = vestingContracts.find((c) => c.id === vesting?.data.vestingContractId);
+
         if (vesting && vestingContract) {
           const vestingInfo = await getVestingDetailsFromContracts(1, [vestingContract], recipient.data.walletAddress);
 
