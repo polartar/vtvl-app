@@ -2,6 +2,7 @@ import { WhereFilterOp, addDoc, doc, getDoc, getDocs, query, setDoc, where } fro
 import { vestingContractCollection } from 'services/db/firestore';
 import { db } from 'services/db/firestore';
 import { IVestingContract } from 'types/models';
+import { IVestingContractDoc } from 'types/models/vestingContract';
 
 export const fetchVestingContract = async (id: string): Promise<IVestingContract | undefined> => {
   const vestingContractRef = doc(vestingContractCollection, id);
@@ -29,7 +30,7 @@ export const fetchVestingContractsByQuery = async (
   fields: string[],
   syntaxs: WhereFilterOp[],
   values: any[]
-): Promise<{ id: string; data: IVestingContract }[] | []> => {
+): Promise<IVestingContractDoc[]> => {
   const q = query(
     vestingContractCollection,
     ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index]))

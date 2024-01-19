@@ -22,6 +22,8 @@ import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { fetchAllVestings, fetchVestingsByQuery } from 'services/db/vesting';
 import { fetchAllVestingContracts, fetchVestingContractsByQuery } from 'services/db/vestingContract';
 import { IRecipientDoc } from 'types/models';
+import { IVestingDoc } from 'types/models/vesting';
+import { IVestingContractDoc } from 'types/models/vestingContract';
 import { getVestingDetailsFromContracts } from 'utils/multicall';
 import { getCliffDateTime, getNextUnlock } from 'utils/vesting';
 
@@ -106,10 +108,16 @@ const Dashboard: NextPageWithLayout = () => {
     if (isRecipientFetching) return;
     setIsRecipientFetching(true);
     const result: IRecipient[] = [];
-    const recipients = await fetchRecipientsByQuery(['chainId'], ['=='], [1]);
+    const ethRecipients = await fetchRecipientsByQuery(['chainId'], ['=='], [1]);
+    const polygonRecipients = await fetchRecipientsByQuery(['chainId'], ['=='], [137]);
+    const recipients = ethRecipients.concat(polygonRecipients);
 
-    const vestings = await fetchVestingsByQuery(['status', 'chainId'], ['==', '=='], ['LIVE', 1]);
-    const vestingContracts = await fetchVestingContractsByQuery(['chainId'], ['=='], [1]);
+    const ethVestings = await fetchVestingsByQuery(['status', 'chainId'], ['==', '=='], ['LIVE', 1]);
+    const polygonVestings = await fetchVestingsByQuery(['status', 'chainId'], ['==', '=='], ['LIVE', 137]);
+    const vestings: IVestingDoc[] = ethVestings.concat(polygonVestings);
+    const ethVestingContracts = await fetchVestingContractsByQuery(['chainId'], ['=='], [1]);
+    const polygonVestingContracts = await fetchVestingContractsByQuery(['chainId'], ['=='], [137]);
+    const vestingContracts = ethVestingContracts.concat(polygonVestingContracts);
 
     await Promise.all(
       recipients.map(async (recipient: IRecipientDoc) => {
