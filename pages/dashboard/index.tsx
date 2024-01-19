@@ -21,6 +21,7 @@ import { fetchAllOrganizations, fetchOrg } from 'services/db/organization';
 import { fetchRecipientsByQuery } from 'services/db/recipient';
 import { fetchAllVestings, fetchVestingsByQuery } from 'services/db/vesting';
 import { fetchAllVestingContracts, fetchVestingContractsByQuery } from 'services/db/vestingContract';
+import { SupportedChainId } from 'types/constants/supported-chains';
 import { IRecipientDoc } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { IVestingContractDoc } from 'types/models/vestingContract';
@@ -109,23 +110,30 @@ const Dashboard: NextPageWithLayout = () => {
     setIsRecipientFetching(true);
     const result: IRecipient[] = [];
     const ethRecipients = await fetchRecipientsByQuery(['chainId'], ['=='], [1]);
-    const polygonRecipients = await fetchRecipientsByQuery(['chainId'], ['=='], [137]);
+    const polygonRecipients = await fetchRecipientsByQuery(
+      ['chainId', 'organizationId'],
+      ['==', '=='],
+      [137, 'jKPg8tQv0Fm1FvLw718j']
+    );
     const recipients = ethRecipients.concat(polygonRecipients);
+
+    const organizations = await fetchAllOrganizations();
 
     const ethVestings = await fetchVestingsByQuery(['status', 'chainId'], ['==', '=='], ['LIVE', 1]);
     const polygonVestings = await fetchVestingsByQuery(['status', 'chainId'], ['==', '=='], ['LIVE', 137]);
     const vestings: IVestingDoc[] = ethVestings.concat(polygonVestings);
     const ethVestingContracts = await fetchVestingContractsByQuery(['chainId'], ['=='], [1]);
     const polygonVestingContracts = await fetchVestingContractsByQuery(['chainId'], ['=='], [137]);
-    const vestingContracts = ethVestingContracts.concat(polygonVestingContracts);
+    const vestingContracts = ethVestingContracts.concat(polygonVestingContracts).filter((v) => !!v.data.address);
 
     await Promise.all(
       recipients.map(async (recipient: IRecipientDoc) => {
         const recipientInfo: IRecipient = {};
 
-        if (recipient.data.organizationId === 'REcJODJXmcoRQ3FVMNeF') {
-          recipientInfo.company = 'KAP Games';
-        } else recipientInfo.company = recipient.data.company;
+        const organization = organizations.find((org) => org.id === recipient.data.organizationId);
+        if (organization) {
+          recipientInfo.company = organization.name;
+        }
 
         recipientInfo.name = recipient.data.name;
         recipientInfo.type = recipient.data.recipientType;
@@ -136,7 +144,11 @@ const Dashboard: NextPageWithLayout = () => {
         const vestingContract = vestingContracts.find((c) => c.id === vesting?.data.vestingContractId);
 
         if (vesting && vestingContract) {
-          const vestingInfo = await getVestingDetailsFromContracts(1, [vestingContract], recipient.data.walletAddress);
+          const vestingInfo = await getVestingDetailsFromContracts(
+            recipient.data.chainId as SupportedChainId,
+            [vestingContract],
+            recipient.data.walletAddress
+          );
 
           const { startDateTime, endDateTime, releaseFrequency, cliffDuration } = vesting.data.details;
           const computeCliffDateTime = getCliffDateTime(
