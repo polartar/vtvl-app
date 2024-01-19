@@ -96,8 +96,6 @@ const Dashboard: NextPageWithLayout = () => {
     const actualContracts = vestingContracts.filter((contract) => !!contract.address);
     const actualOrganizationIds = actualContracts.map((contract) => contract.organizationId);
     const actualOrganizations: any[] = organizations.filter((org) => actualOrganizationIds.includes(org.id));
-    // const vestings = await fetchVestingsByQuery(['status'], ['=='], ['LIVE']);
-    // console.log({ vestings });
 
     setOrganizations(actualOrganizations);
 
@@ -114,7 +112,7 @@ const Dashboard: NextPageWithLayout = () => {
     const vestingContracts = await fetchVestingContractsByQuery(['chainId'], ['=='], [1]);
 
     await Promise.all(
-      recipients.slice(5).map(async (recipient: IRecipientDoc) => {
+      recipients.map(async (recipient: IRecipientDoc) => {
         const recipientInfo: IRecipient = {};
         if (recipient.data.organizationId === 'REcJODJXmcoRQ3FVMNeF') {
           recipientInfo.company = 'KAP Games';
