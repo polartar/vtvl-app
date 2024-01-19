@@ -142,6 +142,7 @@ const Dashboard: NextPageWithLayout = () => {
               ? getNextUnlock(endDateTime, releaseFrequency, computeCliffDateTime)
               : 60) *
               1000;
+
           recipientInfo.cliff = vestingInfo[0].cliffAmount;
           recipientInfo.unlockDate = new Date(unlockDate).toUTCString();
           recipientInfo.endDate = new Date(
