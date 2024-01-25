@@ -207,7 +207,8 @@ export function AuthContextProvider({ children }: any) {
     setOrganizationId(user?.memberInfo?.org_id);
     setUser(user);
     setIsAuthenticated(true);
-    if (user.memberInfo?.type === 'founder') {
+
+    if (user.memberInfo?.type === 'founder' && !router.pathname.includes('onboarding')) {
       router.push('/dashboard');
     }
   };

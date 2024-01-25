@@ -140,6 +140,10 @@ export function OnboardingContextProvider({ children }: any) {
 
     setCurrentStep(nextstep);
 
+    if (nextstep === Step.SafeSetup) {
+      setInProgress(false);
+    }
+
     // if the user is a new user, go to the onboarding process continuation
     if (nextstep == Step.UserTypeSetup) {
       await router.push(isFirstTimeUser ? States[nextstep as Step].route : '/dashboard');
