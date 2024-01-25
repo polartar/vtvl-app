@@ -44,6 +44,7 @@ interface IRecipient {
   vestedAmount?: string;
   claimedAmount?: string;
   totalAllocation?: string;
+  vestingContract?: string;
 }
 
 const Dashboard: NextPageWithLayout = () => {
@@ -144,6 +145,7 @@ const Dashboard: NextPageWithLayout = () => {
         const vestingContract = vestingContracts.find((c) => c.id === vesting?.data.vestingContractId);
 
         if (vesting && vestingContract) {
+          recipientInfo.vestingContract = vestingContract.data.address;
           const vestingInfo = await getVestingDetailsFromContracts(
             recipient.data.chainId as SupportedChainId,
             [vestingContract],
@@ -173,7 +175,7 @@ const Dashboard: NextPageWithLayout = () => {
           recipientInfo.vestedAmount = (+vestingInfo[0].unclaimed + +vestingInfo[0].withdrawn).toString();
           recipientInfo.claimedAmount = vestingInfo[0].withdrawn;
           recipientInfo.totalAllocation = vestingInfo[0].allocations;
-
+          console.log({ recipientInfo });
           result.push(recipientInfo);
         }
         return recipient;
