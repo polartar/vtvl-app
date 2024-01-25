@@ -2,7 +2,6 @@ const env = process.env.NEXT_PUBLIC_NODE_ENV;
 console.log('env', env);
 export enum SupportedChainId {
   MAINNET = 1,
-  GOERLI = 5,
   BINANCE = 56,
   BINANCE_TESTNET = 97,
   POLYGON = 137,
@@ -35,7 +34,6 @@ export const PROD_SUPPORTED_CHAIN_IDS = [
 ];
 
 export const DEMO_SUPPORTED_CHAIN_IDS = [
-  SupportedChainId.GOERLI,
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
@@ -52,7 +50,6 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.FANTOM,
   SupportedChainId.CRONOS,
   SupportedChainId.OKC_MAINNET,
-  SupportedChainId.GOERLI,
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
@@ -166,16 +163,6 @@ export const prodSupportedChains: ChainsType = {
 };
 
 export const demoSupportedChains: ChainsType = {
-  [SupportedChainId.GOERLI]: {
-    id: 5,
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Goerli',
-    code: 'ETH',
-    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://goerli.etherscan.io',
-    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
-  },
-
   [SupportedChainId.MUMBAI]: {
     id: 80001,
     icon: '/icons/chains/polygon.svg',
@@ -297,16 +284,6 @@ export const devSupportedChains: ChainsType = {
     explorer: 'https://www.oklink.com/en/okc',
     multisigTxUrl: ''
   },
-  [SupportedChainId.GOERLI]: {
-    id: 5,
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Goerli',
-    code: 'ETH',
-    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://goerli.etherscan.io',
-    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
-  },
-
   [SupportedChainId.MUMBAI]: {
     id: 80001,
     icon: '/icons/chains/polygon.svg',
@@ -386,4 +363,4 @@ export const AllChains = devSupportedChains;
 export const SupportedChains =
   env === 'production' ? prodSupportedChains : env === 'demo' ? demoSupportedChains : devSupportedChains;
 
-export const SafeSupportedChains = [1, 5, 56, 137];
+export const SafeSupportedChains = [1, 11155111, 56, 137];
