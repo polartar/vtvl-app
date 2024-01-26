@@ -25,7 +25,7 @@ import { SupportedChainId } from 'types/constants/supported-chains';
 import { IRecipientDoc } from 'types/models';
 import { IVestingDoc } from 'types/models/vesting';
 import { IVestingContractDoc } from 'types/models/vestingContract';
-import { getVestingDetailsFromContracts } from 'utils/multicall';
+import { getVestingDetailsFromContracts, isV2 } from 'utils/multicall';
 import { getCliffDateTime, getNextUnlock } from 'utils/vesting';
 
 import { NextPageWithLayout } from '../_app';
@@ -45,6 +45,8 @@ interface IRecipient {
   claimedAmount?: string;
   totalAllocation?: string;
   vestingContract?: string;
+  chainId?: number;
+  isV1?: boolean;
 }
 
 const Dashboard: NextPageWithLayout = () => {
@@ -146,6 +148,8 @@ const Dashboard: NextPageWithLayout = () => {
 
         if (vesting && vestingContract) {
           recipientInfo.vestingContract = vestingContract.data.address;
+          recipientInfo.chainId = vestingContract.data.chainId;
+          recipientInfo.isV1 = isV2(vestingContract.data.updatedAt) ? false : true;
           const vestingInfo = await getVestingDetailsFromContracts(
             recipient.data.chainId as SupportedChainId,
             [vestingContract],
