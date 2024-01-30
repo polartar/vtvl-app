@@ -260,13 +260,13 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
                   <Typography className="font-semibold" size="subtitle">
                     Add recipient
                   </Typography>
-                  <Typography className="font-medium text-neutral-500" size="caption">
+                  {/* <Typography className="font-medium text-neutral-500" size="caption">
                     For all recipients without a wallet address, please ensure an{' '}
                     <Typography className="font-bold" size="caption">
                       email address
                     </Typography>{' '}
                     is provided
-                  </Typography>
+                  </Typography> */}
                 </div>
                 <a
                   href="javascript:;"
