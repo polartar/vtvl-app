@@ -206,11 +206,11 @@ const VestingContractPendingAction: React.FC<IVestingContractPendingActionProps>
       <div className="flex items-center w-40 py-3 flex-shrink-0 border-t border-[#d0d5dd]"></div>
       <div className="flex items-center min-w-[205px] flex-grow py-3 pr-3 flex-shrink-0 justify-stretch border-t border-[#d0d5dd] bg-gradient-to-l from-white via-white to-transparent  sticky right-0">
         {status === 'AUTHORIZATION_REQUIRED' ? (
-          <button className="secondary small w-full" onClick={handleDeployVestingContract}>
+          <button className="secondary small" onClick={handleDeployVestingContract}>
             Deploy
           </button>
         ) : status === 'TRANSFER_OWNERSHIP' ? (
-          <button className="secondary small w-full" onClick={handleTransferOwnership}>
+          <button className="secondary small" onClick={handleTransferOwnership}>
             Transfer Ownership
           </button>
         ) : status === 'REMOVE_ORIGINAL_OWNERSHIP' ? (
