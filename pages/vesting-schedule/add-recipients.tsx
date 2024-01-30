@@ -270,8 +270,9 @@ const CreateVestingSchedule: NextPageWithLayout = () => {
                 </div>
                 <a
                   href="javascript:;"
-                  className="flex flex-row items-center gap-3 text-neutral-500"
-                  onClick={() => setModalOpen(true)}>
+                  className="flex flex-row items-center gap-3 text-neutral-500 text-gray-300 cursor-default"
+                  // onClick={() => setModalOpen(true)}>
+                  onClick={() => {}}>
                   <img src="/icons/import.svg" className="w-4 h-4" />
                   <Typography size="paragraph">Import CSV</Typography>
                 </a>
