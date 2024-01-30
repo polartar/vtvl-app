@@ -6,7 +6,7 @@ import { managerRoles, recipientRoles } from 'utils/routes';
 
 const Page = () => {
   const router = useRouter();
-  const [fallbackPath, setFallbackPath] = useState('/onboarding');
+  const [fallbackPath, setFallbackPath] = useState('/onboarding/sign-up');
   // Get cached data for the user
   useEffect(() => {
     const persistedUser = getCache();
@@ -19,7 +19,7 @@ const Page = () => {
       ? '/dashboard'
       : recipientRoles.includes(userRole)
       ? '/claim-portal'
-      : '/onboarding';
+      : '/onboarding/sign-up';
     setFallbackPath(fallbackTo);
   }, []);
 

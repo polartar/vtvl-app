@@ -13,9 +13,9 @@ const MarkdownLayout = (props: any) => {
   };
   return (
     <div ref={markdownLayout} className="markdown-content p-6 text-left relative">
-      <BackButton label="Back" href="/onboarding" />
+      <BackButton label="Back" href="/onboarding/sign-up" />
       {props.children}
-      <BackButton label="Back" href="/onboarding" />
+      <BackButton label="Back" href="/onboarding/sign-up" />
       <div className="fixed bottom-10 right-10 z-50 text-sm text-neutral-500 cursor-pointer" onClick={handleClickTop}>
         <div className="animate-bounce">
           <ArrowIcon className="h-6 w-6 transform rotate-90 mb-2" />

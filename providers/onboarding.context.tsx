@@ -67,7 +67,7 @@ export function OnboardingContextProvider({ children }: any) {
   } = useGlobalContext();
   const { user, refreshUser, isNewUser } = useContext(AuthContext);
   const [info, setInfo] = useState<OnboardingInfo | undefined>();
-  const [currentStep, setCurrentStep] = useState<Step>(Step.ChainSetup);
+  const [currentStep, setCurrentStep] = useState<Step>(Step.SignUp);
   const [inProgress, setInProgress] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState('');

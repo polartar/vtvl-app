@@ -574,7 +574,7 @@ export function AuthContextProvider({ children }: any) {
     setCache({ user: undefined, roleOverride: undefined, isAuthenticated: undefined });
     // update auth and role guard states
     updateRoleGuardState();
-    Router.replace('/onboarding');
+    Router.replace('/onboarding/sign-up');
   }, []);
 
   const fetchSafe = useCallback(() => {

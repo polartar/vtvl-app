@@ -470,7 +470,7 @@ const DefaultLayout = ({ sidebar = false, ...props }: DefaultLayoutProps) => {
     const hideConnectModalOnRoutes = [
       '/onboarding/sign-up',
       '/onboarding/login',
-      '/onboarding',
+      '/onboarding/sign-up',
       '/onboarding/member-login',
       '/onboarding/connect-wallet',
       '/expired',
