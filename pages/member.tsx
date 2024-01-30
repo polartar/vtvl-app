@@ -52,7 +52,7 @@ const MemberWalletPage: NextPage = () => {
               router.push({ pathname: '/expired', query: { loginToken: token } });
             } else {
               await toast.error('The token is invalid');
-              router.push('/onboarding');
+              router.push('/onboarding/sign-up');
             }
           });
       }
