@@ -180,7 +180,7 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
                     autoFocus
                     type="address"
                     placeholder="0x69...6c15"
-                    validations={['address']}
+                    validations={['required', 'address']}
                     onChange={handleChange(index, 'address')}
                   />
                 </td>

@@ -30,7 +30,7 @@ export const RecipientTableColumns = [
   {
     id: 'address',
     title: 'Wallet Address',
-    required: false
+    required: true
   },
   {
     id: 'allocations',
