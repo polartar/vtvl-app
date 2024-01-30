@@ -2,7 +2,6 @@ const env = process.env.NEXT_PUBLIC_NODE_ENV;
 console.log('env', env);
 export enum SupportedChainId {
   MAINNET = 1,
-  GOERLI = 5,
   BINANCE = 56,
   BINANCE_TESTNET = 97,
   POLYGON = 137,
@@ -18,7 +17,8 @@ export enum SupportedChainId {
   SATOSHI_MAINNET = 12009,
   GANACHE_NETWORK = 999,
   OPTIMISM_MAINNET = 10,
-  OPTIMISM_GOERLI = 420
+  OPTIMISM_GOERLI = 420,
+  SEPOLIA = 11155111
 }
 
 export const PROD_SUPPORTED_CHAIN_IDS = [
@@ -34,12 +34,12 @@ export const PROD_SUPPORTED_CHAIN_IDS = [
 ];
 
 export const DEMO_SUPPORTED_CHAIN_IDS = [
-  SupportedChainId.GOERLI,
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
   SupportedChainId.BINANCE_TESTNET,
-  SupportedChainId.OPTIMISM_GOERLI
+  SupportedChainId.OPTIMISM_GOERLI,
+  SupportedChainId.SEPOLIA
 ];
 
 export const DEV_SUPPORTED_CHAIN_IDS = [
@@ -50,14 +50,14 @@ export const DEV_SUPPORTED_CHAIN_IDS = [
   SupportedChainId.FANTOM,
   SupportedChainId.CRONOS,
   SupportedChainId.OKC_MAINNET,
-  SupportedChainId.GOERLI,
   SupportedChainId.MUMBAI,
   SupportedChainId.OKC_TESTNET,
   SupportedChainId.BASE_GOERLI,
   SupportedChainId.SATOSHI_MAINNET,
   SupportedChainId.BINANCE_TESTNET,
   SupportedChainId.GANACHE_NETWORK,
-  SupportedChainId.OPTIMISM_GOERLI
+  SupportedChainId.OPTIMISM_GOERLI,
+  SupportedChainId.SEPOLIA
 ];
 
 export const SUPPORTED_CHAIN_IDS =
@@ -163,16 +163,6 @@ export const prodSupportedChains: ChainsType = {
 };
 
 export const demoSupportedChains: ChainsType = {
-  [SupportedChainId.GOERLI]: {
-    id: 5,
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Goerli',
-    code: 'ETH',
-    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://goerli.etherscan.io',
-    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
-  },
-
   [SupportedChainId.MUMBAI]: {
     id: 80001,
     icon: '/icons/chains/polygon.svg',
@@ -217,6 +207,15 @@ export const demoSupportedChains: ChainsType = {
     rpc: 'https://goerli.optimism.io',
     explorer: 'https://goerli-optimism.etherscan.io/',
     multisigTxUrl: ''
+  },
+  [SupportedChainId.SEPOLIA]: {
+    id: 11155111,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Sepolia',
+    code: 'ETH',
+    rpc: 'https://ethereum-sepolia.publicnode.com',
+    explorer: 'https://sepolia.etherscan.io',
+    multisigTxUrl: 'https://safe-transaction-sepolia.safe.global/'
   }
 };
 
@@ -285,16 +284,6 @@ export const devSupportedChains: ChainsType = {
     explorer: 'https://www.oklink.com/en/okc',
     multisigTxUrl: ''
   },
-  [SupportedChainId.GOERLI]: {
-    id: 5,
-    icon: '/icons/chains/ethereum.svg',
-    title: 'Goerli',
-    code: 'ETH',
-    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    explorer: 'https://goerli.etherscan.io',
-    multisigTxUrl: 'https://safe-transaction-goerli.safe.global'
-  },
-
   [SupportedChainId.MUMBAI]: {
     id: 80001,
     icon: '/icons/chains/polygon.svg',
@@ -357,6 +346,15 @@ export const devSupportedChains: ChainsType = {
     rpc: 'https://goerli.optimism.io',
     explorer: 'https://goerli-optimism.etherscan.io/',
     multisigTxUrl: ''
+  },
+  [SupportedChainId.SEPOLIA]: {
+    id: 11155111,
+    icon: '/icons/chains/ethereum.svg',
+    title: 'Sepolia',
+    code: 'ETH',
+    rpc: 'https://ethereum-sepolia.publicnode.com',
+    explorer: 'https://sepolia.etherscan.io',
+    multisigTxUrl: 'https://safe-transaction-sepolia.safe.global/'
   }
 };
 
@@ -365,4 +363,4 @@ export const AllChains = devSupportedChains;
 export const SupportedChains =
   env === 'production' ? prodSupportedChains : env === 'demo' ? demoSupportedChains : devSupportedChains;
 
-export const SafeSupportedChains = [1, 5, 56, 137];
+export const SafeSupportedChains = [1, 11155111, 56, 137];
