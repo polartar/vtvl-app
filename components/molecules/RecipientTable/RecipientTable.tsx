@@ -44,6 +44,9 @@ export const RecipientTable: React.FC<RecipientTableProps> = ({
     }
 
     const addresses = rows.filter((row) => Boolean(row.address));
+    if (addresses.length != rows.length) {
+      newErrors.push('Recipient wallet address is required.');
+    }
     const hasDuplicatedAddress = validateDuplication(addresses, 'address');
     if (hasDuplicatedAddress) {
       newErrors.push('Recipient wallet address is duplicated.');

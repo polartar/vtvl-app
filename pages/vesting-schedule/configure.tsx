@@ -1085,8 +1085,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
         })
       );
 
-      const noWalletRecipients = newRecipients
-        .filter((recipient) => !recipient.data.walletAddress)
+      const emailRecipients = newRecipients
+        // .filter((recipient) => !recipient.data.walletAddress)
         .map((recipient) => ({
           memberId: recipient.id,
           email: recipient.data.email,
@@ -1096,8 +1096,8 @@ const ConfigureSchedule: NextPageWithLayout = () => {
 
       await Promise.all(newRecipients);
 
-      if (noWalletRecipients.length > 0) {
-        await sendRecipientInvite(noWalletRecipients, mintFormState.symbol);
+      if (emailRecipients.length > 0) {
+        await sendRecipientInvite(emailRecipients, mintFormState.symbol);
       }
       await addNewMembers(
         newRecipients.filter((recipient) => recipient.data.walletAddress).map((recipient) => recipient.data.email),
