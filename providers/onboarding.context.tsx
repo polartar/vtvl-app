@@ -40,7 +40,7 @@ export enum Step {
 
 export const States = {
   [Step.ChainSetup]: {
-    route: '/onboarding',
+    route: '/onboarding/sign-up',
     error: 'Please login with web3 wallet to continue'
   },
   [Step.SignUp]: {

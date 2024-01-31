@@ -15,7 +15,7 @@ const MagicLinkVerificationPage: NextPage = () => {
       <h1 className="sora font-semibold text-3xl text-neutral-900 mb-16">Link has expired</h1>
       <Lottie animationData={ErrorAnimation} style={{ width: '106px' }} />
       <p className="mt-11 text-lg text-neutral-500 text-center">Please confirm your email address again.</p>
-      <Button type="button" className="primary mt-5" onClick={() => router.push('/onboarding')}>
+      <Button type="button" className="primary mt-5" onClick={() => router.push('/onboarding/sign-up')}>
         Back to Home
       </Button>
     </div>
