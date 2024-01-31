@@ -95,7 +95,7 @@ export function OnboardingContextProvider({ children }: any) {
     if (!user) return;
     const memberInfo = await fetchMember(user.uid);
     if (memberInfo?.type) {
-      router.replace(!foundingMembers.includes(memberInfo?.type) ? '/claim-portal' : '/dashboard');
+      router.push(!foundingMembers.includes(memberInfo?.type) ? '/claim-portal' : '/dashboard');
     }
   };
 
