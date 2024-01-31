@@ -103,7 +103,6 @@ export const getCliffAmount = (
   amountAfterCliff: number,
   amountToBeVested: number
 ): number => {
-  console.log({ amountToBeVested, amountAfterCliff });
   if (amountAfterCliff && cliffDuration !== 'no-cliff') {
     return parseFloat(
       ethers.utils.formatEther(
