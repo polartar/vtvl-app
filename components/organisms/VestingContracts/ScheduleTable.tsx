@@ -129,7 +129,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
     if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
-        signer: library?.getSigner(0)
+        signerOrProvider: library?.getSigner(0)
       });
 
       const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
@@ -162,7 +162,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
       const safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
-        signer: library?.getSigner(0)
+        signerOrProvider: library?.getSigner(0)
       });
       const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const threshold = await safeSdk.getThreshold();
@@ -271,7 +271,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
-          signer: library?.getSigner(0)
+          signerOrProvider: library?.getSigner(0)
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
@@ -406,7 +406,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
             setTransactionLoaderStatus('PENDING');
             const ethAdapter = new EthersAdapter({
               ethers: ethers,
-              signer: library?.getSigner(0)
+              signerOrProvider: library?.getSigner(0)
             });
             const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
             const safeService = new SafeServiceClient({
@@ -572,7 +572,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         }
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
-          signer: library?.getSigner(0)
+          signerOrProvider: library?.getSigner(0)
         });
         setTransactionLoaderStatus('PENDING');
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
@@ -707,7 +707,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
-          signer: library?.getSigner(0)
+          signerOrProvider: library?.getSigner(0)
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
@@ -753,7 +753,7 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
-          signer: library?.getSigner(0)
+          signerOrProvider: library?.getSigner(0)
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });

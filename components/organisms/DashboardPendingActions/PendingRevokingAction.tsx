@@ -50,7 +50,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
     if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
-        signer: library?.getSigner(0)
+        signerOrProvider: library?.getSigner(0)
       });
 
       const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
@@ -74,7 +74,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
       const safeTx = await fetchSafeTransactionFromHash(transaction.data.safeHash);
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
-        signer: library?.getSigner(0)
+        signerOrProvider: library?.getSigner(0)
       });
       const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
       const threshold = await safeSdk.getThreshold();
@@ -131,7 +131,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
-          signer: library?.getSigner(0)
+          signerOrProvider: library?.getSigner(0)
         });
 
         const safeSdk: Safe = await Safe.create({
@@ -184,7 +184,7 @@ const PendingRevokingAction: React.FC<{ id: string; data: IRevoking }> = ({ id, 
         setTransactionLoaderStatus('PENDING');
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
-          signer: library?.getSigner(0)
+          signerOrProvider: library?.getSigner(0)
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });

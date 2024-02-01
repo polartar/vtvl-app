@@ -14,7 +14,6 @@ interface Props {
 }
 
 const StepWizard = ({ steps, status, size = 'default', className = '', showAllLabels = false }: Props) => {
-  console.log({ steps, status });
   return (
     <StepContainer className={className}>
       {steps.map((step, stepIndex) => (

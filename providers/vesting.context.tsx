@@ -140,7 +140,6 @@ export function VestingContextProvider({ children }: any) {
 
       const recipientsData = await fetchRecipientsByQuery(['vestingId'], ['=='], [id]);
 
-      console.log('EDIT:::: EDIT INITIALIZED', id, data);
       updateScheduleStates(id, data);
       setRecipients(recipientsData);
 
@@ -174,7 +173,6 @@ export function VestingContextProvider({ children }: any) {
     ];
     if (allowedPaths.includes(router.route)) {
       // Do this only on allowed paths.
-      console.log('EDIT::::');
       if (router.route !== '/vesting-schedule/success') {
         // Check the state if it already has an ID being edited.
         if (router.query.id) {

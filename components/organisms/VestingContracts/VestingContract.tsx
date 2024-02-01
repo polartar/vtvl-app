@@ -164,7 +164,7 @@ export default function VestingContract({ vestingContractId }: { vestingContract
         ]);
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
-          signer: library?.getSigner(0)
+          signerOrProvider: library?.getSigner(0)
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });

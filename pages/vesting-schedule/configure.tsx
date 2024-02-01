@@ -225,8 +225,6 @@ const ConfigureSchedule: NextPageWithLayout = () => {
   // Stores the text version of the amount to be vested value
   const amountToBeVestedText = { value: watch('amountToBeVestedText'), state: getFieldState('amountToBeVestedText') };
 
-  console.log('Lumpsum release', lumpSumReleaseAfterCliff.value);
-
   const cliffOptions = [
     { label: 'No cliff', value: 'no-cliff' },
     // { label: 'Hours', value: 'hours' },

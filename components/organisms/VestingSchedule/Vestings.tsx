@@ -36,7 +36,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
     if (currentSafe?.address && chainId) {
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
-        signer: library?.getSigner(0)
+        signerOrProvider: library?.getSigner(0)
       });
 
       const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });
@@ -63,7 +63,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
     };
     const ethAdapter = new EthersAdapter({
       ethers: ethers,
-      signer: library?.getSigner(0)
+      signerOrProvider: library?.getSigner(0)
     });
     const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address || '' });
     const threshold = await safeSdk.getThreshold();
@@ -150,7 +150,7 @@ const Vestings: React.FC<IVestingsProps> = ({ vestings, vestingSchedulesInfo, to
       }
       const ethAdapter = new EthersAdapter({
         ethers: ethers,
-        signer: library?.getSigner(0)
+        signerOrProvider: library?.getSigner(0)
       });
       const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address || '' });
       const threshold = await safeSdk.getThreshold();

@@ -555,7 +555,6 @@ const VestingScheduleProject: NextPageWithLayout = () => {
     []
   );
 
-  console.log('Data counts', vestingScheduleDataCounts);
   /**
    * This function is intended to be used as a callback for clicking the "Batch transaction" button in the Table component.
    * This will pass all the selected rows in the selectedRows argument.
@@ -709,7 +708,7 @@ const VestingScheduleProject: NextPageWithLayout = () => {
 
         const ethAdapter = new EthersAdapter({
           ethers: ethers,
-          signer: library?.getSigner(0)
+          signerOrProvider: library?.getSigner(0)
         });
 
         const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress: currentSafe?.address });

@@ -9,7 +9,7 @@ export const getSafeInfo = async (provider: any, safeAddress: string): Promise<S
 
   const ethAdapter = new EthersAdapter({
     ethers: ethers,
-    signer: provider?.getSigner(0)
+    signerOrProvider: provider?.getSigner(0)
   });
 
   const safe: Safe = await Safe.create({ ethAdapter, safeAddress });
@@ -26,7 +26,7 @@ export const fetchSafes = async (
 
   const ethAdapter = new EthersAdapter({
     ethers: ethers,
-    signer: provider.getSigner(0)
+    signerOrProvider: provider.getSigner(0)
   });
 
   const safeService = new SafeServiceClient({
@@ -41,7 +41,7 @@ export const fetchSafes = async (
 export const deploySafe = async (provider: any, owners: string[], threshold: number): Promise<Safe> => {
   const ethAdapter = new EthersAdapter({
     ethers: ethers,
-    signer: provider.getSigner(0)
+    signerOrProvider: provider.getSigner(0)
   });
 
   const safeFactory = await SafeFactory.create({ ethAdapter });

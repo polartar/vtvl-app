@@ -11,7 +11,7 @@ const MultiSigWallet = () => {
   const createWallet = async () => {
     const ethAdapter = new EthersAdapter({
       ethers: ethers,
-      signer: library?.getSigner(0)
+      signerOrProvider: library?.getSigner(0)
     });
 
     const safeFactory = await SafeFactory.create({ ethAdapter });
