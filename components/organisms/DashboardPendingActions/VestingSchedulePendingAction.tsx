@@ -9,6 +9,7 @@ import { useDashboardContext } from '@providers/dashboard.context';
 import { useTransactionLoaderContext } from '@providers/transaction-loader.context';
 import { useVestingContext } from '@providers/vesting.context';
 import { useWeb3React } from '@web3-react/core';
+import axios from 'axios';
 import {
   IStatus, // ITransactionStatus,
   STATUS_MAPPING // TRANSACTION_STATUS_MAPPING
@@ -22,6 +23,7 @@ import { useTokenContext } from 'providers/token.context';
 import WarningIcon from 'public/icons/warning.svg';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { fetchOrg } from 'services/db/organization';
 import { updateRevoking } from 'services/db/revoking';
 import { createOrUpdateSafe } from 'services/db/safe';
 import { createTransaction, updateTransaction } from 'services/db/transaction';
@@ -29,6 +31,7 @@ import { fetchVestingsByQuery, updateVesting } from 'services/db/vesting';
 // import { fetchVestingContractsByQuery, updateVestingContract } from 'services/db/vestingContract';
 import { SupportedChainId, SupportedChains } from 'types/constants/supported-chains';
 import { ITransaction, IVesting } from 'types/models';
+import { IVestingDoc } from 'types/models/vesting';
 import { TOAST_IDS } from 'utils/constants';
 import { formatNumber, parseTokenAmount } from 'utils/token';
 import {
@@ -729,6 +732,7 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
           transactionId
         );
         await fetchDashboardData();
+        slackVestingNotification();
         setStatus('SUCCESS');
         toast.success('Added schedules successfully.', { toastId: TOAST_IDS.SUCCESS });
         setTransactionLoaderStatus('SUCCESS');
@@ -852,7 +856,9 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
             })
           );
           await fetchDashboardData();
+          await slackVestingNotification();
         }
+
         setStatus('SUCCESS');
         setTransactionLoaderStatus('SUCCESS');
         setTransactionStatus('');
@@ -862,6 +868,14 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       toast.error('Something went wrong. Try again later.');
       setTransactionLoaderStatus('ERROR');
     }
+  };
+
+  const slackVestingNotification = async () => {
+    const organization = await fetchOrg(organizationId || '');
+    await axios.post(`/api/slack/add-vesting`, {
+      organization: organization?.name,
+      vestingName: data.name
+    });
   };
 
   const handleApproveAndExecuteTransaction = async () => {

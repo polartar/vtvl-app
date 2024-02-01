@@ -1,6 +1,7 @@
 import { WhereFilterOp, addDoc, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from '@firebase/firestore';
 import { vestingCollection } from 'services/db/firestore';
 import { IVesting } from 'types/models';
+import { IVestingDoc } from 'types/models/vesting';
 import { generateRandomName } from 'utils/shared';
 
 export const fetchVesting = async (id: string): Promise<IVesting | undefined> => {
@@ -31,7 +32,7 @@ export const fetchVestingsByQuery = async (
   fields: string[],
   syntaxs: WhereFilterOp[],
   values: any[]
-): Promise<{ id: string; data: IVesting }[] | []> => {
+): Promise<IVestingDoc[] | []> => {
   const q = query(vestingCollection, ...fields.map((f, index) => where(fields[index], syntaxs[index], values[index])));
   const querySnapshot = await getDocs(q);
 

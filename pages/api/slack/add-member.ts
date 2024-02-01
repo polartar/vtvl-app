@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const now = Math.floor(new Date().getTime() / 1000);
 
   if (!process.env.SLACK_NEW_MEMBER_WEBHOOK_URL) {
-    return res.status(400).send({ message: 'Please add Slack WebHook URL to env' });
+    return res.status(400).send({ message: 'Please add a Slack WebHook URL to env' });
   }
 
   if (member && member.createdAt && member.type === 'founder' && member.createdAt + 3 >= now) {
