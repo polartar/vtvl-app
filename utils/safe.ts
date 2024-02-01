@@ -30,7 +30,7 @@ export const createSafeTransaction = async (
     throw `${fromAddress} is not the safe owner address`;
   }
 
-  const ethAdapter = new EthersAdapter({ ethers, signer });
+  const ethAdapter = new EthersAdapter({ ethers, signerOrProvider: signer });
   const safeSdk: Safe = await Safe.create({ ethAdapter: ethAdapter, safeAddress });
   const safeService = new SafeServiceClient({
     txServiceUrl: SupportedChains[chainId].multisigTxUrl,

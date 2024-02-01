@@ -37,7 +37,6 @@ const VestingSummary = ({
   const { data: creator } = useSWR(['fetch-member', vestingSchedule.data.createdBy], async () => {
     if (vestingSchedule.data.createdBy) {
       const member = await fetchMember(vestingSchedule.data.createdBy);
-      console.log({ member });
       return member?.name || '';
     } else {
       return '';

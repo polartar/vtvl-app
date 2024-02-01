@@ -914,7 +914,6 @@ const ScheduleTable: React.FC<{ id: string; data: IVesting; vestingSchedulesInfo
           });
 
           toast.success(`Revoking transaction with nonce ${nonce} has been created successfully.`);
-          console.info('Safe Transaction: ', safeHash);
         } else {
           const vestingContractInstance = new ethers.Contract(
             vestingAddress,
