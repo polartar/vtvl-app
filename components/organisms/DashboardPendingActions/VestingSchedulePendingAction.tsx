@@ -588,11 +588,8 @@ const VestingSchedulePendingAction: React.FC<IVestingContractPendingActionProps>
       });
 
       const vestingCliffAmounts = new Array(totalRecipients).fill(parseTokenAmount(cliffAmountPerUser, 18));
-      console.log({ vestingLinearVestAmounts, vestingCliffAmounts });
       const CREATE_CLAIMS_BATCH_FUNCTION =
         'function createClaimsBatch(address[] memory _recipients, uint40[] memory _startTimestamps, uint40[] memory _endTimestamps, uint40[] memory _cliffReleaseTimestamps, uint40[] memory _releaseIntervalsSecs, uint112[] memory _linearVestAmounts, uint112[] memory _cliffAmounts)';
-      const CREATE_CLAIMS_BATCH_INTERFACE =
-        'createClaimsBatch(address[],uint40[],uint40[],uint40[],uint40[],uint112[],uint112[])';
       const ABI = [CREATE_CLAIMS_BATCH_FUNCTION];
       const vestingContractInterface = new ethers.utils.Interface(ABI);
       const createClaimsBatchEncoded = vestingContractInterface.encodeFunctionData('createClaimsBatch', [
